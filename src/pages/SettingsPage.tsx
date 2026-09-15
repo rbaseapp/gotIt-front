@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { validateProfile } from '../lib/contracts';
 import { Modal } from '../components/Modal';
 import type { UserProfile } from '../types';
+import { labels } from '../lib/product';
 
 export function SettingsPage() {
   const { profile, updateProfile, resetDemo, mode, profileError, retryProfile } = useApp();
@@ -43,7 +44,7 @@ export function SettingsPage() {
               <button type="button" className="icon-button" aria-label="הסרת שפה" onClick={() => patch({ languages: form.languages.filter((_, i) => i !== index) })}><Trash2 size={17} /></button>
             </div>)}</div>
             <button type="button" className="button secondary" disabled={form.languages.length >= 100} onClick={() => patch({ languages: [...form.languages, { languageCode: '', selfAssessedLevel: null }] })}><Plus size={16} />הוספת שפת לימוד</button>
-            <p className="muted-note">רמה משוערת של המערכת תופיע לאחר חיבור מנוע הלמידה; אין כרגע הערכה מחושבת.</p>
+            <p className="muted-note">רמה עצמית אינה ציון שליטה. רמה אפקטיבית לקריאה נקבעת בשרת, אם נצברה ראיה מתאימה.</p>
           </section>
           <section className="settings-card" id="learning"><div className="settings-card-heading"><span className="settings-icon orange"><SlidersHorizontal size={21} /></span><div><h2>העדפות למידה</h2><p>הגדרות אישיות ליעד ולתרגום</p></div></div><div className="settings-fields">
             <label className="field"><span>סוג היעד היומי</span><select value={form.dailyGoal.type} onChange={event => patch({ dailyGoal: { ...form.dailyGoal, type: event.target.value as UserProfile['dailyGoal']['type'] } })}><option value="items">מילים ייחודיות</option><option value="minutes">דקות</option><option value="attempts">ניסיונות</option></select></label>
@@ -51,6 +52,7 @@ export function SettingsPage() {
             <label className="field"><span>מילים חדשות ביום</span><input type="number" min="0" max="10000" step="1" required value={form.defaultNewItemsPerDay} onChange={event => patch({ defaultNewItemsPerDay: Number(event.target.value) })} /></label>
             <label className="field"><span>שיטת תרגום מועדפת</span><select value={form.translationMethodPreference || ''} onChange={event => patch({ translationMethodPreference: (event.target.value || null) as UserProfile['translationMethodPreference'] })}><option value="">ללא העדפה</option><option value="auto">אוטומטי</option><option value="dictionary">מילון / תרגום</option><option value="ai">AI</option></select></label>
           </div>
+          {mode === 'live' && <div className="field"><span>כישורים פעילים ללמידה</span><div className="live-options">{(['recognition', 'recall', 'listening', 'spelling', 'pronunciation'] as const).map(skill => { const enabled = form.learningPreferences?.enabledSkills || ['recognition', 'recall', 'spelling']; return <label key={skill} className="live-checkbox"><input type="checkbox" checked={enabled.includes(skill)} onChange={event => patch({ learningPreferences: { enabledSkills: event.target.checked ? [...enabled, skill] : enabled.filter(s => s !== skill) } })} />{labels[skill]}</label>; })}</div><small className="muted-note">נדרש לפחות כישור אחד. האזנה והגייה עדיין תלויות בספק ובתמיכת השפה בשרת.</small></div>}
           <div className="field interest-setting"><span>תחומי עניין לתוכן</span><div className="interest-editor">{form.interests.map(interest => <span key={interest}>{interest}<button type="button" aria-label={'הסרת ' + interest} onClick={() => patch({ interests: form.interests.filter(value => value !== interest) })}><X size={12} /></button></span>)}</div></div>
           <div className="add-interest-row"><input aria-label="תחום עניין חדש" value={newInterest} maxLength={100} onChange={event => setNewInterest(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); addInterest(); } }} placeholder="למשל: חלל" /><button type="button" className="button secondary" disabled={!newInterest.trim() || form.interests.length >= 100} onClick={addInterest}>הוספה</button></div>
           </section>

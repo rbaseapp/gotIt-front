@@ -5,12 +5,14 @@ import { useApp } from '../context/AppContext';
 import { isDue, levelFromXp } from '../lib/utils';
 import { AddWordModal } from './AddWordModal';
 import { Logo } from './Logo';
+import { LiveCaptureModal } from './LiveCaptureModal';
 
 const navItems = [
   { to: '/dashboard', label: 'היום שלי', icon: BarChart3 },
   { to: '/learn', label: 'ללמוד', icon: Gamepad2 },
   { to: '/vocabulary', label: 'אוצר מילים', icon: BookOpen },
   { to: '/reading', label: 'קריאה בהקשר', icon: BookOpenText },
+  { to: '/transfer', label: 'ייבוא וייצוא', icon: BookOpen },
   { to: '/settings', label: 'הגדרות', icon: Settings },
 ];
 
@@ -55,9 +57,9 @@ export function AppShell({ children, onLogout }: { children: ReactNode; onLogout
             </div>
           </div>
         </header>
-        <div className="page-content"><div className={mode === 'demo' ? 'mode-banner demo' : 'mode-banner live'}>{mode === 'demo' ? 'סביבת הדגמה · מילים וציונים לדוגמה, היסטוריית תרגול מקומית בלבד' : 'חשבון אמיתי · פרופיל מחובר, שאר ממשקי המוצר מחכים ל־B2–B9'}</div>{notice && <p className="form-error" role="alert">{notice}</p>}{profileError && <div className="form-error" role="alert">{profileError}<button className="button ghost" onClick={() => void retryProfile()}>טעינה מחדש</button></div>}{children}</div>
+        <div className="page-content"><div className={mode === 'demo' ? 'mode-banner demo' : 'mode-banner live'}>{mode === 'demo' ? 'סביבת הדגמה · מילים וציונים לדוגמה, היסטוריית תרגול מקומית בלבד' : 'חשבון אמיתי · מילים והתקדמות נשמרות בשרת GotIt'}</div>{notice && <p className="form-error" role="alert">{notice}</p>}{profileError && <div className="form-error" role="alert">{profileError}<button className="button ghost" onClick={() => void retryProfile()}>טעינה מחדש</button></div>}{children}</div>
       </main>
-      <AddWordModal open={addOpen} onClose={() => setAddOpen(false)} />
+      {mode === 'live' ? <LiveCaptureModal open={addOpen} onClose={() => setAddOpen(false)} /> : <AddWordModal open={addOpen} onClose={() => setAddOpen(false)} />}
     </div>
   );
 }

@@ -42,7 +42,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [notice, setNotice] = useState('');
   const [storageError, setStorageError] = useState(false);
 
-  useEffect(() => { setStorageError(!writeStorage('gotit.demo.v2', demo)); }, [demo]);
+  useEffect(() => { if (import.meta.env.VITE_DEMO_MODE === 'true') setStorageError(!writeStorage('gotit.demo.v2', demo)); }, [demo]);
   useEffect(() => {
     const expired = () => { setUser(null); setLiveProfile(defaultProfile); setMode('signed-out'); setNotice('הכניסה פגה. יש להיכנס מחדש.'); };
     window.addEventListener('gotit:session-expired', expired);

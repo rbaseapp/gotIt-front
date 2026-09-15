@@ -87,6 +87,7 @@ export interface AuthTokens {
 export type ProfilePatch = Omit<UserProfile, 'name' | 'email'>;
 
 export interface UserProfile {
+  learningPreferences?: { enabledSkills: SkillKey[] };
   name: string;
   email: string;
   defaultTranslationLanguage: string | null;
@@ -94,7 +95,7 @@ export interface UserProfile {
   dailyGoal: { type: 'items' | 'minutes' | 'attempts'; value: number };
   defaultNewItemsPerDay: number;
   translationMethodPreference: 'auto' | 'dictionary' | 'ai' | null;
-  languages: Array<{ languageCode: string; selfAssessedLevel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | null }>;
+  languages: Array<{ languageCode: string; selfAssessedLevel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | null; systemEstimatedLevel?: string | null; effectiveLevel?: string | null; systemConfidence?: number | null }>;
   interests: string[];
 }
 

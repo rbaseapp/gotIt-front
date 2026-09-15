@@ -1,6 +1,6 @@
 import { LoaderCircle } from 'lucide-react';
 import { useApp } from './context/AppContext';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
 import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -10,19 +10,27 @@ import { SettingsPage } from './pages/SettingsPage';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { ReadingPage } from './pages/ReadingPage';
 import { HelpPage } from './pages/HelpPage';
+import { LiveDashboardPage } from './pages/LiveDashboardPage';
+import { LiveLearnPage } from './pages/LiveLearnPage';
+import { LiveVocabularyPage } from './pages/LiveVocabularyPage';
+import { LiveGameSessionPage } from './pages/LiveGameSessionPage';
+import { LiveReadingPage } from './pages/LiveReadingPage';
+import { TransferPage } from './pages/TransferPage';
 
 export default function App() {
   const { mode, logout } = useApp();
+  const location = useLocation();
   if (mode === 'loading') return <div className="empty-session" role="status"><LoaderCircle className="spin" size={30} /><p>בודקים את הכניסה שלך…</p></div>;
   if (mode === 'signed-out') return <AuthPage />;
   return <Routes>
-    <Route path="/learn/session/:type" element={<GameSessionPage />} />
+    <Route path="/learn/session/:type" element={mode === 'live' ? <LiveGameSessionPage key={location.pathname + location.search} /> : <GameSessionPage />} />
     <Route path="*" element={<AppShell onLogout={() => void logout()}><Routes>
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/learn" element={<LearnPage />} />
-      <Route path="/vocabulary" element={<VocabularyPage />} />
+      <Route path="/dashboard" element={mode === 'live' ? <LiveDashboardPage /> : <DashboardPage />} />
+      <Route path="/learn" element={mode === 'live' ? <LiveLearnPage /> : <LearnPage />} />
+      <Route path="/vocabulary" element={mode === 'live' ? <LiveVocabularyPage /> : <VocabularyPage />} />
       <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/reading" element={<ReadingPage />} />
+      <Route path="/reading" element={mode === 'live' ? <LiveReadingPage /> : <ReadingPage />} />
+      <Route path="/transfer" element={<TransferPage />} />
       <Route path="/help" element={<HelpPage />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes></AppShell>} />

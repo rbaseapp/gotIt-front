@@ -30,6 +30,7 @@ export function canonicalLanguage(value: string): string {
 }
 export function validateProfile(profile: ProfilePatch): string | null {
   try {
+    if (profile.learningPreferences && (!profile.learningPreferences.enabledSkills.length || profile.learningPreferences.enabledSkills.length > 5 || new Set(profile.learningPreferences.enabledSkills).size !== profile.learningPreferences.enabledSkills.length || profile.learningPreferences.enabledSkills.some(s => !['recognition', 'recall', 'listening', 'spelling', 'pronunciation'].includes(s)))) return 'יש לבחור לפחות כישור אחד, ללא כפילויות';
     if (profile.defaultTranslationLanguage !== null && !canonicalLanguage(profile.defaultTranslationLanguage)) return 'יש לבחור קוד שפה תקין';
     new Intl.DateTimeFormat('en', { timeZone: profile.timezone }).format();
     if (!['items', 'minutes', 'attempts'].includes(profile.dailyGoal.type) || !Number.isInteger(profile.dailyGoal.value) || profile.dailyGoal.value < 1 || profile.dailyGoal.value > 100000) return 'היעד היומי חייב להיות מספר שלם בין 1 ל־100,000';
@@ -50,6 +51,7 @@ export function parseProfile(payload: unknown): ProfilePatch {
   const value = object(object(payload).profile); const goal = object(value.dailyGoal);
   if (!Array.isArray(value.languages) || !Array.isArray(value.interests)) throw new Error('Invalid API response');
   const profile = {
+    ...(value.learningPreferences !== undefined ? { learningPreferences: object(value.learningPreferences) } : {}),
     defaultTranslationLanguage: value.defaultTranslationLanguage === null ? null : text(value.defaultTranslationLanguage),
     timezone: text(value.timezone),
     dailyGoal: { type: text(goal.type), value: integer(goal.value, 1) },
@@ -63,6 +65,7 @@ export function parseProfile(payload: unknown): ProfilePatch {
 }
 export function profilePayload(profile: ProfilePatch): ProfilePatch {
   return {
+    ...(profile.learningPreferences ? { learningPreferences: { enabledSkills: [...profile.learningPreferences.enabledSkills] } } : {}),
     defaultTranslationLanguage: profile.defaultTranslationLanguage,
     timezone: profile.timezone,
     dailyGoal: { ...profile.dailyGoal },

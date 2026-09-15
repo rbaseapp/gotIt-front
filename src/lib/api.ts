@@ -69,13 +69,17 @@ export function clearTokens() {
 export const api = {
   async google(idToken: string): Promise<AuthUser> {
     clearTokens();
+    const requestGeneration = generation;
     const payload = await request(coreUrl, 'auth/google', 'POST', { idToken });
+    if (requestGeneration !== generation) throw new ApiError(401, 'UNAUTHORIZED', 'הסשן הסתיים.');
     checked(parseUser, payload); setTokens(checked(parseTokens, payload));
     return this.me();
   },
   async signIn(mode: 'login' | 'register', email: string, password: string): Promise<AuthUser> {
     clearTokens();
+    const requestGeneration = generation;
     const payload = await request(coreUrl, `auth/${mode}`, 'POST', { email: email.trim(), password });
+    if (requestGeneration !== generation) throw new ApiError(401, 'UNAUTHORIZED', 'הסשן הסתיים.');
     checked(parseUser, payload); setTokens(checked(parseTokens, payload));
     return this.me();
   },
@@ -103,7 +107,10 @@ export const api = {
       catch (failure) { if (failure instanceof ApiError && failure.status === 401) { clearTokens(); window.dispatchEvent(new Event('gotit:session-expired')); } throw failure; }
     }
   },
-  async product(path: string, method = 'GET', body?: unknown, eventId?: string): Promise<unknown> { return this.authorized(productUrl, path, method, body, eventId); },
+  async product(path: string, method = 'GET', body?: unknown, eventId?: string): Promise<unknown> {
+    try { return await this.authorized(productUrl, path, method, body, eventId); }
+    catch (error) { if (error instanceof ApiError && error.status === 401) { clearTokens(); window.dispatchEvent(new Event('gotit:session-expired')); } throw error; }
+  },
   async audio(id: string): Promise<Blob> {
     const send = async (token: string) => fetch(`${productUrl}/api/v1/learning-items/${encodeURIComponent(id)}/audio`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'omit', signal: AbortSignal.timeout(20000) });
     let response = await send(await this.token());

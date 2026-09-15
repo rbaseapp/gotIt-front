@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { GOOGLE_CLIENT_ID } from '../config';
 
 interface Identity { initialize(options: { client_id: string; callback: (response: { credential: string }) => void; auto_select: boolean }): void; renderButton(element: HTMLElement, options: Record<string, string | number>): void; disableAutoSelect(): void }
 declare global { interface Window { google?: { accounts: { id: Identity } } } }
 let loading: Promise<Identity> | undefined;
 let currentCallback: ((token: string) => void) | undefined;
 let initializedClient = '';
-export function loadGoogle(): Promise<Identity> {
+function loadGoogle(): Promise<Identity> {
   if (window.google?.accounts.id) return Promise.resolve(window.google.accounts.id);
   if (loading) return loading;
   loading = new Promise<Identity>((resolve, reject) => {
@@ -21,7 +22,7 @@ export function GoogleSignIn({ onCredential, disabled }: { onCredential: (token:
   const ref = useRef<HTMLDivElement>(null); const callback = useRef(onCredential); callback.current = onCredential;
   const busy = useRef(disabled); busy.current = disabled;
   const [error, setError] = useState(''); const [retry, setRetry] = useState(0);
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+  const clientId = GOOGLE_CLIENT_ID;
   useEffect(() => {
     if (!clientId) return;
     let cancelled = false;

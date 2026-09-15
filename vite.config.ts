@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
     host: '0.0.0.0',
     proxy: {
       '/core-api': { target: env.CORE_API_PROXY_TARGET || 'https://rbase-core-api.onrender.com', changeOrigin: true, rewrite: path => path.replace(/^\/core-api/, '') },
-      '/gotit-api': { target: env.GOTIT_API_PROXY_TARGET || 'http://localhost:3001', changeOrigin: true, rewrite: path => path.replace(/^\/gotit-api/, '') },
+      '/gotit-api': { target: env.GOTIT_API_PROXY_TARGET || 'https://gotit-backend.onrender.com', changeOrigin: true, rewrite: path => path.replace(/^\/gotit-api/, '') },
     },
   },
 }; });
