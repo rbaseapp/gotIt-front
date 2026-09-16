@@ -1,11 +1,87 @@
-import { BookOpen, Gamepad2, LockKeyhole, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { BookOpen, Gamepad2, LockKeyhole, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function HelpPage() {
-  return <div className="help-page page-enter"><section className="page-heading-row"><div><p className="eyebrow">קצת סדר, הרבה יותר זיכרון</p><h1>מרכז העזרה</h1><p>מה אפשר לעשות עכשיו, ואיך הנתונים שלך נשמרים.</p></div></section><div className="help-grid">
-    <section className="panel"><BookOpen size={26} /><h2>שומרים משמעות, לא רק כתיב</h2><p>הוסיפו מילה, זוג שפות ותרגום מדויק. משפט המקור עוזר לזכור. כשאותו כתיב כבר קיים, בחרו אם להוסיף הקשר למשמעות קיימת או ליצור משמעות חדשה.</p><Link className="text-link" to="/vocabulary">לאוצר המילים</Link></section>
-    <section className="panel"><Gamepad2 size={26} /><h2>מתרגלים בכמה דרכים</h2><p>כרטיסיות משתמשות בדירוג עצמי. שליפה בוחנת זיכרון, האזנה בוחנת איות, והתאמות מחזקות זיהוי. בתרגול הגייה אפשר להאזין ולהקליט זמנית, אך אין עדיין ספק הערכה.</p><Link className="text-link" to="/learn">לבחירת משחק</Link></section>
-    <section className="panel"><LockKeyhole size={26} /><h2>חשבון אמיתי מול הדגמה</h2><p>חשבון אמיתי מאומת ב־rbase Core. ההעדפות נשמרות ב־GotIt Profile API. מילים, סשנים, XP וציונים בחשבון אמיתי יופיעו רק כשממשקי השרת המתוכננים יהיו זמינים.</p><p>הדמו נפרד מחשבונות. נתוניו נשמרים בדפדפן ואינם מסונכרנים בין מכשירים.</p></section>
-    <section className="panel"><ShieldCheck size={26} /><h2>פרטיות ושליטה</h2><p>מחיקת מילה בדמו היא מחיקה רכה וניתן לשחזר אותה. הקלטת קול אינה נשלחת לשירות חיצוני או נשמרת באחסון. המיקרופון מופעל רק בלחיצה מפורשת.</p><p>בחשבון אמיתי, access token נשמר בזיכרון ו־refresh token באחסון הסשן של הטאב. סגירת הטאב מסיימת את השמירה המקומית.</p></section>
-  </div><section className="panel help-status"><h2>זמינות נוכחית</h2><dl><div><dt>כניסה, הרשמה, רענון ויציאה</dt><dd>מחוברים לחוזה Core</dd></div><div><dt>פרופיל, שפות והעדפות</dt><dd>מחוברים לחוזה B1</dd></div><div><dt>אוצר מילים ותרגול</dt><dd>פועלים בדמו בלבד · B2–B8 מתוכננים</dd></div><div><dt>יצירת AI והערכת הגייה</dt><dd>מחכים לספק ול־API · ללא ציונים או יצירה מדומים</dd></div><div><dt>Google, אימות אימייל ואיפוס סיסמה</dt><dd>Google מחכה לתצורת לקוח; איפוס ואימות עדיין אינם ממומשים ב־Core</dd></div></dl></section></div>;
+  return (
+    <div className="help-page page-enter">
+      <section className="page-heading-row">
+        <div>
+          <p className="eyebrow">קצת סדר, הרבה יותר זיכרון</p>
+          <h1>מרכז העזרה</h1>
+          <p>מה אפשר לעשות עכשיו, ואיך הנתונים שלך נשמרים.</p>
+        </div>
+      </section>
+      <div className="help-grid">
+        <section className="panel">
+          <BookOpen size={26} />
+          <h2>שומרים משמעות, לא רק כתיב</h2>
+          <p>
+            הוסיפו מילה, זוג שפות ותרגום מדויק. משפט המקור עוזר לזכור. כשאותו
+            כתיב כבר קיים, בחרו אם להוסיף הקשר למשמעות קיימת או ליצור משמעות
+            חדשה.
+          </p>
+          <Link className="text-link" to="/vocabulary">
+            לאוצר המילים
+          </Link>
+        </section>
+        <section className="panel">
+          <Gamepad2 size={26} />
+          <h2>מתרגלים בכמה דרכים</h2>
+          <p>
+            השרת מנפיק כל שאלה ובודק אותה. כרטיסיות משתמשות בדירוג עצמי; שליפה,
+            איות והתאמות מקבלות ציון שרת. שמע והגייה מופיעים רק כשספק תומך בשפה.
+          </p>
+          <Link className="text-link" to="/learn">
+            לבחירת משחק
+          </Link>
+        </section>
+        <section className="panel">
+          <LockKeyhole size={26} />
+          <h2>חשבון אמיתי מול הדגמה</h2>
+          <p>
+            חשבון אמיתי מאומת ב־rbase Core. מילים, סשנים, ראיות למידה, XP
+            והעדפות נשמרים ב־GotIt Backend. הדמו זמין רק כשמפעיל האתר מדליק אותו
+            במפורש.
+          </p>
+        </section>
+        <section className="panel">
+          <ShieldCheck size={26} />
+          <h2>פרטיות ושליטה</h2>
+          <p>
+            מחיקה היא רכה וניתן לשחזר מילה. הקלטת הגייה נוצרת רק בלחיצה, מומרת
+            זמנית ל־WAV ונשלחת לשרת לצורך הערכה; היא אינה נשמרת באחסון הדפדפן.
+          </p>
+          <p>
+            Access token נשמר בזיכרון ו־refresh token באחסון הסשן של הטאב.
+            תשובות נשלחות עם מזהה אירוע קבוע לניסיון חוזר בטוח.
+          </p>
+        </section>
+      </div>
+      <section className="panel help-status">
+        <h2>זמינות נוכחית</h2>
+        <dl>
+          <div>
+            <dt>כניסה והרשמה</dt>
+            <dd>אימייל ו־Google מחוברים ל־Core</dd>
+          </div>
+          <div>
+            <dt>ספרייה, תרגול והתקדמות</dt>
+            <dd>מחוברים לממשקי GotIt V1</dd>
+          </div>
+          <div>
+            <dt>קריאה, שמע והגייה</dt>
+            <dd>הממשקים מחוברים; הזמינות בפועל נקבעת לפי ספקי השרת והשפה</dd>
+          </div>
+          <div>
+            <dt>ייבוא וייצוא</dt>
+            <dd>מחוברים לפורמטים הגרסאיים של השרת</dd>
+          </div>
+          <div>
+            <dt>איפוס סיסמה ואימות אימייל</dt>
+            <dd>אינם ממומשים ב־Core הנוכחי</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+  );
 }

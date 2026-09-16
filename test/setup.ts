@@ -1,5 +1,14 @@
-import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import "@testing-library/jest-dom/vitest";
+import { cleanup } from "@testing-library/react";
+import { afterEach, beforeEach, vi } from "vitest";
 
-afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); vi.unstubAllGlobals(); });
+beforeEach(() => {
+  vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "");
+});
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+  sessionStorage.clear();
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});

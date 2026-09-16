@@ -12,7 +12,10 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node server/gateway.mjs",
+    "test:gateway": "node --test test/gateway.test.mjs",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run test:gateway"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.4",
@@ -25,19 +28,20 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.36.0",
+    "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
     "@types/node": "^24.5.2",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
-    "eslint": "^9.36.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.22",
+    "eslint": "^10.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^16.4.0",
     "jsdom": "^30.0.1",
-    "typescript-eslint": "^8.44.1",
+    "prettier": "^3.9.6",
+    "typescript-eslint": "^8.70.0",
     "vitest": "^5.0.1"
   }
 }

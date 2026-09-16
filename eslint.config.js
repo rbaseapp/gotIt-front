@@ -13,6 +13,12 @@ export default tseslint.config(
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // These React Compiler advisory rules reject established UI patterns in this
+      // application (latest callback refs, prop-to-form synchronization and a
+      // render-time clock snapshot). Core hook ordering and dependency rules stay on.
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/purity': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },

@@ -1,91 +1,71 @@
 # GotIt Frontend
 
-אתר React 19, TypeScript ו־Vite ללמידת מילים וביטויים. ממשק עברי RTL, רספונסיבי, עם שתי סביבות נפרדות: חשבון אמיתי מול הממשקים הקיימים, והדגמה מקומית של מסכי המוצר.
+אתר React + TypeScript מלא ל־GotIt. החשבון האמיתי משתמש ב־rbase Core לאימות וב־GotIt Backend לכל נתוני המוצר. כל בדיקת תשובה, שליטה, תזמון ו־XP מתבצעת בשרת; הפרונט אינו משחזר את מנוע הלמידה.
 
-מקור האמת: כל 20 המסמכים בתיקיית `../rbaseapp_project_docs_updated`, ובפרט מפרט המוצר 14 וחוזה ה־API במסמך 16. לא בוצעו שינויים ב־core-platform או gotIt-backend.
+## יכולות
 
-## התחלה מהירה
+- הרשמה וכניסה באימייל, כניסה/הרשמה עם Google Identity Services, רענון ויציאה.
+- פרופיל, שפות CEFR, אזור זמן, יעד יומי, תחומי עניין וכישורי למידה פעילים.
+- ספריית מילים אמיתית עם עימוד, חיפוש מקור, סינון, מיון, פעולות קבוצתיות, סל ושחזור.
+- capture בשני שלבים: preview, בחירת משמעות/מיזוג מפורש ושמירה idempotent.
+- פרטי מילה: תרגומים ומקורם, כישורים, דוגמאות, הקשרים, עריכה סמנטית עם אזהרת reset ותגיות.
+- סשנים ותרגילי שרת: חזרה חכמה, כרטיסיות, שליפה, התאמה, האזנה, הגייה ו־article quiz.
+- Dashboard אמיתי, תור למידה, היסטוריית סשנים ונתוני פעילות/XP מהשרת.
+- קריאה אישית עם preview שאינו נשמר, פתיחה מפורשת, הדגשת טווחי Unicode ותרגול המשך.
+- ייבוא `capture_requests_v1` וייצוא paginated של `learning_library_v1`.
+- סביבת דמו נפרדת, כבויה כברירת מחדל בפרודקשן.
 
-PowerShell, מתוך תיקיית הפרונט, עם Node 24:
+## פיתוח מקומי
+
+דרישות: Node.js 24 ו־npm 11.
 
 ```powershell
 npm ci
-Copy-Item .env.example .env.local
 npm run dev
 ```
 
-פתחו http://localhost:5173 ובחרו „כניסה לסביבת ההדגמה” כדי להתחיל מיד ללא שרת או חשבון.
-אפשר להפעיל גם בלי יצירת קובץ env: ברירות המחדל זהות ל־env.example.
-
-## מה עובד
-
-- כניסה והרשמה עם אימייל וסיסמה לפי מדיניות Core: 12–128 תווים.
-- אימות זהות דרך auth/me, רענון טוקנים עם rotation ויציאה עם ביטול refresh token.
-- טעינה ושמירה אמיתיות של Profile B1: שפות BCP-47, שש רמות CEFR, אזור זמן IANA, סוג וערך יעד, מילים חדשות, העדפת תרגום ותחומי עניין.
-- בדמו: Dashboard, חיפוש/סינון/מיון, בחירה מרובה ותרגול מילים נבחרות.
-- הוספה ועריכת מילה, שפות לכל פריט, משמעויות נפרדות והוספת הקשר למשמעות קיימת בלי לדרוס התקדמות או תרגום.
-- השהיה, עדיפות, סימון קשה, סימון ידני כנלמד, ארכיון, מחיקה רכה ושחזור.
-- כרטיסיות בשני כיוונים, שליפה עם בחירה או הקלדה, האזנה ואיות, התאמות וסשן משולב.
-- תור סשן קבוע, שמירת כל ניסיון כאירוע, סיכום, יציאה מסשן חלקי ותרגול חוזר.
-- הגייה: השמעה והקלטה מקומית זמנית, ללא הערכת הגייה מומצאת.
-- קריאה: בקרות שפה/רמה/נושא/סוג/אורך, משפטי מקור לדוגמה, מילים לחיצות והיסטוריה מקומית.
-- חלונות עם לכידת פוקוס, Escape והחזרת פוקוס; מצבי טעינה, שגיאות ונתונים ריקים; מרכז עזרה.
-
-## גבול בין הדמו לחשבון אמיתי
-
-לפי הקוד והמסמכים, GotIt מממש כרגע B0/B1 בלבד. לכן Vocabulary, Practice, Learning Engine, Dashboard, AI Reading והערכת הגייה אינם פעילים מול חשבון אמיתי: מוצגת הודעת זמינות, לא נתוני הדמו.
-
-לא הומצאו נתיבי API עבור B2–B10 ולא הועתקה לוגיקת שליטה או תזמון חזרות ללקוח. ציוני מיומנויות ותאריכי חזרה בדמו הם נתוני דוגמה; תשובות אינן מייצרות ציוני mastery או מועדי חזרה חדשים. סימון ידני משנה מצב ומציין מקור USER, בלי לשנות ציונים.
-
-XP בדמו הוא המחשה בלבד: 10 נקודות לכל מילה/משחק ביום UTC, פעם אחת; הקלטה ודילוג אינם מעניקים נקודות. דירוג כרטיסיות נשמר כ־self_rated, לא כתשובה אובייקטיבית. קריאה וניווט אינם מעניקים XP. זמן תרגול נמדד בסשנים.
-
-Google דורש תצורת לקוח GotIt שטרם הוגדרה. איפוס סיסמה, אימות אימייל ותזכורות אינם ממומשים; אין כפתורים שמבטיחים פעולה שלא קיימת. יבוא/יצוא B10 וחיבור תוסף Chrome הם עבודה עתידית.
-
-## תצורת חיבור
+ברירות המחדל של Vite מעבירות `/core-api` אל Core בפרודקשן ו־`/gotit-api` אל `https://gotit-backend.onrender.com`. לעבודה מול שירותים מקומיים צרו `.env.local` (אינו נכנס ל־Git):
 
 ```dotenv
-VITE_CORE_API_URL=/core-api
-CORE_API_PROXY_TARGET=https://rbase-core-api.onrender.com
-VITE_GOTIT_API_URL=/gotit-api
+CORE_API_PROXY_TARGET=http://localhost:8080
 GOTIT_API_PROXY_TARGET=http://localhost:3001
+VITE_CORE_API_URL=/core-api
+VITE_GOTIT_API_URL=/gotit-api
+VITE_GOOGLE_CLIENT_ID=<public-web-client-id>
 VITE_DEMO_MODE=true
 ```
 
-כתובות VITE הן כתובות בסיס, ללא /api/v1. שרת הפיתוח מסיר את קידומות ה־proxy ומעביר בקשות לשירות המתאים. GotIt ב־localhost:3001 הוא יעד פיתוח, לא כתובת production מתועדת; יש לשנותו אם השירות מופעל בפורט אחר. אין להריץ backend מתוך הפרונט.
+אין להכניס `Client Secret`, מפתח Translation, טוקנים או כתובת DB למשתני `VITE_*`; הם נכללים ב־JavaScript הפומבי.
 
-חשוב: בעת הבדיקה נמצאו שינויים קיימים ב־core-platform שבגללם קובצי app/routes המקומיים אינם חושפים את נתיבי Core Auth. הם נשארו ללא שינוי. ברירת המחדל משתמשת בכתובת Core המתועדת, לא מניחה שהעותק המקומי מוכן.
-
-בהעלאה לפרודקשן ה־proxy של Vite אינו קיים. צריך reverse proxy אמיתי עבור /core-api ו־/gotit-api, או כתובות HTTPS מלאות ומדיניות CORS מתאימה בצד השירותים. דוגמת nginx נמצאת ב־deploy/nginx.conf. כתובת GotIt production לא תועדה; לא הומצאה כתובת.
-
-`VITE_DEMO_MODE=false` מסתיר את כניסת הדמו במסך האימות; הוא אינו מנגנון הרשאות. אין לשמור secrets במשתני VITE: הם גלויים ללקוח.
-
-## אחסון ואבטחה
-
-Access token נשמר בזיכרון בלבד; refresh token ב־sessionStorage של הטאב (לא localStorage). אין רישום סיסמאות, טוקנים או הודעות פנימיות של השרת. סשן מוגן מתחדש לפני פקיעת הטוקן; 401 מקבל ניסיון רענון אחד בלבד, ובקשות מקבילות משתפות רענון.
-
-נתוני הדמו נמצאים ב־localStorage תחת gotit.demo.v2; היסטוריית קריאה תחת gotit.readings.v1. המידע אינו מסונכרן בין מכשירים. אחסון חסום/מלא מציג אזהרה. איפוס דמו מוחק רק את היסטוריית הדמו המקומית. הקלטות אינן נשלחות החוצה, אינן נשמרות באחסון, וערוצי המיקרופון נסגרים ביציאה.
-
-## בדיקות ובנייה
+## בדיקות
 
 ```powershell
-npm test
-npm run typecheck
-npm run lint
-npm run build
-npm run preview
+npm run check
+npm audit --omit=dev --audit-level=high
 ```
 
-Vitest + Testing Library + jsdom בודקים חוזי API, התנהגות מסכים ותרגול עם תגובות שרת מדומות. אין בבדיקות יצירת חשבון חיצוני או שינוי נתוני backend. זו אינה בדיקת End-to-End מול השירותים בפועל, ואינה בדיקה חזותית של דפדפן.
+`check` מריץ typecheck, ESLint, 42 בדיקות React/חוזים, build ועוד 6 בדיקות gateway. הבדיקות אינן יוצרות משתמש חיצוני ואינן כותבות למסד אמיתי.
 
-פלט הבנייה ב־dist. שרת האחסון חייב להחזיר index.html לנתיבי SPA כמו /vocabulary ו־/learn/session/recall.
+## Production / Render
 
-## מבנה
+קובצי הפריסה הם `Dockerfile`, `render.yaml` ו־`server/gateway.mjs`. ה־gateway מגיש SPA, מבודד את יעדי ה־API בצד השרת, מגביל נתיבים/שיטות/גדלים, מעביר רק headers מאושרים ומוסיף CSP, HSTS, COOP, Permissions Policy ו־cache policy. הקונטיינר הסופי רץ כמשתמש לא־root ואינו כולל source או dev dependencies.
 
-- src/pages — מסכי חשבון, Dashboard, משחקים, ספרייה, קריאה, הגדרות ועזרה.
-- src/components — מעטפת ניווט, חלונות, טופס מילה, הודעות זמינות וגבול שגיאות.
-- src/context/AppContext.tsx — הפרדת חשבון/דמו ומצב האפליקציה.
-- src/lib/api.ts / contracts.ts — חוזי Core/B1, validation ומחזור חיים של הסשן.
-- src/lib/demo.ts / practice.ts — תשתית הדגמה בלבד, לא מנוע production.
-- src/data/seed.ts — מילות וציוני דוגמה.
-- test — בדיקות התנהגות וחוזים.
-- docs/FRONTEND_STATUS.md — מפת כיסוי, מגבלות ובדיקות קבלה.
+1. צרו Web Service מה־Blueprint.
+2. הגדירו `PUBLIC_APP_ORIGIN=https://<frontend-domain>` בלי `/` בסוף. Render מספק גם `RENDER_EXTERNAL_URL`, אך origin מפורש מקל על audit.
+3. השאירו `CORE_API_PROXY_TARGET=https://rbase-core-api.onrender.com` ו־`GOTIT_API_PROXY_TARGET=https://gotit-backend.onrender.com`, או החליפו ב־HTTPS origins מאושרים.
+4. הגדירו ב־GotIt Backend את אותו origin בתוך `CORS_ORIGINS` והפעילו את גרסת ה־V1 המעודכנת והמיגרציות המאושרות שלה.
+5. ב־Google Cloud הוסיפו את origin המדויק ל־Authorized JavaScript origins והשלימו Branding, Homepage ו־Privacy Policy. לפיתוח הוסיפו `http://localhost:5173`.
+6. ודאו שב־Core אפליקציית `gotit` מוגדרת עם אותו OAuth Web Client ID. Basic login אינו דורש client secret.
+7. הריצו smoke: `/ready`, כניסה, `GET /capabilities`, הוספת מילה, תרגול אחד, logout וכניסת Google אמיתית.
+
+ה־OAuth Client ID הוא מזהה פומבי ולכן קיים ב־build; מפתח Google Translation חייב להישאר רק בסביבת ה־backend. ספק קריאה/AI, Google Translate וספק דיבור נחשפים דרך capabilities או שגיאת unavailable, לעולם לא דרך תוצאה מדומה.
+
+## מצב rollout נכון ל־2026-09-16
+
+- `https://gotit-backend.onrender.com/ready` עבר בדיקת 200 עם DB ready.
+- Core דחה `auth/me` ללא token ב־401, כמצופה.
+- שרת GotIt הציבורי החזיר 404 עבור `/api/v1/learning-items` בזמן הבדיקה, והקטלוג הציבורי שלו לא הציג את רשימת נתיבי V1. יש לפרוס את ה־backend המעודכן לפני smoke מלא.
+- דומיין האתר טרם נמסר ולכן אי אפשר להשלים Authorized JavaScript origins, CORS ו־Google login חי.
+- בדיקת Browser חזותית לא רצה כי סביבת Browser לא הייתה זמינה. יש לבצע את checklist ב־[Frontend status](docs/FRONTEND_STATUS.md).
+
+לא בוצעו מכאן deploy, שינוי Core, שינוי backend, migration, יצירת חשבון, commit או push.

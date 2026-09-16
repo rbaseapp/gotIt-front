@@ -1,1 +1,27 @@
-export function RemoteState({ loading, error, retry }: { loading: boolean; error: string; retry: () => void }) { return <>{loading && <p role="status" className="remote-status">טוען מהשרת…</p>}{error && <div role="alert" className="form-error">{error}<button type="button" className="button ghost" onClick={retry}>ניסיון נוסף</button></div>}</>; }
+export function RemoteState({
+  loading,
+  error,
+  retry,
+}: {
+  loading: boolean;
+  error: string;
+  retry: () => void;
+}) {
+  return (
+    <>
+      {loading && (
+        <p role="status" className="remote-status">
+          טוען מהשרת…
+        </p>
+      )}
+      {error && (
+        <div role="alert" className="form-error">
+          {error}
+          <button type="button" className="button ghost" onClick={retry}>
+            ניסיון נוסף
+          </button>
+        </div>
+      )}
+    </>
+  );
+}

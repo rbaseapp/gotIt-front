@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: gotit-front
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /ready
+    envVars:
+      - key: CORE_API_PROXY_TARGET
+        value: https://rbase-core-api.onrender.com
+      - key: GOTIT_API_PROXY_TARGET
+        value: https://gotit-backend.onrender.com
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      - key: PUBLIC_APP_ORIGIN
+        sync: false

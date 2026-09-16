@@ -1,15 +1,26 @@
-import type { LearningItem, SkillKey } from '../types';
+import type { LearningItem, SkillKey } from "../types";
 
 export const statusLabels = {
-  NEW: 'חדש', LEARNING: 'בלמידה', REVIEWING: 'בחזרה', MASTERED: 'נלמד',
+  NEW: "חדש",
+  LEARNING: "בלמידה",
+  REVIEWING: "בחזרה",
+  MASTERED: "נלמד",
 } as const;
 
 export const skillLabels: Record<SkillKey, string> = {
-  recognition: 'זיהוי', recall: 'שליפה', listening: 'האזנה', spelling: 'איות', pronunciation: 'הגייה',
+  recognition: "זיהוי",
+  recall: "שליפה",
+  listening: "האזנה",
+  spelling: "איות",
+  pronunciation: "הגייה",
 };
 
 export function isDue(item: LearningItem) {
-  return !item.deletedAt && item.userStatus === 'ACTIVE' && new Date(item.dueAt).getTime() <= Date.now();
+  return (
+    !item.deletedAt &&
+    item.userStatus === "ACTIVE" &&
+    new Date(item.dueAt).getTime() <= Date.now()
+  );
 }
 
 export function levelFromXp(xp: number) {
@@ -29,8 +40,8 @@ export function shuffle<T>(values: T[]) {
   return copy;
 }
 
-export function speak(text: string, lang = 'en-US') {
-  if (!('speechSynthesis' in window)) return false;
+export function speak(text: string, lang = "en-US") {
+  if (!("speechSynthesis" in window)) return false;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
@@ -40,5 +51,5 @@ export function speak(text: string, lang = 'en-US') {
 }
 
 export function cn(...values: Array<string | false | null | undefined>) {
-  return values.filter(Boolean).join(' ');
+  return values.filter(Boolean).join(" ");
 }

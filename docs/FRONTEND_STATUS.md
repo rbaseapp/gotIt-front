@@ -1,48 +1,47 @@
-# Frontend delivery status
+# Frontend production status
 
-Source of truth: all 20 files in `rbaseapp_project_docs_updated`, checked against the current read-only Core and GotIt sources. Active implementation is exclusively `gotIt-front`.
+עודכן: 2026-09-16. מקור האמת: כל המסמכים ב־`rbaseapp_project_docs_updated`, ובפרט חוזה ההשלמה V1, מול קוד Core ו־GotIt הנוכחי. השינויים מוגבלים ל־`gotIt-front`.
 
-## Capability coverage
+## כיסוי חוזים
 
-| Capability | Frontend | Real service requirement |
+| תחום | מקור אמת בפרונט | התנהגות כשל |
 | --- | --- | --- |
-| Email register/login, me, refresh, logout | Implemented against documented Core API | Reachable, configured Core |
-| Profile, languages, CEFR A1–C2, goals, interests, timezone | Implemented against B1 GET/PATCH | Reachable GotIt B1 |
-| Word library, filters, tags, editing, senses and occurrences | Interactive local demo; live availability screen | B2/B7 contracts and endpoints |
-| Selected-word sessions, flashcards, typed/MCQ recall, listening, matching | Interactive local demo with stable snapshots and attempt evidence | B3/B5 contracts and endpoints |
-| Soft delete/restore, pause, archive, manual mastery | Local demo preserves history and skill scores | B2/B4 lifecycle endpoints |
-| Mastery calculation, review scheduling, recommended queues | Deliberately not reimplemented in client | B4 configuration and learning engine |
-| XP, level, streak, time, dashboard | Evidence-based demo statistics, sample skill scores explicitly labeled | B4/B8 authoritative aggregates |
-| Pronunciation | Browser TTS, transient microphone recording/playback; no evaluation or score | B6 provider and contract |
-| AI reading | Controls, source-context examples, highlighted words, local opened-history | B9 provider, generation and quiz contracts |
-| Google | Availability text only, no pretend login | GotIt browser OAuth client configuration |
-| Email verification/password reset/reminders | Availability text only | Core/product service workflows |
-| Import/export, extension synchronization | Not implemented; not invented from an absent contract | B10, extension integration contracts |
+| Auth | Core `/auth/register`, `/login`, `/google`, `/me`, `/refresh`, `/logout` | 401 מנקה session ומחזיר לכניסה; אין חשיפת הודעת שרת פנימית |
+| Capture | `/captures/preview`, `/captures` | שמירה ננעלת לתוכן ו־UUID; אין retry אוטומטי של mutation |
+| Library | `/learning-items`, detail, edit, bulk, occurrences, examples, tags | עימוד bounded; אין טעינת ספרייה מלאה או fallback ל־seed |
+| Practice | sessions, exercises, attempts, pronunciation assessments | התשובה בלבד נשלחת; score/result/skills מתקבלים רק מהשרת |
+| Dashboard | `/dashboard`, `/learning/queue`, session history | אין חישוב mastery/level curve בצד לקוח |
+| Reading | preview, open, history/detail/delete, article quiz | body אינו מוצג או נשמר עד פתיחה; ranges הם Unicode code points |
+| Transfer | `/export`, `/import` | formats נבדקים; retry לנכשלים שומר event IDs; אין ייבוא ציונים |
 
-Production learning cannot be completed within a frontend-only authorization while B2–B10 services and several product policies remain open. Demo evidence types are intentionally local and do not claim to be the unpublished server DTOs. Future integration must adapt to finalized contracts, including server queues, attempt idempotency and authoritative aggregates, rather than exposing the demo reducer as a production engine.
+Access token נשמר בזיכרון; refresh token ב־`sessionStorage` של הטאב. כרטיס publication ו־provider selection token נשמרים רק במצב רכיב זמני. טוקנים, סיסמאות, תוכן תשובות ומפתחות אינם נכתבים ללוג.
 
-## Automated acceptance checks
+## בדיקות אוטומטיות
 
-Run `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`.
+- 42 בדיקות Vitest/Testing Library: lifecycle של token, Google credential, response validation, הפרדת live/demo, תרגיל ו־retry idempotent, קריאה מפורשת, import, Unicode, WAV ועוד.
+- 6 בדיקות `node:test` ל־production gateway: static/SPA, headers, route allowlist, origin, header forwarding, גודל/סוג body, redirect rejection ותצורת HTTPS.
+- `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run test:gateway`.
+- CI מבצע אותם ובנוסף `npm audit --omit=dev --audit-level=high`; Actions נעולים ל־commit SHA.
 
-Tests cover identity/response validation, password field policy, profile payload allowlisting, CEFR and goal limits, canonical language/interest handling, real-profile UI wiring with mocked responses, live/demo isolation, refresh single-flight and rotation, bounded 401 retries, pending-refresh logout safety, network/server failures, stable targeted queues, partial spelling correction, session completion/replay, XP replay cap, soft delete/restore and history preservation, and reading without evidence/XP.
+## בדיקות ידניות לפני השקה
 
-No tests modify an external account or database. jsdom cannot verify layout, audible TTS, actual browser permission prompts, codecs or device microphone capture. The in-app browser was unavailable in this session, so visual/device QA is still required.
+1. Desktop ו־375px: RTL, תפריט, modals, טפסים, כרטיסי Dashboard ומשחק ללא overflow.
+2. מקלדת בלבד: Tab/Shift+Tab/Escape, החזרת focus, labels ו־status/error announcements.
+3. הרשמה/כניסה/רענון/logout אמיתיים; Google popup, חשבון חדש וחשבון קיים.
+4. Preview ידני ועם ספק, יצירת משמעות, merge, replay של אותה שמירה לאחר כשל רשת.
+5. עימוד וסינון ספרייה, edit semantic reset, bulk, סל/restore, examples/tags/occurrences.
+6. כל סוגי התרגול; network loss אחרי submit; XP/progress תואמים לשרת; יציאה מסשן פעיל.
+7. שמע בשפה נתמכת; microphone allow/deny/cancel; ודאו שהחיווי וה־track נסגרים ביציאה.
+8. Reading preview/open/history/delete/article quiz וטקסט ישן ללא ranges.
+9. Export גדול מרובה עמודים; import חלקי; retry failed only; קובץ לא תקין/מעל 256KB.
+10. deep links אחרי deploy, CSP console, origin שגוי, 401/403/429/503 ותהליך graceful shutdown.
 
-## Manual browser acceptance checklist
+## חסמי rollout חיצוניים
 
-1. Open desktop and 375px mobile views; confirm RTL navigation, legible copy, tables and modals without page overflow.
-2. Use keyboard only: open/close a modal, Tab/Shift+Tab, Escape, and confirm focus is restored. Use Ctrl/Cmd+K in the library.
-3. Add/edit a word in a non-English language pair; add a second sense with the same spelling. Explicitly merge a context and confirm accepted translation/progress remain unchanged.
-4. Select words and launch a targeted session. Complete, replay, skip, leave midway, reload, and inspect retained local history.
-5. Play TTS using the item's language. Allow, deny and dismiss microphone permissions; record, stop and replay. Leave while recording and confirm microphone use ends.
-6. Change each daily-goal type and timezone. Confirm measured attempts/items/minutes are reflected and profile validation rejects unsupported values.
-7. Test actual Core login/register/refresh/logout and GotIt GET/PATCH in an approved integration environment; verify service errors and expired tokens. Do not use real credentials in automated fixtures.
-8. Deploy the built SPA behind configured API proxies or approved HTTPS/CORS. Deep-link directly to library and game routes.
-
-## Deployment blockers outside this frontend
-
-- GotIt production URL and cross-origin policy are not documented/configured.
-- The local Core tree already contains overlapping product-route changes; no repairs were authorized or performed.
-- Google client ID/origin policy, AI/pronunciation providers and production mastery/review/XP rules remain open.
-- Browser visual and real-service end-to-end verification have not been performed.
+- נדרש דומיין HTTPS סופי ל־Google Authorized JavaScript origins, ל־`PUBLIC_APP_ORIGIN` ול־GotIt `CORS_ORIGINS`.
+- גרסת GotIt V1 שנמצאת בקוד אינה חשופה עדיין בכתובת ה־production שנמסרה: נתיב הספרייה החזיר 404.
+- יש לבצע את migration/pre-deploy/roles/provider rollout מתוך runbook ה־backend; לא בוצע בפרונט.
+- Google Translation key שנמסר בשיחה לא הועתק לפרונט או לתיעוד. מומלץ לסובב אותו ולהגביל ל־API/שרת הנדרשים.
+- קריאה והגייה נשארות unavailable עד להגדרת ספקים בפועל. ה־UI משקף זאת ולא מייצר נתונים חלופיים.
+- Core הנוכחי אינו מציע password reset או email verification flows; ה־UI אינו מבטיח אותם.
+- בדיקת Browser חזותית/מכשיר לא התאפשרה בכלי הנוכחי; jsdom אינו תחליף להרשאות, codec, popup ופריסה חזותית.

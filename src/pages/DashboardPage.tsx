@@ -1,49 +1,503 @@
-import { useState } from 'react';
-import { ArrowLeft, BookOpen, Brain, CalendarDays, Check, ChevronLeft, Clock3, Flame, Headphones, MessageCircle, Pause, PenLine, Sparkles, Star, Trophy, Volume2, Zap } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { isDue, levelFromXp, skillLabels, xpInLevel } from '../lib/utils';
-import { CapabilityNotice } from '../components/CapabilityNotice';
-import type { SkillKey } from '../types';
+import { useState } from "react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Brain,
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  Clock3,
+  Flame,
+  Headphones,
+  MessageCircle,
+  Pause,
+  PenLine,
+  Sparkles,
+  Star,
+  Trophy,
+  Volume2,
+  Zap,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useApp } from "../context/AppContext";
+import { isDue, levelFromXp, skillLabels, xpInLevel } from "../lib/utils";
+import { CapabilityNotice } from "../components/CapabilityNotice";
+import type { SkillKey } from "../types";
 
-const skillIcons = { recognition: Brain, recall: MessageCircle, listening: Headphones, spelling: PenLine, pronunciation: Volume2 };
+const skillIcons = {
+  recognition: Brain,
+  recall: MessageCircle,
+  listening: Headphones,
+  spelling: PenLine,
+  pronunciation: Volume2,
+};
 export function DashboardPage() {
-  const { items, profile, stats, mode, attempts, sessions } = useApp(); const navigate = useNavigate();
+  const { items, profile, stats, mode, attempts, sessions } = useApp();
+  const navigate = useNavigate();
   const [range, setRange] = useState(7);
-  const active = items.filter(item => !item.deletedAt && item.userStatus === 'ACTIVE'); const due = active.filter(isDue);
-  const mastered = active.filter(item => item.status === 'MASTERED'); const paused = items.filter(item => !item.deletedAt && item.userStatus === 'PAUSED');
-  const masteredWeek = items.filter(item => !item.deletedAt && item.firstMasteredAt && +new Date(item.firstMasteredAt) >= Date.now() - 7 * 86400000).length;
+  const active = items.filter(
+    (item) => !item.deletedAt && item.userStatus === "ACTIVE",
+  );
+  const due = active.filter(isDue);
+  const mastered = active.filter((item) => item.status === "MASTERED");
+  const paused = items.filter(
+    (item) => !item.deletedAt && item.userStatus === "PAUSED",
+  );
+  const masteredWeek = items.filter(
+    (item) =>
+      !item.deletedAt &&
+      item.firstMasteredAt &&
+      +new Date(item.firstMasteredAt) >= Date.now() - 7 * 86400000,
+  ).length;
   const weakest = [...active].sort((a, b) => a.mastery - b.mastery).slice(0, 3);
-  const progress = Math.min(100, Math.round(stats.learnedToday / profile.dailyGoal.value * 100));
-  const units = { items: 'מילים', attempts: 'ניסיונות', minutes: 'דקות' };
-  const dateOf = (value: string) => new Intl.DateTimeFormat('en-CA', { timeZone: profile.timezone }).format(new Date(value));
+  const progress = Math.min(
+    100,
+    Math.round((stats.learnedToday / profile.dailyGoal.value) * 100),
+  );
+  const units = { items: "מילים", attempts: "ניסיונות", minutes: "דקות" };
+  const dateOf = (value: string) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: profile.timezone }).format(
+      new Date(value),
+    );
   const activity = Array.from({ length: range }, (_, index) => {
-    const date = new Date(); date.setDate(date.getDate() - (range - 1 - index));
+    const date = new Date();
+    date.setDate(date.getDate() - (range - 1 - index));
     const key = dateOf(date.toISOString());
-    const minutes = sessions.filter(session => dateOf(session.startedAt) === key).reduce((sum, session) => sum + session.durationSeconds, 0) / 60;
-    return { day: new Intl.DateTimeFormat('he', { day: 'numeric', month: 'numeric', timeZone: profile.timezone }).format(date), minutes };
+    const minutes =
+      sessions
+        .filter((session) => dateOf(session.startedAt) === key)
+        .reduce((sum, session) => sum + session.durationSeconds, 0) / 60;
+    return {
+      day: new Intl.DateTimeFormat("he", {
+        day: "numeric",
+        month: "numeric",
+        timeZone: profile.timezone,
+      }).format(date),
+      minutes,
+    };
   });
-  const maxMinutes = Math.max(5, ...activity.map(value => value.minutes));
-  const recent = attempts.filter(attempt => +new Date(attempt.createdAt) >= Date.now() - 7 * 86400000);
+  const maxMinutes = Math.max(5, ...activity.map((value) => value.minutes));
+  const recent = attempts.filter(
+    (attempt) => +new Date(attempt.createdAt) >= Date.now() - 7 * 86400000,
+  );
   const xpWeek = recent.reduce((sum, attempt) => sum + (attempt.xp || 0), 0);
-  const averageSkills = (Object.keys(skillLabels) as SkillKey[]).reduce((result, key) => ({ ...result, [key]: Math.round(active.reduce((sum, item) => sum + item.skills[key], 0) / Math.max(active.length, 1)) }), {} as Record<SkillKey, number>);
-  const weakSkill = (Object.keys(skillLabels) as SkillKey[]).sort((a, b) => averageSkills[a] - averageSkills[b])[0];
-  const now = new Date(); const hour = Number(new Intl.DateTimeFormat('en', { hour: 'numeric', hourCycle: 'h23', timeZone: profile.timezone }).format(now));
-  const greeting = hour < 12 ? 'בוקר טוב' : hour < 18 ? 'יום טוב' : 'ערב טוב';
-  const practiceWord = (id: string) => navigate('/learn/session/recall?items=' + encodeURIComponent(id));
-  if (mode !== 'demo') return <CapabilityNotice title="היום שלי" milestone="B8: Dashboard ונתוני התקדמות" />;
-  return <div className="dashboard page-enter">
-    <section className="welcome-row"><div><p className="eyebrow">{new Intl.DateTimeFormat('he-IL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: profile.timezone }).format(now)}</p><h1>{greeting}, {profile.name} <span className="wave">👋</span></h1><p>{progress >= 100 ? 'היעד היומי הושלם. יפה לראות אותך מתמיד!' : 'תרגול קטן היום, זיכרון חזק יותר מחר.'}</p></div>
-      <div className="daily-goal-card"><div className="goal-ring" style={{ '--progress': progress * 3.6 + 'deg' } as React.CSSProperties}><span>{stats.learnedToday}<small>/{profile.dailyGoal.value}</small></span></div><div><b>היעד היומי שלך</b><small>{progress >= 100 ? 'השלמת את היעד!' : 'עוד ' + Math.max(0, profile.dailyGoal.value - stats.learnedToday) + ' ' + units[profile.dailyGoal.type] + ' להיום'}</small></div><Check size={18} className={progress >= 100 ? 'goal-check complete' : 'goal-check'} /></div>
-    </section>
-    <section className="hero-review-card"><div className="hero-orb"><Brain size={42} /><span className="orb-spark one">✦</span><span className="orb-spark two">✦</span></div><div className="hero-copy"><span className="pill light"><Sparkles size={14} />תרגול דמו מוכן</span><h2>{due.length ? due.length + ' מילים מחכות לך' : 'כל זמן הוא זמן טוב לחזק מילים'}</h2><p>סשן קצר עם כרטיסיות, שליפה והאזנה. התור משתמש במועדי החזרה לדוגמה.</p><div className="hero-meta"><span><Clock3 size={16} />כ־6 דקות</span><span><BookOpen size={16} />עד {Math.min(8, active.length)} מילים</span><span><Zap size={16} />XP מוגבל לדמו</span></div></div><button className="button hero-button" disabled={!active.length} onClick={() => navigate('/learn/session/smart')}>מתחילים עכשיו<ArrowLeft size={19} /></button></section>
-    <section className="metric-grid">
-      {[{ label: 'מילים לחזרה', value: due.length, Icon: CalendarDays, color: 'orange', sub: 'לפי תאריכי דוגמה' }, { label: 'מילים פעילות', value: active.length, Icon: BookOpen, color: 'green', sub: active.filter(item => item.status === 'NEW').length + ' חדשות' }, { label: 'מילים שנלמדו', value: mastered.length, Icon: Trophy, color: 'purple', sub: 'נתוני דוגמה / סימון ידני' }, { label: 'מילים מושהות', value: paused.length, Icon: Pause, color: 'yellow', sub: 'מחוץ לתור התרגול' }, { label: 'רצף נוכחי', value: stats.streak, Icon: Flame, color: 'orange', sub: 'ימי תרגול בדמו' }, { label: 'XP לדמו', value: stats.xp, Icon: Zap, color: 'yellow', sub: 'רמה ' + levelFromXp(stats.xp) }, { label: 'זמן למידה השבוע', value: stats.minutesThisWeek, Icon: Clock3, color: 'green', sub: 'דקות שנמדדו בסשנים' }, { label: 'נלמדו השבוע', value: masteredWeek, Icon: Check, color: 'purple', sub: 'סימונים ידניים חדשים' }].map(({ label, value, Icon, color, sub }) => <article className="metric-card" key={label}><div className={'metric-icon ' + color}><Icon size={21} /></div><div><small>{label}</small><strong>{value.toLocaleString()}</strong><span className="trend">{sub}</span></div></article>)}
-    </section>
-    <div className="dashboard-columns"><section className="panel activity-panel"><div className="panel-header"><div><h3>הפעילות שלך</h3><p>זמן תרגול אמיתי שנמדד בדמו</p></div><select className="select-compact" aria-label="טווח פעילות" value={range} onChange={event => setRange(Number(event.target.value))}><option value={7}>שבוע</option><option value={28}>חודש</option></select></div><div className="chart-area"><div className="chart-grid"><span>{Math.ceil(maxMinutes)}</span><span>{Math.ceil(maxMinutes / 2)}</span><span>0</span></div><div className="bars">{activity.map((entry, index) => <div className="bar-column" key={entry.day}><div aria-label={entry.day + ': ' + entry.minutes.toFixed(1) + ' דקות'} className={'bar ' + (index === activity.length - 1 ? 'today' : '')} style={{ height: entry.minutes / maxMinutes * 100 + '%' }}><span className="bar-tooltip">{entry.minutes.toFixed(1)} דק׳</span></div><small>{entry.day}</small></div>)}</div></div><div className="panel-footer-stat"><Clock3 size={17} /><span><b>{stats.minutesThisWeek} דקות</b> בשבעת הימים האחרונים</span></div></section>
-      <section className="panel skills-panel"><div className="panel-header"><div><h3>כישורי השפה</h3><p>ציוני מילות הדוגמה · B4 יקבע ציונים אמיתיים</p></div><Link to="/vocabulary" className="text-link">למילים <ChevronLeft size={15} /></Link></div><div className="skill-list">{(Object.keys(skillLabels) as SkillKey[]).map(key => { const Icon = skillIcons[key]; return <div className="skill-row" key={key}><span className={'skill-mini-icon ' + key}><Icon size={16} /></span><span className="skill-name">{skillLabels[key]}</span><div className="progress-track"><span style={{ width: averageSkills[key] + '%' }} /></div><b>{averageSkills[key]}%</b></div>; })}</div><div className="skill-insight"><Sparkles size={17} /><span><b>נקודה לחיזוק: {skillLabels[weakSkill]}</b><small>ציונים אינם עולים מקריאה או ניווט בלבד</small></span><Link to="/learn" aria-label="מעבר לתרגול"><ChevronLeft size={18} /></Link></div></section>
+  const averageSkills = (Object.keys(skillLabels) as SkillKey[]).reduce(
+    (result, key) => ({
+      ...result,
+      [key]: Math.round(
+        active.reduce((sum, item) => sum + item.skills[key], 0) /
+          Math.max(active.length, 1),
+      ),
+    }),
+    {} as Record<SkillKey, number>,
+  );
+  const weakSkill = (Object.keys(skillLabels) as SkillKey[]).sort(
+    (a, b) => averageSkills[a] - averageSkills[b],
+  )[0];
+  const now = new Date();
+  const hour = Number(
+    new Intl.DateTimeFormat("en", {
+      hour: "numeric",
+      hourCycle: "h23",
+      timeZone: profile.timezone,
+    }).format(now),
+  );
+  const greeting = hour < 12 ? "בוקר טוב" : hour < 18 ? "יום טוב" : "ערב טוב";
+  const practiceWord = (id: string) =>
+    navigate("/learn/session/recall?items=" + encodeURIComponent(id));
+  if (mode !== "demo")
+    return (
+      <CapabilityNotice
+        title="היום שלי"
+        milestone="B8: Dashboard ונתוני התקדמות"
+      />
+    );
+  return (
+    <div className="dashboard page-enter">
+      <section className="welcome-row">
+        <div>
+          <p className="eyebrow">
+            {new Intl.DateTimeFormat("he-IL", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              timeZone: profile.timezone,
+            }).format(now)}
+          </p>
+          <h1>
+            {greeting}, {profile.name} <span className="wave">👋</span>
+          </h1>
+          <p>
+            {progress >= 100
+              ? "היעד היומי הושלם. יפה לראות אותך מתמיד!"
+              : "תרגול קטן היום, זיכרון חזק יותר מחר."}
+          </p>
+        </div>
+        <div className="daily-goal-card">
+          <div
+            className="goal-ring"
+            style={
+              { "--progress": progress * 3.6 + "deg" } as React.CSSProperties
+            }
+          >
+            <span>
+              {stats.learnedToday}
+              <small>/{profile.dailyGoal.value}</small>
+            </span>
+          </div>
+          <div>
+            <b>היעד היומי שלך</b>
+            <small>
+              {progress >= 100
+                ? "השלמת את היעד!"
+                : "עוד " +
+                  Math.max(0, profile.dailyGoal.value - stats.learnedToday) +
+                  " " +
+                  units[profile.dailyGoal.type] +
+                  " להיום"}
+            </small>
+          </div>
+          <Check
+            size={18}
+            className={progress >= 100 ? "goal-check complete" : "goal-check"}
+          />
+        </div>
+      </section>
+      <section className="hero-review-card">
+        <div className="hero-orb">
+          <Brain size={42} />
+          <span className="orb-spark one">✦</span>
+          <span className="orb-spark two">✦</span>
+        </div>
+        <div className="hero-copy">
+          <span className="pill light">
+            <Sparkles size={14} />
+            תרגול דמו מוכן
+          </span>
+          <h2>
+            {due.length
+              ? due.length + " מילים מחכות לך"
+              : "כל זמן הוא זמן טוב לחזק מילים"}
+          </h2>
+          <p>
+            סשן קצר עם כרטיסיות, שליפה והאזנה. התור משתמש במועדי החזרה לדוגמה.
+          </p>
+          <div className="hero-meta">
+            <span>
+              <Clock3 size={16} />
+              כ־6 דקות
+            </span>
+            <span>
+              <BookOpen size={16} />
+              עד {Math.min(8, active.length)} מילים
+            </span>
+            <span>
+              <Zap size={16} />
+              XP מוגבל לדמו
+            </span>
+          </div>
+        </div>
+        <button
+          className="button hero-button"
+          disabled={!active.length}
+          onClick={() => navigate("/learn/session/smart")}
+        >
+          מתחילים עכשיו
+          <ArrowLeft size={19} />
+        </button>
+      </section>
+      <section className="metric-grid">
+        {[
+          {
+            label: "מילים לחזרה",
+            value: due.length,
+            Icon: CalendarDays,
+            color: "orange",
+            sub: "לפי תאריכי דוגמה",
+          },
+          {
+            label: "מילים פעילות",
+            value: active.length,
+            Icon: BookOpen,
+            color: "green",
+            sub:
+              active.filter((item) => item.status === "NEW").length + " חדשות",
+          },
+          {
+            label: "מילים שנלמדו",
+            value: mastered.length,
+            Icon: Trophy,
+            color: "purple",
+            sub: "נתוני דוגמה / סימון ידני",
+          },
+          {
+            label: "מילים מושהות",
+            value: paused.length,
+            Icon: Pause,
+            color: "yellow",
+            sub: "מחוץ לתור התרגול",
+          },
+          {
+            label: "רצף נוכחי",
+            value: stats.streak,
+            Icon: Flame,
+            color: "orange",
+            sub: "ימי תרגול בדמו",
+          },
+          {
+            label: "XP לדמו",
+            value: stats.xp,
+            Icon: Zap,
+            color: "yellow",
+            sub: "רמה " + levelFromXp(stats.xp),
+          },
+          {
+            label: "זמן למידה השבוע",
+            value: stats.minutesThisWeek,
+            Icon: Clock3,
+            color: "green",
+            sub: "דקות שנמדדו בסשנים",
+          },
+          {
+            label: "נלמדו השבוע",
+            value: masteredWeek,
+            Icon: Check,
+            color: "purple",
+            sub: "סימונים ידניים חדשים",
+          },
+        ].map(({ label, value, Icon, color, sub }) => (
+          <article className="metric-card" key={label}>
+            <div className={"metric-icon " + color}>
+              <Icon size={21} />
+            </div>
+            <div>
+              <small>{label}</small>
+              <strong>{value.toLocaleString()}</strong>
+              <span className="trend">{sub}</span>
+            </div>
+          </article>
+        ))}
+      </section>
+      <div className="dashboard-columns">
+        <section className="panel activity-panel">
+          <div className="panel-header">
+            <div>
+              <h3>הפעילות שלך</h3>
+              <p>זמן תרגול אמיתי שנמדד בדמו</p>
+            </div>
+            <select
+              className="select-compact"
+              aria-label="טווח פעילות"
+              value={range}
+              onChange={(event) => setRange(Number(event.target.value))}
+            >
+              <option value={7}>שבוע</option>
+              <option value={28}>חודש</option>
+            </select>
+          </div>
+          <div className="chart-area">
+            <div className="chart-grid">
+              <span>{Math.ceil(maxMinutes)}</span>
+              <span>{Math.ceil(maxMinutes / 2)}</span>
+              <span>0</span>
+            </div>
+            <div className="bars">
+              {activity.map((entry, index) => (
+                <div className="bar-column" key={entry.day}>
+                  <div
+                    aria-label={
+                      entry.day + ": " + entry.minutes.toFixed(1) + " דקות"
+                    }
+                    className={
+                      "bar " + (index === activity.length - 1 ? "today" : "")
+                    }
+                    style={{ height: (entry.minutes / maxMinutes) * 100 + "%" }}
+                  >
+                    <span className="bar-tooltip">
+                      {entry.minutes.toFixed(1)} דק׳
+                    </span>
+                  </div>
+                  <small>{entry.day}</small>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="panel-footer-stat">
+            <Clock3 size={17} />
+            <span>
+              <b>{stats.minutesThisWeek} דקות</b> בשבעת הימים האחרונים
+            </span>
+          </div>
+        </section>
+        <section className="panel skills-panel">
+          <div className="panel-header">
+            <div>
+              <h3>כישורי השפה</h3>
+              <p>ציוני מילות הדוגמה · B4 יקבע ציונים אמיתיים</p>
+            </div>
+            <Link to="/vocabulary" className="text-link">
+              למילים <ChevronLeft size={15} />
+            </Link>
+          </div>
+          <div className="skill-list">
+            {(Object.keys(skillLabels) as SkillKey[]).map((key) => {
+              const Icon = skillIcons[key];
+              return (
+                <div className="skill-row" key={key}>
+                  <span className={"skill-mini-icon " + key}>
+                    <Icon size={16} />
+                  </span>
+                  <span className="skill-name">{skillLabels[key]}</span>
+                  <div className="progress-track">
+                    <span style={{ width: averageSkills[key] + "%" }} />
+                  </div>
+                  <b>{averageSkills[key]}%</b>
+                </div>
+              );
+            })}
+          </div>
+          <div className="skill-insight">
+            <Sparkles size={17} />
+            <span>
+              <b>נקודה לחיזוק: {skillLabels[weakSkill]}</b>
+              <small>ציונים אינם עולים מקריאה או ניווט בלבד</small>
+            </span>
+            <Link to="/learn" aria-label="מעבר לתרגול">
+              <ChevronLeft size={18} />
+            </Link>
+          </div>
+        </section>
+      </div>
+      <div className="dashboard-columns lower">
+        <section className="panel weak-panel">
+          <div className="panel-header">
+            <div>
+              <h3>מילים שכדאי לחזק</h3>
+              <p>לפי ציון השליטה של מילות הדוגמה</p>
+            </div>
+            <Link to="/vocabulary" className="text-link">
+              לרשימה <ChevronLeft size={15} />
+            </Link>
+          </div>
+          <div className="weak-list">
+            {weakest.map((item, index) => (
+              <div className="weak-row" key={item.id}>
+                <span className="rank">0{index + 1}</span>
+                <div className="word-info">
+                  <b dir="auto">{item.source}</b>
+                  <small dir="auto">{item.translation}</small>
+                </div>
+                <span className="mastery-mini">
+                  <i style={{ width: item.mastery + "%" }} />
+                </span>
+                <b className="mastery-number">{item.mastery}%</b>
+                <button
+                  className="icon-button"
+                  aria-label={"תרגול " + item.source}
+                  onClick={() => practiceWord(item.id)}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+        <section className="level-card">
+          <div className="level-top">
+            <div className="level-badge">
+              <Star size={23} fill="currentColor" />
+              <span>{levelFromXp(stats.xp)}</span>
+            </div>
+            <div>
+              <small>רמת הדמו שלך</small>
+              <h3>צעד קטן בכל יום</h3>
+            </div>
+          </div>
+          <div className="level-xp">
+            <span>{xpInLevel(stats.xp)} / 500 XP</span>
+            <b>עוד {500 - xpInLevel(stats.xp)} XP לרמה הבאה</b>
+          </div>
+          <div className="level-progress">
+            <span style={{ width: (xpInLevel(stats.xp) / 500) * 100 + "%" }} />
+          </div>
+          <p>
+            <Zap size={16} />
+            קיבלת <b>+{xpWeek} XP</b> השבוע. זו עקומת דמו בלבד.
+          </p>
+        </section>
+      </div>
+      <div className="dashboard-columns">
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h3>דיוק לפי משחק</h3>
+              <p>מבוסס על ניסיונות הדמו החדשים בלבד</p>
+            </div>
+          </div>
+          {["recall", "listening", "matching"].map((game) => {
+            const values = recent.filter(
+              (attempt) =>
+                attempt.game === game && attempt.result !== "skipped",
+            );
+            const percent = values.length
+              ? Math.round(
+                  (values.filter((value) => value.correct).length /
+                    values.length) *
+                    100,
+                )
+              : null;
+            return (
+              <div className="accuracy-row" key={game}>
+                <span>
+                  {
+                    {
+                      recall: "שליפה",
+                      listening: "האזנה ואיות",
+                      matching: "התאמות",
+                    }[game]
+                  }
+                </span>
+                <div className="progress-track">
+                  <span style={{ width: (percent || 0) + "%" }} />
+                </div>
+                <b>{percent === null ? "טרם תורגל" : percent + "%"}</b>
+              </div>
+            );
+          })}
+        </section>
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h3>פעילות אחרונה</h3>
+              <p>ניסיונות נשמרים כאירועים, לא רק כמונים</p>
+            </div>
+          </div>
+          {attempts
+            .slice(-4)
+            .reverse()
+            .map((attempt) => (
+              <div className="attempt-history-row" key={attempt.id}>
+                <span dir="auto">
+                  {items.find((item) => item.id === attempt.itemId)?.source ||
+                    "מילה שנמחקה"}
+                </span>
+                <b>
+                  {attempt.result === "skipped" ? "דילוג" : attempt.score + "%"}
+                </b>
+                <small>
+                  {new Date(attempt.createdAt).toLocaleTimeString("he", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZone: profile.timezone,
+                  })}
+                </small>
+              </div>
+            ))}
+          {!attempts.length && (
+            <p className="muted-note">הסשן הראשון שלך מחכה במסך הלמידה.</p>
+          )}
+        </section>
+      </div>
     </div>
-    <div className="dashboard-columns lower"><section className="panel weak-panel"><div className="panel-header"><div><h3>מילים שכדאי לחזק</h3><p>לפי ציון השליטה של מילות הדוגמה</p></div><Link to="/vocabulary" className="text-link">לרשימה <ChevronLeft size={15} /></Link></div><div className="weak-list">{weakest.map((item, index) => <div className="weak-row" key={item.id}><span className="rank">0{index + 1}</span><div className="word-info"><b dir="auto">{item.source}</b><small dir="auto">{item.translation}</small></div><span className="mastery-mini"><i style={{ width: item.mastery + '%' }} /></span><b className="mastery-number">{item.mastery}%</b><button className="icon-button" aria-label={'תרגול ' + item.source} onClick={() => practiceWord(item.id)}><ChevronLeft size={18} /></button></div>)}</div></section><section className="level-card"><div className="level-top"><div className="level-badge"><Star size={23} fill="currentColor" /><span>{levelFromXp(stats.xp)}</span></div><div><small>רמת הדמו שלך</small><h3>צעד קטן בכל יום</h3></div></div><div className="level-xp"><span>{xpInLevel(stats.xp)} / 500 XP</span><b>עוד {500 - xpInLevel(stats.xp)} XP לרמה הבאה</b></div><div className="level-progress"><span style={{ width: xpInLevel(stats.xp) / 500 * 100 + '%' }} /></div><p><Zap size={16} />קיבלת <b>+{xpWeek} XP</b> השבוע. זו עקומת דמו בלבד.</p></section></div>
-    <div className="dashboard-columns"><section className="panel"><div className="panel-header"><div><h3>דיוק לפי משחק</h3><p>מבוסס על ניסיונות הדמו החדשים בלבד</p></div></div>{['recall', 'listening', 'matching'].map(game => { const values = recent.filter(attempt => attempt.game === game && attempt.result !== 'skipped'); const percent = values.length ? Math.round(values.filter(value => value.correct).length / values.length * 100) : null; return <div className="accuracy-row" key={game}><span>{{ recall: 'שליפה', listening: 'האזנה ואיות', matching: 'התאמות' }[game]}</span><div className="progress-track"><span style={{ width: (percent || 0) + '%' }} /></div><b>{percent === null ? 'טרם תורגל' : percent + '%'}</b></div>; })}</section><section className="panel"><div className="panel-header"><div><h3>פעילות אחרונה</h3><p>ניסיונות נשמרים כאירועים, לא רק כמונים</p></div></div>{attempts.slice(-4).reverse().map(attempt => <div className="attempt-history-row" key={attempt.id}><span dir="auto">{items.find(item => item.id === attempt.itemId)?.source || 'מילה שנמחקה'}</span><b>{attempt.result === 'skipped' ? 'דילוג' : attempt.score + '%'}</b><small>{new Date(attempt.createdAt).toLocaleTimeString('he', { hour: '2-digit', minute: '2-digit', timeZone: profile.timezone })}</small></div>)}{!attempts.length && <p className="muted-note">הסשן הראשון שלך מחכה במסך הלמידה.</p>}</section></div>
-  </div>;
+  );
 }

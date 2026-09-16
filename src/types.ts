@@ -1,7 +1,14 @@
-export type LearningStatus = 'NEW' | 'LEARNING' | 'REVIEWING' | 'MASTERED';
-export type UserStatus = 'ACTIVE' | 'PAUSED' | 'ARCHIVED';
-export type GameType = 'smart' | 'flashcards' | 'recall' | 'listening' | 'matching' | 'pronunciation';
-export type SkillKey = 'recognition' | 'recall' | 'listening' | 'spelling' | 'pronunciation';
+export type LearningStatus = "NEW" | "LEARNING" | "REVIEWING" | "MASTERED";
+export type UserStatus = "ACTIVE" | "PAUSED" | "ARCHIVED";
+export type GameType =
+  | "smart"
+  | "flashcards"
+  | "recall"
+  | "listening"
+  | "matching"
+  | "pronunciation";
+export type SkillKey =
+  "recognition" | "recall" | "listening" | "spelling" | "pronunciation";
 
 export interface SkillScores {
   recognition: number;
@@ -23,7 +30,7 @@ export interface LearningItem {
   sourceTitle?: string;
   status: LearningStatus;
   userStatus: UserStatus;
-  priority: 'NORMAL' | 'HIGH';
+  priority: "NORMAL" | "HIGH";
   hard: boolean;
   mastery: number;
   skills: SkillScores;
@@ -32,7 +39,7 @@ export interface LearningItem {
   createdAt: string;
   attempts: number;
   deletedAt?: string | null;
-  masterySource?: 'SYSTEM' | 'USER' | null;
+  masterySource?: "SYSTEM" | "USER" | null;
   firstMasteredAt?: string | null;
   translations?: string[];
   examples?: string[];
@@ -48,14 +55,15 @@ export interface Attempt {
   createdAt: string;
   sessionId?: string;
   sequence?: number;
-  result?: 'correct' | 'partially_correct' | 'incorrect' | 'skipped' | 'self_rated';
+  result?:
+    "correct" | "partially_correct" | "incorrect" | "skipped" | "self_rated";
   skills?: SkillKey[];
-  direction?: 'source_to_meaning' | 'meaning_to_source' | 'audio_to_source';
+  direction?: "source_to_meaning" | "meaning_to_source" | "audio_to_source";
   userAnswer?: string;
   expectedAnswer?: string;
   responseTimeMs?: number;
   hintsUsed?: number;
-  selfRating?: 'again' | 'hard' | 'good' | 'easy';
+  selfRating?: "again" | "hard" | "good" | "easy";
   xp?: number;
 }
 
@@ -64,7 +72,7 @@ export interface PracticeSession {
   game: GameType;
   startedAt: string;
   endedAt?: string;
-  status: 'active' | 'completed' | 'abandoned';
+  status: "active" | "completed" | "abandoned";
   itemIds: string[];
   xp: number;
   durationSeconds: number;
@@ -84,7 +92,7 @@ export interface AuthTokens {
   expiresIn: number;
 }
 
-export type ProfilePatch = Omit<UserProfile, 'name' | 'email'>;
+export type ProfilePatch = Omit<UserProfile, "name" | "email">;
 
 export interface UserProfile {
   learningPreferences?: { enabledSkills: SkillKey[] };
@@ -92,10 +100,17 @@ export interface UserProfile {
   email: string;
   defaultTranslationLanguage: string | null;
   timezone: string;
-  dailyGoal: { type: 'items' | 'minutes' | 'attempts'; value: number };
+  dailyGoal: { type: "items" | "minutes" | "attempts"; value: number };
   defaultNewItemsPerDay: number;
-  translationMethodPreference: 'auto' | 'dictionary' | 'ai' | null;
-  languages: Array<{ languageCode: string; selfAssessedLevel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | null; systemEstimatedLevel?: string | null; effectiveLevel?: string | null; systemConfidence?: number | null }>;
+  translationMethodPreference: "auto" | "dictionary" | "ai" | null;
+  languages: Array<{
+    languageCode: string;
+    selfAssessedLevel: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | null;
+    systemEstimatedLevel?: string | null;
+    effectiveLevel?: string | null;
+    systemConfidence?: number | null;
+    lastEvaluatedAt?: string | null;
+  }>;
   interests: string[];
 }
 
