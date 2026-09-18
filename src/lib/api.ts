@@ -40,6 +40,10 @@ const messages: Record<string, string> = {
     "חשבון Anthropic דורש הגדרת Billing או קרדיט API פעיל.",
   READING_PROVIDER_PERMISSION:
     "למפתח Anthropic אין הרשאה ל־Workspace או למודל שנבחר.",
+  READING_PROVIDER_WORKSPACE:
+    "ה־Workspace שמוגדר בשרת אינו תואם למפתח Anthropic. יש להסיר או לתקן את ANTHROPIC_WORKSPACE_ID.",
+  READING_PROVIDER_MODEL_ACCESS:
+    "המודל שמוגדר בשרת אינו זמין למפתח Anthropic. יש לבדוק את AI_READING_MODEL.",
   READING_PROVIDER_RATE_LIMIT:
     "מגבלת הבקשות של Anthropic נוצלה כרגע. יש לנסות שוב בעוד רגע.",
   READING_PROVIDER_REQUEST_INVALID:
