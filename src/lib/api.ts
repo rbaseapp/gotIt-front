@@ -44,6 +44,12 @@ const messages: Record<string, string> = {
     "מגבלת הבקשות של Anthropic נוצלה כרגע. יש לנסות שוב בעוד רגע.",
   READING_PROVIDER_REQUEST_INVALID:
     "Anthropic דחה את מבנה הבקשה. יש לבדוק את הגדרות המודל בשרת.",
+  READING_PROVIDER_TIMEOUT:
+    "Anthropic לא השיב בתוך 30 שניות. יש לנסות שוב או לבדוק את זמני התגובה ב־Render.",
+  READING_PROVIDER_RESPONSE_INVALID:
+    "Anthropic החזיר תשובה שהשרת לא הצליח לעבד. יש לבדוק את המודל וה־structured output.",
+  READING_PROVIDER_UPSTREAM:
+    "הבקשה ל־Anthropic נכשלה לפני שהתקבלה תשובה תקינה.",
 };
 
 async function request(
