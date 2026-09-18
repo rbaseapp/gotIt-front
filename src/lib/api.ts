@@ -34,6 +34,16 @@ const messages: Record<string, string> = {
   INVALID_ACCESS_TOKEN: "הכניסה פגה. יש להיכנס מחדש.",
   UNAUTHORIZED: "הכניסה פגה. יש להיכנס מחדש.",
   CORE_AUTH_UNAVAILABLE: "שירות האימות אינו זמין כרגע. נסו שוב בעוד רגע.",
+  READING_PROVIDER_AUTHENTICATION:
+    "Anthropic דחה את מפתח ה־API שמוגדר בשרת. יש להחליף את ANTHROPIC_API_KEY ולבצע Deploy מחדש.",
+  READING_PROVIDER_BILLING:
+    "חשבון Anthropic דורש הגדרת Billing או קרדיט API פעיל.",
+  READING_PROVIDER_PERMISSION:
+    "למפתח Anthropic אין הרשאה ל־Workspace או למודל שנבחר.",
+  READING_PROVIDER_RATE_LIMIT:
+    "מגבלת הבקשות של Anthropic נוצלה כרגע. יש לנסות שוב בעוד רגע.",
+  READING_PROVIDER_REQUEST_INVALID:
+    "Anthropic דחה את מבנה הבקשה. יש לבדוק את הגדרות המודל בשרת.",
 };
 
 async function request(
