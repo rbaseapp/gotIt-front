@@ -34,6 +34,10 @@ const messages: Record<string, string> = {
   INVALID_ACCESS_TOKEN: "הכניסה פגה. יש להיכנס מחדש.",
   UNAUTHORIZED: "הכניסה פגה. יש להיכנס מחדש.",
   CORE_AUTH_UNAVAILABLE: "שירות האימות אינו זמין כרגע. נסו שוב בעוד רגע.",
+  SPEECH_NOT_CONFIGURED: "האזנה והגייה אינן זמינות כרגע לשפת המילה הזו.",
+  SPEECH_UNAVAILABLE: "שירות השמע אינו זמין זמנית. נסו שוב בעוד רגע.",
+  AUDIO_INVALID: "ההקלטה לא נקלטה היטב. נסו להקליט שוב במקום שקט.",
+  SKILL_UNAVAILABLE: "התרגול הזה אינו פעיל כרגע בהעדפות הלמידה.",
   READING_PROVIDER_AUTHENTICATION:
     "Anthropic דחה את מפתח ה־API שמוגדר בשרת. יש להחליף את ANTHROPIC_API_KEY ולבצע Deploy מחדש.",
   READING_PROVIDER_BILLING:

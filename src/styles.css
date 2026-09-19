@@ -1847,33 +1847,69 @@ select:focus-visible {
 .listen-orb span {
   font-size: 9px;
 }
-.letter-slots {
-  display: flex;
-  gap: 7px;
-  color: #93a09a;
-}
-.letter-slots span {
-  min-width: 13px;
-  padding-bottom: 3px;
-  border-bottom: 2px solid #cfd6d1;
-}
 .typing-answer {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 9px;
 }
-.typing-answer input {
+.letter-box-input-wrap {
+  position: relative;
   min-width: 0;
-  height: 49px;
-  padding: 0 15px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  outline: none;
-  font-size: 15px;
+  cursor: text;
 }
-.typing-answer input:focus {
+.letter-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.letter-box {
+  width: 46px;
+  height: 50px;
+  border: 2px solid #d8ded9;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: #fff;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+.letter-box.filled {
+  border-color: #8eb7aa;
+  background: #f8fcfa;
+}
+.letter-box.revealed {
+  color: #a0792d;
+  border-color: #ebce8f;
+  background: #fff9eb;
+}
+.letter-box-input-wrap:focus-within .letter-box.active {
   border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(44, 122, 98, 0.1);
+  box-shadow: 0 0 0 3px rgba(44, 122, 98, 0.12);
+}
+.letter-box-input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: text;
+}
+.letter-box-input:disabled {
+  cursor: default;
+}
+.correction-field .letter-boxes {
+  justify-content: flex-start;
 }
 .hint-button {
   padding: 0 12px;
@@ -3071,6 +3107,15 @@ select:focus-visible {
 }
 
 @media (max-width: 560px) {
+  .letter-boxes {
+    gap: 6px;
+  }
+  .letter-box {
+    width: 40px;
+    height: 44px;
+    border-radius: 9px;
+    font-size: 20px;
+  }
   .topbar {
     height: 64px;
   }

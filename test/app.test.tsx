@@ -167,6 +167,7 @@ describe("complete frontend flows", () => {
     mount("/learn/session/listening?items=wander");
     const user = userEvent.setup();
     const answer = await screen.findByRole("textbox", { name: "התשובה שלך" });
+    expect(document.querySelectorAll(".letter-box")).toHaveLength(6);
     await user.type(answer, "wandr");
     await user.click(screen.getByRole("button", { name: "בדיקה" }));
     expect(screen.getByRole("button", { name: "להמשיך" })).toBeDisabled();

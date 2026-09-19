@@ -37,7 +37,12 @@ const exercise = {
   exerciseType: "recall",
   kind: "typed",
   direction: "translation_to_source",
-  prompt: { text: "לזכור", languageCode: "en", context: null },
+  prompt: {
+    text: "לזכור",
+    languageCode: "en",
+    context: null,
+    letterCount: 8,
+  },
   expiresAt: "2026-09-16T10:00:00.000Z",
 };
 const receipt = {
@@ -142,6 +147,7 @@ describe("live server-backed flows", () => {
     );
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "מתחילים" }));
+    expect(document.querySelectorAll(".letter-box")).toHaveLength(8);
     await user.type(await screen.findByLabelText("התשובה שלך"), "remember");
     await user.click(screen.getByRole("button", { name: "בדיקת תשובה" }));
     const retry = await screen.findByRole("button", {

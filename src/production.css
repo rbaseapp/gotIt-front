@@ -304,6 +304,9 @@ progress::-webkit-progress-value {
   font-size: 20px;
   padding: 16px;
 }
+.live-exercise .letter-box-input {
+  padding: 0;
+}
 .live-exercise .live-options {
   justify-content: center;
   margin: 0;
@@ -336,6 +339,7 @@ progress::-webkit-progress-value {
 .live-feedback p {
   line-height: 1.9;
 }
+
 .live-reading-body {
   font-size: 19px;
   line-height: 2.2;

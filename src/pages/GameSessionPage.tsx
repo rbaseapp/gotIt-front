@@ -28,6 +28,7 @@ import {
   practiceQueue,
 } from "../lib/practice";
 import { CapabilityNotice } from "../components/CapabilityNotice";
+import { LetterBoxesInput } from "../components/LetterBoxesInput";
 import type {
   Attempt,
   GameType,
@@ -227,13 +228,6 @@ function TypedExercise({
         ) : (
           <h1 dir="auto">{item.translation}</h1>
         )}
-        <div className="letter-slots" dir="auto">
-          {Array.from(item.source).map((letter, index) => (
-            <span key={index}>
-              {letter === " " ? " " : index < hints ? letter : "•"}
-            </span>
-          ))}
-        </div>
         {audioError && (
           <p className="form-error" role="alert">
             {audioError}
@@ -247,16 +241,16 @@ function TypedExercise({
           submit();
         }}
       >
-        <input
-          aria-label="התשובה שלך"
+        <LetterBoxesInput
+          label="התשובה שלך"
           autoFocus
           disabled={submitted !== null}
           value={value}
-          onChange={(event) => setValue(event.target.value)}
-          dir="auto"
-          placeholder="הקלידו את המילה"
-          autoComplete="off"
-          spellCheck={false}
+          length={Array.from(item.source).length}
+          revealedValue={Array.from(item.source)
+            .map((letter, index) => (index < hints ? letter : ""))
+            .join("")}
+          onChange={setValue}
         />
         <button
           type="button"
@@ -278,16 +272,16 @@ function TypedExercise({
         </button>
       </form>
       {submitted !== null && quality < 100 && (
-        <label className="field correction-field">
+        <div className="field correction-field">
           <span>הקלידו את המילה הנכונה כדי לחזק את הזיכרון</span>
-          <input
+          <LetterBoxesInput
             autoFocus
-            dir="auto"
+            label="הקלידו את המילה הנכונה כדי לחזק את הזיכרון"
             value={correction}
-            onChange={(event) => setCorrection(event.target.value)}
-            placeholder={item.source}
+            length={Array.from(item.source).length}
+            onChange={setCorrection}
           />
-        </label>
+        </div>
       )}
       {submitted !== null && (
         <Feedback

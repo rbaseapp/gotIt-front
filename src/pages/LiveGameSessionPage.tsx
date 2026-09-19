@@ -8,6 +8,7 @@ import {
 import { z } from "zod";
 import { ArrowRight, Mic, Volume2 } from "lucide-react";
 import { Logo } from "../components/Logo";
+import { LetterBoxesInput } from "../components/LetterBoxesInput";
 import { api } from "../lib/api";
 import {
   attemptReceipt,
@@ -70,6 +71,7 @@ export function LiveGameSessionPage() {
     };
   }, []);
   useEffect(() => {
+    audio.current?.pause();
     shownAt.current = performance.now();
   }, [exercise?.id]);
   useEffect(() => {
@@ -498,19 +500,31 @@ export function LiveGameSessionPage() {
                           void submit({ answerText: answer });
                         }}
                       >
-                        <label className="field">
+                        <div className="field">
                           <span>התשובה שלך</span>
-                          <input
-                            autoFocus
-                            dir="auto"
-                            maxLength={2000}
-                            autoComplete="off"
-                            spellCheck={false}
-                            value={answer}
-                            disabled={busy || !!pending}
-                            onChange={(e) => setAnswer(e.target.value)}
-                          />
-                        </label>
+                          {exercise.prompt.letterCount ? (
+                            <LetterBoxesInput
+                              autoFocus
+                              label="התשובה שלך"
+                              value={answer}
+                              length={exercise.prompt.letterCount}
+                              disabled={busy || !!pending}
+                              onChange={setAnswer}
+                            />
+                          ) : (
+                            <input
+                              autoFocus
+                              aria-label="התשובה שלך"
+                              dir="auto"
+                              maxLength={2000}
+                              autoComplete="off"
+                              spellCheck={false}
+                              value={answer}
+                              disabled={busy || !!pending}
+                              onChange={(e) => setAnswer(e.target.value)}
+                            />
+                          )}
+                        </div>
                         <button
                           className="button primary"
                           disabled={!answer.trim() || busy || !!pending}
@@ -551,6 +565,9 @@ export function LiveGameSessionPage() {
                     <h2>{labels[receipt.attempt.result]}</h2>
                     {receipt.attempt.expectedAnswer && (
                       <p dir="auto">תשובה: {receipt.attempt.expectedAnswer}</p>
+                    )}
+                    {receipt.attempt.pronunciationFeedback && (
+                      <p>{receipt.attempt.pronunciationFeedback}</p>
                     )}
                     <p>
                       ציון מהשרת: {receipt.attempt.score ?? "ללא ציון"} ·{" "}

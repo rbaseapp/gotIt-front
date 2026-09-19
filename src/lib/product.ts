@@ -238,6 +238,7 @@ export const attemptReceipt = z.object({
     score: score.nullable(),
     expectedAnswer: z.string().nullable(),
     xpEarned: count,
+    pronunciationFeedback: z.string().max(2000).optional(),
   }),
   progress: z.object({
     status,
