@@ -25,6 +25,7 @@ import {
   type Session,
 } from "../lib/product";
 import { recordVoice } from "../lib/voice";
+import { useApp } from "../context/AppContext";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -40,6 +41,7 @@ export function LiveGameSessionPage() {
   const { type = "" } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { profile, updateProfile } = useApp();
   const [session, setSession] = useState<Session>();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [index, setIndex] = useState(0);
@@ -106,6 +108,28 @@ export function LiveGameSessionPage() {
     setBusy(true);
     setError("");
     try {
+      const requiredSkills =
+        type === "listening"
+          ? (["listening", "spelling"] as const)
+          : type === "pronunciation"
+            ? (["pronunciation"] as const)
+            : [];
+      const enabledSkills = profile.learningPreferences?.enabledSkills || [
+        "recognition",
+        "recall",
+        "listening",
+        "spelling",
+        "pronunciation",
+      ];
+      const missingSkills = requiredSkills.filter(
+        (skill) => !enabledSkills.includes(skill),
+      );
+      if (missingSkills.length)
+        await updateProfile({
+          learningPreferences: {
+            enabledSkills: [...enabledSkills, ...missingSkills],
+          },
+        });
       let value = session;
       if (!value) {
         const resume = params.get("resume");

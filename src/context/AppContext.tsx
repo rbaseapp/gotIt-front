@@ -36,6 +36,15 @@ const defaultProfile: UserProfile = {
   dailyGoal: { type: "items", value: 20 },
   defaultNewItemsPerDay: 10,
   translationMethodPreference: "auto",
+  learningPreferences: {
+    enabledSkills: [
+      "recognition",
+      "recall",
+      "listening",
+      "spelling",
+      "pronunciation",
+    ],
+  },
   languages: [],
   interests: [],
 };

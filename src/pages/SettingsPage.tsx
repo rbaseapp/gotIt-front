@@ -389,7 +389,9 @@ export function SettingsPage() {
                         ?.enabledSkills || [
                         "recognition",
                         "recall",
+                        "listening",
                         "spelling",
+                        "pronunciation",
                       ];
                       return (
                         <label key={skill} className="live-checkbox">

@@ -72,13 +72,15 @@ const json = (body: unknown, status = 200) =>
 function mount(
   path: string,
   handler: (url: string, init?: RequestInit) => Promise<Response>,
+  profile = seedProfile,
 ) {
   clearTokens();
   vi.stubEnv("VITE_DEMO_MODE", "false");
   setTokens({ accessToken: "access", refreshToken: "refresh", expiresIn: 900 });
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     if (url.endsWith("/auth/me")) return json({ user: identity });
-    if (url.endsWith("/profile")) return json({ profile: seedProfile });
+    if (url.endsWith("/profile") && (!init?.method || init.method === "GET"))
+      return json({ profile });
     return handler(url, init);
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -198,6 +200,79 @@ describe("live server-backed flows", () => {
     await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
     expect(screen.getByText("13")).toBeInTheDocument();
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
+  });
+  it("enables pronunciation in an existing profile before creating its live session", async () => {
+    const legacyProfile = {
+      ...seedProfile,
+      learningPreferences: {
+        enabledSkills: ["recognition", "recall", "spelling"] as const,
+      },
+    };
+    const requestOrder: string[] = [];
+    const fetchMock = mount(
+      "/learn/session/pronunciation?items=" + itemId,
+      async (url, init) => {
+        if (url.endsWith("/profile") && init?.method === "PATCH") {
+          requestOrder.push("profile");
+          const body = JSON.parse(String(init.body));
+          expect(body.learningPreferences.enabledSkills).toEqual([
+            "recognition",
+            "recall",
+            "spelling",
+            "pronunciation",
+          ]);
+          return json({
+            profile: {
+              ...legacyProfile,
+              learningPreferences: body.learningPreferences,
+            },
+          });
+        }
+        if (url.endsWith("/practice/sessions")) {
+          requestOrder.push("session");
+          return json({
+            session: { ...session, sessionType: "pronunciation" },
+          });
+        }
+        if (url.endsWith("/exercises")) {
+          requestOrder.push("exercises");
+          return json(
+            {
+              exercises: [
+                {
+                  ...exercise,
+                  exerciseType: "pronunciation",
+                  kind: "provider",
+                  direction: "source_to_translation",
+                  prompt: {
+                    text: "remember",
+                    languageCode: "en",
+                    context: null,
+                    audioUrl: `/api/v1/learning-items/${itemId}/audio`,
+                    letterCount: 8,
+                  },
+                },
+              ],
+              algorithmVersion: "server-v1",
+            },
+            201,
+          );
+        }
+        throw new Error("Unexpected route");
+      },
+      legacyProfile,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /מתחילים/u }));
+    expect(
+      await screen.findByRole("heading", { name: "remember" }),
+    ).toBeInTheDocument();
+    expect(requestOrder).toEqual(["profile", "session", "exercises"]);
+    expect(
+      fetchMock.mock.calls.filter(
+        ([url, init]) => url.endsWith("/profile") && init?.method === "PATCH",
+      ),
+    ).toHaveLength(1);
   });
   it("records a reading only on explicit opening and offers a server quiz afterward", async () => {
     const reading = {
