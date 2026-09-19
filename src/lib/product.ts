@@ -230,7 +230,7 @@ export const attemptReceipt = z.object({
     sequence: count,
     result: z.enum([
       "correct",
-      "partial",
+      "partially_correct",
       "incorrect",
       "skipped",
       "self_rated",
@@ -404,7 +404,7 @@ export const labels: Record<string, string> = {
   matching: "התאמה",
   article_quiz: "תרגול מתוך קריאה",
   correct: "נכון",
-  partial: "נכון חלקית",
+  partially_correct: "נכון חלקית",
   incorrect: "דורש חזרה",
   skipped: "דילוג",
   self_rated: "דירוג עצמי",

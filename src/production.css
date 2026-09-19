@@ -330,7 +330,7 @@ progress::-webkit-progress-value {
 .live-feedback.incorrect {
   background: #fff0ea;
 }
-.live-feedback.partial {
+.live-feedback.partially_correct {
   background: #fff6df;
 }
 .live-feedback p {

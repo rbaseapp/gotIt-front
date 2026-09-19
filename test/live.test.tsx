@@ -46,7 +46,7 @@ const receipt = {
     learningItemId: itemId,
     sessionId,
     sequence: 1,
-    result: "partial",
+    result: "partially_correct",
     score: 70,
     expectedAnswer: "remember",
     xpEarned: 3,
@@ -60,7 +60,7 @@ const receipt = {
   },
   skills: [],
   algorithmVersion: "server-v1",
-  replayed: false,
+  replayed: true,
 };
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status });
