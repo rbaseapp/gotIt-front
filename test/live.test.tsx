@@ -100,6 +100,34 @@ function mount(
 }
 afterEach(clearTokens);
 describe("live server-backed flows", () => {
+  it("keeps speech games available when the provider is configured and profile languages are empty", async () => {
+    mount("/learn", async (url) => {
+      if (url.endsWith("/capabilities"))
+        return json({
+          configured: {
+            library: true,
+            practice: true,
+            dashboard: true,
+            readingGeneration: true,
+            speech: true,
+          },
+          learningLanguages: [],
+        });
+      if (url.includes("/learning/queue"))
+        return json({ items: [], algorithmVersion: "server-v1" });
+      if (url.includes("/practice/sessions"))
+        return json({ items: [], nextCursor: null });
+      throw new Error("Unexpected route");
+    });
+    await waitFor(() =>
+      expect(
+        document.querySelector('a[href="/learn/session/listening"]'),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      document.querySelector('a[href="/learn/session/pronunciation"]'),
+    ).toBeInTheDocument();
+  });
   it("does not hydrate a persisted demo when production demo mode is disabled", async () => {
     localStorage.setItem("gotit.mode", JSON.stringify("demo"));
     vi.stubEnv("VITE_DEMO_MODE", "false");
