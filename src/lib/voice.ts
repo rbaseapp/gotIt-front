@@ -28,7 +28,10 @@ export function encodeWav(samples: Float32Array): Uint8Array {
   });
   return bytes;
 }
-export async function recordVoice(signal: AbortSignal): Promise<string> {
+export async function recordVoice(
+  signal: AbortSignal,
+  releaseSignal: AbortSignal,
+): Promise<string> {
   if (
     !window.isSecureContext ||
     !navigator.mediaDevices?.getUserMedia ||
@@ -58,14 +61,19 @@ export async function recordVoice(signal: AbortSignal): Promise<string> {
         if (recorder.state !== "inactive") recorder.stop();
         reject(new Error("ההקלטה בוטלה."));
       };
+      const release = () => {
+        if (recorder.state !== "inactive") recorder.stop();
+      };
       const timer = setTimeout(() => {
         if (recorder.state !== "inactive") recorder.stop();
       }, 6000);
       const clean = () => {
         clearTimeout(timer);
         signal.removeEventListener("abort", abort);
+        releaseSignal.removeEventListener("abort", release);
       };
       signal.addEventListener("abort", abort, { once: true });
+      releaseSignal.addEventListener("abort", release, { once: true });
       recorder.ondataavailable = (event) => {
         size += event.data.size;
         if (size > 1000000) {
@@ -84,9 +92,11 @@ export async function recordVoice(signal: AbortSignal): Promise<string> {
         reject(new Error("לא ניתן להקליט. בדקו הרשאת מיקרופון."));
       };
       recorder.start(250);
+      if (releaseSignal.aborted) queueMicrotask(release);
     });
     stream.getTracks().forEach((track) => track.stop());
     if (signal.aborted) throw new Error("ההקלטה בוטלה.");
+    if (!blob.size) throw new Error("ההקלטה קצרה מדי.");
     audioContext = new AudioContext();
     const decoded = await audioContext.decodeAudioData(
       await blob.arrayBuffer(),

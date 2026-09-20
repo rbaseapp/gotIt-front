@@ -1959,6 +1959,15 @@ select:focus-visible {
 .record-button.recording {
   animation: pulse 1.2s infinite;
 }
+.hold-to-talk {
+  min-width: 230px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.hold-to-talk.recording {
+  animation: pulse 1.2s infinite;
+}
 .record-button i {
   position: absolute;
   inset: 0;

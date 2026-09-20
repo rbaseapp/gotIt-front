@@ -59,6 +59,7 @@ export function LiveGameSessionPage() {
   const lock = useRef(false);
   const mounted = useRef(true);
   const recordingController = useRef<AbortController | undefined>(undefined);
+  const recordingRelease = useRef<AbortController | undefined>(undefined);
   const audio = useRef<HTMLAudioElement | undefined>(undefined);
   const audioUrl = useRef<string | undefined>(undefined);
   const shownAt = useRef(performance.now());
@@ -260,19 +261,27 @@ export function LiveGameSessionPage() {
   const record = async () => {
     if (recording || pending || busy) return;
     const controller = new AbortController();
+    const release = new AbortController();
     recordingController.current = controller;
+    recordingRelease.current = release;
     setRecording(true);
     setError("");
     try {
-      const audioBase64 = await recordVoice(controller.signal);
+      const audioBase64 = await recordVoice(controller.signal, release.signal);
       if (mounted.current)
         await submit({ audioBase64 }, "pronunciation/assessments");
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
     } finally {
+      if (recordingController.current === controller) {
+        recordingController.current = undefined;
+        recordingRelease.current = undefined;
+      }
       if (mounted.current) setRecording(false);
     }
   };
+  const releaseRecording = () => recordingRelease.current?.abort();
+  const cancelRecording = () => recordingController.current?.abort();
   if (!modes[type])
     return (
       <div className="empty-session">
@@ -496,21 +505,52 @@ export function LiveGameSessionPage() {
                     ) : exercise.kind === "provider" ? (
                       <>
                         <p>
-                          הקלטה זמנית של עד 6 שניות נשלחת לספק ההגייה דרך השרת.
-                          האתר אינו שומר את הקובץ.
+                          לחצו והחזיקו כדי לדבר; שחררו כדי לשלוח להערכה. ההקלטה
+                          מוגבלת ל־6 שניות והאתר אינו שומר את הקובץ.
                         </p>
                         <button
-                          className="button primary"
-                          disabled={busy || recording || !!pending}
-                          onClick={() => void record()}
+                          className={`button primary hold-to-talk${recording ? " recording" : ""}`}
+                          disabled={busy || !!pending}
+                          aria-pressed={recording}
+                          onPointerDown={(event) => {
+                            if (event.button !== 0) return;
+                            event.preventDefault();
+                            event.currentTarget.setPointerCapture(
+                              event.pointerId,
+                            );
+                            void record();
+                          }}
+                          onPointerUp={(event) => {
+                            event.preventDefault();
+                            releaseRecording();
+                          }}
+                          onPointerCancel={cancelRecording}
+                          onKeyDown={(event) => {
+                            if (
+                              (event.key === " " || event.key === "Enter") &&
+                              !event.repeat
+                            ) {
+                              event.preventDefault();
+                              void record();
+                            }
+                          }}
+                          onKeyUp={(event) => {
+                            if (event.key === " " || event.key === "Enter") {
+                              event.preventDefault();
+                              releaseRecording();
+                            }
+                          }}
+                          onContextMenu={(event) => event.preventDefault()}
                         >
                           <Mic size={19} />
-                          {recording ? "מקליט…" : "הקלטה ושליחה להערכה"}
+                          {recording
+                            ? "שחררו כדי לשלוח"
+                            : "לחצו והחזיקו כדי לדבר"}
                         </button>
                         {recording && (
                           <button
                             className="button ghost"
-                            onClick={() => recordingController.current?.abort()}
+                            onClick={cancelRecording}
                           >
                             ביטול הקלטה
                           </button>

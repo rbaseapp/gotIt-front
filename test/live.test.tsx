@@ -7,6 +7,9 @@ import App from "../src/App";
 import { AppProvider } from "../src/context/AppContext";
 import { clearTokens, setTokens } from "../src/lib/api";
 import { seedProfile } from "../src/data/seed";
+import { recordVoice } from "../src/lib/voice";
+
+vi.mock("../src/lib/voice", () => ({ recordVoice: vi.fn() }));
 const itemId = "11111111-1111-4111-8111-111111111111";
 const sessionId = "22222222-2222-4222-8222-222222222222";
 const exerciseId = "33333333-3333-4333-8333-333333333333";
@@ -273,6 +276,20 @@ describe("live server-backed flows", () => {
         ([url, init]) => url.endsWith("/profile") && init?.method === "PATCH",
       ),
     ).toHaveLength(1);
+    let releaseSignal: AbortSignal | undefined;
+    vi.mocked(recordVoice).mockImplementation(async (_cancel, release) => {
+      releaseSignal = release;
+      return new Promise<string>(() => {});
+    });
+    const holdButton = screen.getByRole("button", {
+      name: /לחצו והחזיקו כדי לדבר/u,
+    });
+    Object.assign(holdButton, { setPointerCapture: vi.fn() });
+    fireEvent.pointerDown(holdButton, { button: 0, pointerId: 7 });
+    await waitFor(() => expect(recordVoice).toHaveBeenCalledOnce());
+    expect(releaseSignal?.aborted).toBe(false);
+    fireEvent.pointerUp(holdButton, { button: 0, pointerId: 7 });
+    expect(releaseSignal?.aborted).toBe(true);
   });
   it("records a reading only on explicit opening and offers a server quiz afterward", async () => {
     const reading = {

@@ -108,8 +108,21 @@ export function LiveLearnPage() {
       <div className="game-grid">
         {games.map(({ icon: Icon, ...game }) => {
           const providerMode = ["listening", "pronunciation"].includes(game.id);
+          const requiredSkill =
+            game.id === "listening"
+              ? "listening"
+              : game.id === "pronunciation"
+                ? "pronunciation"
+                : null;
           const available =
-            !providerMode || capabilities.data?.configured.speech;
+            !providerMode ||
+            Boolean(
+              capabilities.data?.configured.speech &&
+              requiredSkill &&
+              capabilities.data.learningLanguages.some((language) =>
+                language.enabledSkills.includes(requiredSkill),
+              ),
+            );
           return available ? (
             <Link
               className="game-card"
