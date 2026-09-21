@@ -69,6 +69,11 @@ export function validateProfile(profile: ProfilePatch): string | null {
     )
       return "יש לבחור לפחות כישור אחד, ללא כפילויות";
     if (
+      profile.defaultSourceLanguage !== null &&
+      !canonicalLanguage(profile.defaultSourceLanguage)
+    )
+      return "יש לבחור שפת מקור תקינה או זיהוי אוטומטי";
+    if (
       profile.defaultTranslationLanguage !== null &&
       !canonicalLanguage(profile.defaultTranslationLanguage)
     )
@@ -130,6 +135,10 @@ export function parseProfile(payload: unknown): ProfilePatch {
     ...(value.learningPreferences !== undefined
       ? { learningPreferences: object(value.learningPreferences) }
       : {}),
+    defaultSourceLanguage:
+      value.defaultSourceLanguage === undefined || value.defaultSourceLanguage === null
+        ? null
+        : text(value.defaultSourceLanguage),
     defaultTranslationLanguage:
       value.defaultTranslationLanguage === null
         ? null
@@ -202,6 +211,7 @@ export function profilePayload(profile: ProfilePatch): ProfilePatch {
           },
         }
       : {}),
+    defaultSourceLanguage: profile.defaultSourceLanguage,
     defaultTranslationLanguage: profile.defaultTranslationLanguage,
     timezone: profile.timezone,
     dailyGoal: { ...profile.dailyGoal },

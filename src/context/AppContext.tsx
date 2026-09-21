@@ -31,6 +31,7 @@ import type {
 const defaultProfile: UserProfile = {
   name: "",
   email: "",
+  defaultSourceLanguage: null,
   defaultTranslationLanguage: null,
   timezone: "UTC",
   dailyGoal: { type: "items", value: 20 },

@@ -98,6 +98,8 @@ export interface UserProfile {
   learningPreferences?: { enabledSkills: SkillKey[] };
   name: string;
   email: string;
+  /** Null delegates source-language detection to the translation provider. */
+  defaultSourceLanguage: string | null;
   defaultTranslationLanguage: string | null;
   timezone: string;
   dailyGoal: { type: "items" | "minutes" | "attempts"; value: number };

@@ -51,6 +51,7 @@ describe("documented Core and Profile contracts", () => {
     const result = profilePayload(input);
     expect(result).not.toHaveProperty("name");
     expect(result).not.toHaveProperty("email");
+    expect(result.defaultSourceLanguage).toBe("en");
     expect(result.languages).toEqual([
       { languageCode: "en-US", selfAssessedLevel: "C2" },
     ]);

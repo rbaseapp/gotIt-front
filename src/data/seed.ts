@@ -336,6 +336,7 @@ export const seedItems: LearningItem[] = [
 export const seedProfile: UserProfile = {
   name: "אורי",
   email: "ori@example.com",
+  defaultSourceLanguage: "en",
   defaultTranslationLanguage: "he",
   timezone: "Asia/Jerusalem",
   dailyGoal: { type: "items", value: 10 },

@@ -16,6 +16,7 @@ import { validateProfile } from "../lib/contracts";
 import { Modal } from "../components/Modal";
 import type { UserProfile } from "../types";
 import { labels } from "../lib/product";
+import { LANGUAGE_OPTIONS } from "../lib/languages";
 
 export function SettingsPage() {
   const {
@@ -177,20 +178,45 @@ export function SettingsPage() {
                 </div>
               </div>
               <label className="field">
-                <span>שפת תרגום מועדפת — קוד BCP-47</span>
-                <input
+                <span>שפת מקור מועדפת</span>
+                <select
+                  value={form.defaultSourceLanguage || ""}
+                  onChange={(event) =>
+                    patch({
+                      defaultSourceLanguage: event.target.value || null,
+                    })
+                  }
+                >
+                  <option value="">זיהוי אוטומטי באמצעות Google</option>
+                  {LANGUAGE_OPTIONS.map(([code, label]) => (
+                    <option value={code} key={code}>
+                      {label} · {code}
+                    </option>
+                  ))}
+                </select>
+                <small className="muted-note">
+                  במצב אוטומטי הטקסט עצמו נשלח לזיהוי; שפת האתר אינה משמשת כרמז.
+                </small>
+              </label>
+              <label className="field">
+                <span>שפת תרגום מועדפת</span>
+                <select
                   value={form.defaultTranslationLanguage || ""}
                   onChange={(event) =>
                     patch({
                       defaultTranslationLanguage: event.target.value || null,
                     })
                   }
-                  dir="ltr"
-                  placeholder="he · en · fr · pt-BR"
-                  maxLength={64}
-                />
+                >
+                  <option value="" disabled>בחירת שפת תרגום</option>
+                  {LANGUAGE_OPTIONS.map(([code, label]) => (
+                    <option value={code} key={code}>
+                      {label} · {code}
+                    </option>
+                  ))}
+                </select>
                 <small className="muted-note">
-                  אפשר להשאיר ריק. שינוי ברירת המחדל לא משנה מילים קיימות.
+                  שינוי ברירת המחדל לא משנה מילים קיימות.
                 </small>
               </label>
               <div className="language-editor">

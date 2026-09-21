@@ -11,6 +11,7 @@ import {
   type Intent,
 } from "../lib/product";
 import { Modal } from "./Modal";
+import { LANGUAGE_OPTIONS } from "../lib/languages";
 
 export function LiveCaptureModal({
   open,
@@ -37,7 +38,7 @@ function CaptureForm({
   const { profile } = useApp();
   const [source, setSource] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState(
-    profile.languages[0]?.languageCode || "en",
+    profile.defaultSourceLanguage || "",
   );
   const [targetLanguage, setTargetLanguage] = useState(
     profile.defaultTranslationLanguage || "he",
@@ -63,7 +64,7 @@ function CaptureForm({
   const pendingRef = useRef<Intent | undefined>(undefined);
   const input = {
     selectedText: source,
-    sourceLanguageCode: sourceLanguage,
+    ...(sourceLanguage ? { sourceLanguageCode: sourceLanguage } : {}),
     translationLanguageCode: targetLanguage,
     translationMethod: method,
     context: {
@@ -200,22 +201,31 @@ function CaptureForm({
         </label>
         <div className="live-form-grid">
           <label className="field">
-            <span>קוד שפת המקור</span>
-            <input
-              dir="ltr"
-              maxLength={64}
+            <span>שפת המקור</span>
+            <select
               value={sourceLanguage}
               onChange={(e) => setSourceLanguage(e.target.value)}
-            />
+            >
+              <option value="">זיהוי אוטומטי (Google)</option>
+              {LANGUAGE_OPTIONS.map(([code, label]) => (
+                <option value={code} key={code}>
+                  {label} · {code}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="field">
-            <span>קוד שפת התרגום</span>
-            <input
-              dir="ltr"
-              maxLength={64}
+            <span>שפת התרגום</span>
+            <select
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
-            />
+            >
+              {LANGUAGE_OPTIONS.map(([code, label]) => (
+                <option value={code} key={code}>
+                  {label} · {code}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
         <label className="field">
@@ -264,9 +274,7 @@ function CaptureForm({
         <button
           type="button"
           className="button secondary"
-          disabled={
-            !source.trim() || !sourceLanguage.trim() || !targetLanguage.trim()
-          }
+          disabled={!source.trim() || !targetLanguage.trim()}
           onClick={() => void runPreview()}
         >
           בדיקת תרגום ומשמעויות
