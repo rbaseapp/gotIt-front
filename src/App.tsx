@@ -124,8 +124,8 @@ export default function App() {
                   }
                 />
                 <Route path="/transfer" element={<TransferPage />} />
-                <Route path="/billing" element={<BillingPage />} />
-                <Route path="/billing/checkout" element={<BillingCheckoutPage />} />
+                <Route path="/billing" element={mode === "live" ? <BillingPage /> : <Navigate to="/dashboard" replace />} />
+                <Route path="/billing/checkout" element={mode === "live" ? <BillingCheckoutPage /> : <Navigate to="/dashboard" replace />} />
                 <Route path="/help" element={<HelpPage />} />
                 <Route
                   path="*"

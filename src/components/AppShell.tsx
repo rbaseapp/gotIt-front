@@ -70,7 +70,7 @@ export function AppShell({
           מילה חדשה
         </button>
         <nav className="sidebar-nav" aria-label="ניווט ראשי">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {navItems.filter((item) => item.to !== "/billing" || mode === "live").map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

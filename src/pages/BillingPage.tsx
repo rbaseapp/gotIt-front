@@ -3,6 +3,15 @@ import { Check, CreditCard, LoaderCircle } from "lucide-react";
 import { billing } from "../lib/billing";
 import { useResource } from "../lib/useResource";
 
+const entitlementLabels: Record<string, string> = {
+  vocabulary: "אוצר מילים אישי",
+  "practice.basic": "תרגול בסיסי",
+  dashboard: "מעקב התקדמות",
+  "reading.ai": "קריאה אישית עם AI",
+  "speech.audio": "תרגול האזנה",
+  "speech.pronunciation": "הערכת הגייה",
+};
+
 export function BillingPage() {
   const status = useResource(useCallback(() => billing.status(), []));
   const plans = useResource(useCallback(() => billing.plans(), []));
@@ -44,8 +53,7 @@ export function BillingPage() {
             <h2>{plan.name}</h2>
             <strong className="billing-price">{plan.amountMinor === null ? "חינם" : new Intl.NumberFormat("he-IL", { style: "currency", currency: plan.currencyCode! }).format(plan.amountMinor / 100)}</strong>
             {plan.billingInterval && <small>{plan.billingInterval === "year" ? "לשנה" : "לחודש"}</small>}
-            <ul>{(plan.kind === "paid" ? ["קריאה אישית עם AI", "שמע והערכת הגייה", "כל יכולות הלמידה הבסיסיות"] : ["אוצר מילים אישי", "תרגול בסיסי", "מעקב התקדמות"])
-              .map((feature) => <li key={feature}><Check size={16} /> {feature}</li>)}</ul>
+            <ul>{plan.entitlements.map((feature) => <li key={feature}><Check size={16} /> {entitlementLabels[feature] || feature}</li>)}</ul>
             {plan.kind === "paid" && status.data?.tier !== "paid" && <button className="button primary" disabled={!!busy} onClick={() => void redirect("checkout", plan.key)}>
               {busy === plan.key ? "מעבירים לתשלום…" : "שדרוג ל־Pro"}</button>}
             {status.data?.plan.key === plan.key && <span className="status-chip active">התוכנית הנוכחית</span>}

@@ -10,6 +10,7 @@ const plan = z.object({
   amountMinor: z.number().int().nonnegative().nullable(),
   currencyCode: z.string().length(3).nullable(),
   billingInterval: z.enum(["month", "year"]).nullable(),
+  entitlements: z.array(z.string()),
 });
 export const billingPlansSchema = z.object({ plans: z.array(plan) });
 export const billingStatusSchema = z.object({
