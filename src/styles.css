@@ -3491,11 +3491,81 @@ select:focus-visible {
   gap: 24px;
   margin-bottom: 22px;
 }
-.billing-current h2 { margin: 4px 0; }
-.billing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.billing-plan { display: grid; align-content: start; gap: 14px; }
-.billing-plan.paid { border-color: #91bda4; box-shadow: 0 12px 35px rgba(44, 122, 98, 0.12); }
-.billing-price { font-size: 30px; color: var(--green-dark); }
+.billing-current h2 {
+  margin: 4px 0;
+}
+.billing-heading {
+  margin-bottom: 18px;
+}
+.billing-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.billing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 20px;
+}
+.billing-plan {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto auto;
+  align-content: start;
+  gap: 14px;
+  min-height: 470px;
+  overflow: hidden;
+}
+.billing-plan.featured {
+  border: 2px solid #68a88d;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(226, 244, 236, 0.72),
+      rgba(255, 255, 255, 0) 150px
+    ),
+    var(--surface);
+  box-shadow: 0 18px 45px rgba(44, 122, 98, 0.15);
+}
+.billing-plan-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.billing-plan-heading h2 {
+  margin: 4px 0 0;
+  font-size: 28px;
+}
+.billing-recommended {
+  flex: none;
+  padding: 6px 11px;
+  border-radius: 999px;
+  color: white;
+  background: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+}
+.billing-plan-description {
+  min-height: 48px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.billing-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 48px;
+}
+.billing-price {
+  font-size: 32px;
+  color: var(--green-dark);
+}
+.billing-price-row small {
+  color: var(--text-muted);
+}
 .billing-interval-toggle {
   display: inline-flex;
   width: fit-content;
@@ -3523,12 +3593,88 @@ select:focus-visible {
   color: var(--green-dark);
   background: rgba(44, 122, 98, 0.08);
 }
-.billing-plan ul { list-style: none; padding: 0; margin: 4px 0; display: grid; gap: 10px; }
-.billing-plan li { display: flex; align-items: center; gap: 8px; }
-.billing-plan li svg { color: var(--green); }
+.billing-plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.billing-plan li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.billing-plan li svg {
+  color: var(--green);
+}
+.billing-upgrade-button {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.billing-checkout-note {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.billing-assurance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+.billing-assurance > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+}
+.billing-assurance svg {
+  flex: none;
+  color: var(--green);
+}
+.billing-assurance span {
+  display: grid;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.billing-assurance strong {
+  color: var(--text);
+  font-size: 14px;
+}
+.billing-legal-note {
+  margin: 16px auto 0;
+  max-width: 850px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.6;
+}
+.billing-legal-note a {
+  color: var(--green-dark);
+  font-weight: 700;
+}
 @media (max-width: 760px) {
-  .billing-grid { grid-template-columns: 1fr; }
-  .billing-current { align-items: flex-start; flex-direction: column; }
+  .billing-grid {
+    grid-template-columns: 1fr;
+  }
+  .billing-current {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .billing-plan {
+    min-height: 0;
+  }
+  .billing-assurance {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Complete product flows, accessible states and responsive additions. */

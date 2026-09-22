@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, CreditCard, LoaderCircle } from "lucide-react";
+import {
+  Check,
+  CreditCard,
+  LoaderCircle,
+  ReceiptText,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { billing, type BillingPlan } from "../lib/billing";
 import {
@@ -11,33 +18,64 @@ import { useResource } from "../lib/useResource";
 
 const entitlementLabels: Record<string, string> = {
   vocabulary: "אוצר מילים אישי",
-  "practice.basic": "תרגול בסיסי",
-  dashboard: "מעקב התקדמות",
-  "reading.ai": "קריאה אישית עם AI",
-  "speech.audio": "תרגול האזנה",
-  "speech.pronunciation": "הערכת הגייה",
+  "practice.basic": "תרגול בסיסי ללא הגבלה",
+  dashboard: "מעקב אחר ההתקדמות",
+  "reading.ai": "תרגול קריאה אישי עם AI",
+  "speech.audio": "תרגול האזנה מתקדם",
+  "speech.pronunciation": "הערכת הגייה ומשוב",
 };
 
 type BillingInterval = "month" | "year";
+type DisplayPlan = Pick<
+  BillingPlan,
+  "key" | "name" | "kind" | "billingInterval" | "entitlements"
+>;
+
+const freeFallback: DisplayPlan = {
+  key: "free",
+  name: "GotIt Free",
+  kind: "free",
+  billingInterval: null,
+  entitlements: ["vocabulary", "practice.basic", "dashboard"],
+};
+
+const proMonthlyFallback: DisplayPlan = {
+  key: "pro-monthly",
+  name: "GotIt Pro",
+  kind: "paid",
+  billingInterval: "month",
+  entitlements: [
+    "vocabulary",
+    "practice.basic",
+    "dashboard",
+    "reading.ai",
+    "speech.audio",
+    "speech.pronunciation",
+  ],
+};
 
 export function BillingPage() {
   const { profile } = useApp();
   const status = useResource(useCallback(() => billing.status(), []));
   const plans = useResource(useCallback(() => billing.plans(), []));
   const [interval, setInterval] = useState<BillingInterval>("month");
-  const [localizedPrices, setLocalizedPrices] = useState<Record<string, string>>({});
-  const [pricing, setPricing] = useState(false);
+  const [localizedPrices, setLocalizedPrices] = useState<
+    Record<string, string>
+  >({});
+  const [pricing, setPricing] = useState(true);
   const [pricingError, setPricingError] = useState("");
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const checkoutCompleted =
     new URLSearchParams(window.location.search).get("checkout") === "success";
 
-  const paidPlans = useMemo(
-    () => plans.data?.plans.filter((plan) => plan.kind === "paid") ?? [],
-    [plans.data],
-  );
-  const freePlan = plans.data?.plans.find((plan) => plan.kind === "free");
+  const paidPlans = useMemo<DisplayPlan[]>(() => {
+    const configured =
+      plans.data?.plans.filter((plan) => plan.kind === "paid") ?? [];
+    return configured.length ? configured : [proMonthlyFallback];
+  }, [plans.data]);
+  const freePlan =
+    plans.data?.plans.find((plan) => plan.kind === "free") ?? freeFallback;
   const selectedPaidPlan =
     paidPlans.find((plan) => plan.billingInterval === interval) ?? paidPlans[0];
   const availableIntervals = new Set(
@@ -45,13 +83,11 @@ export function BillingPage() {
   );
 
   useEffect(() => {
-    if (!paidPlans.length) return;
     if (!paidPlans.some((plan) => plan.billingInterval === interval))
       setInterval(paidPlans[0]!.billingInterval || "month");
   }, [paidPlans, interval]);
 
   useEffect(() => {
-    if (!paidPlans.length) return;
     let cancelled = false;
     setPricing(true);
     setPricingError("");
@@ -64,7 +100,7 @@ export function BillingPage() {
           return priceId ? [{ plan, priceId }] : [];
         });
         if (!previewable.length)
-          throw new Error("לא נמצא מחיר Paddle עבור תוכנית ה־Pro.");
+          throw new Error("לא נמצא מחיר Paddle עבור תוכנית Pro.");
         const result = await paddle.PricePreview({
           items: previewable.map(({ priceId }) => ({
             priceId,
@@ -120,7 +156,7 @@ export function BillingPage() {
     }
   };
 
-  const openCheckout = async (plan: BillingPlan) => {
+  const openCheckout = async (plan: DisplayPlan) => {
     setBusy(plan.key);
     setError("");
     try {
@@ -150,12 +186,13 @@ export function BillingPage() {
 
   return (
     <div className="billing-page page-enter">
-      <section className="page-heading-row">
+      <section className="page-heading-row billing-heading">
         <div>
           <p className="eyebrow">המנוי שלך</p>
-          <h1>GotIt Free או Pro</h1>
+          <h1>בחרו את הדרך שמתאימה לכם ללמוד</h1>
           <p>
-            התשלום מאובטח ומנוהל ב־Paddle. פרטי הכרטיס אינם נשמרים ב־GotIt.
+            התחילו בחינם או פתחו את כל יכולות GotIt עם Pro. התשלום מאובטח ומנוהל
+            על ידי Paddle.
           </p>
         </div>
         <CreditCard size={36} />
@@ -167,13 +204,13 @@ export function BillingPage() {
         </p>
       )}
       {(status.loading || plans.loading) && (
-        <p role="status">
+        <p className="billing-loading" role="status">
           <LoaderCircle className="spin" size={20} /> טוענים את פרטי המנוי…
         </p>
       )}
-      {(status.error || plans.error || error || pricingError) && (
+      {(status.error || plans.error || error) && (
         <p className="form-error" role="alert">
-          {status.error || plans.error || error || pricingError}
+          {status.error || plans.error || error}
         </p>
       )}
 
@@ -201,22 +238,25 @@ export function BillingPage() {
       )}
 
       <div className="billing-grid">
-        {freePlan && (
-          <PlanCard
-            plan={freePlan}
-            price="חינם"
-            current={status.data?.plan.key === freePlan.key}
-          />
-        )}
+        <PlanCard
+          plan={freePlan}
+          price="חינם"
+          description="כל מה שצריך כדי להתחיל ללמוד ולבנות הרגל יומי."
+          current={status.data?.plan.key === freePlan.key}
+        />
 
         {selectedPaidPlan && (
           <PlanCard
             plan={selectedPaidPlan}
-            price={
-              localizedPrices[selectedPaidPlan.key]
-            }
+            price={localizedPrices[selectedPaidPlan.key]}
+            description="כל יכולות הלמידה המתקדמות, הקריאה והדיבור במקום אחד."
             loadingPrice={pricing}
-            current={status.data?.plan.key === selectedPaidPlan.key}
+            priceError={pricingError}
+            featured
+            current={
+              status.data?.tier === "paid" &&
+              status.data.plan.key === selectedPaidPlan.key
+            }
             intervals={availableIntervals}
             selectedInterval={interval}
             onIntervalChange={setInterval}
@@ -224,10 +264,7 @@ export function BillingPage() {
               status.data?.tier !== "paid"
                 ? {
                     busy: busy === selectedPaidPlan.key,
-                    disabled:
-                      Boolean(busy) ||
-                      pricing ||
-                      !localizedPrices[selectedPaidPlan.key],
+                    disabled: Boolean(busy),
                     run: () => void openCheckout(selectedPaidPlan),
                   }
                 : undefined
@@ -235,6 +272,36 @@ export function BillingPage() {
           />
         )}
       </div>
+
+      <section className="billing-assurance" aria-label="מידע על התשלום">
+        <div>
+          <ShieldCheck size={22} />
+          <span>
+            <strong>תשלום מאובטח</strong>
+            פרטי הכרטיס נשמרים ומנוהלים על ידי Paddle בלבד.
+          </span>
+        </div>
+        <div>
+          <ReceiptText size={22} />
+          <span>
+            <strong>חשבונית וניהול עצמי</strong>
+            צפייה בחיובים, עדכון אמצעי תשלום וביטול דרך פורטל Paddle.
+          </span>
+        </div>
+        <div>
+          <Sparkles size={22} />
+          <span>
+            <strong>גישה אוטומטית</strong>
+            יכולות Pro נפתחות בחשבון לאחר אישור התשלום.
+          </span>
+        </div>
+      </section>
+
+      <p className="billing-legal-note">
+        בלחיצה על שדרוג ל־Pro תועברו לקופה המאובטחת של Paddle. ניתן לנהל או לבטל
+        את המנוי מעמוד זה. <a href="/terms">תנאי שימוש</a> ·{" "}
+        <a href="/refunds">מדיניות החזרים</a>
+      </p>
     </div>
   );
 }
@@ -242,16 +309,22 @@ export function BillingPage() {
 function PlanCard({
   plan,
   price,
+  description,
   loadingPrice = false,
+  priceError,
+  featured = false,
   current,
   intervals,
   selectedInterval,
   onIntervalChange,
   action,
 }: {
-  plan: BillingPlan;
+  plan: DisplayPlan;
   price?: string;
+  description: string;
   loadingPrice?: boolean;
+  priceError?: string;
+  featured?: boolean;
   current: boolean;
   intervals?: Set<BillingInterval | null>;
   selectedInterval?: BillingInterval;
@@ -259,8 +332,19 @@ function PlanCard({
   action?: { busy: boolean; disabled: boolean; run: () => void };
 }) {
   return (
-    <section className={`live-panel billing-plan ${plan.kind}`}>
-      <h2>{plan.kind === "paid" ? "GotIt Pro" : plan.name}</h2>
+    <section
+      className={`live-panel billing-plan ${plan.kind}${featured ? " featured" : ""}`}
+    >
+      <div className="billing-plan-heading">
+        <div>
+          <p className="eyebrow">
+            {plan.kind === "paid" ? "ללמוד בלי מגבלות" : "להתחיל בחינם"}
+          </p>
+          <h2>{plan.kind === "paid" ? "GotIt Pro" : plan.name}</h2>
+        </div>
+        {featured && <span className="billing-recommended">מומלץ</span>}
+      </div>
+      <p className="billing-plan-description">{description}</p>
       {intervals?.has("month") && intervals.has("year") && onIntervalChange && (
         <div className="billing-interval-toggle" aria-label="תקופת חיוב">
           {(["month", "year"] as const).map((value) => (
@@ -276,16 +360,18 @@ function PlanCard({
           ))}
         </div>
       )}
-      <strong className="billing-price">
-        {loadingPrice && !price ? (
-          <LoaderCircle className="spin" size={24} aria-label="טוענים מחיר" />
-        ) : (
-          price || "לא זמין"
+      <div className="billing-price-row">
+        <strong className="billing-price">
+          {loadingPrice && !price ? (
+            <LoaderCircle className="spin" size={24} aria-label="טוענים מחיר" />
+          ) : (
+            price || (priceError ? "המחיר יוצג בקופה" : "טוענים מחיר…")
+          )}
+        </strong>
+        {plan.billingInterval && (
+          <small>{plan.billingInterval === "year" ? "לשנה" : "לחודש"}</small>
         )}
-      </strong>
-      {plan.billingInterval && (
-        <small>{plan.billingInterval === "year" ? "לשנה" : "לחודש"}</small>
-      )}
+      </div>
       <ul>
         {plan.entitlements.map((feature) => (
           <li key={feature}>
@@ -295,12 +381,17 @@ function PlanCard({
       </ul>
       {action && (
         <button
-          className="button primary"
+          className="button primary billing-upgrade-button"
           disabled={action.disabled}
           onClick={action.run}
         >
           {action.busy ? "פותחים תשלום…" : "שדרוג ל־Pro"}
         </button>
+      )}
+      {plan.kind === "paid" && (
+        <small className="billing-checkout-note">
+          המחיר הסופי והמס המקומי יוצגו על ידי Paddle לפני אישור התשלום.
+        </small>
       )}
       {current && <span className="status-chip active">התוכנית הנוכחית</span>}
     </section>
