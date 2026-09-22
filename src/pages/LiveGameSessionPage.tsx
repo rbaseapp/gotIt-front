@@ -64,6 +64,14 @@ export function LiveGameSessionPage() {
   const audioUrl = useRef<string | undefined>(undefined);
   const shownAt = useRef(performance.now());
   const exercise = exercises[index];
+  const masteryRequirements = receipt?.progress.masteryRequirements;
+  const remainingRecallDays = masteryRequirements
+    ? Math.max(
+        0,
+        masteryRequirements.minimumActiveRecallCalendarDays -
+          masteryRequirements.activeRecallCalendarDays,
+      )
+    : 0;
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -650,6 +658,16 @@ export function LiveGameSessionPage() {
                           ).toLocaleDateString("he-IL")
                         : "טרם נקבעה"}
                     </p>
+                    {masteryRequirements?.needsTypedRecall && (
+                      <p>
+                        כדי לעבור ל״נלמד״ נדרשת
+                        {remainingRecallDays > 0
+                          ? remainingRecallDays === 1
+                            ? " עוד שליפה מוקלדת מוצלחת ביום נוסף."
+                            : ` שליפה מוקלדת מוצלחת בעוד ${remainingRecallDays} ימים שונים.`
+                          : " עוד חזרת שליפה מוקלדת ביום נוסף."}
+                      </p>
+                    )}
                     <button
                       className="button primary"
                       disabled={busy}

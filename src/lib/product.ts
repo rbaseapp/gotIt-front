@@ -245,6 +245,19 @@ export const attemptReceipt = z.object({
     stage: count,
     masteryScore: score,
     masterySource: z.enum(["user", "system"]).nullable(),
+    masteryRequirements: z
+      .object({
+        totalScoredAttempts: count,
+        minimumScoredAttempts: count,
+        activeRecallSuccesses: count,
+        minimumActiveRecallSuccesses: count,
+        activeRecallCalendarDays: count,
+        minimumActiveRecallCalendarDays: count,
+        reviewStage: count,
+        learnedReviewStage: count,
+        needsTypedRecall: z.boolean(),
+      })
+      .optional(),
     nextReviewAt: nullableDate,
   }),
   skills: z.array(skillSchema),
