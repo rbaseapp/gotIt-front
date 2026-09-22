@@ -46,6 +46,10 @@ npm audit --omit=dev --audit-level=high
 
 `check` מריץ typecheck, ESLint, 42 בדיקות React/חוזים, build ועוד 6 בדיקות gateway. הבדיקות אינן יוצרות משתמש חיצוני ואינן כותבות למסד אמיתי.
 
+## Billing / Paddle
+
+The authenticated `/billing` page shows the Core plan catalog and current subscription, starts an idempotent checkout, and opens Paddle's hosted customer portal for invoices, payment-method updates and cancellation. `/billing/checkout` is the approved Paddle payment-link page. In production set the public runtime values `PADDLE_CLIENT_TOKEN` and `PADDLE_ENVIRONMENT`; local Vite development may use `VITE_PADDLE_CLIENT_TOKEN` and `VITE_PADDLE_ENVIRONMENT`. Secret Paddle API and webhook keys belong only in Core.
+
 ## Production / Render
 
 קובצי הפריסה הם `Dockerfile`, `render.yaml` ו־`server/gateway.mjs`. ה־gateway מגיש SPA, מבודד את יעדי ה־API בצד השרת, מגביל נתיבים/שיטות/גדלים, מעביר רק headers מאושרים ומוסיף CSP, HSTS, COOP, Permissions Policy ו־cache policy. הקונטיינר הסופי רץ כמשתמש לא־root ואינו כולל source או dev dependencies.

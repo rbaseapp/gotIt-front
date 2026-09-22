@@ -13,3 +13,7 @@ services:
         value: "1"
       - key: PUBLIC_APP_ORIGIN
         sync: false
+      - key: PADDLE_CLIENT_TOKEN
+        sync: false
+      - key: PADDLE_ENVIRONMENT
+        value: production

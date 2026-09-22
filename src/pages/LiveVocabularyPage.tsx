@@ -393,9 +393,7 @@ export function LiveVocabularyPage() {
                     : labels[item.userStatus]}
                 </span>
                 <span className="pill">{labels[item.learningStatus]}</span>
-                <div
-                  className={`live-word-progress${item.masteryRequirements?.needsTypedRecall ? " has-guidance" : ""}`}
-                >
+                <div className="live-word-progress">
                   <b>{Math.round(item.overallMasteryScore)}%</b>
                   <progress
                     value={item.overallMasteryScore}

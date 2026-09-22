@@ -53,6 +53,12 @@ const LiveReadingPage = lazy(() =>
 const TransferPage = lazy(() =>
   import("./pages/TransferPage").then((m) => ({ default: m.TransferPage })),
 );
+const BillingPage = lazy(() =>
+  import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
+);
+const BillingCheckoutPage = lazy(() =>
+  import("./pages/BillingCheckoutPage").then((m) => ({ default: m.BillingCheckoutPage })),
+);
 
 export default function App() {
   const { mode, logout } = useApp();
@@ -118,6 +124,8 @@ export default function App() {
                   }
                 />
                 <Route path="/transfer" element={<TransferPage />} />
+                <Route path="/billing" element={<BillingPage />} />
+                <Route path="/billing/checkout" element={<BillingCheckoutPage />} />
                 <Route path="/help" element={<HelpPage />} />
                 <Route
                   path="*"

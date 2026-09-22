@@ -643,6 +643,13 @@ export function LiveGameSessionPage() {
                       {receipt.attempt.xpEarned} XP ·{" "}
                       {labels[receipt.progress.status]}
                     </p>
+                    {receipt.attempt.xpStatus?.dailyXpCapReached && (
+                      <p>
+                        הגעת למכסת ה־XP היומית (
+                        {receipt.attempt.xpStatus.dailyXpCap} XP). ההתקדמות
+                        נשמרת, וצבירת ה־XP תתחדש ביום הבא לפי אזור הזמן בפרופיל.
+                      </p>
+                    )}
                     <p>
                       שליטה: {Math.round(receipt.progress.masteryScore)}% · חזרה
                       הבאה:{" "}

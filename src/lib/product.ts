@@ -282,6 +282,14 @@ export const attemptReceipt = z.object({
     score: score.nullable(),
     expectedAnswer: z.string().nullable(),
     xpEarned: count,
+    xpStatus: z
+      .object({
+        todayXp: count,
+        dailyXpCap: count,
+        dailyXpRemaining: count,
+        dailyXpCapReached: z.boolean(),
+      })
+      .optional(),
     pronunciationFeedback: z.string().max(2000).optional(),
   }),
   progress: z.object({
@@ -340,6 +348,10 @@ export const dashboardSchema = z.object({
     totalXp: count,
     level: count,
     nextLevelXp: count,
+    todayXp: count,
+    dailyXpCap: count,
+    dailyXpRemaining: count,
+    dailyXpCapReached: z.boolean(),
     currentStreakDays: count,
     longestStreakDays: count,
     lastActivityDate: z.string().nullable(),

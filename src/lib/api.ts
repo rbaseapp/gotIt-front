@@ -26,6 +26,8 @@ export class ApiError extends Error {
 }
 
 const messages: Record<string, string> = {
+  SUBSCRIPTION_REQUIRED: "היכולת הזו זמינה במנוי Pro. אפשר לשדרג מעמוד המנוי.",
+  BILLING_NOT_CONFIGURED: "שירות התשלומים עדיין אינו מוגדר.",
   INVALID_CREDENTIALS: "כתובת האימייל או הסיסמה אינן נכונות.",
   USER_ALREADY_EXISTS: "כבר קיים חשבון עם כתובת האימייל הזו.",
   USER_DISABLED: "החשבון אינו פעיל.",
@@ -266,6 +268,14 @@ export const api = {
       throw error;
     }
   },
+  async core(
+    path: string,
+    method = "GET",
+    body?: unknown,
+    eventId?: string,
+  ): Promise<unknown> {
+    return this.authorized(coreUrl, path, method, body, eventId);
+  },
   async audio(id: string): Promise<Blob> {
     const send = async (token: string) =>
       fetch(
@@ -278,6 +288,13 @@ export const api = {
       );
     let response = await send(await this.token());
     if (response.status === 401) response = await send(await this.refresh());
+    if (response.status === 402) {
+      const payload = (await response.json().catch(() => undefined)) as
+        | { error?: { code?: string } }
+        | undefined;
+      if (payload?.error?.code === "SUBSCRIPTION_REQUIRED")
+        throw new ApiError(402, "SUBSCRIPTION_REQUIRED", messages.SUBSCRIPTION_REQUIRED!);
+    }
     if (!response.ok)
       throw new ApiError(
         response.status,

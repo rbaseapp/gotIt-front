@@ -99,6 +99,7 @@
   display: flex;
   align-items: center;
   gap: 18px;
+  min-height: 116px;
   padding: 22px;
   border-bottom: 1px solid var(--line);
 }
@@ -130,10 +131,6 @@
 .live-word-progress {
   display: grid;
   gap: 8px;
-  width: 95px;
-  text-align: end;
-}
-.live-word-progress.has-guidance {
   width: min(280px, 32vw);
   text-align: start;
 }
@@ -423,13 +420,14 @@ progress::-webkit-progress-value {
     font-size: 28px;
   }
   .live-word-row {
+    min-height: 0;
     padding: 18px;
     gap: 12px;
   }
   .live-word-row .pill {
     font-size: 12px;
   }
-  .live-word-progress.has-guidance {
+  .live-word-progress {
     width: 100%;
   }
   .live-exercise {

@@ -4,6 +4,7 @@ import {
   BookOpen,
   BookOpenText,
   ChevronDown,
+  CreditCard,
   Flame,
   Gamepad2,
   HelpCircle,
@@ -22,6 +23,7 @@ import { Logo } from "./Logo";
 import { LiveCaptureModal } from "./LiveCaptureModal";
 
 const navItems = [
+  { to: "/billing", label: "מנוי", icon: CreditCard },
   { to: "/dashboard", label: "היום שלי", icon: BarChart3 },
   { to: "/learn", label: "ללמוד", icon: Gamepad2 },
   { to: "/vocabulary", label: "אוצר מילים", icon: BookOpen },

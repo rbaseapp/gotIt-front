@@ -18,7 +18,7 @@ const mime = {
   ".webp": "image/webp",
 };
 const csp =
-  "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com; connect-src 'self' https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+  "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.paddle.com; connect-src 'self' https://accounts.google.com/gsi/ https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.paddle.com; frame-ancestors 'none'";
 function upstream(value, development) {
   const url = new URL(value);
   if (
@@ -66,12 +66,17 @@ export function configuration(env = process.env) {
     throw new Error(
       "TRUST_PROXY_HOPS must be 0–3 and match the hosting network.",
     );
+  const paddleEnvironment = env.PADDLE_ENVIRONMENT || "production";
+  if (!["sandbox", "production"].includes(paddleEnvironment))
+    throw new Error("PADDLE_ENVIRONMENT must be sandbox or production.");
   return {
     origin,
     core: upstream(env.CORE_API_PROXY_TARGET || DEFAULT_CORE, development),
     gotit: upstream(env.GOTIT_API_PROXY_TARGET || DEFAULT_GOTIT, development),
     dist: resolve(env.FRONTEND_DIST || "dist"),
     trustProxyHops,
+    paddleClientToken: env.PADDLE_CLIENT_TOKEN || "",
+    paddleEnvironment,
   };
 }
 export function createGateway(config) {
@@ -144,6 +149,15 @@ export function createGateway(config) {
         );
         return;
       }
+      if (pathname === "/runtime-config") {
+        if (req.method !== "GET") { fail(405, "METHOD_NOT_ALLOWED"); return; }
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({
+          paddleClientToken: config.paddleClientToken,
+          paddleEnvironment: config.paddleEnvironment,
+        }));
+        return;
+      }
       const prefix = pathname.startsWith("/core-api/")
         ? "/core-api"
         : pathname.startsWith("/gotit-api/")
@@ -154,9 +168,7 @@ export function createGateway(config) {
         if (
           !apiPath.startsWith("/api/v1/") ||
           (prefix === "/core-api" &&
-            !/^\/api\/v1\/auth\/(login|register|google|refresh|logout|me)$/.test(
-              apiPath,
-            ))
+            !/^\/api\/v1\/(?:auth\/(?:login|register|google|refresh|logout|me)|billing\/(?:plans|status|checkout|portal))$/.test(apiPath))
         ) {
           fail(404, "NOT_FOUND");
           return;

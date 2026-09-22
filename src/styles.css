@@ -3342,6 +3342,26 @@ select:focus-visible {
   }
 }
 
+.billing-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+.billing-current h2 { margin: 4px 0; }
+.billing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.billing-plan { display: grid; align-content: start; gap: 14px; }
+.billing-plan.paid { border-color: #91bda4; box-shadow: 0 12px 35px rgba(44, 122, 98, 0.12); }
+.billing-price { font-size: 30px; color: var(--green-dark); }
+.billing-plan ul { list-style: none; padding: 0; margin: 4px 0; display: grid; gap: 10px; }
+.billing-plan li { display: flex; align-items: center; gap: 8px; }
+.billing-plan li svg { color: var(--green); }
+@media (max-width: 760px) {
+  .billing-grid { grid-template-columns: 1fr; }
+  .billing-current { align-items: flex-start; flex-direction: column; }
+}
+
 /* Complete product flows, accessible states and responsive additions. */
 .sr-only {
   position: absolute;

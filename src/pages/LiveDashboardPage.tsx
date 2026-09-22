@@ -60,6 +60,11 @@ export function LiveDashboardPage() {
                 רמה {d.gamification.level} · הרמה הבאה ב־
                 {d.gamification.nextLevelXp} XP
               </small>
+              <small>
+                {d.gamification.dailyXpCapReached
+                  ? `הגעת למכסה היומית (${d.gamification.dailyXpCap} XP). הצבירה תתחדש ביום הבא לפי אזור הזמן בפרופיל (${d.weeklyActivity.timezone}).`
+                  : `${d.gamification.todayXp} מתוך ${d.gamification.dailyXpCap} XP היום`}
+              </small>
             </div>
             <div>
               <span>

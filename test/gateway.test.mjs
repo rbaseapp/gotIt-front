@@ -60,6 +60,8 @@ before(async () => {
     GOTIT_API_PROXY_TARGET: upstreamOrigin,
     FRONTEND_DIST: directory,
     TRUST_PROXY_HOPS: "0",
+    PADDLE_CLIENT_TOKEN: "test_public_token",
+    PADDLE_ENVIRONMENT: "sandbox",
   });
   gateway = createGateway(config);
   const port = await listen(gateway);
@@ -78,6 +80,7 @@ describe("production frontend gateway", () => {
       page.headers.get("content-security-policy"),
       /accounts\.google\.com/,
     );
+    assert.match(page.headers.get("content-security-policy"), /paddle\.com/);
     assert.equal(
       page.headers.get("cross-origin-opener-policy"),
       "same-origin-allow-popups",
@@ -96,6 +99,14 @@ describe("production frontend gateway", () => {
       "status",
     ]);
     assert.equal(body.status, "ok");
+  });
+  it("serves only public runtime checkout configuration", async () => {
+    const response = await fetch(`${gatewayOrigin}/runtime-config`);
+    assert.deepEqual(await response.json(), {
+      paddleClientToken: "test_public_token",
+      paddleEnvironment: "sandbox",
+    });
+    assert.equal(response.headers.get("cache-control"), "no-store");
   });
   it("allowlists Core auth routes and injects only the public application context", async () => {
     const response = await fetch(
@@ -135,6 +146,18 @@ describe("production frontend gateway", () => {
     assert.equal(body.applicationKey, null);
     assert.equal(body.origin, "http://localhost:10000");
     assert.equal(response.headers.get("idempotency-replayed"), "true");
+  });
+  it("allowlists authenticated billing routes and forwards checkout idempotency", async () => {
+    const response = await fetch(`${gatewayOrigin}/core-api/api/v1/billing/checkout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer access", "Idempotency-Key": "checkout-event" },
+      body: JSON.stringify({ planKey: "pro-monthly" }),
+    });
+    const body = await response.json();
+    assert.equal(body.path, "/api/v1/billing/checkout");
+    assert.equal(body.applicationKey, "gotit");
+    assert.equal(body.authorization, "Bearer access");
+    assert.equal(body.eventId, "checkout-event");
   });
   it("rejects foreign origins, encoded proxy paths, unsupported bodies, and upstream redirects", async () => {
     assert.equal(
