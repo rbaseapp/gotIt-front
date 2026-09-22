@@ -269,7 +269,10 @@ export function LiveGameSessionPage() {
     try {
       const audioBase64 = await recordVoice(controller.signal, release.signal);
       if (mounted.current)
-        await submit({ audioBase64 }, "pronunciation/assessments");
+        await submit(
+          { audioBase64, languageCode: exercise.prompt.languageCode },
+          "pronunciation/assessments",
+        );
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
     } finally {

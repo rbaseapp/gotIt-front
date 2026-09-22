@@ -240,6 +240,7 @@ describe("live server-backed flows", () => {
       },
     };
     const requestOrder: string[] = [];
+    let assessmentBody: Record<string, unknown> | undefined;
     const fetchMock = mount(
       "/learn/session/pronunciation?items=" + itemId,
       async (url, init) => {
@@ -289,6 +290,10 @@ describe("live server-backed flows", () => {
             201,
           );
         }
+        if (url.endsWith("/pronunciation/assessments")) {
+          assessmentBody = JSON.parse(String(init?.body));
+          return json(receipt, 201);
+        }
         throw new Error("Unexpected route");
       },
       legacyProfile,
@@ -305,9 +310,12 @@ describe("live server-backed flows", () => {
       ),
     ).toHaveLength(1);
     let releaseSignal: AbortSignal | undefined;
+    let finishRecording: ((audio: string) => void) | undefined;
     vi.mocked(recordVoice).mockImplementation(async (_cancel, release) => {
       releaseSignal = release;
-      return new Promise<string>(() => {});
+      return new Promise<string>((resolve) => {
+        finishRecording = resolve;
+      });
     });
     const holdButton = screen.getByRole("button", {
       name: /לחצו והחזיקו כדי לדבר/u,
@@ -318,6 +326,14 @@ describe("live server-backed flows", () => {
     expect(releaseSignal?.aborted).toBe(false);
     fireEvent.pointerUp(holdButton, { button: 0, pointerId: 7 });
     expect(releaseSignal?.aborted).toBe(true);
+    finishRecording?.("encoded-wav");
+    await waitFor(() =>
+      expect(assessmentBody).toMatchObject({
+        exerciseId,
+        audioBase64: "encoded-wav",
+        languageCode: "en",
+      }),
+    );
   });
   it("records a reading only on explicit opening and offers a server quiz afterward", async () => {
     const reading = {
