@@ -23,13 +23,13 @@ import { Logo } from "./Logo";
 import { LiveCaptureModal } from "./LiveCaptureModal";
 
 const navItems = [
-  { to: "/billing", label: "מנוי", icon: CreditCard },
   { to: "/dashboard", label: "היום שלי", icon: BarChart3 },
   { to: "/learn", label: "ללמוד", icon: Gamepad2 },
   { to: "/vocabulary", label: "אוצר מילים", icon: BookOpen },
   { to: "/reading", label: "קריאה בהקשר", icon: BookOpenText },
   { to: "/transfer", label: "ייבוא וייצוא", icon: BookOpen },
   { to: "/settings", label: "הגדרות", icon: Settings },
+  { to: "/billing", label: "מנוי", icon: CreditCard },
 ];
 
 export function AppShell({
