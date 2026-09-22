@@ -14,6 +14,7 @@ import {
 import { Logo } from "../components/Logo";
 import { useApp } from "../context/AppContext";
 import { GoogleSignIn } from "../components/GoogleSignIn";
+import { Link } from "react-router-dom";
 
 export function AuthPage() {
   const { authenticate, authenticateGoogle, startDemo, notice } = useApp();
@@ -205,6 +206,11 @@ export function AuthPage() {
             Google מאפשר כניסה והרשמה באותו כפתור. איפוס סיסמה ואימות אימייל
             אינם זמינים ב־Core הנוכחי.
           </p>
+          <nav className="auth-legal-links" aria-label="מסמכים משפטיים">
+            <Link to="/terms-of-service">תנאי שימוש</Link>
+            <Link to="/privacy-policy">מדיניות פרטיות</Link>
+            <Link to="/refund-policy">מדיניות החזרים</Link>
+          </nav>
         </div>
       </main>
     </div>

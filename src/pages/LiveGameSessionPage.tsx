@@ -645,9 +645,10 @@ export function LiveGameSessionPage() {
                     </p>
                     {receipt.attempt.xpStatus?.dailyXpCapReached && (
                       <p>
-                        הגעת למכסת ה־XP היומית (
-                        {receipt.attempt.xpStatus.dailyXpCap} XP). ההתקדמות
-                        נשמרת, וצבירת ה־XP תתחדש ביום הבא לפי אזור הזמן בפרופיל.
+                        עברת את סף ה־XP היומי (
+                        {receipt.attempt.xpStatus.dailyXpCap} XP). הצבירה ממשיכה
+                        ב־{receipt.attempt.xpStatus.postDailyCapPercent ?? 25}%
+                        עד היום הבא לפי אזור הזמן בפרופיל.
                       </p>
                     )}
                     <p>

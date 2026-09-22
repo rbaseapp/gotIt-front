@@ -15,7 +15,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { isDue, levelFromXp } from "../lib/utils";
 import { AddWordModal } from "./AddWordModal";
@@ -104,6 +104,11 @@ export function AppShell({
           <HelpCircle size={19} />
           מרכז העזרה
         </NavLink>
+        <nav className="sidebar-legal-links" aria-label="מסמכים משפטיים">
+          <Link to="/terms-of-service">תנאים</Link>
+          <Link to="/privacy-policy">פרטיות</Link>
+          <Link to="/refund-policy">החזרים</Link>
+        </nav>
       </aside>
 
       {mobileOpen && (

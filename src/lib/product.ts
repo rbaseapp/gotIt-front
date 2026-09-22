@@ -288,6 +288,7 @@ export const attemptReceipt = z.object({
         dailyXpCap: count,
         dailyXpRemaining: count,
         dailyXpCapReached: z.boolean(),
+        postDailyCapPercent: count.max(100).optional(),
       })
       .optional(),
     pronunciationFeedback: z.string().max(2000).optional(),
@@ -352,6 +353,7 @@ export const dashboardSchema = z.object({
     dailyXpCap: count,
     dailyXpRemaining: count,
     dailyXpCapReached: z.boolean(),
+    postDailyCapPercent: count.max(100),
     currentStreakDays: count,
     longestStreakDays: count,
     lastActivityDate: z.string().nullable(),

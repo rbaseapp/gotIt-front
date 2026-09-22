@@ -4,6 +4,7 @@ import { useApp } from "./context/AppContext";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AuthPage } from "./pages/AuthPage";
+import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 const DashboardPage = lazy(() =>
   import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
 );
@@ -63,6 +64,17 @@ const BillingCheckoutPage = lazy(() =>
 export default function App() {
   const { mode, logout } = useApp();
   const location = useLocation();
+  const legalPaths: Record<string, LegalPageKind> = {
+    "/terms": "terms",
+    "/terms-of-service": "terms",
+    "/privacy": "privacy",
+    "/privacy-policy": "privacy",
+    "/refunds": "refund",
+    "/refund-policy": "refund",
+  };
+  const normalizedPath = location.pathname.replace(/\/+$/, "") || "/";
+  const legalPage = legalPaths[normalizedPath];
+  if (legalPage) return <LegalPage kind={legalPage} />;
   if (mode === "loading")
     return (
       <div className="empty-session" role="status">

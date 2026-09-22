@@ -62,8 +62,8 @@ export function LiveDashboardPage() {
               </small>
               <small>
                 {d.gamification.dailyXpCapReached
-                  ? `הגעת למכסה היומית (${d.gamification.dailyXpCap} XP). הצבירה תתחדש ביום הבא לפי אזור הזמן בפרופיל (${d.weeklyActivity.timezone}).`
-                  : `${d.gamification.todayXp} מתוך ${d.gamification.dailyXpCap} XP היום`}
+                  ? `עברת את הסף היומי (${d.gamification.dailyXpCap} XP). הצבירה ממשיכה ב־${d.gamification.postDailyCapPercent}% עד היום הבא לפי אזור הזמן בפרופיל (${d.weeklyActivity.timezone}).`
+                  : `${d.gamification.todayXp} מתוך ${d.gamification.dailyXpCap} XP בתגמול מלא היום`}
               </small>
             </div>
             <div>
