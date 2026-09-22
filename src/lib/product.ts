@@ -14,6 +14,49 @@ export const skill = z.enum([
   "pronunciation",
 ]);
 export const status = z.enum(["new", "learning", "reviewing", "mastered"]);
+export const masteryRequirementsSchema = z.object({
+  totalScoredAttempts: count,
+  minimumScoredAttempts: count,
+  activeRecallSuccesses: count,
+  minimumActiveRecallSuccesses: count,
+  activeRecallCalendarDays: count,
+  minimumActiveRecallCalendarDays: count,
+  activeRecallMasteryScore: score,
+  masteryThreshold: score,
+  reviewStage: count,
+  learnedReviewStage: count,
+  needsTypedRecall: z.boolean(),
+});
+export type MasteryRequirements = z.infer<typeof masteryRequirementsSchema>;
+export function masteryRequirementText(requirements?: MasteryRequirements) {
+  if (!requirements?.needsTypedRecall) return null;
+  const missingAttempts = Math.max(
+      0,
+      requirements.minimumScoredAttempts - requirements.totalScoredAttempts,
+    ),
+    missingSuccesses = Math.max(
+      0,
+      requirements.minimumActiveRecallSuccesses -
+        requirements.activeRecallSuccesses,
+    ),
+    missingDays = Math.max(
+      0,
+      requirements.minimumActiveRecallCalendarDays -
+        requirements.activeRecallCalendarDays,
+    );
+  if (missingAttempts) return `נדרשים עוד ${missingAttempts} תרגולים מדורגים.`;
+  if (missingDays)
+    return missingDays === 1
+      ? "נדרשת שליפה מוקלדת מוצלחת ביום נוסף."
+      : `נדרשות שליפות מוקלדות מוצלחות בעוד ${missingDays} ימים שונים.`;
+  if (missingSuccesses)
+    return `נדרשות עוד ${missingSuccesses} שליפות מוקלדות מוצלחות.`;
+  if (requirements.activeRecallMasteryScore < requirements.masteryThreshold)
+    return `נדרש ציון שליפה של ${requirements.masteryThreshold}% לפחות.`;
+  if (requirements.reviewStage < requirements.learnedReviewStage)
+    return "נדרשת חזרת שליפה מוקלדת ביום נוסף.";
+  return "נדרשת שליפה מוקלדת מוצלחת נוספת.";
+}
 const sourceKind = z.enum([
   "user",
   "dictionary",
@@ -32,6 +75,7 @@ export const itemSchema = z.object({
   userPriority: z.enum(["normal", "high"]),
   manualHard: z.boolean(),
   overallMasteryScore: score,
+  masteryRequirements: masteryRequirementsSchema.optional(),
   nextReviewAt: nullableDate,
   createdAt: date,
   updatedAt: date,
@@ -245,19 +289,7 @@ export const attemptReceipt = z.object({
     stage: count,
     masteryScore: score,
     masterySource: z.enum(["user", "system"]).nullable(),
-    masteryRequirements: z
-      .object({
-        totalScoredAttempts: count,
-        minimumScoredAttempts: count,
-        activeRecallSuccesses: count,
-        minimumActiveRecallSuccesses: count,
-        activeRecallCalendarDays: count,
-        minimumActiveRecallCalendarDays: count,
-        reviewStage: count,
-        learnedReviewStage: count,
-        needsTypedRecall: z.boolean(),
-      })
-      .optional(),
+    masteryRequirements: masteryRequirementsSchema.optional(),
     nextReviewAt: nullableDate,
   }),
   skills: z.array(skillSchema),
@@ -275,6 +307,7 @@ export const dashboardSchema = z.object({
     due: count,
     difficult: count,
     highPriority: count,
+    awaitingRecall: count,
   }),
   skills: z.array(
     z.object({ skill, masteryScore: score, evidenceAttempts: count }),

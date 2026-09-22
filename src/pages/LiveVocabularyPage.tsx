@@ -17,6 +17,7 @@ import {
   exampleSchema,
   itemSchema,
   labels,
+  masteryRequirementText,
   occurrenceSchema,
   page,
   product,
@@ -392,13 +393,22 @@ export function LiveVocabularyPage() {
                     : labels[item.userStatus]}
                 </span>
                 <span className="pill">{labels[item.learningStatus]}</span>
-                <div className="live-word-progress">
+                <div
+                  className={`live-word-progress${item.masteryRequirements?.needsTypedRecall ? " has-guidance" : ""}`}
+                >
                   <b>{Math.round(item.overallMasteryScore)}%</b>
                   <progress
                     value={item.overallMasteryScore}
                     max={100}
                     aria-label="שליטה כוללת מהשרת"
                   />
+                  {item.masteryRequirements?.needsTypedRecall && (
+                    <small className="live-mastery-guidance">
+                      {`שליפה מוקלדת: ${item.masteryRequirements.activeRecallSuccesses}/${item.masteryRequirements.minimumActiveRecallSuccesses} · ימים: ${item.masteryRequirements.activeRecallCalendarDays}/${item.masteryRequirements.minimumActiveRecallCalendarDays}`}
+                      <br />
+                      {masteryRequirementText(item.masteryRequirements)}
+                    </small>
+                  )}
                 </div>
                 {filters.userStatus === "deleted" && (
                   <button

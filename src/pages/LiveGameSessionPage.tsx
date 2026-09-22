@@ -16,6 +16,7 @@ import {
   exerciseSchema,
   intent,
   labels,
+  masteryRequirementText,
   product,
   sessionSchema,
   uuid,
@@ -65,13 +66,6 @@ export function LiveGameSessionPage() {
   const shownAt = useRef(performance.now());
   const exercise = exercises[index];
   const masteryRequirements = receipt?.progress.masteryRequirements;
-  const remainingRecallDays = masteryRequirements
-    ? Math.max(
-        0,
-        masteryRequirements.minimumActiveRecallCalendarDays -
-          masteryRequirements.activeRecallCalendarDays,
-      )
-    : 0;
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -660,12 +654,8 @@ export function LiveGameSessionPage() {
                     </p>
                     {masteryRequirements?.needsTypedRecall && (
                       <p>
-                        כדי לעבור ל״נלמד״ נדרשת
-                        {remainingRecallDays > 0
-                          ? remainingRecallDays === 1
-                            ? " עוד שליפה מוקלדת מוצלחת ביום נוסף."
-                            : ` שליפה מוקלדת מוצלחת בעוד ${remainingRecallDays} ימים שונים.`
-                          : " עוד חזרת שליפה מוקלדת ביום נוסף."}
+                        כדי לעבור ל״נלמד״:{" "}
+                        {masteryRequirementText(masteryRequirements)}
                       </p>
                     )}
                     <button

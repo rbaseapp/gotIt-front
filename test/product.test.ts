@@ -5,6 +5,7 @@ import {
   detailSchema,
   intent,
   itemSchema,
+  masteryRequirementText,
   product,
   query,
 } from "../src/lib/product";
@@ -37,6 +38,23 @@ describe("production boundaries", () => {
     expect(query({ cursor: "a+/=", search: "", tagId: undefined })).toBe(
       "?cursor=a%2B%2F%3D",
     );
+  });
+  it("explains the next concrete requirement for learning a word", () => {
+    expect(
+      masteryRequirementText({
+        totalScoredAttempts: 12,
+        minimumScoredAttempts: 3,
+        activeRecallSuccesses: 8,
+        minimumActiveRecallSuccesses: 2,
+        activeRecallCalendarDays: 1,
+        minimumActiveRecallCalendarDays: 2,
+        activeRecallMasteryScore: 100,
+        masteryThreshold: 80,
+        reviewStage: 3,
+        learnedReviewStage: 2,
+        needsTypedRecall: true,
+      }),
+    ).toBe("נדרשת שליפה מוקלדת מוצלחת ביום נוסף.");
   });
   it("snapshots retry intent rather than retaining a mutable caller object", () => {
     const body = { answerText: "first" };

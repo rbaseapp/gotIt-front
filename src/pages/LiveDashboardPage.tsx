@@ -85,6 +85,14 @@ export function LiveDashboardPage() {
               <b>{d.counts.due}</b>
               <small>מילים פעילות שהגיע מועדן</small>
             </div>
+            <div>
+              <span>
+                <Sparkles size={18} />
+                בדרך ל״נלמד״
+              </span>
+              <b>{d.counts.awaitingRecall}</b>
+              <small>מילים שממתינות להשלמת שליפה מוקלדת</small>
+            </div>
           </div>
           <section className="smart-session-card">
             <div className="smart-visual">
@@ -145,6 +153,9 @@ export function LiveDashboardPage() {
                 </span>
                 <span>
                   עדיפות גבוהה <b>{d.counts.highPriority}</b>
+                </span>
+                <span>
+                  ממתינות לשליפה <b>{d.counts.awaitingRecall}</b>
                 </span>
               </div>
               <small>

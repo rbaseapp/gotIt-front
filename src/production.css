@@ -133,6 +133,15 @@
   width: 95px;
   text-align: end;
 }
+.live-word-progress.has-guidance {
+  width: min(280px, 32vw);
+  text-align: start;
+}
+.live-mastery-guidance {
+  color: #486052;
+  font-size: 12px;
+  line-height: 1.55;
+}
 progress {
   accent-color: #37885c;
   width: 100%;
@@ -151,7 +160,7 @@ progress::-webkit-progress-value {
 }
 .live-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 18px;
 }
 .live-stats-grid > div {
@@ -419,6 +428,9 @@ progress::-webkit-progress-value {
   }
   .live-word-row .pill {
     font-size: 12px;
+  }
+  .live-word-progress.has-guidance {
+    width: 100%;
   }
   .live-exercise {
     padding: 25px 20px;
