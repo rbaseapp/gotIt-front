@@ -75,6 +75,19 @@ export default function App() {
   const normalizedPath = location.pathname.replace(/\/+$/, "") || "/";
   const legalPage = legalPaths[normalizedPath];
   if (legalPage) return <LegalPage kind={legalPage} />;
+  if (normalizedPath === "/billing/checkout")
+    return (
+      <Suspense
+        fallback={
+          <div className="empty-session" role="status">
+            <LoaderCircle className="spin" size={30} />
+            <p>טוענים את התשלום…</p>
+          </div>
+        }
+      >
+        <BillingCheckoutPage />
+      </Suspense>
+    );
   if (mode === "loading")
     return (
       <div className="empty-session" role="status">
@@ -137,7 +150,6 @@ export default function App() {
                 />
                 <Route path="/transfer" element={<TransferPage />} />
                 <Route path="/billing" element={mode === "live" ? <BillingPage /> : <Navigate to="/dashboard" replace />} />
-                <Route path="/billing/checkout" element={mode === "live" ? <BillingCheckoutPage /> : <Navigate to="/dashboard" replace />} />
                 <Route path="/help" element={<HelpPage />} />
                 <Route
                   path="*"

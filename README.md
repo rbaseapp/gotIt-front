@@ -48,7 +48,7 @@ npm audit --omit=dev --audit-level=high
 
 ## Billing / Paddle
 
-The authenticated `/billing` page shows the Core plan catalog and current subscription, starts an idempotent checkout, and opens Paddle's hosted customer portal for invoices, payment-method updates and cancellation. `/billing/checkout` is the approved Paddle payment-link page. In production set the public runtime values `PADDLE_CLIENT_TOKEN` and `PADDLE_ENVIRONMENT`; local Vite development may use `VITE_PADDLE_CLIENT_TOKEN` and `VITE_PADDLE_ENVIRONMENT`. Secret Paddle API and webhook keys belong only in Core.
+The authenticated `/billing` page shows Free + Pro, loads Paddle-formatted localized totals with `PricePreview`, starts an idempotent server-created transaction, and opens a one-page overlay checkout. It also opens Paddle's hosted customer portal for invoices, payment-method updates and cancellation. `/billing/checkout` is the public approved Paddle payment-link page used by transaction and payment-method-update links. In production set `PADDLE_CLIENT_TOKEN`, `PADDLE_ENVIRONMENT`, and `PADDLE_PRO_MONTHLY_PRICE_ID`; add `PADDLE_PRO_YEARLY_PRICE_ID` only after the matching yearly plan exists in Core. Local Vite development may use their `VITE_` equivalents. Secret Paddle API and webhook keys belong only in Core.
 
 ## Production / Render
 

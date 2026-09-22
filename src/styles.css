@@ -3496,6 +3496,33 @@ select:focus-visible {
 .billing-plan { display: grid; align-content: start; gap: 14px; }
 .billing-plan.paid { border-color: #91bda4; box-shadow: 0 12px 35px rgba(44, 122, 98, 0.12); }
 .billing-price { font-size: 30px; color: var(--green-dark); }
+.billing-interval-toggle {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+.billing-interval-toggle button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.billing-interval-toggle button.active {
+  color: white;
+  background: var(--green);
+}
+.success-message {
+  padding: 12px 16px;
+  border: 1px solid #91bda4;
+  border-radius: 12px;
+  color: var(--green-dark);
+  background: rgba(44, 122, 98, 0.08);
+}
 .billing-plan ul { list-style: none; padding: 0; margin: 4px 0; display: grid; gap: 10px; }
 .billing-plan li { display: flex; align-items: center; gap: 8px; }
 .billing-plan li svg { color: var(--green); }

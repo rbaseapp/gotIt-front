@@ -62,6 +62,7 @@ before(async () => {
     TRUST_PROXY_HOPS: "0",
     PADDLE_CLIENT_TOKEN: "test_public_token",
     PADDLE_ENVIRONMENT: "sandbox",
+    PADDLE_PRO_MONTHLY_PRICE_ID: "pri_00000000000000000000000000",
   });
   gateway = createGateway(config);
   const port = await listen(gateway);
@@ -105,8 +106,20 @@ describe("production frontend gateway", () => {
     assert.deepEqual(await response.json(), {
       paddleClientToken: "test_public_token",
       paddleEnvironment: "sandbox",
+      paddlePriceIds: { month: "pri_00000000000000000000000000" },
     });
     assert.equal(response.headers.get("cache-control"), "no-store");
+  });
+  it("adds a valid edge-provided country to runtime pricing configuration", async () => {
+    const response = await fetch(`${gatewayOrigin}/runtime-config`, {
+      headers: { "x-vercel-ip-country": "il" },
+    });
+    assert.deepEqual(await response.json(), {
+      paddleClientToken: "test_public_token",
+      paddleEnvironment: "sandbox",
+      paddlePriceIds: { month: "pri_00000000000000000000000000" },
+      countryCode: "IL",
+    });
   });
   it("allowlists Core auth routes and injects only the public application context", async () => {
     const response = await fetch(
@@ -211,6 +224,7 @@ describe("production frontend gateway", () => {
       CORE_API_PROXY_TARGET: "https://core.example.com",
       GOTIT_API_PROXY_TARGET: "https://api.example.com",
       TRUST_PROXY_HOPS: "1",
+      PADDLE_ENVIRONMENT: "production",
     });
     assert.equal(config.origin, "https://front.example.com");
   });

@@ -66,9 +66,9 @@ export function configuration(env = process.env) {
     throw new Error(
       "TRUST_PROXY_HOPS must be 0–3 and match the hosting network.",
     );
-  const paddleEnvironment = env.PADDLE_ENVIRONMENT || "production";
+  const paddleEnvironment = env.PADDLE_ENVIRONMENT;
   if (!["sandbox", "production"].includes(paddleEnvironment))
-    throw new Error("PADDLE_ENVIRONMENT must be sandbox or production.");
+    throw new Error("PADDLE_ENVIRONMENT is required and must be sandbox or production.");
   return {
     origin,
     core: upstream(env.CORE_API_PROXY_TARGET || DEFAULT_CORE, development),
@@ -77,6 +77,12 @@ export function configuration(env = process.env) {
     trustProxyHops,
     paddleClientToken: env.PADDLE_CLIENT_TOKEN || "",
     paddleEnvironment,
+    paddlePriceIds: {
+      month: env.PADDLE_PRO_MONTHLY_PRICE_ID || "",
+      ...(env.PADDLE_PRO_YEARLY_PRICE_ID
+        ? { year: env.PADDLE_PRO_YEARLY_PRICE_ID }
+        : {}),
+    },
   };
 }
 export function createGateway(config) {
@@ -151,10 +157,13 @@ export function createGateway(config) {
       }
       if (pathname === "/runtime-config") {
         if (req.method !== "GET") { fail(405, "METHOD_NOT_ALLOWED"); return; }
+        const countryCode = detectedCountryCode(req.headers);
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
         res.end(JSON.stringify({
           paddleClientToken: config.paddleClientToken,
           paddleEnvironment: config.paddleEnvironment,
+          paddlePriceIds: config.paddlePriceIds,
+          ...(countryCode ? { countryCode } : {}),
         }));
         return;
       }
@@ -340,6 +349,15 @@ export function createGateway(config) {
     return new Promise((resolveClose) => server.close(resolveClose));
   };
   return server;
+}
+
+function detectedCountryCode(headers) {
+  for (const name of ["cf-ipcountry", "x-vercel-ip-country", "cloudfront-viewer-country"]) {
+    const value = Array.isArray(headers[name]) ? headers[name][0] : headers[name];
+    const code = typeof value === "string" ? value.trim().toUpperCase() : "";
+    if (/^[A-Z]{2}$/u.test(code) && code !== "XX") return code;
+  }
+  return undefined;
 }
 if (
   process.argv[1] &&

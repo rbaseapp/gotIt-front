@@ -26,6 +26,8 @@ export const billingStatusSchema = z.object({
 });
 const urlSchema = z.object({ url: z.string().url() });
 
+export type BillingPlan = z.infer<typeof plan>;
+
 function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
   if (!result.success) throw new ApiError(502, "INVALID_RESPONSE", "שירות המנויים החזיר תשובה לא תקינה.");
