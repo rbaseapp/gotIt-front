@@ -203,7 +203,10 @@ export function LiveLearnPage() {
         />
         {sessions.data?.items.map((s) => (
           <div className="live-toolbar" key={s.id}>
-            <b>{labels[s.sessionType] || s.sessionType}</b>
+            <b>
+              {labels[s.sessionType] || s.sessionType}
+              {s.scope ? ` · ${s.scope.title}` : ""}
+            </b>
             <span>
               {s.status === "active"
                 ? "פעיל"

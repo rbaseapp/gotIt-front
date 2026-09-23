@@ -215,6 +215,9 @@ export function LiveGameSessionPage() {
           )
             throw new Error("רשימת המילים אינה תקינה.");
           const readingId = params.get("reading");
+          const packId = params.get("pack");
+          if (packId && !uuid.safeParse(packId).success)
+            throw new Error("המאגר שנבחר אינו תקין.");
           if (type === "article_quiz" && !uuid.safeParse(readingId).success)
             throw new Error("יש לפתוח טקסט לפני תרגול הקריאה.");
           creation.current ??= intent({
@@ -222,6 +225,7 @@ export function LiveGameSessionPage() {
             count,
             ...(ids ? { learningItemIds: ids } : {}),
             ...(readingId && type === "article_quiz" ? { readingId } : {}),
+            ...(packId ? { scope: { type: "pack", id: packId } } : {}),
           });
           value = (
             await product(

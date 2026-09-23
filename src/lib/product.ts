@@ -63,6 +63,7 @@ const sourceKind = z.enum([
   "translation_api",
   "ai",
   "import",
+  "catalog",
 ]);
 export const itemSchema = z.object({
   id: uuid,
@@ -247,8 +248,62 @@ export const sessionSchema = z.object({
   correctCount: count,
   xpEarned: count,
   algorithmVersion: z.string(),
+  scope: z
+    .object({
+      type: z.enum(["pack", "track", "topic"]),
+      id: uuid,
+      title: z.string(),
+    })
+    .nullable()
+    .optional(),
 });
 export type Session = z.infer<typeof sessionSchema>;
+export const wordPackSchema = z.object({
+  id: uuid,
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  moduleNumber: z.number().int().positive(),
+  version: z.number().int().positive(),
+  wordCount: count,
+  installed: z.boolean(),
+  installedVersion: z.number().int().positive().nullable(),
+  topic: z.object({ id: uuid, slug: z.string(), title: z.string() }),
+  track: z.object({
+    id: uuid,
+    slug: z.string(),
+    title: z.string(),
+    levelCode: z.enum(["beginner", "intermediate", "advanced"]),
+    cefrFrom: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+    cefrTo: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+    sourceLanguageCode: z.string(),
+    translationLanguageCode: z.string(),
+  }),
+  progress: z.object({
+    linked: count,
+    new: count,
+    learning: count,
+    reviewing: count,
+    mastered: count,
+    due: count,
+  }),
+});
+export type WordPack = z.infer<typeof wordPackSchema>;
+export const wordPacksSchema = z.object({ packs: z.array(wordPackSchema) });
+export const wordPackAddReceiptSchema = z.object({
+  packId: uuid,
+  added: count,
+  linkedExisting: count,
+  restored: count,
+  excluded: count,
+  total: count,
+});
+export const wordPackRemoveReceiptSchema = z.object({
+  packId: uuid,
+  mode: z.enum(["archive_exclusive", "keep_words"]),
+  archived: count,
+  retained: count,
+});
 export const studyCardSchema = z.object({
   learningItemId: uuid,
   sourceText: z.string(),
@@ -525,6 +580,7 @@ export function errorMessage(reason: unknown): string {
     IDEMPOTENCY_CONFLICT:
       "מזהה הבקשה כבר שימש לתוכן אחר. לא נשלחה בקשה חדשה אוטומטית.",
     CONCURRENT_MODIFICATION: "המילה עודכנה בינתיים. טענו אותה מחדש לפני שמירה.",
+    WORD_PACK_NOT_ADDED: "יש להוסיף את מאגר המילים לפני פתיחת סשן ממנו.",
   };
   return reason instanceof ApiError && codes[reason.code]
     ? codes[reason.code]

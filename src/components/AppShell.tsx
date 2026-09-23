@@ -3,6 +3,7 @@ import {
   BarChart3,
   BookOpen,
   BookOpenText,
+  LibraryBig,
   ChevronDown,
   CreditCard,
   Flame,
@@ -28,10 +29,11 @@ const navItems = [
   { to: "/dashboard", label: "היום שלי", icon: BarChart3 },
   { to: "/learn", label: "ללמוד", icon: Gamepad2 },
   { to: "/vocabulary", label: "אוצר מילים", icon: BookOpen },
+  { to: "/word-packs", label: "מאגרי מילים", icon: LibraryBig, liveOnly: true },
   { to: "/reading", label: "קריאה בהקשר", icon: BookOpenText },
   { to: "/transfer", label: "ייבוא וייצוא", icon: BookOpen },
   { to: "/settings", label: "הגדרות", icon: Settings },
-  { to: "/billing", label: "מנוי", icon: CreditCard },
+  { to: "/billing", label: "מנוי", icon: CreditCard, liveOnly: true },
 ];
 
 export function AppShell({
@@ -77,7 +79,7 @@ export function AppShell({
         </button>
         <nav className="sidebar-nav" aria-label="ניווט ראשי">
           {navItems
-            .filter((item) => item.to !== "/billing" || mode === "live")
+            .filter((item) => !item.liveOnly || mode === "live")
             .map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}

@@ -59,6 +59,9 @@ const LiveReadingPage = lazy(() =>
 const TransferPage = lazy(() =>
   import("./pages/TransferPage").then((m) => ({ default: m.TransferPage })),
 );
+const WordPacksPage = lazy(() =>
+  import("./pages/WordPacksPage").then((m) => ({ default: m.WordPacksPage })),
+);
 const BillingPage = lazy(() =>
   import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
 );
@@ -171,6 +174,16 @@ export default function App() {
                     }
                   />
                   <Route path="/transfer" element={<TransferPage />} />
+                  <Route
+                    path="/word-packs"
+                    element={
+                      mode === "live" ? (
+                        <WordPacksPage />
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
                   <Route
                     path="/billing"
                     element={

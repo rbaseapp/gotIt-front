@@ -601,4 +601,73 @@ describe("live server-backed flows", () => {
       fetchMock.mock.calls.some(([url]) => url.endsWith("/practice/sessions")),
     ).toBe(false);
   });
+  it("shows leveled word packs and adds a selected unit", async () => {
+    const pack = {
+      id: exerciseId,
+      slug: "business-beginner-1-en-he",
+      title: "יחידה 1: המשרד והצוות",
+      description: "מילים בסיסיות על מקום העבודה",
+      moduleNumber: 1,
+      version: 1,
+      wordCount: 12,
+      installed: false,
+      installedVersion: null,
+      topic: { id: itemId, slug: "business", title: "עסקים" },
+      track: {
+        id: sessionId,
+        slug: "business-beginner-en-he",
+        title: "עסקים — מתחילים",
+        levelCode: "beginner",
+        cefrFrom: "A1",
+        cefrTo: "A2",
+        sourceLanguageCode: "en",
+        translationLanguageCode: "he",
+      },
+      progress: {
+        linked: 0,
+        new: 0,
+        learning: 0,
+        reviewing: 0,
+        mastered: 0,
+        due: 0,
+      },
+    };
+    const fetchMock = mount("/word-packs", async (url, init) => {
+      if (
+        url.endsWith("/word-packs") &&
+        (!init?.method || init.method === "GET")
+      )
+        return json({ packs: [pack] });
+      if (url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST")
+        return json(
+          {
+            packId: pack.id,
+            added: 12,
+            linkedExisting: 0,
+            restored: 0,
+            excluded: 0,
+            total: 12,
+          },
+          201,
+        );
+      throw new Error("Unexpected route");
+    });
+    const user = userEvent.setup();
+    expect(
+      await screen.findByRole("heading", { name: "מאגרי מילים" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("עסקים — מתחילים")).toBeInTheDocument();
+    await user.click(
+      await screen.findByRole("button", { name: "הוסף 12 מילים" }),
+    );
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url, init]) =>
+            url.endsWith(`/word-packs/${pack.id}/add`) &&
+            init?.method === "POST",
+        ),
+      ).toBe(true),
+    );
+  });
 });

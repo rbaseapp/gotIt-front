@@ -555,3 +555,136 @@ progress::-webkit-progress-value {
     font-size: 18px;
   }
 }
+
+.word-packs-page {
+  display: grid;
+  gap: 28px;
+}
+.pack-track {
+  display: grid;
+  gap: 16px;
+}
+.pack-track-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pack-track-heading h2,
+.pack-track-heading p {
+  margin: 0;
+}
+.pack-track-heading p {
+  margin-top: 4px;
+  color: #64736a;
+  font-size: 13px;
+}
+.pack-track-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 13px;
+  color: var(--green-dark);
+  background: var(--green-soft);
+}
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.pack-card {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-height: 310px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 8px 24px rgba(28, 55, 42, 0.05);
+}
+.pack-card.installed {
+  border-color: #a8cfb3;
+}
+.pack-card h3,
+.pack-card p {
+  margin: 0;
+}
+.pack-card p {
+  min-height: 48px;
+  color: #5d6c63;
+  line-height: 1.7;
+}
+.pack-card-top,
+.pack-counts,
+.pack-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pack-card-top {
+  justify-content: space-between;
+}
+.pack-module,
+.pack-installed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pack-installed {
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: var(--green-dark);
+  background: var(--green-soft);
+}
+.pack-counts {
+  flex-wrap: wrap;
+  margin-top: auto;
+  color: #68766e;
+  font-size: 12px;
+}
+.pack-counts span {
+  padding-inline-end: 10px;
+  border-inline-end: 1px solid var(--line);
+}
+.pack-counts span:last-child {
+  border: 0;
+}
+.pack-actions {
+  align-items: stretch;
+  flex-direction: column;
+}
+.pack-actions > .button,
+.pack-card > .button {
+  justify-content: center;
+}
+.pack-manage summary {
+  cursor: pointer;
+  color: #5e6f65;
+  font-size: 12px;
+  text-align: center;
+}
+.pack-manage[open] {
+  display: grid;
+  gap: 8px;
+}
+.pack-manage .button {
+  justify-content: center;
+  width: 100%;
+  margin-top: 7px;
+}
+@media (max-width: 1000px) {
+  .pack-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .pack-grid {
+    grid-template-columns: 1fr;
+  }
+  .pack-card {
+    min-height: 0;
+  }
+}
