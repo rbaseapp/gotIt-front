@@ -282,6 +282,7 @@ export function WordPacksPage() {
         onClose={() => !busy && setDialog(undefined)}
         title={dialog?.pack.title || t("packs.packWords")}
         size="lg"
+        className="pack-word-modal"
       >
         {dialog && (
           <>
@@ -344,7 +345,7 @@ export function WordPacksPage() {
                 ))}
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions pack-word-actions">
               <button
                 type="button"
                 className="button ghost"

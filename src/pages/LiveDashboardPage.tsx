@@ -23,10 +23,15 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { useTranslation } from "react-i18next";
+import {
+  WordPreviewModal,
+  type WordPreview,
+} from "../components/WordPreviewModal";
 export function LiveDashboardPage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
   const [recentPage, setRecentPage] = useState(1);
+  const [selectedWord, setSelectedWord] = useState<WordPreview | null>(null);
   const resource = useResource(
     useCallback(
       () =>
@@ -360,15 +365,21 @@ export function LiveDashboardPage() {
                 retry={() => void weakest.reload()}
               />
               {weakItems?.map((i) => (
-                <Link
+                <button
+                  type="button"
                   className="live-weak-word"
                   key={i.id}
-                  to={`/vocabulary?item=${i.id}`}
+                  onClick={() =>
+                    setSelectedWord({
+                      sourceText: i.sourceText,
+                      translationText: i.primaryTranslation,
+                    })
+                  }
                 >
                   <b dir="auto">{i.sourceText}</b>
                   <span dir="auto">{i.primaryTranslation}</span>
                   <small>{Math.round(i.overallMasteryScore)}%</small>
-                </Link>
+                </button>
               ))}
               {weakItems && !weakItems.length && (
                 <p>{t("dashboard.noWeakWords")}</p>
@@ -407,15 +418,21 @@ export function LiveDashboardPage() {
             <div className="recent-practice-list">
               {d.recentActivity.map((a) => (
                 <article className="recent-practice-row" key={a.id}>
-                  <Link
+                  <button
+                    type="button"
                     className="recent-practice-word"
-                    to={`/vocabulary?item=${a.learningItemId}`}
+                    onClick={() =>
+                      setSelectedWord({
+                        sourceText: a.sourceText,
+                        translationText: a.primaryTranslation,
+                      })
+                    }
                   >
                     <b dir="auto">{a.sourceText}</b>
                     <span dir="auto">
                       {a.primaryTranslation || t("vocabulary.noMeaning")}
                     </span>
-                  </Link>
+                  </button>
                   <div className="recent-practice-type">
                     <span className="pill">
                       {t(`labels.${a.exerciseType}`, {
@@ -474,6 +491,10 @@ export function LiveDashboardPage() {
               </nav>
             )}
           </section>
+          <WordPreviewModal
+            word={selectedWord}
+            onClose={() => setSelectedWord(null)}
+          />
         </>
       )}
     </div>

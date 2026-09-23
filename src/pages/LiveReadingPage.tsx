@@ -22,6 +22,10 @@ import { textSegments } from "../lib/reading";
 import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useTranslation } from "react-i18next";
+import {
+  WordPreviewModal,
+  type WordPreview,
+} from "../components/WordPreviewModal";
 export function LiveReadingPage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
@@ -41,6 +45,7 @@ export function LiveReadingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [cursor, setCursor] = useState<string>();
+  const [selectedWord, setSelectedWord] = useState<WordPreview | null>(null);
   const historyUrl = `reading${query({ limit: "10", cursor })}`;
   const history = useResource(
     useCallback(() => product(page(readingSummary), historyUrl), [historyUrl]),
@@ -340,14 +345,23 @@ export function LiveReadingPage() {
           >
             {textSegments(reading).map((segment, index) =>
               segment.itemId ? (
-                <Link
+                <button
+                  type="button"
                   className="reading-word"
                   key={index}
-                  to={`/vocabulary?item=${segment.itemId}`}
+                  onClick={() => {
+                    const target = reading.targets.find(
+                      (candidate) => candidate.id === segment.itemId,
+                    );
+                    setSelectedWord({
+                      sourceText: target?.sourceText || segment.text,
+                      translationText: target?.translationText,
+                    });
+                  }}
                   title={t("reading.openWord")}
                 >
                   {segment.text}
-                </Link>
+                </button>
               ) : (
                 <span key={index}>{segment.text}</span>
               ),
@@ -362,6 +376,10 @@ export function LiveReadingPage() {
           </Link>
         </article>
       )}
+      <WordPreviewModal
+        word={selectedWord}
+        onClose={() => setSelectedWord(null)}
+      />
     </div>
   );
 }

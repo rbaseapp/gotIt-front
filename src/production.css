@@ -266,6 +266,7 @@ progress::-webkit-progress-value {
   gap: 15px;
 }
 .live-weak-word {
+  width: 100%;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -273,6 +274,8 @@ progress::-webkit-progress-value {
   padding: 15px 0;
   border-bottom: 1px solid var(--line);
   color: var(--ink);
+  background: transparent;
+  text-align: start;
 }
 .live-weak-word b {
   font-size: 17px;
@@ -328,8 +331,12 @@ progress::-webkit-progress-value {
   gap: 4px;
 }
 .recent-practice-word {
+  width: 100%;
+  padding: 0;
   color: var(--ink);
+  background: transparent;
   text-decoration: none;
+  text-align: start;
 }
 .recent-practice-word b {
   font-size: 17px;
@@ -895,7 +902,18 @@ progress::-webkit-progress-value {
 
 .pack-word-dialog {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 16px;
+}
+.pack-word-modal {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pack-word-modal .pack-word-dialog {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 .pack-selection-summary,
 .pack-dashboard-heading {
@@ -911,10 +929,19 @@ progress::-webkit-progress-value {
   margin: 0;
 }
 .pack-word-list {
+  min-height: 0;
   overflow: auto;
   max-height: min(58vh, 580px);
   display: grid;
   gap: 8px;
+}
+.pack-word-actions {
+  flex: none;
+  z-index: 2;
+  padding: 14px 23px max(14px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(8px);
 }
 .pack-word-row {
   padding: 12px 14px;
@@ -1012,6 +1039,9 @@ progress::-webkit-progress-value {
   .pack-word-row > span {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+  .pack-word-actions {
+    padding-inline: 18px;
   }
   .dashboard-pack-grid {
     grid-template-columns: 1fr;

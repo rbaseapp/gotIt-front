@@ -8,12 +8,14 @@ export function Modal({
   title,
   children,
   size = "md",
+  className = "",
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
   size?: "sm" | "md" | "lg";
+  className?: string;
 }) {
   const { t } = useTranslation();
   const ref = useRef<HTMLElement>(null);
@@ -66,7 +68,7 @@ export function Modal({
     <div className="modal-backdrop" onMouseDown={onClose} role="presentation">
       <section
         ref={ref}
-        className={`modal modal-${size}`}
+        className={`modal modal-${size} ${className}`.trim()}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

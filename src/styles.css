@@ -2783,7 +2783,10 @@ select:focus-visible {
   position: fixed;
   z-index: 100;
   inset: 0;
-  padding: 20px;
+  padding: max(20px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
   display: grid;
   place-items: center;
   background: rgba(25, 39, 34, 0.45);
@@ -2793,7 +2796,10 @@ select:focus-visible {
 .modal {
   width: min(100%, 530px);
   max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   border-radius: 20px;
   background: #fff;
   box-shadow: 0 30px 80px rgba(20, 35, 29, 0.25);
@@ -2807,6 +2813,7 @@ select:focus-visible {
 }
 .modal-header {
   position: sticky;
+  flex: none;
   z-index: 2;
   top: 0;
   height: 66px;
@@ -2830,6 +2837,21 @@ select:focus-visible {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+.word-preview {
+  display: grid;
+  gap: 10px;
+  text-align: start;
+}
+.word-preview b {
+  color: var(--ink);
+  font-size: 30px;
+  overflow-wrap: anywhere;
+}
+.word-preview span {
+  color: var(--green-dark);
+  font-size: 20px;
+  overflow-wrap: anywhere;
 }
 .confirmation-dialog {
   display: grid;

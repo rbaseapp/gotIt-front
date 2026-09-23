@@ -514,6 +514,7 @@ describe("live server-backed flows", () => {
         {
           id: itemId,
           sourceText: "remember",
+          translationText: "לזכור",
           occurrenceCount: 1,
           ranges: [{ start: 3, end: 11 }],
         },
@@ -546,15 +547,85 @@ describe("live server-backed flows", () => {
     expect(
       await screen.findByRole("link", { name: "תרגול המילים מתוך הקטע" }),
     ).toHaveAttribute("href", `/learn/session/article_quiz?reading=${itemId}`);
-    expect(screen.getByRole("link", { name: "remember" })).toHaveAttribute(
-      "href",
-      `/vocabulary?item=${itemId}`,
-    );
+    await user.click(screen.getByRole("button", { name: "remember" }));
+    expect(screen.getByRole("dialog")).toHaveTextContent("remember");
+    expect(screen.getByRole("dialog")).toHaveTextContent("לזכור");
     expect(
       fetchMock.mock.calls.filter(([url]) =>
         url.endsWith("/practice/attempts"),
       ),
     ).toHaveLength(0);
+  });
+  it("opens recent dashboard words in place without navigating to vocabulary", async () => {
+    mount("/dashboard", async (url) => {
+      if (url.includes("/dashboard?"))
+        return json({
+          counts: {
+            total: 1,
+            new: 0,
+            learning: 1,
+            reviewing: 0,
+            mastered: 0,
+            due: 0,
+            difficult: 0,
+            highPriority: 0,
+            awaitingRecall: 0,
+          },
+          skills: [],
+          modes: [],
+          recentActivity: [
+            {
+              id: exerciseId,
+              learningItemId: itemId,
+              exerciseType: "recall",
+              result: "correct",
+              score: 100,
+              createdAt: date,
+              sourceText: "subscription",
+              primaryTranslation: "מנוי",
+            },
+          ],
+          recentActivityPagination: {
+            page: 1,
+            pageCount: 1,
+            totalCount: 1,
+            pageSize: 6,
+          },
+          dailyGoal: {
+            type: "items",
+            value: 5,
+            current: 1,
+            completed: false,
+            date: "2026-09-15",
+          },
+          gamification: {
+            totalXp: 10,
+            level: 1,
+            nextLevelXp: 100,
+            todayXp: 10,
+            dailyXpCap: 100,
+            dailyXpRemaining: 90,
+            dailyXpCapReached: false,
+            postDailyCapPercent: 20,
+            currentStreakDays: 1,
+            longestStreakDays: 1,
+            lastActivityDate: "2026-09-15",
+          },
+          weeklyActivity: { timezone: "Asia/Jerusalem", days: [] },
+        });
+      if (url.includes("/learning-items?"))
+        return json({ items: [], nextCursor: null });
+      if (url.endsWith("/word-packs")) return json({ packs: [] });
+      throw new Error("Unexpected route");
+    });
+    const user = userEvent.setup();
+    const wordButton = await screen.findByRole("button", {
+      name: /subscription/u,
+    });
+    await user.click(wordButton);
+    expect(screen.getByRole("dialog")).toHaveTextContent("subscription");
+    expect(screen.getByRole("dialog")).toHaveTextContent("מנוי");
+    expect(screen.getByRole("heading", { name: /שלום/u })).toBeInTheDocument();
   });
   it("shows a recoverable API failure instead of displaying demo words", async () => {
     mount("/vocabulary", async (url) =>
