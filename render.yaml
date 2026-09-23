@@ -22,4 +22,5 @@ services:
         value: production
       - key: PADDLE_PRO_MONTHLY_PRICE_ID
         sync: false
-      # Add PADDLE_PRO_YEARLY_PRICE_ID after a yearly Pro price exists in Paddle and Core.
+      - key: PADDLE_PRO_YEARLY_PRICE_ID
+        sync: false

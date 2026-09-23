@@ -72,6 +72,7 @@ before(async () => {
     PADDLE_CLIENT_TOKEN: "test_public_token",
     PADDLE_ENVIRONMENT: "sandbox",
     PADDLE_PRO_MONTHLY_PRICE_ID: "pri_00000000000000000000000000",
+    PADDLE_PRO_YEARLY_PRICE_ID: "pri_11111111111111111111111111",
   });
   gateway = createGateway(config);
   const port = await listen(gateway);
@@ -130,7 +131,10 @@ describe("production frontend gateway", () => {
     assert.deepEqual(await response.json(), {
       paddleClientToken: "test_public_token",
       paddleEnvironment: "sandbox",
-      paddlePriceIds: { month: "pri_00000000000000000000000000" },
+      paddlePriceIds: {
+        month: "pri_00000000000000000000000000",
+        year: "pri_11111111111111111111111111",
+      },
     });
     assert.equal(response.headers.get("cache-control"), "no-store");
   });
@@ -141,7 +145,10 @@ describe("production frontend gateway", () => {
     assert.deepEqual(await response.json(), {
       paddleClientToken: "test_public_token",
       paddleEnvironment: "sandbox",
-      paddlePriceIds: { month: "pri_00000000000000000000000000" },
+      paddlePriceIds: {
+        month: "pri_00000000000000000000000000",
+        year: "pri_11111111111111111111111111",
+      },
       countryCode: "IL",
     });
   });

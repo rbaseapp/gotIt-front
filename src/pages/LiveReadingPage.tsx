@@ -55,7 +55,8 @@ export function LiveReadingPage() {
                 limit: z.number().int(),
                 used: z.number().int(),
                 remaining: z.number().int(),
-                resetsAt: z.string().datetime(),
+                period: z.enum(["trial", "month"]),
+                resetsAt: z.string().datetime().nullable(),
               })
               .nullable(),
           }),
@@ -242,7 +243,15 @@ export function LiveReadingPage() {
           </fieldset>
           <p className="muted-note">
             {canGenerate && quota.data?.quota
-              ? t("reading.quota", { remaining: quota.data.quota.remaining, limit: quota.data.quota.limit })
+              ? t(
+                  quota.data.quota.period === "trial"
+                    ? "reading.trialQuota"
+                    : "reading.quota",
+                  {
+                    remaining: quota.data.quota.remaining,
+                    limit: quota.data.quota.limit,
+                  },
+                )
               : !canGenerate
                 ? t("reading.lockedQuota")
                 : t("reading.loadingQuota")}

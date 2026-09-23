@@ -428,13 +428,9 @@
         "read": "View saved words and data",
         "write": "Save new words and edit the library"
       },
-      "practice": {
-        "play": "All games and exercises"
-      },
+      "practice": { "play": "All games and exercises" },
       "dashboard": "Track your progress",
-      "reading": {
-        "ai": "Personal AI reading practice"
-      },
+      "reading": { "ai": "Personal AI reading practice" },
       "speech": {
         "audio": "Advanced listening practice",
         "pronunciation": "Pronunciation evaluation and feedback"
@@ -501,7 +497,7 @@
     "retryFailed": "Retry failed items only"
   },
   "reading": {
-    "proRequired": "AI article generation is available during the trial and with PRO.",
+    "proRequired": "The trial includes one AI article; PRO includes up to 4 per month.",
     "removeTitle": "Remove this reading?",
     "removeDescription": "The reading will be removed from history, but your practice history and progress will be preserved.",
     "removeConfirm": "Remove from history",
@@ -530,7 +526,8 @@
     "preparing": "Preparing…",
     "createPreview": "Create preview",
     "quota": "{{remaining}} of {{limit}} AI articles remain this month.",
-    "lockedQuota": "New article generation is available during a trial or with PRO. Your history remains available to view.",
+    "trialQuota": "{{remaining}} of {{limit}} AI articles remain in your trial.",
+    "lockedQuota": "The trial includes one AI article; PRO includes up to 4 per month. Your history remains available to view.",
     "loadingQuota": "Loading the monthly AI quota…",
     "providerNote": "If no reading provider is configured on the server, content generation will be unavailable. Real accounts are never shown simulated texts.",
     "history": "Reading history",
@@ -742,11 +739,7 @@
     "capabilityMilestone": "B3–B6: sessions, attempts, learning and pronunciation"
   },
   "demoDashboard": {
-    "units": {
-      "items": "words",
-      "attempts": "attempts",
-      "minutes": "minutes"
-    },
+    "units": { "items": "words", "attempts": "attempts", "minutes": "minutes" },
     "morning": "Good morning",
     "afternoon": "Good afternoon",
     "evening": "Good evening",
@@ -1104,7 +1097,7 @@
   },
   "apiErrors": {
     "SUBSCRIPTION_REQUIRED": "This feature is available with a Pro subscription. You can upgrade from the subscription page.",
-    "AI_MONTHLY_LIMIT_REACHED": "You have used all 4 monthly AI articles. Your allowance will renew at the start of next month.",
+    "AI_MONTHLY_LIMIT_REACHED": "You have used your current AI article allowance.",
     "BILLING_NOT_CONFIGURED": "The billing service is not configured yet.",
     "INVALID_CREDENTIALS": "The email address or password is incorrect.",
     "USER_ALREADY_EXISTS": "An account with this email address already exists.",
@@ -1237,7 +1230,7 @@
     "trialDays_two": "{{count}} days left in your trial",
     "trialDays_other": "{{count}} days left in your trial",
     "trialEnded": "Your trial has ended",
-    "trialOpen": "All PRO features are available to you now",
+    "trialOpen": "Learning features are open; your trial includes one AI article",
     "keepLearning": "Keep learning with GotIt PRO",
     "trialPrompt": "Upgrade now to keep your learning streak going after the trial.",
     "expiredPrompt": "Your words and data are safe. Upgrade to continue learning and saving words.",
