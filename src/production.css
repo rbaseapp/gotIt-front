@@ -688,3 +688,128 @@ progress::-webkit-progress-value {
     min-height: 0;
   }
 }
+
+.pack-word-dialog {
+  display: grid;
+  gap: 16px;
+}
+.pack-selection-summary,
+.pack-dashboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.pack-selection-summary p,
+.pack-dashboard-heading h2,
+.dashboard-pack-card h3,
+.dashboard-pack-card p {
+  margin: 0;
+}
+.pack-word-list {
+  overflow: auto;
+  max-height: min(58vh, 580px);
+  display: grid;
+  gap: 8px;
+}
+.pack-word-row {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+}
+.pack-word-row:has(input:checked) {
+  border-color: #9bc9a9;
+  background: #f6fbf7;
+}
+.pack-word-row > span {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.7fr) minmax(90px, 0.7fr) minmax(
+      160px,
+      1.4fr
+    );
+  align-items: center;
+  gap: 14px;
+}
+.pack-word-row small {
+  color: #68766e;
+}
+.pack-included {
+  color: var(--green-dark);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+.dashboard-packs-panel {
+  display: grid;
+  gap: 18px;
+}
+.pack-dashboard-heading > div {
+  display: grid;
+  gap: 10px;
+}
+.dashboard-pack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.dashboard-pack-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  background: #fbfdfb;
+}
+.dashboard-pack-card small {
+  color: var(--muted);
+}
+.dashboard-pack-card strong {
+  color: var(--green-dark);
+  font-size: 21px;
+}
+.dashboard-pack-card progress,
+.dashboard-pack-card p,
+.dashboard-pack-card .button {
+  grid-column: 1 / -1;
+}
+.dashboard-pack-card .button {
+  justify-content: center;
+}
+.pack-filter-field {
+  min-width: 0;
+}
+.pack-filter-options {
+  overflow: auto;
+  max-height: 125px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: grid;
+  gap: 7px;
+  background: #fff;
+}
+@media (max-width: 1000px) {
+  .dashboard-pack-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .pack-selection-summary,
+  .pack-dashboard-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pack-word-row > span {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .dashboard-pack-grid {
+    grid-template-columns: 1fr;
+  }
+}

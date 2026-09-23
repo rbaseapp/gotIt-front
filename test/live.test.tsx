@@ -638,15 +638,41 @@ describe("live server-backed flows", () => {
         (!init?.method || init.method === "GET")
       )
         return json({ packs: [pack] });
+      if (url.endsWith(`/word-packs/${pack.id}`))
+        return json({
+          pack,
+          entries: [
+            {
+              id: itemId,
+              sourceText: "office",
+              translationText: "משרד",
+              itemType: "word",
+              partOfSpeech: "noun",
+              exampleText: "The office is open.",
+              learningItemId: null,
+              excludedAt: null,
+            },
+            {
+              id: secondItemId,
+              sourceText: "meeting",
+              translationText: "פגישה",
+              itemType: "word",
+              partOfSpeech: "noun",
+              exampleText: "The meeting starts now.",
+              learningItemId: null,
+              excludedAt: null,
+            },
+          ],
+        });
       if (url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST")
         return json(
           {
             packId: pack.id,
-            added: 12,
+            added: 1,
             linkedExisting: 0,
             restored: 0,
-            excluded: 0,
-            total: 12,
+            excluded: 1,
+            total: 2,
           },
           201,
         );
@@ -657,9 +683,10 @@ describe("live server-backed flows", () => {
       await screen.findByRole("heading", { name: "מאגרי מילים" }),
     ).toBeInTheDocument();
     expect(await screen.findByText("עסקים — מתחילים")).toBeInTheDocument();
-    await user.click(
-      await screen.findByRole("button", { name: "הוסף 12 מילים" }),
-    );
+    await user.click(await screen.findByRole("button", { name: "בחר והוסף מילים" }));
+    expect(await screen.findByText("2 מתוך 2 מילים מסומנות להוספה.")).toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox", { name: /meeting/ }));
+    await user.click(screen.getByRole("button", { name: "הוסף 1 מילים" }));
     await waitFor(() =>
       expect(
         fetchMock.mock.calls.some(
@@ -669,5 +696,12 @@ describe("live server-backed flows", () => {
         ),
       ).toBe(true),
     );
+    const addCall = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST",
+    );
+    expect(JSON.parse(String(addCall?.[1]?.body))).toEqual({
+      entryIds: [itemId],
+    });
   });
 });

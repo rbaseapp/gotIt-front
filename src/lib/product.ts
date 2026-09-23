@@ -290,6 +290,21 @@ export const wordPackSchema = z.object({
 });
 export type WordPack = z.infer<typeof wordPackSchema>;
 export const wordPacksSchema = z.object({ packs: z.array(wordPackSchema) });
+export const wordPackEntrySchema = z.object({
+  id: uuid,
+  sourceText: z.string(),
+  translationText: z.string(),
+  itemType: z.string(),
+  partOfSpeech: z.string().nullable(),
+  exampleText: z.string().nullable(),
+  learningItemId: uuid.nullable(),
+  excludedAt: nullableDate,
+});
+export type WordPackEntry = z.infer<typeof wordPackEntrySchema>;
+export const wordPackDetailSchema = z.object({
+  pack: wordPackSchema,
+  entries: z.array(wordPackEntrySchema).min(1).max(100),
+});
 export const wordPackAddReceiptSchema = z.object({
   packId: uuid,
   added: count,
@@ -315,7 +330,7 @@ export const studyCardSchema = z.object({
 });
 export type StudyCard = z.infer<typeof studyCardSchema>;
 export const studyCardsSchema = z.object({
-  cards: z.array(studyCardSchema).min(1).max(20),
+  cards: z.array(studyCardSchema).min(1).max(100),
 });
 export const studyImageSchema = z.object({
   image: z

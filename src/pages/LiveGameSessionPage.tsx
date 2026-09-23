@@ -141,6 +141,8 @@ export function LiveGameSessionPage() {
     };
   }, [playStudyCard, session, studyCard]);
   const issue = async (value: Session) => {
+    const requestedCount =
+      value.scope?.type === "pack" ? value.itemCount : count;
     const result = await product(
       z.object({
         exercises: z.array(exerciseSchema).min(1),
@@ -149,7 +151,7 @@ export function LiveGameSessionPage() {
       `practice/sessions/${value.id}/exercises`,
       "POST",
       {
-        count: Math.max(1, Math.min(count, value.itemCount, 20)),
+        count: Math.max(1, Math.min(requestedCount, value.itemCount, 100)),
         ...(type === "smart"
           ? {}
           : {
@@ -226,7 +228,7 @@ export function LiveGameSessionPage() {
             throw new Error("יש לפתוח טקסט לפני תרגול הקריאה.");
           creation.current ??= intent({
             sessionType: modes[type],
-            count,
+            count: packId ? 100 : count,
             ...(ids ? { learningItemIds: ids } : {}),
             ...(readingId && type === "article_quiz" ? { readingId } : {}),
             ...(packId ? { scope: { type: "pack", id: packId } } : {}),

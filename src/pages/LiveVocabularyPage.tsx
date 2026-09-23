@@ -25,6 +25,7 @@ import {
   tagSchema,
   uuid,
   type ItemDetail,
+  wordPacksSchema,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { useFeedback } from "../components/Feedback";
@@ -64,7 +65,11 @@ export function LiveVocabularyPage() {
   const [tagsOpen, setTagsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const url = `learning-items${query({ ...filters, limit: "30", cursor })}`;
+  const url = `learning-items${query({
+    ...filters,
+    limit: filters.packIds ? "100" : "30",
+    cursor,
+  })}`;
   const resource = useResource(
     useCallback(() => product(page(itemSchema), url), [url]),
   );
@@ -81,6 +86,10 @@ export function LiveVocabularyPage() {
       [tagCursor],
     ),
   );
+  const packs = useResource(
+    useCallback(() => product(wordPacksSchema, "word-packs"), []),
+  );
+  const installedPacks = packs.data?.packs.filter((pack) => pack.installed);
   const reloadLibrary = resource.reload;
   useEffect(() => {
     const changed = () => {
@@ -94,6 +103,16 @@ export function LiveVocabularyPage() {
     setFilters((current) => ({ ...current, [key]: value }));
     setCursor(undefined);
     setSelected([]);
+  };
+  const togglePack = (id: string, checked: boolean) => {
+    const current = (filters.packIds || "").split(",").filter(Boolean);
+    change(
+      "packIds",
+      (checked
+        ? [...current, id]
+        : current.filter((packId) => packId !== id)
+      ).join(","),
+    );
   };
   const apply = async (ids = selected, operation = action) => {
     if (!canWrite) {
@@ -291,6 +310,28 @@ export function LiveVocabularyPage() {
               placeholder="he / en"
             />
           </label>
+          <fieldset className="field pack-filter-field">
+            <legend>סינון לפי מאגרים</legend>
+            <span className="pack-filter-options">
+              {installedPacks?.map((pack) => (
+                <label className="live-checkbox" key={pack.id}>
+                  <input
+                    type="checkbox"
+                    checked={(filters.packIds || "")
+                      .split(",")
+                      .includes(pack.id)}
+                    onChange={(event) =>
+                      togglePack(pack.id, event.target.checked)
+                    }
+                  />
+                  {pack.title}
+                </label>
+              ))}
+              {installedPacks && !installedPacks.length && (
+                <small>אין מאגרים פעילים. אפשר להוסיף מאגר ממסך המאגרים.</small>
+              )}
+            </span>
+          </fieldset>
         </div>
         <div className="live-options">
           {[
@@ -375,6 +416,16 @@ export function LiveVocabularyPage() {
             >
               החלה על {selected.length} נבחרות
             </button>
+            {Boolean(filters.packIds) && resource.data.items.length > 0 && (
+              <button
+                className="button secondary"
+                onClick={() =>
+                  setSelected(resource.data!.items.map((item) => item.id))
+                }
+              >
+                בחירת כל מילות המאגרים ({resource.data.items.length})
+              </button>
+            )}
             {selected.length > 0 && filters.userStatus !== "deleted" && (
               <Link
                 className="button primary"

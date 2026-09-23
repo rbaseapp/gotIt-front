@@ -1,6 +1,14 @@
 import { useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Brain, Flame, Play, Sparkles, Trophy, Zap } from "lucide-react";
+import {
+  Brain,
+  Flame,
+  LibraryBig,
+  Play,
+  Sparkles,
+  Trophy,
+  Zap,
+} from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { RemoteState } from "../components/RemoteState";
 import {
@@ -10,6 +18,7 @@ import {
   needsStrengthening,
   page,
   product,
+  wordPacksSchema,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 export function LiveDashboardPage() {
@@ -27,8 +36,12 @@ export function LiveDashboardPage() {
       [],
     ),
   );
+  const packs = useResource(
+    useCallback(() => product(wordPacksSchema, "word-packs"), []),
+  );
   const d = resource.data;
   const weakItems = weakest.data?.items.filter(needsStrengthening);
+  const installedPacks = packs.data?.packs.filter((pack) => pack.installed);
   return (
     <div className="dashboard-page live-page page-enter">
       <section className="page-heading-row">
@@ -123,6 +136,67 @@ export function LiveDashboardPage() {
             >
               {d.counts.total ? "לתרגול החכם" : "לאוצר המילים"}
             </Link>
+          </section>
+          <section className="live-panel dashboard-packs-panel">
+            <div className="pack-dashboard-heading">
+              <div>
+                <span className="pill light">
+                  <LibraryBig size={15} /> למידה לפי מאגר
+                </span>
+                <h2>המאגרים שבלמידה</h2>
+              </div>
+              <Link className="text-link" to="/word-packs">
+                לכל המאגרים
+              </Link>
+            </div>
+            <RemoteState
+              loading={packs.loading}
+              error={packs.error}
+              retry={() => void packs.reload()}
+            />
+            {installedPacks && installedPacks.length > 0 && (
+              <div className="dashboard-pack-grid">
+                {installedPacks.map((pack) => {
+                  const percent = pack.progress.linked
+                    ? Math.round(
+                        (pack.progress.mastered / pack.progress.linked) * 100,
+                      )
+                    : 0;
+                  return (
+                    <article className="dashboard-pack-card" key={pack.id}>
+                      <div>
+                        <small>{pack.track.title}</small>
+                        <h3>{pack.title}</h3>
+                      </div>
+                      <strong>{percent}%</strong>
+                      <progress
+                        max={100}
+                        value={percent}
+                        aria-label={`התקדמות במאגר ${pack.title}`}
+                      />
+                      <p>
+                        {pack.progress.mastered} מתוך {pack.progress.linked}{" "}
+                        מילים הושלמו
+                      </p>
+                      <Link
+                        className="button secondary"
+                        to={`/learn/session/smart?pack=${pack.id}`}
+                      >
+                        <Play size={16} /> המשך לימוד
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+            {installedPacks && !installedPacks.length && (
+              <div className="live-empty">
+                <p>עדיין לא הוספת מאגר ללמידה.</p>
+                <Link className="button secondary" to="/word-packs">
+                  בחירת מאגר ראשון
+                </Link>
+              </div>
+            )}
           </section>
           <div className="live-two-columns">
             <section className="live-panel">
