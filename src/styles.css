@@ -476,6 +476,35 @@ select:focus-visible {
 .or-divider span {
   margin: 0 13px;
 }
+.facebook-signin {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+.facebook-button {
+  width: min(320px, 100%);
+  margin: 0 auto;
+  justify-content: center;
+  border-color: #1877f2;
+  background: #1877f2;
+  color: #fff;
+}
+.facebook-button:hover:not(:disabled) {
+  background: #1264d5;
+}
+.facebook-button > span {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #1877f2;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
 .demo-button {
   width: 100%;
   border: 1px solid var(--line);

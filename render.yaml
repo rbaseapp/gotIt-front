@@ -13,6 +13,8 @@ services:
         value: "1"
       - key: PUBLIC_APP_ORIGIN
         sync: false
+      - key: VITE_FACEBOOK_APP_ID
+        sync: false
       - key: PADDLE_CLIENT_TOKEN
         sync: false
       - key: PADDLE_ENVIRONMENT

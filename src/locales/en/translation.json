@@ -82,13 +82,14 @@
     "hasAccount": "Already have an account?",
     "register": "Register",
     "login": "Sign in",
-    "googleNote": "Google handles sign-in and registration with the same button. Password reset and email verification are not available in the current Core version.",
+    "socialNote": "Google and Facebook handle sign-in and registration with the same button. Password reset and email verification are not available in the current Core version.",
     "legalNavigation": "Legal documents",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
     "refunds": "Refund policy",
     "genericError": "We couldn't sign you in",
-    "googleError": "Google sign-in failed"
+    "googleError": "Google sign-in failed",
+    "facebookError": "Facebook sign-in failed"
   },
   "google": {
     "timeout": "Google took too long to load. Please try again.",
@@ -96,6 +97,15 @@
     "loadFailed": "Google sign-in could not load. Check your connection or content blocker.",
     "notConfigured": "Google sign-in is not configured in this environment.",
     "ariaLabel": "Sign in or register with Google",
+    "retry": "Try again"
+  },
+  "facebook": {
+    "continue": "Continue with Facebook",
+    "timeout": "Facebook took too long to load. Please try again.",
+    "unavailable": "Facebook is currently unavailable.",
+    "loadFailed": "Facebook sign-in could not load. Check your connection or content blocker.",
+    "notConfigured": "Facebook sign-in is not configured in this environment.",
+    "cancelled": "Facebook sign-in was cancelled or the required permissions were not granted.",
     "retry": "Try again"
   },
   "settings": {
@@ -423,7 +433,7 @@
     "tokenBody": "The access token is kept in memory and the refresh token in the tab's session storage. Answers are sent with a stable event ID for safe retries.",
     "availabilityTitle": "Current availability",
     "authTerm": "Sign-in and registration",
-    "authDescription": "Email and Google are connected to Core",
+    "authDescription": "Email, Google and Facebook are connected to Core",
     "libraryTerm": "Library, practice and progress",
     "libraryDescription": "Connected to GotIt V1 interfaces",
     "mediaTerm": "Reading, audio and pronunciation",
@@ -1070,6 +1080,9 @@
     "INVALID_ACCESS_TOKEN": "Your session expired. Sign in again.",
     "UNAUTHORIZED": "Your session expired. Sign in again.",
     "CORE_AUTH_UNAVAILABLE": "The authentication service is currently unavailable. Try again shortly.",
+    "FACEBOOK_AUTH_NOT_CONFIGURED": "Facebook sign-in is not configured in this environment.",
+    "FACEBOOK_TOKEN_INVALID": "The Facebook authorization is invalid or expired. Try again.",
+    "FACEBOOK_EMAIL_REQUIRED": "Facebook did not provide an email address. Grant email access or use email and password.",
     "SPEECH_NOT_CONFIGURED": "Listening and pronunciation are currently unavailable for this word's language.",
     "SPEECH_UNAVAILABLE": "The audio service is temporarily unavailable. Try again shortly.",
     "AUDIO_INVALID": "The recording was not captured clearly. Try again in a quiet place.",
@@ -1089,6 +1102,7 @@
     "requestFailed": "The request could not be completed.",
     "invalidResponse": "The service returned an invalid response. Try again.",
     "invalidGoogleCredential": "The Google authorization is invalid. Try again.",
+    "invalidFacebookCredential": "The Facebook authorization is invalid. Try again.",
     "sessionEnded": "The session has ended.",
     "signInRequired": "Sign in to your account.",
     "audioUnavailable": "Audio is unavailable. Make sure a speech provider is configured on the server.",

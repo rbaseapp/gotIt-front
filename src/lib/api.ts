@@ -38,6 +38,9 @@ const messageCodes = new Set([
   "INVALID_ACCESS_TOKEN",
   "UNAUTHORIZED",
   "CORE_AUTH_UNAVAILABLE",
+  "FACEBOOK_AUTH_NOT_CONFIGURED",
+  "FACEBOOK_TOKEN_INVALID",
+  "FACEBOOK_EMAIL_REQUIRED",
   "SPEECH_NOT_CONFIGURED",
   "SPEECH_UNAVAILABLE",
   "AUDIO_INVALID",
@@ -167,6 +170,24 @@ export const api = {
     clearTokens();
     const requestGeneration = generation;
     const payload = await request(coreUrl, "auth/google", "POST", { idToken });
+    if (requestGeneration !== generation)
+      throw new ApiError(401, "UNAUTHORIZED", i18n.t("apiErrors.sessionEnded"));
+    checked(parseUser, payload);
+    setTokens(checked(parseTokens, payload));
+    return this.me();
+  },
+  async facebook(accessToken: string): Promise<AuthUser> {
+    if (!accessToken || accessToken.length > 16384)
+      throw new ApiError(
+        400,
+        "VALIDATION_ERROR",
+        i18n.t("apiErrors.invalidFacebookCredential"),
+      );
+    clearTokens();
+    const requestGeneration = generation;
+    const payload = await request(coreUrl, "auth/facebook", "POST", {
+      accessToken,
+    });
     if (requestGeneration !== generation)
       throw new ApiError(401, "UNAUTHORIZED", i18n.t("apiErrors.sessionEnded"));
     checked(parseUser, payload);

@@ -82,13 +82,14 @@
     "hasAccount": "כבר יש לך חשבון?",
     "register": "הרשמה",
     "login": "כניסה",
-    "googleNote": "Google מאפשר כניסה והרשמה באותו כפתור. איפוס סיסמה ואימות אימייל אינם זמינים ב־Core הנוכחי.",
+    "socialNote": "Google ו־Facebook מאפשרים כניסה והרשמה באותו כפתור. איפוס סיסמה ואימות אימייל אינם זמינים ב־Core הנוכחי.",
     "legalNavigation": "מסמכים משפטיים",
     "terms": "תנאי שימוש",
     "privacy": "מדיניות פרטיות",
     "refunds": "מדיניות החזרים",
     "genericError": "לא הצלחנו להתחבר",
-    "googleError": "כניסת Google נכשלה"
+    "googleError": "כניסת Google נכשלה",
+    "facebookError": "כניסת Facebook נכשלה"
   },
   "google": {
     "timeout": "טעינת Google ארכה זמן רב. נסו שוב.",
@@ -96,6 +97,15 @@
     "loadFailed": "לא ניתן לטעון כניסה עם Google. בדקו חיבור או חסימת תוכן.",
     "notConfigured": "כניסה עם Google אינה מוגדרת בסביבה הזו.",
     "ariaLabel": "כניסה או הרשמה עם Google",
+    "retry": "ניסיון נוסף"
+  },
+  "facebook": {
+    "continue": "המשך עם Facebook",
+    "timeout": "טעינת Facebook ארכה זמן רב. נסו שוב.",
+    "unavailable": "Facebook אינו זמין כרגע.",
+    "loadFailed": "לא ניתן לטעון כניסה עם Facebook. בדקו חיבור או חסימת תוכן.",
+    "notConfigured": "כניסה עם Facebook אינה מוגדרת בסביבה הזו.",
+    "cancelled": "כניסת Facebook בוטלה או שההרשאות הנדרשות לא אושרו.",
     "retry": "ניסיון נוסף"
   },
   "settings": {
@@ -423,7 +433,7 @@
     "tokenBody": "Access token נשמר בזיכרון ו־refresh token באחסון הסשן של הטאב. תשובות נשלחות עם מזהה אירוע קבוע לניסיון חוזר בטוח.",
     "availabilityTitle": "זמינות נוכחית",
     "authTerm": "כניסה והרשמה",
-    "authDescription": "אימייל ו־Google מחוברים ל־Core",
+    "authDescription": "אימייל, Google ו־Facebook מחוברים ל־Core",
     "libraryTerm": "ספרייה, תרגול והתקדמות",
     "libraryDescription": "מחוברים לממשקי GotIt V1",
     "mediaTerm": "קריאה, שמע והגייה",
@@ -1065,6 +1075,9 @@
     "INVALID_ACCESS_TOKEN": "הכניסה פגה. יש להיכנס מחדש.",
     "UNAUTHORIZED": "הכניסה פגה. יש להיכנס מחדש.",
     "CORE_AUTH_UNAVAILABLE": "שירות האימות אינו זמין כרגע. נסו שוב בעוד רגע.",
+    "FACEBOOK_AUTH_NOT_CONFIGURED": "כניסה עם Facebook אינה מוגדרת בסביבה הזו.",
+    "FACEBOOK_TOKEN_INVALID": "אישור Facebook אינו תקין או שפג תוקפו. נסו שוב.",
+    "FACEBOOK_EMAIL_REQUIRED": "Facebook לא מסר כתובת אימייל. אשרו גישה לאימייל או היכנסו עם אימייל וסיסמה.",
     "SPEECH_NOT_CONFIGURED": "האזנה והגייה אינן זמינות כרגע לשפת המילה הזו.",
     "SPEECH_UNAVAILABLE": "שירות השמע אינו זמין זמנית. נסו שוב בעוד רגע.",
     "AUDIO_INVALID": "ההקלטה לא נקלטה היטב. נסו להקליט שוב במקום שקט.",
@@ -1084,6 +1097,7 @@
     "requestFailed": "לא הצלחנו להשלים את הבקשה.",
     "invalidResponse": "השירות החזיר תשובה לא תקינה. נסו שוב.",
     "invalidGoogleCredential": "אישור Google אינו תקין. נסו שוב.",
+    "invalidFacebookCredential": "אישור Facebook אינו תקין. נסו שוב.",
     "sessionEnded": "הסשן הסתיים.",
     "signInRequired": "יש להיכנס לחשבון.",
     "audioUnavailable": "שמע אינו זמין. ודאו שהוגדר ספק דיבור בשרת.",

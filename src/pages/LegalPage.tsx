@@ -4,7 +4,7 @@ import { Logo } from "../components/Logo";
 
 export type LegalPageKind = "terms" | "privacy" | "refund";
 
-const EFFECTIVE_DATE = "September 22, 2026";
+const EFFECTIVE_DATE = "September 23, 2026";
 const SUPPORT_EMAIL = "ori@rbaseapp.com";
 
 const titles: Record<LegalPageKind, string> = {
@@ -189,7 +189,7 @@ function Privacy() {
           GotIt brand. This Privacy Policy explains how GotIt collects, uses,
           shares, and protects personal data when you use our website and
           service. It does not replace the separate privacy notices of Paddle,
-          Google, or other third parties you choose to use.
+          Google, Meta, or other third parties you choose to use.
         </p>
       </section>
 
@@ -199,8 +199,9 @@ function Privacy() {
           <li>
             <strong>Account data:</strong> email address, display name, account
             identifier, authentication method, and account status. If you use
-            Google sign-in, we receive identity information Google makes
-            available; we do not receive your Google password.
+            Google or Facebook sign-in, we receive the identity information
+            that provider makes available; we do not receive your password for
+            either provider.
           </li>
           <li>
             <strong>Learning data:</strong> saved words, translations, examples,
@@ -263,6 +264,7 @@ function Privacy() {
         <ul>
           <li>rbase Core, which provides GotIt account authentication;</li>
           <li>Google, when you choose Google sign-in or a Google-backed language or speech feature;</li>
+          <li>Meta, when you choose Facebook sign-in;</li>
           <li>Pixabay, when GotIt searches for a memorization image;</li>
           <li>Paddle, our reseller and Merchant of Record, for checkout, tax, subscription management, fraud prevention, and buyer support;</li>
           <li>hosting, database, security, translation, AI, reading, and speech providers used to deliver requested features; and</li>
@@ -279,9 +281,10 @@ function Privacy() {
         <h2>5. Browser storage</h2>
         <p>
           GotIt uses browser storage to keep a session active, remember product
-          state, and, if enabled, store demo-mode learning data locally. Google
-          and Paddle may use cookies or similar technologies when their sign-in
-          or checkout services are opened. We do not use advertising cookies.
+          state, and, if enabled, store demo-mode learning data locally. Google,
+          Meta, and Paddle may use cookies or similar technologies when their
+          sign-in or checkout services are opened. We do not use advertising
+          cookies.
           Clearing browser storage may sign you out or remove local demo data.
         </p>
       </section>
@@ -330,8 +333,8 @@ function Privacy() {
         </p>
         <p>
           You may also complain to the data-protection authority in your country.
-          For data processed independently by Paddle or Google, contact that
-          provider directly.
+          For data processed independently by Paddle, Google, or Meta, contact
+          that provider directly.
         </p>
       </section>
 

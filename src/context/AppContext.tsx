@@ -81,6 +81,7 @@ interface AppContextValue {
     password: string,
   ) => Promise<void>;
   authenticateGoogle: (idToken: string) => Promise<void>;
+  authenticateFacebook: (accessToken: string) => Promise<void>;
   startDemo: () => void;
   logout: () => Promise<void>;
   retryProfile: () => Promise<void>;
@@ -264,6 +265,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sessions: mode === "demo" ? demo.sessions : [],
     async authenticateGoogle(idToken) {
       const identity = await api.google(idToken);
+      setUser(identity);
+      setProfileError(i18n.t("session.loadingProfile"));
+      setNotice("");
+      writeStorage("gotit.mode", "live");
+      setLiveProfile({
+        ...defaultProfile,
+        email: identity.email,
+        name: identity.email.split("@")[0],
+      });
+      setMode("live");
+      try {
+        const result = await api.getProfile();
+        setLiveProfile((current) => ({ ...current, ...result }));
+        setProfileError("");
+      } catch (error) {
+        setProfileError(
+          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
+        );
+      }
+    },
+    async authenticateFacebook(accessToken) {
+      const identity = await api.facebook(accessToken);
       setUser(identity);
       setProfileError(i18n.t("session.loadingProfile"));
       setNotice("");

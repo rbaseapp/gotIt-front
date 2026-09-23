@@ -164,6 +164,22 @@ describe("production frontend gateway", () => {
     assert.equal(body.origin, null);
     assert.equal(JSON.parse(body.body).idToken, "opaque");
   });
+  it("allowlists Facebook authentication without forwarding provider secrets", async () => {
+    const response = await fetch(
+      `${gatewayOrigin}/core-api/api/v1/auth/facebook`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken: "opaque-facebook-token" }),
+      },
+    );
+    const body = await response.json();
+    assert.equal(body.path, "/api/v1/auth/facebook");
+    assert.equal(body.applicationKey, "gotit");
+    assert.deepEqual(JSON.parse(body.body), {
+      accessToken: "opaque-facebook-token",
+    });
+  });
   it("forwards product idempotency and strips arbitrary client headers", async () => {
     const response = await fetch(
       `${gatewayOrigin}/gotit-api/api/v1/practice/attempts`,

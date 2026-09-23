@@ -20,7 +20,7 @@ const mime = {
 const applePayAssociationPath =
   "/.well-known/apple-developer-merchantid-domain-association";
 const csp =
-  "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.paddle.com; connect-src 'self' https://accounts.google.com/gsi/ https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.paddle.com; frame-ancestors 'none'";
+  "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://connect.facebook.net https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.paddle.com; connect-src 'self' https://accounts.google.com/gsi/ https://*.facebook.com https://*.facebook.net https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.facebook.com https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.facebook.com https://*.paddle.com; frame-ancestors 'none'";
 function upstream(value, development) {
   const url = new URL(value);
   if (
@@ -180,7 +180,7 @@ export function createGateway(config) {
         if (
           !apiPath.startsWith("/api/v1/") ||
           (prefix === "/core-api" &&
-            !/^\/api\/v1\/(?:auth\/(?:login|register|google|refresh|logout|me)|billing\/(?:plans|status|checkout|portal))$/.test(apiPath))
+            !/^\/api\/v1\/(?:auth\/(?:login|register|google|facebook|refresh|logout|me)|billing\/(?:plans|status|checkout|portal))$/.test(apiPath))
         ) {
           fail(404, "NOT_FOUND");
           return;

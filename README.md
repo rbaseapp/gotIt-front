@@ -4,7 +4,7 @@
 
 ## יכולות
 
-- הרשמה וכניסה באימייל, כניסה/הרשמה עם Google Identity Services, רענון ויציאה.
+- הרשמה וכניסה באימייל, כניסה/הרשמה עם Google Identity Services או Facebook Login, רענון ויציאה.
 - פרופיל, שפות CEFR, אזור זמן, יעד יומי, תחומי עניין וכישורי למידה פעילים.
 - ספריית מילים אמיתית עם עימוד, חיפוש מקור, סינון, מיון, פעולות קבוצתיות, סל ושחזור.
 - capture בשני שלבים: preview, בחירת משמעות/מיזוג מפורש ושמירה idempotent.
@@ -32,6 +32,7 @@ GOTIT_API_PROXY_TARGET=http://localhost:3001
 VITE_CORE_API_URL=/core-api
 VITE_GOTIT_API_URL=/gotit-api
 VITE_GOOGLE_CLIENT_ID=<public-web-client-id>
+VITE_FACEBOOK_APP_ID=<public-meta-app-id>
 VITE_DEMO_MODE=true
 ```
 
@@ -61,8 +62,9 @@ Paddle chooses which enabled payment methods to show at runtime. Google Pay appe
 3. השאירו `CORE_API_PROXY_TARGET=https://rbase-core-api.onrender.com` ו־`GOTIT_API_PROXY_TARGET=https://gotit-backend.onrender.com`, או החליפו ב־HTTPS origins מאושרים.
 4. הגדירו ב־GotIt Backend את אותו origin בתוך `CORS_ORIGINS` והפעילו את גרסת ה־V1 המעודכנת והמיגרציות המאושרות שלה.
 5. ב־Google Cloud הוסיפו את origin המדויק ל־Authorized JavaScript origins והשלימו Branding, Homepage ו־Privacy Policy. לפיתוח הוסיפו `http://localhost:5173`.
-6. ודאו שב־Core אפליקציית `gotit` מוגדרת עם אותו OAuth Web Client ID. Basic login אינו דורש client secret.
-7. הריצו smoke: `/ready`, כניסה, `GET /capabilities`, הוספת מילה, תרגול אחד, logout וכניסת Google אמיתית.
+6. ב־Meta for Developers הגדירו את דומיין האתר ואת Valid OAuth Redirect URI, בקשו `email`, והשלימו App Review/Business Verification לפי דרישות מצב Live.
+7. ודאו שב־Core אפליקציית `gotit` מוגדרת עם Google OAuth Web Client ID ועם Facebook App ID, וש־App Secret קיים רק ב־`FACEBOOK_APP_SECRETS` של Core.
+8. הריצו smoke: `/ready`, כניסת אימייל/סיסמה, `GET /capabilities`, הוספת מילה, תרגול אחד, logout, כניסת Google וכניסת Facebook אמיתיות.
 
 ה־OAuth Client ID הוא מזהה פומבי ולכן קיים ב־build; מפתח Google Translation חייב להישאר רק בסביבת ה־backend. ספק קריאה/AI, Google Translate וספק דיבור נחשפים דרך capabilities או שגיאת unavailable, לעולם לא דרך תוצאה מדומה.
 

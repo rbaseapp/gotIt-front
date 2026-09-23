@@ -14,13 +14,14 @@ import {
 import { Logo } from "../components/Logo";
 import { useApp } from "../context/AppContext";
 import { GoogleSignIn } from "../components/GoogleSignIn";
+import { FacebookSignIn } from "../components/FacebookSignIn";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
 
 export function AuthPage() {
   const { t } = useTranslation();
-  const { authenticate, authenticateGoogle, startDemo } = useApp();
+  const { authenticate, authenticateGoogle, authenticateFacebook, startDemo } = useApp();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -173,6 +174,22 @@ export function AuthPage() {
                 .finally(() => setLoading(false));
             }}
           />
+          <FacebookSignIn
+            disabled={loading}
+            onCredential={(token) => {
+              setLoading(true);
+              setError("");
+              void authenticateFacebook(token)
+                .catch((reason) =>
+                  setError(
+                    reason instanceof Error
+                      ? reason.message
+                      : t("auth.facebookError"),
+                  ),
+                )
+                .finally(() => setLoading(false));
+            }}
+          />
           {import.meta.env.VITE_DEMO_MODE === "true" && (
             <>
               <button
@@ -201,7 +218,7 @@ export function AuthPage() {
             </button>
           </p>
           <p className="auth-footnote">
-            {t("auth.googleNote")}
+            {t("auth.socialNote")}
           </p>
           <nav className="auth-legal-links" aria-label={t("auth.legalNavigation")}>
             <Link to="/terms-of-service">{t("auth.terms")}</Link>
