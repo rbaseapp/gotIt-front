@@ -265,13 +265,12 @@ export const studyCardsSchema = z.object({
 export const studyImageSchema = z.object({
   image: z
     .object({
-      url: z.string().url(),
+      url: z
+        .string()
+        .max(4_100_000)
+        .regex(/^data:image\/webp;base64,[A-Za-z0-9+/]+={0,2}$/u),
       alt: z.string(),
-      creator: z.string().nullable(),
-      creatorUrl: z.string().url().nullable(),
-      license: z.string().nullable(),
-      licenseUrl: z.string().url().nullable(),
-      sourceUrl: z.string().url(),
+      generated: z.literal(true),
     })
     .nullable(),
 });

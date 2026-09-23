@@ -346,19 +346,15 @@ progress::-webkit-progress-value {
   line-height: 1.9;
 }
 .study-toolbar .study-skip {
-  border: 0;
-  color: var(--green);
-  background: transparent;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
+  min-height: 40px;
+  padding-inline: 18px;
+  white-space: nowrap;
 }
 .study-toolbar {
   justify-content: space-between;
 }
 .study-toolbar .study-skip:disabled {
   opacity: 0.55;
-  cursor: default;
 }
 .memorization-card {
   padding: 28px;

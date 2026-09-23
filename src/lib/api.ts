@@ -85,7 +85,11 @@ async function request(
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(
-        path.startsWith("reading") || path === "import" ? 75000 : 20000,
+        path.startsWith("reading") ||
+          path === "import" ||
+          (path.includes("/study/") && path.endsWith("/image"))
+          ? 75000
+          : 20000,
       ),
       credentials: "omit",
     });

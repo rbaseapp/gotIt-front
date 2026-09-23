@@ -12,6 +12,7 @@ import { FeedbackProvider } from "../src/components/Feedback";
 
 vi.mock("../src/lib/voice", () => ({ recordVoice: vi.fn() }));
 const itemId = "11111111-1111-4111-8111-111111111111";
+const secondItemId = "44444444-4444-4444-8444-444444444444";
 const sessionId = "22222222-2222-4222-8222-222222222222";
 const exerciseId = "33333333-3333-4333-8333-333333333333";
 const date = "2026-09-15T10:00:00.000Z";
@@ -103,7 +104,7 @@ function mount(
 }
 afterEach(clearTokens);
 describe("live server-backed flows", () => {
-  it("shows an illustrated memorization stage before smart review and lets the user skip it", async () => {
+  it("moves through memorization cards and offers one prominent review skip", async () => {
     const smartSession = { ...session, sessionType: "smart_review" };
     const fetchMock = mount("/learn/session/smart", async (url) => {
       if (url.endsWith("/practice/sessions"))
@@ -120,18 +121,26 @@ describe("live server-backed flows", () => {
               context: "Remember this moment.",
               audioUrl: null,
             },
+            {
+              learningItemId: secondItemId,
+              sourceText: "apple",
+              translationText: "תפוח",
+              sourceLanguageCode: "en",
+              translationLanguageCode: "he",
+              context: "A red apple on the table.",
+              audioUrl: null,
+            },
           ],
         });
-      if (url.endsWith(`/study/${itemId}/image`))
+      if (
+        url.endsWith(`/study/${itemId}/image`) ||
+        url.endsWith(`/study/${secondItemId}/image`)
+      )
         return json({
           image: {
-            url: "https://api.openverse.org/v1/images/example/thumb/",
+            url: "data:image/webp;base64,UklGRgAAAABXRUJQ",
             alt: "A memory aid",
-            creator: "Example creator",
-            creatorUrl: null,
-            license: "CC0 1.0",
-            licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
-            sourceUrl: "https://example.test/image",
+            generated: true,
           },
         });
       if (url.endsWith("/exercises"))
@@ -150,6 +159,17 @@ describe("live server-backed flows", () => {
     expect(screen.getByText("לזכור")).toBeInTheDocument();
     expect(
       await screen.findByRole("img", { name: "A memory aid" }),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith("/exercises")),
+    ).toBe(false);
+
+    expect(
+      screen.queryByRole("button", { name: "דלג על המילה הזו" }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "למילה הבאה" }));
+    expect(
+      await screen.findByRole("heading", { name: "apple" }),
     ).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/exercises")),

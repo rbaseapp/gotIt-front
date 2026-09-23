@@ -520,11 +520,12 @@ export function LiveGameSessionPage() {
               </span>
               <span>היכרות לפני החזרה</span>
               <button
-                className="study-skip"
+                className="button primary study-skip"
                 disabled={busy}
                 onClick={() => void beginReview()}
               >
                 דלג לחזרה
+                <ArrowLeft size={17} />
               </button>
             </div>
             <progress
@@ -558,38 +559,7 @@ export function LiveGameSessionPage() {
                 )}
                 {studyImage && !studyImageFailed && (
                   <small className="image-credit">
-                    תמונה:{" "}
-                    {studyImage.creatorUrl ? (
-                      <a
-                        href={studyImage.creatorUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {studyImage.creator || "יוצר לא ידוע"}
-                      </a>
-                    ) : (
-                      studyImage.creator || "יוצר לא ידוע"
-                    )}
-                    {" · "}
-                    {studyImage.licenseUrl ? (
-                      <a
-                        href={studyImage.licenseUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {studyImage.license || "רישיון פתוח"}
-                      </a>
-                    ) : (
-                      studyImage.license || "רישיון פתוח"
-                    )}
-                    {" · "}
-                    <a
-                      href={studyImage.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      מקור
-                    </a>
+                    איור שנוצר במיוחד כדי להמחיש את משמעות המילה
                   </small>
                 )}
               </div>
@@ -612,13 +582,6 @@ export function LiveGameSessionPage() {
                 )}
               </div>
               <div className="memorization-actions">
-                <button
-                  className="button ghost"
-                  disabled={busy}
-                  onClick={() => void beginReview()}
-                >
-                  דלג על השינון
-                </button>
                 <button
                   className="button primary"
                   disabled={busy}

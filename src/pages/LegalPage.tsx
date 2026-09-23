@@ -206,8 +206,10 @@ function Privacy() {
             <strong>Learning data:</strong> saved words, translations, examples,
             context, source-page details you submit, language preferences,
             reading material, answers, practice history, scores, and progress.
-            When the memorization image feature is used, the word being studied
-            is sent to Openverse to find a relevant openly licensed image.
+            When the memorization image feature is used, the word, translation,
+            language codes, and a bounded current context sentence are sent to
+            the configured AI image provider to create an illustration. The
+            generated image is cached with the current learning revision.
           </li>
           <li>
             <strong>Voice data:</strong> when you actively use pronunciation
@@ -259,7 +261,6 @@ function Privacy() {
         <ul>
           <li>rbase Core, which provides GotIt account authentication;</li>
           <li>Google, when you choose Google sign-in or a Google-backed language or speech feature;</li>
-          <li>Openverse, when GotIt looks up an image for a memorization card;</li>
           <li>Paddle, our reseller and Merchant of Record, for checkout, tax, subscription management, fraud prevention, and buyer support;</li>
           <li>hosting, database, security, translation, AI, reading, and speech providers used to deliver requested features; and</li>
           <li>authorities or advisers when required by law or reasonably necessary to protect rights, safety, and the service.</li>
