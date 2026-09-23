@@ -150,8 +150,12 @@ export function LiveGameSessionPage() {
       "POST",
       {
         count: Math.max(1, Math.min(count, value.itemCount, 20)),
-        kind: modes[type] === "matching" ? "multiple_choice" : kind,
-        direction,
+        ...(type === "smart"
+          ? {}
+          : {
+              kind: modes[type] === "matching" ? "multiple_choice" : kind,
+              direction,
+            }),
       },
     );
     if (mounted.current) {
@@ -447,7 +451,7 @@ export function LiveGameSessionPage() {
                   }
                 />
               </label>
-              {!["listening", "pronunciation"].includes(type) && (
+              {!["listening", "pronunciation", "smart"].includes(type) && (
                 <label className="field">
                   <span>כיוון התרגול</span>
                   <select
@@ -459,7 +463,7 @@ export function LiveGameSessionPage() {
                   </select>
                 </label>
               )}
-              {["recall", "smart", "article_quiz"].includes(type) && (
+              {["recall", "article_quiz"].includes(type) && (
                 <label className="field">
                   <span>סוג תשובה</span>
                   <select
