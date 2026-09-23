@@ -17,8 +17,11 @@ import { Modal } from "../components/Modal";
 import type { UserProfile } from "../types";
 import { labels } from "../lib/product";
 import { LANGUAGE_OPTIONS } from "../lib/languages";
+import { useTranslation } from "react-i18next";
+import { UiLanguageSelect } from "../components/UiLanguageSelect";
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   const {
     profile,
     updateProfile,
@@ -99,6 +102,10 @@ export function SettingsPage() {
         className="settings-layout"
       >
         <nav className="settings-nav">
+          <a href="#interface">
+            <Globe2 size={18} />
+            {t("settings.interfaceSection")}
+          </a>
           <a href="#profile">
             <UserRound size={18} />
             פרופיל
@@ -117,6 +124,19 @@ export function SettingsPage() {
             className="settings-form-body"
             disabled={saving || !!profileError}
           >
+            <section className="settings-card" id="interface">
+              <div className="settings-card-heading">
+                <span className="settings-icon purple">
+                  <Globe2 size={21} />
+                </span>
+                <div>
+                  <h2>{t("settings.interfaceSection")}</h2>
+                  <p>{t("settings.interfaceDescription")}</p>
+                </div>
+              </div>
+              <UiLanguageSelect />
+              <p className="muted-note">{t("settings.savedLocally")}</p>
+            </section>
             <section className="settings-card" id="profile">
               <div className="settings-card-heading">
                 <span className="settings-icon green">

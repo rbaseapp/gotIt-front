@@ -15,8 +15,11 @@ import { Logo } from "../components/Logo";
 import { useApp } from "../context/AppContext";
 import { GoogleSignIn } from "../components/GoogleSignIn";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { UiLanguageSelect } from "../components/UiLanguageSelect";
 
 export function AuthPage() {
+  const { t } = useTranslation();
   const { authenticate, authenticateGoogle, startDemo } = useApp();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -31,43 +34,43 @@ export function AuthPage() {
     try {
       await authenticate(mode, email, password);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "לא הצלחנו להתחבר");
+      setError(reason instanceof Error ? reason.message : t("auth.genericError"));
     } finally {
       setLoading(false);
     }
   };
   return (
     <div className="auth-page">
+      <UiLanguageSelect compact />
       <section className="auth-showcase">
         <Logo />
         <div className="showcase-copy">
           <span className="pill light">
             <Sparkles size={14} />
-            ללמוד מילים. באמת לזכור.
+            {t("auth.tagline")}
           </span>
           <h1>
-            כל מילה חדשה
+            {t("auth.headlineLine1")}
             <br />
-            יכולה להפוך
+            {t("auth.headlineLine2")}
             <br />
-            <em>לחלק ממך.</em>
+            <em>{t("auth.headlineEmphasis")}</em>
           </h1>
           <p>
-            GotIt הופכת מילים שפגשת בדרך לתרגול אישי, חכם וקצר — בדיוק בזמן
-            הנכון.
+            {t("auth.description")}
           </p>
           <ul>
             <li>
               <Check size={17} />
-              תרגול בקצב שלך
+              {t("auth.benefitPace")}
             </li>
             <li>
               <Check size={17} />
-              חמישה כישורי שפה, תמונה אחת ברורה
+              {t("auth.benefitSkills")}
             </li>
             <li>
               <Check size={17} />
-              מילים מתוך הקשר אמיתי
+              {t("auth.benefitContext")}
             </li>
           </ul>
         </div>
@@ -77,27 +80,27 @@ export function AuthPage() {
           </span>
           <div>
             <b dir="ltr">serendipity</b>
-            <small>תגלית מקרית משמחת</small>
+            <small>{t("auth.sampleTranslation")}</small>
           </div>
-          <em>מילת דוגמה</em>
+          <em>{t("auth.sampleWord")}</em>
         </div>
-        <p className="showcase-footer">© 2026 GotIt · נבנה כדי שתזכרו</p>
+        <p className="showcase-footer">{t("auth.footer")}</p>
       </section>
       <main className="auth-main">
         <div className="auth-mobile-logo">
           <Logo />
         </div>
         <div className="auth-card">
-          <p className="eyebrow">טוב לראות אותך</p>
-          <h2>{mode === "login" ? "כניסה ל־GotIt" : "יצירת חשבון חדש"}</h2>
+          <p className="eyebrow">{t("auth.welcome")}</p>
+          <h2>{mode === "login" ? t("auth.loginTitle") : t("auth.registerTitle")}</h2>
           <p>
             {mode === "login"
-              ? "החשבון שלך מאובטח באמצעות rbase Core."
-              : "כמה פרטים קטנים ואפשר להתחיל."}
+              ? t("auth.loginDescription")
+              : t("auth.registerDescription")}
           </p>
           <form onSubmit={submit} className="form-stack">
             <label className="field">
-              <span>כתובת אימייל</span>
+              <span>{t("auth.email")}</span>
               <div className="input-with-icon">
                 <Mail size={18} />
                 <input
@@ -114,7 +117,7 @@ export function AuthPage() {
               </div>
             </label>
             <label className="field">
-              <span>סיסמה</span>
+              <span>{t("auth.password")}</span>
               <div className="input-with-icon">
                 <LockKeyhole size={18} />
                 <input
@@ -127,13 +130,13 @@ export function AuthPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="12–128 תווים"
+                  placeholder={t("auth.passwordHint")}
                   dir="ltr"
                   disabled={loading}
                 />
                 <button
                   type="button"
-                  aria-label={showPassword ? "הסתרת סיסמה" : "הצגת סיסמה"}
+                  aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
                   onClick={() => setShowPassword((value) => !value)}
                 >
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -147,12 +150,12 @@ export function AuthPage() {
             )}
             <button className="button primary auth-submit" disabled={loading}>
               {loading && <LoaderCircle size={18} className="spin" />}
-              {mode === "login" ? "כניסה לחשבון" : "יצירת חשבון"}
+              {mode === "login" ? t("auth.loginSubmit") : t("auth.registerSubmit")}
               <ArrowLeft size={18} />
             </button>
           </form>
           <div className="or-divider">
-            <span>או</span>
+            <span>{t("auth.or")}</span>
           </div>
           <GoogleSignIn
             disabled={loading}
@@ -164,7 +167,7 @@ export function AuthPage() {
                   setError(
                     reason instanceof Error
                       ? reason.message
-                      : "כניסת Google נכשלה",
+                      : t("auth.googleError"),
                   ),
                 )
                 .finally(() => setLoading(false));
@@ -178,15 +181,15 @@ export function AuthPage() {
                 onClick={startDemo}
               >
                 <BookOpenCheck size={19} />
-                כניסה לסביבת ההדגמה<span>ללא הרשמה</span>
+                {t("auth.demoSubmit")}<span>{t("auth.noRegistration")}</span>
               </button>
               <p className="auth-footnote">
-                הדמו נפרד מחשבון אמיתי. נתוניו נשמרים בדפדפן בלבד.
+                {t("auth.demoNote")}
               </p>
             </>
           )}
           <p className="auth-switch">
-            {mode === "login" ? "עדיין אין לך חשבון?" : "כבר יש לך חשבון?"}{" "}
+            {mode === "login" ? t("auth.noAccount") : t("auth.hasAccount")}{" "}
             <button
               disabled={loading}
               onClick={() => {
@@ -194,17 +197,16 @@ export function AuthPage() {
                 setError("");
               }}
             >
-              {mode === "login" ? "הרשמה" : "כניסה"}
+              {mode === "login" ? t("auth.register") : t("auth.login")}
             </button>
           </p>
           <p className="auth-footnote">
-            Google מאפשר כניסה והרשמה באותו כפתור. איפוס סיסמה ואימות אימייל
-            אינם זמינים ב־Core הנוכחי.
+            {t("auth.googleNote")}
           </p>
-          <nav className="auth-legal-links" aria-label="מסמכים משפטיים">
-            <Link to="/terms-of-service">תנאי שימוש</Link>
-            <Link to="/privacy-policy">מדיניות פרטיות</Link>
-            <Link to="/refund-policy">מדיניות החזרים</Link>
+          <nav className="auth-legal-links" aria-label={t("auth.legalNavigation")}>
+            <Link to="/terms-of-service">{t("auth.terms")}</Link>
+            <Link to="/privacy-policy">{t("auth.privacy")}</Link>
+            <Link to="/refund-policy">{t("auth.refunds")}</Link>
           </nav>
         </div>
       </main>

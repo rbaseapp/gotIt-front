@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { LoaderCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useApp } from "./context/AppContext";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
@@ -72,6 +73,7 @@ const BillingCheckoutPage = lazy(() =>
 );
 
 export default function App() {
+  const { t } = useTranslation();
   const { mode, logout, notice } = useApp();
   const { toast } = useFeedback();
   const location = useLocation();
@@ -95,7 +97,7 @@ export default function App() {
         fallback={
           <div className="empty-session" role="status">
             <LoaderCircle className="spin" size={30} />
-            <p>טוענים את התשלום…</p>
+            <p>{t("app.loadingPayment")}</p>
           </div>
         }
       >
@@ -106,7 +108,7 @@ export default function App() {
     return (
       <div className="empty-session" role="status">
         <LoaderCircle className="spin" size={30} />
-        <p>בודקים את הכניסה שלך…</p>
+        <p>{t("app.checkingSession")}</p>
       </div>
     );
   if (mode === "signed-out") return <AuthPage />;
@@ -116,7 +118,7 @@ export default function App() {
         fallback={
           <div className="empty-session" role="status">
             <LoaderCircle className="spin" size={30} />
-            <p>טוענים את המסך…</p>
+            <p>{t("app.loadingScreen")}</p>
           </div>
         }
       >
@@ -210,12 +212,13 @@ export default function App() {
 }
 
 function LiveGameAccess({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { status, loading, hasEntitlement } = useSubscription();
   if (loading)
     return (
       <div className="empty-session" role="status">
         <LoaderCircle className="spin" size={30} />
-        <p>בודקים את הרשאות הלמידה…</p>
+        <p>{t("app.checkingAccess")}</p>
       </div>
     );
   return !status || hasEntitlement("practice.play") ? (

@@ -5,6 +5,7 @@ import { AppProvider } from "./context/AppContext";
 import App from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { FeedbackProvider } from "./components/Feedback";
+import "./i18n";
 import "./styles.css";
 import "./production.css";
 

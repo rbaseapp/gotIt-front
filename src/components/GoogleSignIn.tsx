@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { GOOGLE_CLIENT_ID } from "../config";
+import { useTranslation } from "react-i18next";
+import { normalizeUiLocale } from "../i18n";
 
 interface Identity {
   initialize(options: {
@@ -21,29 +23,27 @@ declare global {
 let loading: Promise<Identity> | undefined;
 let currentCallback: ((token: string) => void) | undefined;
 let initializedClient = "";
-function loadGoogle(): Promise<Identity> {
+function loadGoogle(locale: string): Promise<Identity> {
   if (window.google?.accounts.id)
     return Promise.resolve(window.google.accounts.id);
   if (loading) return loading;
   loading = new Promise<Identity>((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client?hl=he";
+    script.src = `https://accounts.google.com/gsi/client?hl=${encodeURIComponent(locale)}`;
     script.async = true;
     const timer = setTimeout(() => {
       script.remove();
-      reject(new Error("טעינת Google ארכה זמן רב. נסו שוב."));
+      reject(new Error("GOOGLE_LOAD_TIMEOUT"));
     }, 15000);
     script.onload = () => {
       clearTimeout(timer);
       if (window.google?.accounts.id) resolve(window.google.accounts.id);
-      else reject(new Error("Google אינו זמין כרגע."));
+      else reject(new Error("GOOGLE_UNAVAILABLE"));
     };
     script.onerror = () => {
       clearTimeout(timer);
       script.remove();
-      reject(
-        new Error("לא ניתן לטעון כניסה עם Google. בדקו חיבור או חסימת תוכן."),
-      );
+      reject(new Error("GOOGLE_LOAD_FAILED"));
     };
     document.head.append(script);
   }).catch((error) => {
@@ -59,6 +59,8 @@ export function GoogleSignIn({
   onCredential: (token: string) => void;
   disabled: boolean;
 }) {
+  const { t, i18n } = useTranslation();
+  const locale = normalizeUiLocale(i18n.resolvedLanguage) ?? "en";
   const ref = useRef<HTMLDivElement>(null);
   const callback = useRef(onCredential);
   callback.current = onCredential;
@@ -73,7 +75,7 @@ export function GoogleSignIn({
     const handler = (token: string) => {
       if (!cancelled && !busy.current) callback.current(token);
     };
-    void loadGoogle()
+    void loadGoogle(locale)
       .then((identity) => {
         if (cancelled || !ref.current) return;
         currentCallback = handler;
@@ -97,7 +99,7 @@ export function GoogleSignIn({
           size: "large",
           shape: "pill",
           text: "continue_with",
-          locale: "he",
+          locale,
           width: 320,
         });
         setError("");
@@ -105,21 +107,25 @@ export function GoogleSignIn({
       .catch((reason) => {
         if (!cancelled)
           setError(
-            reason instanceof Error ? reason.message : "Google אינו זמין",
+            reason instanceof Error && reason.message === "GOOGLE_LOAD_TIMEOUT"
+              ? t("google.timeout")
+              : reason instanceof Error && reason.message === "GOOGLE_LOAD_FAILED"
+                ? t("google.loadFailed")
+                : t("google.unavailable"),
           );
       });
     return () => {
       cancelled = true;
       if (currentCallback === handler) currentCallback = undefined;
     };
-  }, [clientId, retry]);
+  }, [clientId, locale, retry, t]);
   if (!clientId)
     return (
-      <p className="auth-footnote">כניסה עם Google אינה מוגדרת בסביבה הזו.</p>
+      <p className="auth-footnote">{t("google.notConfigured")}</p>
     );
   return (
     <div className="google-signin">
-      <div ref={ref} aria-label="כניסה או הרשמה עם Google" inert={disabled} />
+      <div ref={ref} aria-label={t("google.ariaLabel")} inert={disabled} />
       {error && (
         <p role="alert" className="form-error">
           {error}
@@ -128,7 +134,7 @@ export function GoogleSignIn({
             className="button ghost"
             onClick={() => setRetry((n) => n + 1)}
           >
-            ניסיון נוסף
+            {t("google.retry")}
           </button>
         </p>
       )}
