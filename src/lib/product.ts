@@ -268,9 +268,12 @@ export const studyImageSchema = z.object({
       url: z
         .string()
         .max(4_100_000)
-        .regex(/^data:image\/webp;base64,[A-Za-z0-9+/]+={0,2}$/u),
+        .regex(/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/u),
       alt: z.string(),
-      generated: z.literal(true),
+      generated: z.boolean(),
+      provider: z.string().optional(),
+      sourceUrl: z.string().url().nullable().optional(),
+      creator: z.string().nullable().optional(),
     })
     .nullable(),
 });

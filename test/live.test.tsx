@@ -132,17 +132,19 @@ describe("live server-backed flows", () => {
             },
           ],
         });
-      if (
-        url.endsWith(`/study/${itemId}/image`) ||
-        url.endsWith(`/study/${secondItemId}/image`)
-      )
+      if (url.endsWith(`/study/${itemId}/image`))
         return json({
           image: {
-            url: "data:image/webp;base64,UklGRgAAAABXRUJQ",
+            url: "data:image/jpeg;base64,/9j/4AECAwQ=",
             alt: "A memory aid",
-            generated: true,
+            generated: false,
+            provider: "Pixabay",
+            sourceUrl: "https://pixabay.com/photos/remember-1/",
+            creator: "Example photographer",
           },
         });
+      if (url.endsWith(`/study/${secondItemId}/image`))
+        return json({ image: null });
       if (url.endsWith("/exercises"))
         return json(
           { exercises: [exercise], algorithmVersion: "server-v1" },
@@ -161,6 +163,11 @@ describe("live server-backed flows", () => {
       await screen.findByRole("img", { name: "A memory aid" }),
     ).toBeInTheDocument();
     expect(
+      screen.getByRole("link", {
+        name: "תמונה מאת Example photographer דרך Pixabay",
+      }),
+    ).toHaveAttribute("href", "https://pixabay.com/photos/remember-1/");
+    expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/exercises")),
     ).toBe(false);
 
@@ -171,6 +178,10 @@ describe("live server-backed flows", () => {
     expect(
       await screen.findByRole("heading", { name: "apple" }),
     ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole("img")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("טוען תמונה")).not.toBeInTheDocument();
+    });
     expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/exercises")),
     ).toBe(false);

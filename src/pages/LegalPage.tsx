@@ -206,10 +206,12 @@ function Privacy() {
             <strong>Learning data:</strong> saved words, translations, examples,
             context, source-page details you submit, language preferences,
             reading material, answers, practice history, scores, and progress.
-            When the memorization image feature is used, the word, translation,
-            language codes, and a bounded current context sentence are sent to
-            the configured AI image provider to create an illustration. The
-            generated image is cached with the current learning revision.
+            When the memorization image feature is used, the word may be sent to
+            the configured stock-image provider to find a relevant image. If no
+            suitable result is available, the word, translation, language codes,
+            and a bounded current context sentence may be sent to the configured
+            AI image provider. The selected or generated image and its attribution
+            are cached with the current learning revision.
           </li>
           <li>
             <strong>Voice data:</strong> when you actively use pronunciation
@@ -261,6 +263,7 @@ function Privacy() {
         <ul>
           <li>rbase Core, which provides GotIt account authentication;</li>
           <li>Google, when you choose Google sign-in or a Google-backed language or speech feature;</li>
+          <li>Pixabay, when GotIt searches for a memorization image;</li>
           <li>Paddle, our reseller and Merchant of Record, for checkout, tax, subscription management, fraud prevention, and buyer support;</li>
           <li>hosting, database, security, translation, AI, reading, and speech providers used to deliver requested features; and</li>
           <li>authorities or advisers when required by law or reasonably necessary to protect rights, safety, and the service.</li>

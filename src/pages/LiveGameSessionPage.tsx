@@ -6,7 +6,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { z } from "zod";
-import { ArrowLeft, ArrowRight, ImageIcon, Mic, Volume2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mic, Volume2 } from "lucide-react";
 import { Logo } from "../components/Logo";
 import { LetterBoxesInput } from "../components/LetterBoxesInput";
 import { api } from "../lib/api";
@@ -535,34 +535,44 @@ export function LiveGameSessionPage() {
               aria-label="התקדמות בשינון"
             />
             <section className="memorization-card live-panel">
-              <div className="memorization-visual">
-                {studyImage && !studyImageFailed ? (
-                  <img
-                    src={studyImage.url}
-                    alt={studyImage.alt || `תמונה עבור ${studyCard.sourceText}`}
-                    onError={() => setStudyImageFailed(true)}
-                  />
-                ) : studyImage === undefined ? (
-                  <div
-                    className="memorization-image-loading"
-                    aria-label="טוען תמונה"
-                  />
-                ) : (
-                  <div
-                    className="memorization-image-fallback"
-                    role="img"
-                    aria-label="אין תמונה מתאימה"
-                  >
-                    <ImageIcon size={38} />
-                    <span dir="auto">{[...studyCard.sourceText][0]}</span>
-                  </div>
-                )}
-                {studyImage && !studyImageFailed && (
-                  <small className="image-credit">
-                    איור שנוצר במיוחד כדי להמחיש את משמעות המילה
-                  </small>
-                )}
-              </div>
+              {(studyImage === undefined ||
+                (studyImage && !studyImageFailed)) && (
+                <div className="memorization-visual">
+                  {studyImage ? (
+                    <img
+                      src={studyImage.url}
+                      alt={
+                        studyImage.alt || `תמונה עבור ${studyCard.sourceText}`
+                      }
+                      onError={() => setStudyImageFailed(true)}
+                    />
+                  ) : (
+                    <div
+                      className="memorization-image-loading"
+                      aria-label="טוען תמונה"
+                    />
+                  )}
+                  {studyImage && (
+                    <small className="image-credit">
+                      {studyImage.generated ? (
+                        "איור שנוצר במיוחד כדי להמחיש את משמעות המילה"
+                      ) : studyImage.sourceUrl ? (
+                        <a
+                          href={studyImage.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {studyImage.creator
+                            ? `תמונה מאת ${studyImage.creator} דרך ${studyImage.provider || "Pixabay"}`
+                            : `תמונה דרך ${studyImage.provider || "Pixabay"}`}
+                        </a>
+                      ) : (
+                        `תמונה דרך ${studyImage.provider || "מקור חיצוני"}`
+                      )}
+                    </small>
+                  )}
+                </div>
+              )}
               <div className="memorization-copy">
                 <p className="eyebrow">מכינים את הזיכרון</p>
                 <h1 dir="auto">{studyCard.sourceText}</h1>
