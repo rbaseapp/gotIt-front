@@ -50,6 +50,8 @@ npm audit --omit=dev --audit-level=high
 
 The authenticated `/billing` page shows Free + Pro, loads Paddle-formatted localized totals with `PricePreview`, starts an idempotent server-created transaction, and opens a one-page overlay checkout. It also opens Paddle's hosted customer portal for invoices, payment-method updates and cancellation. `/billing/checkout` is the public approved Paddle payment-link page used by transaction and payment-method-update links. In production set `PADDLE_CLIENT_TOKEN`, `PADDLE_ENVIRONMENT`, and `PADDLE_PRO_MONTHLY_PRICE_ID`; add `PADDLE_PRO_YEARLY_PRICE_ID` only after the matching yearly plan exists in Core. Local Vite development may use their `VITE_` equivalents. Secret Paddle API and webhook keys belong only in Core.
 
+Paddle chooses which enabled payment methods to show at runtime. Google Pay appears only on a supported Android/Chromebook device or in Google Chrome with an eligible Google Wallet. Apple Pay appears only on iPhone, iPad, or Safari on Mac over HTTPS with an eligible Apple Wallet. For direct Apple Pay checkout, the Paddle association file is published at `/.well-known/apple-developer-merchantid-domain-association`; after deployment, verify `gotit.rbaseapp.com` under **Paddle > Checkout > Website approval > Apple Pay verification**.
+
 ## Production / Render
 
 קובצי הפריסה הם `Dockerfile`, `render.yaml` ו־`server/gateway.mjs`. ה־gateway מגיש SPA, מבודד את יעדי ה־API בצד השרת, מגביל נתיבים/שיטות/גדלים, מעביר רק headers מאושרים ומוסיף CSP, HSTS, COOP, Permissions Policy ו־cache policy. הקונטיינר הסופי רץ כמשתמש לא־root ואינו כולל source או dev dependencies.

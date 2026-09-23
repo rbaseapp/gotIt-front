@@ -18,11 +18,20 @@ const listen = (server) =>
 before(async () => {
   directory = await mkdtemp(join(tmpdir(), "gotit-gateway-"));
   await mkdir(join(directory, "assets"));
+  await mkdir(join(directory, ".well-known"));
   await writeFile(
     join(directory, "index.html"),
     "<!doctype html><title>GotIt</title>",
   );
   await writeFile(join(directory, "assets", "app.js"), "export default 1");
+  await writeFile(
+    join(
+      directory,
+      ".well-known",
+      "apple-developer-merchantid-domain-association",
+    ),
+    "paddle-apple-pay-verification",
+  );
   upstream = http.createServer(async (req, res) => {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
@@ -90,6 +99,21 @@ describe("production frontend gateway", () => {
     const asset = await fetch(`${gatewayOrigin}/assets/app.js`);
     assert.match(asset.headers.get("cache-control"), /immutable/);
     assert.equal(await asset.text(), "export default 1");
+  });
+  it("serves only the Apple Pay association file from .well-known", async () => {
+    const association = await fetch(
+      `${gatewayOrigin}/.well-known/apple-developer-merchantid-domain-association`,
+    );
+    assert.equal(association.status, 200);
+    assert.equal(
+      association.headers.get("content-type"),
+      "text/plain; charset=utf-8",
+    );
+    assert.equal(await association.text(), "paddle-apple-pay-verification");
+    assert.equal(
+      (await fetch(`${gatewayOrigin}/.well-known/other-file`)).status,
+      400,
+    );
   });
   it("reports health without leaking configuration", async () => {
     const response = await fetch(`${gatewayOrigin}/ready`);

@@ -17,6 +17,8 @@ const mime = {
   ".woff2": "font/woff2",
   ".webp": "image/webp",
 };
+const applePayAssociationPath =
+  "/.well-known/apple-developer-merchantid-domain-association";
 const csp =
   "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.paddle.com; connect-src 'self' https://accounts.google.com/gsi/ https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.paddle.com; frame-ancestors 'none'";
 function upstream(value, development) {
@@ -132,7 +134,8 @@ export function createGateway(config) {
       const pathname = decodeURIComponent(url.pathname);
       if (
         pathname.includes("\0") ||
-        pathname.split("/").some((part) => part.startsWith("."))
+        (pathname !== applePayAssociationPath &&
+          pathname.split("/").some((part) => part.startsWith(".")))
       ) {
         fail(400, "INVALID_PATH");
         return;
@@ -324,7 +327,10 @@ export function createGateway(config) {
         fail(403, "INVALID_PATH");
         return;
       }
-      const contentType = mime[extname(target)];
+      const contentType =
+        pathname === applePayAssociationPath
+          ? "text/plain; charset=utf-8"
+          : mime[extname(target)];
       if (!contentType) {
         fail(404, "NOT_FOUND");
         return;
