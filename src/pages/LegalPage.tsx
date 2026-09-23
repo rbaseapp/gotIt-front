@@ -460,9 +460,7 @@ export function LegalPage({ kind }: { kind: LegalPageKind }) {
   return (
     <div className="legal-page" dir="ltr" lang="en">
       <header className="legal-header">
-        <Link to="/" aria-label="GotIt home">
-          <Logo />
-        </Link>
+        <Logo />
         <nav aria-label="Legal policies">
           <Link className={kind === "terms" ? "active" : ""} to="/terms-of-service">Terms</Link>
           <Link className={kind === "privacy" ? "active" : ""} to="/privacy-policy">Privacy</Link>

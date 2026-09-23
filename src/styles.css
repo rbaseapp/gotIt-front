@@ -219,37 +219,23 @@ select:focus-visible {
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  border-radius: 8px;
 }
-.brand-mark {
+.brand-logo {
+  display: block;
+  width: 180px;
+  height: auto;
+  border-radius: 6px;
+}
+.brand-icon {
+  display: block;
   width: 37px;
   height: 37px;
   border-radius: 11px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  background: var(--green);
   box-shadow: 0 6px 14px rgba(44, 122, 98, 0.25);
 }
-.auth-showcase .brand-mark {
-  color: #285e4c;
-  background: #f7e1a7;
-}
-.brand-word {
-  color: var(--ink);
-  font-size: 25px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  direction: ltr;
-}
-.brand-word span {
-  color: var(--green);
-}
-.auth-showcase .brand-word {
-  color: #fff;
-}
-.auth-showcase .brand-word span {
-  color: #f4c976;
+.auth-showcase .brand-logo {
+  width: 220px;
 }
 .showcase-copy {
   position: relative;

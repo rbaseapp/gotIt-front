@@ -59,7 +59,7 @@ export function AppShell({
     <div className="app-layout">
       <aside className={`sidebar ${mobileOpen ? "mobile-open" : ""}`}>
         <div className="sidebar-top">
-          <Logo />
+          <Logo onClick={() => setMobileOpen(false)} />
           <button
             className="mobile-close icon-button"
             aria-label="סגירת תפריט"
