@@ -434,7 +434,7 @@ export function LiveVocabularyPage() {
             {selected.length > 0 && filters.userStatus !== "deleted" && (
               <Link
                 className="button primary"
-                to={`/learn/session/recall?items=${selected.join(",")}`}
+                to={`/learn/session/smart?items=${selected.join(",")}`}
               >
                 {t("vocabulary.practiceSelected")}
               </Link>
@@ -761,7 +761,7 @@ function DetailForm({
       </p>
       <Link
         className="button primary"
-        to={`/learn/session/recall?items=${item.id}`}
+        to={`/learn/session/smart?items=${item.id}`}
       >
         {t("vocabulary.practiceWord")}
       </Link>

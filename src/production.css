@@ -281,6 +281,9 @@ progress::-webkit-progress-value {
   background: white;
   gap: 20px;
 }
+.live-session .session-topbar .brand-logo {
+  width: 220px;
+}
 .live-session-main {
   max-width: 800px;
   padding: 40px 24px;

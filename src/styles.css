@@ -245,7 +245,7 @@ select:focus-visible {
 }
 .brand-logo {
   display: block;
-  width: 180px;
+  width: 220px;
   height: auto;
   border-radius: 6px;
 }
@@ -257,7 +257,8 @@ select:focus-visible {
   box-shadow: 0 6px 14px rgba(44, 122, 98, 0.25);
 }
 .auth-showcase .brand-logo {
-  width: 220px;
+  width: 280px;
+  box-shadow: 0 12px 30px rgba(15, 44, 35, 0.22);
 }
 .showcase-copy {
   position: relative;
@@ -524,10 +525,13 @@ select:focus-visible {
   flex-direction: column;
 }
 .sidebar-top {
-  margin: 0 7px 30px;
+  margin: 0 0 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.sidebar-top .brand-logo {
+  width: 200px;
 }
 .add-word-button {
   width: 100%;
@@ -644,6 +648,9 @@ select:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.legal-header .brand-logo {
+  width: 200px;
 }
 .legal-header nav a {
   padding: 8px 11px;
@@ -3280,9 +3287,13 @@ select:focus-visible {
     box-shadow: var(--shadow-md);
   }
   .sidebar {
+    width: min(280px, calc(100vw - 24px));
     transform: translateX(105%);
     transition: transform 0.22s ease;
     box-shadow: -15px 0 40px rgba(30, 47, 40, 0.18);
+  }
+  .sidebar-top .brand-logo {
+    width: 184px;
   }
   .sidebar.mobile-open {
     transform: translateX(0);

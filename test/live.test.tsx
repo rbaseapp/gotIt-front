@@ -106,52 +106,55 @@ afterEach(clearTokens);
 describe("live server-backed flows", () => {
   it("moves through memorization cards and offers one prominent review skip", async () => {
     const smartSession = { ...session, sessionType: "smart_review" };
-    const fetchMock = mount("/learn/session/smart", async (url) => {
-      if (url.endsWith("/practice/sessions"))
-        return json({ session: smartSession });
-      if (url.endsWith(`/practice/sessions/${sessionId}/study`))
-        return json({
-          cards: [
-            {
-              learningItemId: itemId,
-              sourceText: "remember",
-              translationText: "לזכור",
-              sourceLanguageCode: "en",
-              translationLanguageCode: "he",
-              context: "Remember this moment.",
-              audioUrl: null,
+    const fetchMock = mount(
+      "/learn/session/smart",
+      async (url) => {
+        if (url.endsWith("/practice/sessions"))
+          return json({ session: smartSession });
+        if (url.endsWith(`/practice/sessions/${sessionId}/study`))
+          return json({
+            cards: [
+              {
+                learningItemId: itemId,
+                sourceText: "remember",
+                translationText: "לזכור",
+                sourceLanguageCode: "en",
+                translationLanguageCode: "he",
+                context: "Remember this moment.",
+                audioUrl: null,
+              },
+              {
+                learningItemId: secondItemId,
+                sourceText: "apple",
+                translationText: "תפוח",
+                sourceLanguageCode: "en",
+                translationLanguageCode: "he",
+                context: "A red apple on the table.",
+                audioUrl: null,
+              },
+            ],
+          });
+        if (url.endsWith(`/study/${itemId}/image`))
+          return json({
+            image: {
+              url: "data:image/jpeg;base64,/9j/4AECAwQ=",
+              alt: "A memory aid",
+              generated: false,
+              provider: "Pixabay",
+              sourceUrl: "https://pixabay.com/photos/remember-1/",
+              creator: "Example photographer",
             },
-            {
-              learningItemId: secondItemId,
-              sourceText: "apple",
-              translationText: "תפוח",
-              sourceLanguageCode: "en",
-              translationLanguageCode: "he",
-              context: "A red apple on the table.",
-              audioUrl: null,
-            },
-          ],
-        });
-      if (url.endsWith(`/study/${itemId}/image`))
-        return json({
-          image: {
-            url: "data:image/jpeg;base64,/9j/4AECAwQ=",
-            alt: "A memory aid",
-            generated: false,
-            provider: "Pixabay",
-            sourceUrl: "https://pixabay.com/photos/remember-1/",
-            creator: "Example photographer",
-          },
-        });
-      if (url.endsWith(`/study/${secondItemId}/image`))
-        return json({ image: null });
-      if (url.endsWith("/exercises"))
-        return json(
-          { exercises: [exercise], algorithmVersion: "server-v1" },
-          201,
-        );
-      throw new Error("Unexpected route");
-    });
+          });
+        if (url.endsWith(`/study/${secondItemId}/image`))
+          return json({ image: null });
+        if (url.endsWith("/exercises"))
+          return json(
+            { exercises: [exercise], algorithmVersion: "server-v1" },
+            201,
+          );
+        throw new Error("Unexpected route");
+      },
+    );
     const user = userEvent.setup();
 
     await user.click(await screen.findByRole("button", { name: "מתחילים" }));
@@ -377,15 +380,11 @@ describe("live server-backed flows", () => {
       fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH"),
     ).toBe(false);
 
-    await user.click(
-      screen.getByRole("button", { name: "להמשיך ללמוד" }),
-    );
+    await user.click(screen.getByRole("button", { name: "להמשיך ללמוד" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "יציאה" }));
-    await user.click(
-      screen.getByRole("button", { name: "יציאה מהתרגול" }),
-    );
+    await user.click(screen.getByRole("button", { name: "יציאה מהתרגול" }));
     await waitFor(() =>
       expect(
         fetchMock.mock.calls.some(
