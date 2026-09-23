@@ -33,7 +33,7 @@ describe("public legal policies", () => {
   ])("renders %s without requiring an account", (path, title) => {
     mount(path);
     expect(screen.getByRole("heading", { level: 1, name: title })).toBeInTheDocument();
-    expect(screen.getByText("Effective date: September 22, 2026")).toBeInTheDocument();
+    expect(screen.getByText("Effective date: September 23, 2026")).toBeInTheDocument();
   });
 
   it("links all policies together", async () => {

@@ -4,6 +4,7 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     healthCheckPath: /ready
+    autoDeployTrigger: commit
     envVars:
       - key: CORE_API_PROXY_TARGET
         value: https://rbase-core-api.onrender.com
