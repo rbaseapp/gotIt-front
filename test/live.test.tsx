@@ -103,6 +103,69 @@ function mount(
 }
 afterEach(clearTokens);
 describe("live server-backed flows", () => {
+  it("shows an illustrated memorization stage before smart review and lets the user skip it", async () => {
+    const smartSession = { ...session, sessionType: "smart_review" };
+    const fetchMock = mount("/learn/session/smart", async (url) => {
+      if (url.endsWith("/practice/sessions"))
+        return json({ session: smartSession });
+      if (url.endsWith(`/practice/sessions/${sessionId}/study`))
+        return json({
+          cards: [
+            {
+              learningItemId: itemId,
+              sourceText: "remember",
+              translationText: "לזכור",
+              sourceLanguageCode: "en",
+              translationLanguageCode: "he",
+              context: "Remember this moment.",
+              audioUrl: null,
+            },
+          ],
+        });
+      if (url.endsWith(`/study/${itemId}/image`))
+        return json({
+          image: {
+            url: "https://api.openverse.org/v1/images/example/thumb/",
+            alt: "A memory aid",
+            creator: "Example creator",
+            creatorUrl: null,
+            license: "CC0 1.0",
+            licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+            sourceUrl: "https://example.test/image",
+          },
+        });
+      if (url.endsWith("/exercises"))
+        return json(
+          { exercises: [exercise], algorithmVersion: "server-v1" },
+          201,
+        );
+      throw new Error("Unexpected route");
+    });
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole("button", { name: "מתחילים" }));
+    expect(
+      await screen.findByRole("heading", { name: "remember" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("לזכור")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("img", { name: "A memory aid" }),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith("/exercises")),
+    ).toBe(false);
+
+    await user.click(screen.getByRole("button", { name: "דלג לחזרה" }));
+    expect(
+      await screen.findByRole("heading", { name: "לזכור" }),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.filter(([url]) => url.endsWith("/exercises")),
+    ).toHaveLength(1);
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith("/practice/attempts")),
+    ).toBe(false);
+  });
   it("keeps speech games available when the provider is configured and profile languages are empty", async () => {
     mount("/learn", async (url) => {
       if (url.endsWith("/capabilities"))

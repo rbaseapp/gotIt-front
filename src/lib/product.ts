@@ -249,6 +249,33 @@ export const sessionSchema = z.object({
   algorithmVersion: z.string(),
 });
 export type Session = z.infer<typeof sessionSchema>;
+export const studyCardSchema = z.object({
+  learningItemId: uuid,
+  sourceText: z.string(),
+  translationText: z.string(),
+  sourceLanguageCode: z.string(),
+  translationLanguageCode: z.string(),
+  context: z.string().nullable(),
+  audioUrl: z.string().nullable(),
+});
+export type StudyCard = z.infer<typeof studyCardSchema>;
+export const studyCardsSchema = z.object({
+  cards: z.array(studyCardSchema).min(1).max(20),
+});
+export const studyImageSchema = z.object({
+  image: z
+    .object({
+      url: z.string().url(),
+      alt: z.string(),
+      creator: z.string().nullable(),
+      creatorUrl: z.string().url().nullable(),
+      license: z.string().nullable(),
+      licenseUrl: z.string().url().nullable(),
+      sourceUrl: z.string().url(),
+    })
+    .nullable(),
+});
+export type StudyImage = z.infer<typeof studyImageSchema>["image"];
 export const exerciseSchema = z.object({
   id: uuid,
   learningItemId: uuid,

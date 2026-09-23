@@ -18,7 +18,7 @@ const mime = {
   ".webp": "image/webp",
 };
 const csp =
-  "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.paddle.com; connect-src 'self' https://accounts.google.com/gsi/ https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.paddle.com; frame-ancestors 'none'";
+  "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://api.openverse.org https://*.googleusercontent.com https://*.paddle.com; connect-src 'self' https://accounts.google.com/gsi/ https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.paddle.com; frame-ancestors 'none'";
 function upstream(value, development) {
   const url = new URL(value);
   if (

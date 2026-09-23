@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -6,7 +6,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { z } from "zod";
-import { ArrowRight, Mic, Volume2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ImageIcon, Mic, Volume2 } from "lucide-react";
 import { Logo } from "../components/Logo";
 import { LetterBoxesInput } from "../components/LetterBoxesInput";
 import { api } from "../lib/api";
@@ -19,15 +19,20 @@ import {
   masteryRequirementText,
   product,
   sessionSchema,
+  studyCardsSchema,
+  studyImageSchema,
   uuid,
   type AttemptReceipt,
   type Exercise,
   type Intent,
   type Session,
+  type StudyCard,
+  type StudyImage,
 } from "../lib/product";
 import { recordVoice } from "../lib/voice";
 import { useApp } from "../context/AppContext";
 import { useFeedback } from "../components/Feedback";
+import { speak } from "../lib/utils";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -46,6 +51,10 @@ export function LiveGameSessionPage() {
   const { profile, updateProfile } = useApp();
   const { confirm, toast } = useFeedback();
   const [session, setSession] = useState<Session>();
+  const [studyCards, setStudyCards] = useState<StudyCard[]>([]);
+  const [studyIndex, setStudyIndex] = useState(0);
+  const [studyImage, setStudyImage] = useState<StudyImage | undefined>();
+  const [studyImageFailed, setStudyImageFailed] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -67,7 +76,34 @@ export function LiveGameSessionPage() {
   const audioUrl = useRef<string | undefined>(undefined);
   const shownAt = useRef(performance.now());
   const exercise = exercises[index];
+  const studyCard = studyCards[studyIndex];
   const masteryRequirements = receipt?.progress.masteryRequirements;
+  const playStudyCard = useCallback(
+    async (card: StudyCard, reportError = true) => {
+      try {
+        audio.current?.pause();
+        if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
+        if (!card.audioUrl) {
+          if (!speak(card.sourceText, card.sourceLanguageCode) && reportError)
+            setError("הקראה אינה זמינה במכשיר הזה.");
+          return;
+        }
+        const blob = await api.audio(card.learningItemId);
+        if (!mounted.current) return;
+        audioUrl.current = URL.createObjectURL(blob);
+        audio.current = new Audio(audioUrl.current);
+        await audio.current.play();
+      } catch {
+        if (
+          !speak(card.sourceText, card.sourceLanguageCode) &&
+          reportError &&
+          mounted.current
+        )
+          setError("לא הצלחנו להשמיע את המילה כרגע.");
+      }
+    },
+    [],
+  );
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -81,6 +117,29 @@ export function LiveGameSessionPage() {
     audio.current?.pause();
     shownAt.current = performance.now();
   }, [exercise?.id]);
+  useEffect(() => {
+    if (!studyCard || !session) return;
+    let current = true;
+    setStudyImage(undefined);
+    setStudyImageFailed(false);
+    void product(
+      studyImageSchema,
+      `practice/sessions/${session.id}/study/${studyCard.learningItemId}/image`,
+    )
+      .then((result) => {
+        if (current) setStudyImage(result.image);
+      })
+      .catch(() => {
+        if (current) setStudyImage(null);
+      });
+    const playback = window.setTimeout(() => {
+      if (current) void playStudyCard(studyCard, false);
+    }, 250);
+    return () => {
+      current = false;
+      window.clearTimeout(playback);
+    };
+  }, [playStudyCard, session, studyCard]);
   const issue = async (value: Session) => {
     const result = await product(
       z.object({
@@ -98,6 +157,16 @@ export function LiveGameSessionPage() {
     if (mounted.current) {
       setExercises(result.exercises);
       setIndex(0);
+    }
+  };
+  const loadStudy = async (value: Session) => {
+    const result = await product(
+      studyCardsSchema,
+      `practice/sessions/${value.id}/study`,
+    );
+    if (mounted.current) {
+      setStudyCards(result.cards);
+      setStudyIndex(0);
     }
   };
   const start = async () => {
@@ -166,7 +235,28 @@ export function LiveGameSessionPage() {
         }
         if (mounted.current) setSession(value);
       }
-      if (value.status === "active") await issue(value);
+      if (value.status === "active") {
+        if (type === "smart" && value.attemptCount === 0)
+          await loadStudy(value);
+        else await issue(value);
+      }
+    } catch (reason) {
+      if (mounted.current) setError(errorMessage(reason));
+    } finally {
+      lock.current = false;
+      if (mounted.current) setBusy(false);
+    }
+  };
+  const beginReview = async () => {
+    if (!session || lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    audio.current?.pause();
+    window.speechSynthesis?.cancel();
+    try {
+      await issue(session);
+      if (mounted.current) setStudyCards([]);
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
     } finally {
@@ -329,7 +419,7 @@ export function LiveGameSessionPage() {
             {error}
           </div>
         )}
-        {!exercise && session?.status !== "completed" && (
+        {!exercise && !studyCard && session?.status !== "completed" && (
           <section className="live-panel form-stack">
             <p className="eyebrow">תרגול אישי מהשרת</p>
             <h1>{labels[modes[type]]}</h1>
@@ -422,6 +512,132 @@ export function LiveGameSessionPage() {
               להתקדמות שלי
             </Link>
           </section>
+        ) : studyCard ? (
+          <>
+            <div className="live-toolbar study-toolbar">
+              <span>
+                שינון {studyIndex + 1} מתוך {studyCards.length}
+              </span>
+              <span>היכרות לפני החזרה</span>
+              <button
+                className="study-skip"
+                disabled={busy}
+                onClick={() => void beginReview()}
+              >
+                דלג לחזרה
+              </button>
+            </div>
+            <progress
+              className="live-session-progress"
+              value={studyIndex + 1}
+              max={studyCards.length}
+              aria-label="התקדמות בשינון"
+            />
+            <section className="memorization-card live-panel">
+              <div className="memorization-visual">
+                {studyImage && !studyImageFailed ? (
+                  <img
+                    src={studyImage.url}
+                    alt={studyImage.alt || `תמונה עבור ${studyCard.sourceText}`}
+                    onError={() => setStudyImageFailed(true)}
+                  />
+                ) : studyImage === undefined ? (
+                  <div
+                    className="memorization-image-loading"
+                    aria-label="טוען תמונה"
+                  />
+                ) : (
+                  <div
+                    className="memorization-image-fallback"
+                    role="img"
+                    aria-label="אין תמונה מתאימה"
+                  >
+                    <ImageIcon size={38} />
+                    <span dir="auto">{[...studyCard.sourceText][0]}</span>
+                  </div>
+                )}
+                {studyImage && !studyImageFailed && (
+                  <small className="image-credit">
+                    תמונה:{" "}
+                    {studyImage.creatorUrl ? (
+                      <a
+                        href={studyImage.creatorUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {studyImage.creator || "יוצר לא ידוע"}
+                      </a>
+                    ) : (
+                      studyImage.creator || "יוצר לא ידוע"
+                    )}
+                    {" · "}
+                    {studyImage.licenseUrl ? (
+                      <a
+                        href={studyImage.licenseUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {studyImage.license || "רישיון פתוח"}
+                      </a>
+                    ) : (
+                      studyImage.license || "רישיון פתוח"
+                    )}
+                    {" · "}
+                    <a
+                      href={studyImage.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      מקור
+                    </a>
+                  </small>
+                )}
+              </div>
+              <div className="memorization-copy">
+                <p className="eyebrow">מכינים את הזיכרון</p>
+                <h1 dir="auto">{studyCard.sourceText}</h1>
+                <p className="memorization-translation" dir="auto">
+                  {studyCard.translationText}
+                </p>
+                <button
+                  className="button secondary memorization-audio"
+                  disabled={busy}
+                  onClick={() => void playStudyCard(studyCard)}
+                >
+                  <Volume2 size={19} />
+                  השמעה נוספת
+                </button>
+                {studyCard.context && (
+                  <blockquote dir="auto">{studyCard.context}</blockquote>
+                )}
+              </div>
+              <div className="memorization-actions">
+                <button
+                  className="button ghost"
+                  disabled={busy}
+                  onClick={() => void beginReview()}
+                >
+                  דלג על השינון
+                </button>
+                <button
+                  className="button primary"
+                  disabled={busy}
+                  onClick={() => {
+                    if (studyIndex + 1 === studyCards.length)
+                      void beginReview();
+                    else setStudyIndex((current) => current + 1);
+                  }}
+                >
+                  {busy
+                    ? "מכין חזרה…"
+                    : studyIndex + 1 === studyCards.length
+                      ? "מתחילים את החזרה"
+                      : "למילה הבאה"}
+                  <ArrowLeft size={18} />
+                </button>
+              </div>
+            </section>
+          </>
         ) : (
           exercise && (
             <>
@@ -430,7 +646,7 @@ export function LiveGameSessionPage() {
                   {index + 1} מתוך {exercises.length}
                 </span>
                 <span>{labels[exercise.exerciseType]}</span>
-                <small>גרסת אלגוריתם: {session?.algorithmVersion}</small>
+                {/* גרסת האלגוריתם נשמרת בשרת ואינה נחוצה בממשק הלומד. */}
               </div>
               <progress
                 className="live-session-progress"

@@ -345,6 +345,113 @@ progress::-webkit-progress-value {
 .live-feedback p {
   line-height: 1.9;
 }
+.study-toolbar .study-skip {
+  border: 0;
+  color: var(--green);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.study-toolbar {
+  justify-content: space-between;
+}
+.study-toolbar .study-skip:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.memorization-card {
+  padding: 28px;
+  display: grid;
+  gap: 26px;
+  text-align: center;
+}
+.memorization-visual {
+  position: relative;
+  width: min(100%, 560px);
+  min-height: 280px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #e8eee5;
+}
+.memorization-visual > img,
+.memorization-image-loading,
+.memorization-image-fallback {
+  width: 100%;
+  height: 320px;
+}
+.memorization-visual > img {
+  display: block;
+  object-fit: cover;
+}
+.memorization-image-loading {
+  background: linear-gradient(105deg, #e6ece2 25%, #f7f8f3 38%, #e6ece2 52%);
+  background-size: 220% 100%;
+  animation: memorization-loading 1.4s ease-in-out infinite;
+}
+@keyframes memorization-loading {
+  to {
+    background-position-x: -220%;
+  }
+}
+.memorization-image-fallback {
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  color: #64816f;
+  background: radial-gradient(circle at top, #f7f4dc, #dce9dd);
+}
+.memorization-image-fallback span {
+  font-size: 78px;
+  font-weight: 800;
+  line-height: 1;
+}
+.image-credit {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 8px 12px;
+  color: white;
+  background: rgba(25, 35, 30, 0.74);
+  font-size: 10px;
+}
+.image-credit a {
+  color: white;
+}
+.memorization-copy {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+.memorization-copy h1 {
+  margin: 0;
+  font-size: clamp(40px, 7vw, 64px);
+  overflow-wrap: anywhere;
+}
+.memorization-translation {
+  margin: 0;
+  color: #596b61;
+  font-size: clamp(23px, 4vw, 32px);
+  font-weight: 600;
+}
+.memorization-audio {
+  margin-top: 4px;
+}
+.memorization-copy blockquote {
+  width: min(100%, 560px);
+  margin: 8px 0 0;
+  padding: 14px 18px;
+  border-inline-start: 3px solid #92bb9c;
+  background: #f6f8f2;
+  line-height: 1.8;
+  text-align: start;
+}
+.memorization-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
 
 .live-reading-body {
   font-size: 19px;
@@ -444,6 +551,20 @@ progress::-webkit-progress-value {
   }
   .live-choice-grid {
     grid-template-columns: 1fr;
+  }
+  .memorization-card {
+    padding: 18px;
+  }
+  .memorization-visual {
+    min-height: 210px;
+  }
+  .memorization-visual > img,
+  .memorization-image-loading,
+  .memorization-image-fallback {
+    height: 230px;
+  }
+  .memorization-actions {
+    flex-direction: column-reverse;
   }
   .live-search {
     align-items: end;

@@ -82,6 +82,7 @@ describe("production frontend gateway", () => {
       /accounts\.google\.com/,
     );
     assert.match(page.headers.get("content-security-policy"), /paddle\.com/);
+    assert.match(page.headers.get("content-security-policy"), /api\.openverse\.org/);
     assert.equal(
       page.headers.get("cross-origin-opener-policy"),
       "same-origin-allow-popups",
