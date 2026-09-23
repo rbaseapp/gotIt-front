@@ -6,7 +6,13 @@
   "language": {
     "label": "Interface language",
     "english": "English",
-    "hebrew": "עברית"
+    "hebrew": "עברית",
+    "chinese": "中文",
+    "arabic": "العربية",
+    "russian": "Русский",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
   },
   "app": {
     "loadingPayment": "Loading payment…",
@@ -407,9 +413,13 @@
         "read": "View saved words and data",
         "write": "Save new words and edit the library"
       },
-      "practice": { "play": "All games and exercises" },
+      "practice": {
+        "play": "All games and exercises"
+      },
       "dashboard": "Track your progress",
-      "reading": { "ai": "Personal AI reading practice" },
+      "reading": {
+        "ai": "Personal AI reading practice"
+      },
       "speech": {
         "audio": "Advanced listening practice",
         "pronunciation": "Pronunciation evaluation and feedback"
@@ -717,7 +727,11 @@
     "capabilityMilestone": "B3–B6: sessions, attempts, learning and pronunciation"
   },
   "demoDashboard": {
-    "units": { "items": "words", "attempts": "attempts", "minutes": "minutes" },
+    "units": {
+      "items": "words",
+      "attempts": "attempts",
+      "minutes": "minutes"
+    },
     "morning": "Good morning",
     "afternoon": "Good afternoon",
     "evening": "Good evening",

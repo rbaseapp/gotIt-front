@@ -17,6 +17,12 @@ export function UiLanguageSelect({ compact = false }: { compact?: boolean }) {
       >
         <option value="en">{t("language.english")}</option>
         <option value="he">{t("language.hebrew")}</option>
+        <option value="zh">{t("language.chinese")}</option>
+        <option value="ar">{t("language.arabic")}</option>
+        <option value="ru">{t("language.russian")}</option>
+        <option value="de">{t("language.german")}</option>
+        <option value="fr">{t("language.french")}</option>
+        <option value="es">{t("language.spanish")}</option>
       </select>
     </label>
   );

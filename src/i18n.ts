@@ -1,17 +1,34 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import ar from "./locales/ar/translation.json";
+import de from "./locales/de/translation.json";
 import en from "./locales/en/translation.json";
+import es from "./locales/es/translation.json";
+import fr from "./locales/fr/translation.json";
 import he from "./locales/he/translation.json";
+import ru from "./locales/ru/translation.json";
+import zh from "./locales/zh/translation.json";
 
 export const UI_LOCALE_STORAGE_KEY = "gotit.uiLocale.v1";
-export const SUPPORTED_UI_LOCALES = ["en", "he"] as const;
+export const SUPPORTED_UI_LOCALES = [
+  "en",
+  "he",
+  "zh",
+  "ar",
+  "ru",
+  "de",
+  "fr",
+  "es",
+] as const;
 export type UiLocale = (typeof SUPPORTED_UI_LOCALES)[number];
 
-export function normalizeUiLocale(value: string | null | undefined): UiLocale | null {
+export function normalizeUiLocale(
+  value: string | null | undefined,
+): UiLocale | null {
   if (!value) return null;
   try {
     const canonical = Intl.getCanonicalLocales(value)[0]?.split("-")[0];
-    return canonical === "en" || canonical === "he" ? canonical : null;
+    return SUPPORTED_UI_LOCALES.find((locale) => locale === canonical) ?? null;
   } catch {
     return null;
   }
@@ -35,7 +52,8 @@ function detectUiLocale(): UiLocale {
 
 function applyDocumentLocale(locale: UiLocale): void {
   document.documentElement.lang = locale;
-  document.documentElement.dir = locale === "he" ? "rtl" : "ltr";
+  document.documentElement.dir =
+    locale === "he" || locale === "ar" ? "rtl" : "ltr";
   document.title = i18n.t("meta.title");
   document
     .querySelector('meta[name="description"]')
@@ -44,8 +62,14 @@ function applyDocumentLocale(locale: UiLocale): void {
 
 void i18n.use(initReactI18next).init({
   resources: {
+    ar: { translation: ar },
+    de: { translation: de },
     en: { translation: en },
+    es: { translation: es },
+    fr: { translation: fr },
     he: { translation: he },
+    ru: { translation: ru },
+    zh: { translation: zh },
   },
   lng: detectUiLocale(),
   fallbackLng: "en",
