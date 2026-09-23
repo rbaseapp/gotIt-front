@@ -7,6 +7,7 @@ import {
   dashboardSchema,
   itemSchema,
   labels,
+  needsStrengthening,
   page,
   product,
 } from "../lib/product";
@@ -27,6 +28,7 @@ export function LiveDashboardPage() {
     ),
   );
   const d = resource.data;
+  const weakItems = weakest.data?.items.filter(needsStrengthening);
   return (
     <div className="dashboard-page live-page page-enter">
       <section className="page-heading-row">
@@ -245,7 +247,7 @@ export function LiveDashboardPage() {
                 error={weakest.error}
                 retry={() => void weakest.reload()}
               />
-              {weakest.data?.items.map((i) => (
+              {weakItems?.map((i) => (
                 <Link
                   className="live-weak-word"
                   key={i.id}
@@ -256,8 +258,8 @@ export function LiveDashboardPage() {
                   <small>{Math.round(i.overallMasteryScore)}%</small>
                 </Link>
               ))}
-              {weakest.data && !weakest.data.items.length && (
-                <p>אין עדיין מילים פעילות.</p>
+              {weakItems && !weakItems.length && (
+                <p>אין כרגע מילים שדורשות חיזוק.</p>
               )}
             </section>
           </div>

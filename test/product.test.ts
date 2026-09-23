@@ -6,6 +6,7 @@ import {
   intent,
   itemSchema,
   masteryRequirementText,
+  needsStrengthening,
   product,
   query,
 } from "../src/lib/product";
@@ -55,6 +56,32 @@ describe("production boundaries", () => {
         needsTypedRecall: true,
       }),
     ).toBe("נדרשת שליפה מוקלדת מוצלחת ביום נוסף.");
+  });
+  it("does not recommend strengthening evidence that meets its mastery threshold", () => {
+    expect(
+      needsStrengthening({
+        overallMasteryScore: 100,
+        masteryRequirements: undefined,
+      }),
+    ).toBe(false);
+    expect(
+      needsStrengthening({
+        overallMasteryScore: 79,
+        masteryRequirements: {
+          totalScoredAttempts: 1,
+          minimumScoredAttempts: 3,
+          activeRecallSuccesses: 0,
+          minimumActiveRecallSuccesses: 2,
+          activeRecallCalendarDays: 0,
+          minimumActiveRecallCalendarDays: 2,
+          activeRecallMasteryScore: 0,
+          masteryThreshold: 80,
+          reviewStage: 0,
+          learnedReviewStage: 2,
+          needsTypedRecall: true,
+        },
+      }),
+    ).toBe(true);
   });
   it("snapshots retry intent rather than retaining a mutable caller object", () => {
     const body = { answerText: "first" };

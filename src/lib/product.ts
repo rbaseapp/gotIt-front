@@ -82,6 +82,14 @@ export const itemSchema = z.object({
   primaryTranslation: z.string().nullable(),
 });
 export type Item = z.infer<typeof itemSchema>;
+export function needsStrengthening(
+  item: Pick<Item, "overallMasteryScore" | "masteryRequirements">,
+) {
+  return (
+    item.overallMasteryScore <
+    (item.masteryRequirements?.masteryThreshold ?? 80)
+  );
+}
 export const skillSchema = z.object({
   skillType: skill,
   masteryScore: score,
