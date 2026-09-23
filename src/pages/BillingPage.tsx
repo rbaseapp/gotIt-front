@@ -15,6 +15,7 @@ import {
   transactionIdFromCheckoutUrl,
 } from "../lib/paddle";
 import { useResource } from "../lib/useResource";
+import { useFeedback } from "../components/Feedback";
 
 const entitlementLabels: Record<string, string> = {
   vocabulary: "אוצר מילים אישי",
@@ -56,6 +57,7 @@ const proMonthlyFallback: DisplayPlan = {
 
 export function BillingPage() {
   const { profile } = useApp();
+  const { toast } = useFeedback();
   const status = useResource(useCallback(() => billing.status(), []));
   const plans = useResource(useCallback(() => billing.plans(), []));
   const [interval, setInterval] = useState<BillingInterval>("month");
@@ -68,6 +70,14 @@ export function BillingPage() {
   const [error, setError] = useState("");
   const checkoutCompleted =
     new URLSearchParams(window.location.search).get("checkout") === "success";
+
+  useEffect(() => {
+    if (checkoutCompleted)
+      toast("התשלום הושלם. הרשאות ה־Pro מתעדכנות כעת בחשבון.", {
+        tone: "success",
+        duration: 6500,
+      });
+  }, [checkoutCompleted, toast]);
 
   const paidPlans = useMemo<DisplayPlan[]>(() => {
     const configured =
@@ -198,11 +208,6 @@ export function BillingPage() {
         <CreditCard size={36} />
       </section>
 
-      {checkoutCompleted && (
-        <p className="success-message" role="status">
-          התשלום הושלם. הרשאות ה־Pro מתעדכנות כעת בחשבון.
-        </p>
-      )}
       {(status.loading || plans.loading) && (
         <p className="billing-loading" role="status">
           <LoaderCircle className="spin" size={20} /> טוענים את פרטי המנוי…

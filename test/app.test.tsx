@@ -12,6 +12,7 @@ import App from "../src/App";
 import { AppProvider } from "../src/context/AppContext";
 import { clearTokens } from "../src/lib/api";
 import { seedItems, seedProfile } from "../src/data/seed";
+import { FeedbackProvider } from "../src/components/Feedback";
 
 function mount(path = "/dashboard", demo = true) {
   vi.stubEnv("VITE_DEMO_MODE", demo ? "true" : "false");
@@ -19,9 +20,11 @@ function mount(path = "/dashboard", demo = true) {
   if (demo) localStorage.setItem("gotit.mode", JSON.stringify("demo"));
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <AppProvider>
-        <App />
-      </AppProvider>
+      <FeedbackProvider>
+        <AppProvider>
+          <App />
+        </AppProvider>
+      </FeedbackProvider>
     </MemoryRouter>,
   );
 }

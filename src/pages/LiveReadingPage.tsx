@@ -19,8 +19,10 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { textSegments } from "../lib/reading";
+import { useFeedback } from "../components/Feedback";
 export function LiveReadingPage() {
   const { profile } = useApp();
+  const { confirm, toast } = useFeedback();
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [language, setLanguage] = useState(
     profile.languages[0]?.languageCode || "en",
@@ -102,14 +104,21 @@ export function LiveReadingPage() {
     }
   };
   const remove = async (id: string) => {
-    if (!window.confirm("להסיר את הקריאה מההיסטוריה? היסטוריית התרגול תישמר."))
-      return;
+    const approved = await confirm({
+      title: "להסיר את הקריאה?",
+      message:
+        "הקריאה תוסר מההיסטוריה, אך היסטוריית התרגול וההתקדמות שלך יישמרו.",
+      confirmLabel: "הסרה מההיסטוריה",
+      tone: "danger",
+    });
+    if (!approved) return;
     setBusy(true);
     setError("");
     try {
       await product(z.object({ id: uuid }), `reading/${id}`, "DELETE");
       if (reading?.id === id) setReading(undefined);
       await history.reload();
+      toast("הקריאה הוסרה מההיסטוריה.", { tone: "success" });
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {

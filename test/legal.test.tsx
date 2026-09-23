@@ -5,15 +5,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App";
 import { AppProvider } from "../src/context/AppContext";
 import { clearTokens } from "../src/lib/api";
+import { FeedbackProvider } from "../src/components/Feedback";
 
 function mount(path: string) {
   clearTokens();
   localStorage.clear();
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <AppProvider>
-        <App />
-      </AppProvider>
+      <FeedbackProvider>
+        <AppProvider>
+          <App />
+        </AppProvider>
+      </FeedbackProvider>
     </MemoryRouter>,
   );
 }

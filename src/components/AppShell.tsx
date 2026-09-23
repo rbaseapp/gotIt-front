@@ -39,7 +39,7 @@ export function AppShell({
   children: ReactNode;
   onLogout: () => void;
 }) {
-  const { profile, stats, items, mode, notice, profileError, retryProfile } =
+  const { profile, stats, items, mode, profileError, retryProfile } =
     useApp();
   const location = useLocation();
   const [addOpen, setAddOpen] = useState(false);
@@ -185,11 +185,6 @@ export function AppShell({
               ? "סביבת הדגמה · מילים וציונים לדוגמה, היסטוריית תרגול מקומית בלבד"
               : "חשבון אמיתי · מילים והתקדמות נשמרות בשרת GotIt"}
           </div>
-          {notice && (
-            <p className="form-error" role="alert">
-              {notice}
-            </p>
-          )}
           {profileError && (
             <div className="form-error" role="alert">
               {profileError}

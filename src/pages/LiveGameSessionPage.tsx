@@ -27,6 +27,7 @@ import {
 } from "../lib/product";
 import { recordVoice } from "../lib/voice";
 import { useApp } from "../context/AppContext";
+import { useFeedback } from "../components/Feedback";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -43,6 +44,7 @@ export function LiveGameSessionPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { profile, updateProfile } = useApp();
+  const { confirm, toast } = useFeedback();
   const [session, setSession] = useState<Session>();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [index, setIndex] = useState(0);
@@ -79,13 +81,6 @@ export function LiveGameSessionPage() {
     audio.current?.pause();
     shownAt.current = performance.now();
   }, [exercise?.id]);
-  useEffect(() => {
-    const handler = (event: BeforeUnloadEvent) => {
-      if (session?.status === "active") event.preventDefault();
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [session?.status]);
   const issue = async (value: Session) => {
     const result = await product(
       z.object({
@@ -237,13 +232,33 @@ export function LiveGameSessionPage() {
         { status },
       );
       if (mounted.current) setSession(result.session);
-      if (status === "abandoned") navigate("/learn");
+      if (status === "abandoned") {
+        toast("התרגול הופסק. התשובות שכבר אושרו נשמרו.", {
+          tone: "info",
+        });
+        navigate("/learn");
+      }
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
     } finally {
       lock.current = false;
       if (mounted.current) setBusy(false);
     }
+  };
+  const requestExit = async () => {
+    if (!session || session.status !== "active") {
+      navigate("/learn");
+      return;
+    }
+    const approved = await confirm({
+      title: "לצאת מהתרגול?",
+      message:
+        "התרגול יסומן כמופסק. התשובות שכבר אושרו נשמרו ואפשר להתחיל תרגול חדש בכל רגע.",
+      confirmLabel: "יציאה מהתרגול",
+      cancelLabel: "להמשיך ללמוד",
+      tone: "warning",
+    });
+    if (approved) void close("abandoned");
   };
   const play = async () => {
     if (!exercise || busy) return;
@@ -300,15 +315,7 @@ export function LiveGameSessionPage() {
         <button
           className="button ghost"
           disabled={busy}
-          onClick={() => {
-            if (!session || session.status !== "active") navigate("/learn");
-            else if (
-              window.confirm(
-                "לצאת ולסיים את התרגול כמופסק? תשובות שאושרו כבר נשמרו.",
-              )
-            )
-              void close("abandoned");
-          }}
+          onClick={() => void requestExit()}
         >
           <ArrowRight size={18} />
           יציאה

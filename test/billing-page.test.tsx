@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BillingPage } from "../src/pages/BillingPage";
+import { FeedbackProvider } from "../src/components/Feedback";
 
 const mocks = vi.hoisted(() => ({
   checkout: vi.fn(),
@@ -65,7 +66,9 @@ describe("BillingPage", () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <BillingPage />
+        <FeedbackProvider>
+          <BillingPage />
+        </FeedbackProvider>
       </MemoryRouter>,
     );
 

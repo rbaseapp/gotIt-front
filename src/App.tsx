@@ -1,8 +1,9 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useApp } from "./context/AppContext";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
+import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 const DashboardPage = lazy(() =>
@@ -62,8 +63,12 @@ const BillingCheckoutPage = lazy(() =>
 );
 
 export default function App() {
-  const { mode, logout } = useApp();
+  const { mode, logout, notice } = useApp();
+  const { toast } = useFeedback();
   const location = useLocation();
+  useEffect(() => {
+    if (notice) toast(notice, { tone: "error", duration: 7000 });
+  }, [notice, toast]);
   const legalPaths: Record<string, LegalPageKind> = {
     "/terms": "terms",
     "/terms-of-service": "terms",

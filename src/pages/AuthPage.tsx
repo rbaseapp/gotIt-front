@@ -17,7 +17,7 @@ import { GoogleSignIn } from "../components/GoogleSignIn";
 import { Link } from "react-router-dom";
 
 export function AuthPage() {
-  const { authenticate, authenticateGoogle, startDemo, notice } = useApp();
+  const { authenticate, authenticateGoogle, startDemo } = useApp();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -95,11 +95,6 @@ export function AuthPage() {
               ? "החשבון שלך מאובטח באמצעות rbase Core."
               : "כמה פרטים קטנים ואפשר להתחיל."}
           </p>
-          {notice && (
-            <p className="form-error" role="status">
-              {notice}
-            </p>
-          )}
           <form onSubmit={submit} className="form-stack">
             <label className="field">
               <span>כתובת אימייל</span>

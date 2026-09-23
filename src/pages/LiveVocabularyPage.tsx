@@ -27,6 +27,7 @@ import {
   type ItemDetail,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
+import { useFeedback } from "../components/Feedback";
 
 const actions: Record<string, string> = {
   pause: "השהיה",
@@ -43,6 +44,7 @@ const actions: Record<string, string> = {
 };
 const bulkReceipt = z.object({ ids: z.array(uuid), action: z.string() });
 export function LiveVocabularyPage() {
+  const { confirm, toast } = useFeedback();
   const [searchParams, setSearchParams] = useSearchParams();
   const itemId = searchParams.get("item");
   const [search, setSearch] = useState("");
@@ -59,7 +61,6 @@ export function LiveVocabularyPage() {
   const [tagsOpen, setTagsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const url = `learning-items${query({ ...filters, limit: "30", cursor })}`;
   const resource = useResource(
     useCallback(() => product(page(itemSchema), url), [url]),
@@ -93,23 +94,29 @@ export function LiveVocabularyPage() {
   };
   const apply = async (ids = selected, operation = action) => {
     if (!ids.length || busy) return;
-    if (
-      ["delete", "mark_mastered", "restore"].includes(operation) &&
-      !window.confirm(
-        `${actions[operation]} עבור ${ids.length} מילים? סימון ידני אינו ראיה של המערכת; מחיקה ניתנת לשחזור בסל.`,
-      )
-    )
-      return;
+    if (["delete", "mark_mastered", "restore"].includes(operation)) {
+      const approved = await confirm({
+        title: `${actions[operation]} עבור ${ids.length} מילים?`,
+        message:
+          operation === "delete"
+            ? "המילים יועברו לסל ויהיה אפשר לשחזר אותן בהמשך."
+            : operation === "restore"
+              ? "המילים יחזרו לספרייה הפעילה שלך."
+              : "זהו סימון ידני ולא ציון שנקבע על ידי מערכת הלמידה.",
+        confirmLabel: actions[operation],
+        tone: operation === "delete" ? "danger" : "warning",
+      });
+      if (!approved) return;
+    }
     setBusy(true);
     setError("");
-    setNotice("");
     try {
       await product(bulkReceipt, "learning-items/bulk", "POST", {
         ids,
         action: operation,
       });
       setSelected([]);
-      setNotice("השינוי נשמר בשרת.");
+      toast("השינוי נשמר בשרת.", { tone: "success" });
       await resource.reload();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -305,7 +312,6 @@ export function LiveVocabularyPage() {
           {error}
         </p>
       )}
-      {notice && <p role="status">{notice}</p>}
       {resource.data && !resource.loading && (
         <>
           <div className="live-toolbar">
@@ -537,6 +543,7 @@ function DetailForm({
   tags: z.infer<typeof tagSchema>[];
   refresh: () => Promise<void>;
 }) {
+  const { confirm, toast } = useFeedback();
   const primary = item.translations.find((t) => t.isPrimary)?.text || "";
   const [source, setSource] = useState(item.sourceText);
   const [sourceLanguage, setSourceLanguage] = useState(item.sourceLanguageCode);
@@ -547,7 +554,6 @@ function DetailForm({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [examples, setExamples] = useState<string>();
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [occurrenceCursor, setOccurrenceCursor] = useState<string>();
   const occurrenceUrl = `learning-items/${item.id}/occurrences${query({ limit: "30", cursor: occurrenceCursor })}`;
@@ -570,10 +576,9 @@ function DetailForm({
   const mutation = async (run: () => Promise<unknown>) => {
     setBusy(true);
     setError("");
-    setNotice("");
     try {
       await run();
-      setNotice("נשמר בשרת.");
+      toast("נשמר בשרת.", { tone: "success" });
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -581,19 +586,22 @@ function DetailForm({
       setBusy(false);
     }
   };
-  const save = () => {
+  const save = async () => {
     const semantic =
       source !== item.sourceText ||
       sourceLanguage !== item.sourceLanguageCode ||
       targetLanguage !== item.translationLanguageCode ||
       !item.translations.some((t) => t.text === translation);
-    if (
-      semantic &&
-      !window.confirm(
-        "שינוי המילה, השפה או המשמעות עשוי לאפס את השליטה והכישורים לגרסת למידה חדשה. ההיסטוריה תישמר. להמשיך?",
-      )
-    )
-      return;
+    if (semantic) {
+      const approved = await confirm({
+        title: "לשמור את השינוי במילה?",
+        message:
+          "שינוי המילה, השפה או המשמעות עשוי לאפס את השליטה והכישורים לגרסת למידה חדשה. ההיסטוריה תישמר.",
+        confirmLabel: "שמירת השינוי",
+        tone: "warning",
+      });
+      if (!approved) return;
+    }
     void mutation(() =>
       product(
         z.object({
@@ -719,7 +727,7 @@ function DetailForm({
                 targetLanguage === item.translationLanguageCode &&
                 translation === primary)
             }
-            onClick={save}
+            onClick={() => void save()}
           >
             שמירת עריכה
           </button>
@@ -830,17 +838,25 @@ function DetailForm({
         <button
           className="button secondary"
           disabled={busy}
-          onClick={() => {
-            if (window.confirm("להחליף את כל תגיות המילה בבחירה הנוכחית?"))
-              void mutation(() =>
-                product(
-                  z.object({ id: uuid, tagIds: z.array(uuid) }),
-                  `learning-items/${item.id}/tags`,
-                  "PUT",
-                  { tagIds: selectedTags },
-                ),
-              );
-          }}
+          onClick={() =>
+            void confirm({
+              title: "להחליף את כל תגיות המילה?",
+              message:
+                "הבחירה הנוכחית תחליף את כל שיוכי התגיות הקיימים של המילה.",
+              confirmLabel: "החלפת התגיות",
+              tone: "warning",
+            }).then((approved) => {
+              if (approved)
+                void mutation(() =>
+                  product(
+                    z.object({ id: uuid, tagIds: z.array(uuid) }),
+                    `learning-items/${item.id}/tags`,
+                    "PUT",
+                    { tagIds: selectedTags },
+                  ),
+                );
+            })
+          }
         >
           החלפת כל התגיות
         </button>
@@ -861,21 +877,27 @@ function DetailForm({
             className="button ghost"
             key={a}
             disabled={busy}
-            onClick={() => {
-              if (
-                a === "mark_mastered" &&
-                !window.confirm(
-                  "סימון כנלמד הוא החלטה ידנית, לא ציון מערכת. להמשיך?",
+            onClick={() =>
+              void (async () => {
+                if (
+                  a === "mark_mastered" &&
+                  !(await confirm({
+                    title: "לסמן את המילה כנלמדה?",
+                    message:
+                      "זהו סימון ידני ולא ציון שנקבע על ידי מערכת הלמידה.",
+                    confirmLabel: "סימון כנלמד",
+                    tone: "warning",
+                  }))
                 )
-              )
-                return;
-              void mutation(() =>
-                product(bulkReceipt, "learning-items/bulk", "POST", {
-                  ids: [item.id],
-                  action: a,
-                }),
-              );
-            }}
+                  return;
+                void mutation(() =>
+                  product(bulkReceipt, "learning-items/bulk", "POST", {
+                    ids: [item.id],
+                    action: a,
+                  }),
+                );
+              })()
+            }
           >
             {actions[a]}
           </button>
@@ -886,7 +908,6 @@ function DetailForm({
           {error}
         </p>
       )}
-      {notice && <p role="status">{notice}</p>}
     </>
   );
 }
@@ -897,6 +918,7 @@ function TagManager({
   tags: z.infer<typeof tagSchema>[];
   reload: () => void;
 }) {
+  const { confirm, toast } = useFeedback();
   const [name, setName] = useState("");
   const [id, setId] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -920,6 +942,9 @@ function TagManager({
       setName("");
       setId(undefined);
       reload();
+      toast(remove ? "התגית נמחקה." : "התגית נשמרה.", {
+        tone: "success",
+      });
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
@@ -971,10 +996,16 @@ function TagManager({
           <button
             className="button ghost danger-text"
             disabled={busy}
-            onClick={() => {
-              if (window.confirm("מחיקת התגית מסירה את כל שיוכיה. להמשיך?"))
-                void run(t.id);
-            }}
+            onClick={() =>
+              void confirm({
+                title: `למחוק את התגית „${t.name}”?`,
+                message: "מחיקת התגית תסיר את כל השיוכים שלה מהמילים.",
+                confirmLabel: "מחיקת התגית",
+                tone: "danger",
+              }).then((approved) => {
+                if (approved) void run(t.id);
+              })
+            }
           >
             מחיקה
           </button>

@@ -9,13 +9,14 @@ import {
   parseImportFile,
   type ImportInput,
 } from "../lib/transfer";
+import { useFeedback } from "../components/Feedback";
 export function TransferPage() {
   const { mode } = useApp();
+  const { toast } = useFeedback();
   const [input, setInput] = useState<ImportInput>();
   const [result, setResult] = useState<z.infer<typeof importReceipt>>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const lock = useRef(false);
   const loadFile = async (file?: File) => {
     setError("");
@@ -47,7 +48,9 @@ export function TransferPage() {
         entries,
       });
       setResult(response);
-      setNotice("הייבוא נבדק בשרת. התוצאות מפורטות בהמשך.");
+      toast("הייבוא נבדק בשרת. התוצאות מפורטות בהמשך.", {
+        tone: "success",
+      });
       window.dispatchEvent(new Event("gotit:library-changed"));
     } catch (reason) {
       setError(errorMessage(reason));
@@ -61,7 +64,6 @@ export function TransferPage() {
     lock.current = true;
     setBusy(true);
     setError("");
-    setNotice("");
     try {
       const items: z.infer<typeof exportPage>["items"] = [];
       const seen = new Set<string>();
@@ -93,8 +95,9 @@ export function TransferPage() {
           a.download = `gotit-library-${new Date().toISOString().slice(0, 10)}.json`;
           a.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-          setNotice(
+          toast(
             `יוצאו ${items.length} מילים. הייצוא אינו כולל היסטוריית תרגול והקשרים.`,
+            { tone: "success", duration: 6500 },
           );
           return;
         }
@@ -229,7 +232,6 @@ export function TransferPage() {
           {error}
         </p>
       )}
-      {notice && <p role="status">{notice}</p>}
       {result && (
         <section className="live-panel">
           <h2>תוצאות הייבוא</h2>

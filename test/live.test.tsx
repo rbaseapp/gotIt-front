@@ -8,6 +8,7 @@ import { AppProvider } from "../src/context/AppContext";
 import { clearTokens, setTokens } from "../src/lib/api";
 import { seedProfile } from "../src/data/seed";
 import { recordVoice } from "../src/lib/voice";
+import { FeedbackProvider } from "../src/components/Feedback";
 
 vi.mock("../src/lib/voice", () => ({ recordVoice: vi.fn() }));
 const itemId = "11111111-1111-4111-8111-111111111111";
@@ -90,9 +91,11 @@ function mount(
   render(
     <StrictMode>
       <MemoryRouter initialEntries={[path]}>
-        <AppProvider>
-          <App />
-        </AppProvider>
+        <FeedbackProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </FeedbackProvider>
       </MemoryRouter>
     </StrictMode>,
   );
@@ -134,9 +137,11 @@ describe("live server-backed flows", () => {
     clearTokens();
     render(
       <MemoryRouter>
-        <AppProvider>
-          <App />
-        </AppProvider>
+        <FeedbackProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </FeedbackProvider>
       </MemoryRouter>,
     );
     expect(
@@ -231,6 +236,75 @@ describe("live server-backed flows", () => {
     await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
     expect(screen.getByText("13")).toBeInTheDocument();
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
+  });
+  it("uses an in-app modal before abandoning an active study session", async () => {
+    const fetchMock = mount(
+      "/learn/session/recall?items=" + itemId,
+      async (url, init) => {
+        if (url.endsWith("/practice/sessions") && init?.method === "POST")
+          return json({ session });
+        if (url.endsWith("/exercises"))
+          return json(
+            { exercises: [exercise], algorithmVersion: "server-v1" },
+            201,
+          );
+        if (
+          url.endsWith(`/practice/sessions/${sessionId}`) &&
+          init?.method === "PATCH"
+        )
+          return json({
+            session: { ...session, status: "abandoned", endedAt: date },
+          });
+        if (url.endsWith("/capabilities"))
+          return json({
+            configured: {
+              library: true,
+              practice: true,
+              dashboard: true,
+              readingGeneration: true,
+              speech: true,
+            },
+            learningLanguages: [],
+          });
+        if (url.includes("/learning/queue"))
+          return json({ items: [], algorithmVersion: "server-v1" });
+        if (url.includes("/practice/sessions"))
+          return json({ items: [], nextCursor: null });
+        throw new Error("Unexpected route");
+      },
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "מתחילים" }));
+    await user.click(screen.getByRole("button", { name: "יציאה" }));
+
+    const dialog = screen.getByRole("dialog", { name: "לצאת מהתרגול?" });
+    expect(dialog).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH"),
+    ).toBe(false);
+
+    await user.click(
+      screen.getByRole("button", { name: "להמשיך ללמוד" }),
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "יציאה" }));
+    await user.click(
+      screen.getByRole("button", { name: "יציאה מהתרגול" }),
+    );
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url, init]) =>
+            url.endsWith(`/practice/sessions/${sessionId}`) &&
+            init?.method === "PATCH" &&
+            JSON.parse(String(init.body)).status === "abandoned",
+        ),
+      ).toBe(true),
+    );
+    expect(
+      await screen.findByText("התרגול הופסק. התשובות שכבר אושרו נשמרו."),
+    ).toBeInTheDocument();
   });
   it("enables pronunciation in an existing profile before creating its live session", async () => {
     const legacyProfile = {
