@@ -15,13 +15,13 @@ import { useApp } from "../context/AppContext";
 import { validateProfile } from "../lib/contracts";
 import { Modal } from "../components/Modal";
 import type { UserProfile } from "../types";
-import { labels } from "../lib/product";
-import { LANGUAGE_OPTIONS } from "../lib/languages";
+import { getLanguageOptions } from "../lib/languages";
 import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
 
 export function SettingsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const languageOptions = getLanguageOptions(i18n.resolvedLanguage || "en");
   const {
     profile,
     updateProfile,
@@ -52,7 +52,7 @@ export function SettingsPage() {
       await updateProfile(form);
       setSaved(true);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "לא ניתן לשמור");
+      setError(reason instanceof Error ? reason.message : t("settings.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -76,12 +76,12 @@ export function SettingsPage() {
     <div className="settings-page page-enter">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">בדיוק בקצב שלך</p>
-          <h1>הגדרות</h1>
+          <p className="eyebrow">{t("settings.eyebrow")}</p>
+          <h1>{t("settings.title")}</h1>
           <p>
             {mode === "live"
-              ? "העדפות המוצר נשמרות באמצעות GotIt Profile API."
-              : "העדפות הדמו נשמרות בדפדפן בלבד."}
+              ? t("settings.liveDescription")
+              : t("settings.demoDescription")}
           </p>
         </div>
       </section>
@@ -93,7 +93,7 @@ export function SettingsPage() {
             className="button ghost"
             onClick={() => void retryProfile()}
           >
-            ניסיון טעינה מחדש
+            {t("common.tryAgain")}
           </button>
         </div>
       )}
@@ -108,15 +108,15 @@ export function SettingsPage() {
           </a>
           <a href="#profile">
             <UserRound size={18} />
-            פרופיל
+            {t("settings.profileNav")}
           </a>
           <a href="#languages">
             <Globe2 size={18} />
-            שפות
+            {t("settings.languagesNav")}
           </a>
           <a href="#learning">
             <SlidersHorizontal size={18} />
-            למידה
+            {t("settings.learningNav")}
           </a>
         </nav>
         <div className="settings-content">
@@ -143,16 +143,16 @@ export function SettingsPage() {
                   <UserRound size={21} />
                 </span>
                 <div>
-                  <h2>פרטים אישיים</h2>
-                  <p>זהות החשבון מגיעה מ־Core בלבד</p>
+                  <h2>{t("settings.personalTitle")}</h2>
+                  <p>{t("settings.personalDescription")}</p>
                 </div>
               </div>
               <div className="settings-fields">
                 <label className="field">
                   <span>
-                    שם לתצוגה{" "}
+                    {t("settings.displayName")}{" "}
                     <small>
-                      {mode === "live" ? "מקומי לטאב · אינו שדה API" : "דמו"}
+                      {mode === "live" ? t("settings.localTab") : t("settings.demo")}
                     </small>
                   </span>
                   <input
@@ -163,11 +163,11 @@ export function SettingsPage() {
                   />
                 </label>
                 <label className="field">
-                  <span>כתובת אימייל</span>
+                  <span>{t("settings.email")}</span>
                   <input type="email" value={form.email} disabled dir="ltr" />
                 </label>
                 <label className="field full">
-                  <span>אזור זמן IANA</span>
+                  <span>{t("settings.timezone")}</span>
                   <input
                     list="timezones"
                     value={form.timezone}
@@ -193,12 +193,12 @@ export function SettingsPage() {
                   <Globe2 size={21} />
                 </span>
                 <div>
-                  <h2>השפות שלי</h2>
-                  <p>כל שפה תומכת בשש רמות CEFR, מ־A1 עד C2</p>
+                  <h2>{t("settings.languagesTitle")}</h2>
+                  <p>{t("settings.languagesDescription")}</p>
                 </div>
               </div>
               <label className="field">
-                <span>שפת מקור מועדפת</span>
+                <span>{t("settings.sourceLanguage")}</span>
                 <select
                   value={form.defaultSourceLanguage || ""}
                   onChange={(event) =>
@@ -207,19 +207,19 @@ export function SettingsPage() {
                     })
                   }
                 >
-                  <option value="">זיהוי אוטומטי באמצעות Google</option>
-                  {LANGUAGE_OPTIONS.map(([code, label]) => (
+                  <option value="">{t("settings.autoDetect")}</option>
+                  {languageOptions.map(([code, label]) => (
                     <option value={code} key={code}>
                       {label} · {code}
                     </option>
                   ))}
                 </select>
                 <small className="muted-note">
-                  במצב אוטומטי הטקסט עצמו נשלח לזיהוי; שפת האתר אינה משמשת כרמז.
+                  {t("settings.autoDetectHelp")}
                 </small>
               </label>
               <label className="field">
-                <span>שפת תרגום מועדפת</span>
+                <span>{t("settings.translationLanguage")}</span>
                 <select
                   value={form.defaultTranslationLanguage || ""}
                   onChange={(event) =>
@@ -228,24 +228,24 @@ export function SettingsPage() {
                     })
                   }
                 >
-                  <option value="" disabled>בחירת שפת תרגום</option>
-                  {LANGUAGE_OPTIONS.map(([code, label]) => (
+                  <option value="" disabled>{t("settings.chooseTranslationLanguage")}</option>
+                  {languageOptions.map(([code, label]) => (
                     <option value={code} key={code}>
                       {label} · {code}
                     </option>
                   ))}
                 </select>
                 <small className="muted-note">
-                  שינוי ברירת המחדל לא משנה מילים קיימות.
+                  {t("settings.translationLanguageHelp")}
                 </small>
               </label>
               <div className="language-editor">
                 {form.languages.map((language, index) => (
                   <div className="language-editor-row" key={index}>
                     <label className="field">
-                      <span>קוד שפה</span>
+                      <span>{t("settings.languageCode")}</span>
                       <input
-                        aria-label={"שפה " + (index + 1)}
+                        aria-label={t("settings.languageNumber", { number: index + 1 })}
                         value={language.languageCode}
                         dir="ltr"
                         required
@@ -262,7 +262,7 @@ export function SettingsPage() {
                       />
                     </label>
                     <label className="field">
-                      <span>רמה בהערכה עצמית</span>
+                      <span>{t("settings.selfLevel")}</span>
                       <select
                         value={language.selfAssessedLevel || ""}
                         onChange={(event) =>
@@ -279,7 +279,7 @@ export function SettingsPage() {
                           })
                         }
                       >
-                        <option value="">לא הוגדרה</option>
+                        <option value="">{t("settings.notSet")}</option>
                         {["A1", "A2", "B1", "B2", "C1", "C2"].map((level) => (
                           <option key={level}>{level}</option>
                         ))}
@@ -288,7 +288,7 @@ export function SettingsPage() {
                     <button
                       type="button"
                       className="icon-button"
-                      aria-label="הסרת שפה"
+                      aria-label={t("settings.removeLanguage")}
                       onClick={() =>
                         patch({
                           languages: form.languages.filter(
@@ -303,11 +303,10 @@ export function SettingsPage() {
                       (language.effectiveLevel ||
                         language.systemEstimatedLevel) && (
                         <small className="muted-note">
-                          רמה אפקטיבית: {language.effectiveLevel || "—"} · הערכת
-                          מערכת: {language.systemEstimatedLevel || "—"}
+                          {t("settings.effectiveLevel", { level: language.effectiveLevel || "—" })} · {t("settings.systemLevel", { level: language.systemEstimatedLevel || "—" })}
                           {language.systemConfidence !== null &&
                           language.systemConfidence !== undefined
-                            ? ` · ביטחון ${Math.round(language.systemConfidence * 100)}%`
+                            ? ` · ${t("settings.confidence", { value: Math.round(language.systemConfidence * 100) })}`
                             : ""}
                         </small>
                       )}
@@ -328,11 +327,10 @@ export function SettingsPage() {
                 }
               >
                 <Plus size={16} />
-                הוספת שפת לימוד
+                {t("settings.addLearningLanguage")}
               </button>
               <p className="muted-note">
-                רמה עצמית אינה ציון שליטה. רמה אפקטיבית לקריאה נקבעת בשרת, אם
-                נצברה ראיה מתאימה.
+                {t("settings.levelHelp")}
               </p>
             </section>
             <section className="settings-card" id="learning">
@@ -341,13 +339,13 @@ export function SettingsPage() {
                   <SlidersHorizontal size={21} />
                 </span>
                 <div>
-                  <h2>העדפות למידה</h2>
-                  <p>הגדרות אישיות ליעד ולתרגום</p>
+                  <h2>{t("settings.learningTitle")}</h2>
+                  <p>{t("settings.learningDescription")}</p>
                 </div>
               </div>
               <div className="settings-fields">
                 <label className="field">
-                  <span>סוג היעד היומי</span>
+                  <span>{t("settings.goalType")}</span>
                   <select
                     value={form.dailyGoal.type}
                     onChange={(event) =>
@@ -360,13 +358,13 @@ export function SettingsPage() {
                       })
                     }
                   >
-                    <option value="items">מילים ייחודיות</option>
-                    <option value="minutes">דקות</option>
-                    <option value="attempts">ניסיונות</option>
+                    <option value="items">{t("settings.uniqueWords")}</option>
+                    <option value="minutes">{t("settings.minutes")}</option>
+                    <option value="attempts">{t("settings.attempts")}</option>
                   </select>
                 </label>
                 <label className="field">
-                  <span>ערך היעד</span>
+                  <span>{t("settings.goalValue")}</span>
                   <input
                     type="number"
                     min="1"
@@ -385,7 +383,7 @@ export function SettingsPage() {
                   />
                 </label>
                 <label className="field">
-                  <span>מילים חדשות ביום</span>
+                  <span>{t("settings.newWordsPerDay")}</span>
                   <input
                     type="number"
                     min="0"
@@ -401,7 +399,7 @@ export function SettingsPage() {
                   />
                 </label>
                 <label className="field">
-                  <span>שיטת תרגום מועדפת</span>
+                  <span>{t("settings.translationMethod")}</span>
                   <select
                     value={form.translationMethodPreference || ""}
                     onChange={(event) =>
@@ -411,16 +409,16 @@ export function SettingsPage() {
                       })
                     }
                   >
-                    <option value="">ללא העדפה</option>
-                    <option value="auto">אוטומטי</option>
-                    <option value="dictionary">מילון / תרגום</option>
+                    <option value="">{t("settings.noPreference")}</option>
+                    <option value="auto">{t("settings.automatic")}</option>
+                    <option value="dictionary">{t("settings.dictionary")}</option>
                     <option value="ai">AI</option>
                   </select>
                 </label>
               </div>
               {mode === "live" && (
                 <div className="field">
-                  <span>כישורים פעילים ללמידה</span>
+                  <span>{t("settings.enabledSkills")}</span>
                   <div className="live-options">
                     {(
                       [
@@ -454,26 +452,25 @@ export function SettingsPage() {
                               })
                             }
                           />
-                          {labels[skill]}
+                          {t(`labels.${skill}`)}
                         </label>
                       );
                     })}
                   </div>
                   <small className="muted-note">
-                    נדרש לפחות כישור אחד. האזנה והגייה עדיין תלויות בספק ובתמיכת
-                    השפה בשרת.
+                    {t("settings.skillsHelp")}
                   </small>
                 </div>
               )}
               <div className="field interest-setting">
-                <span>תחומי עניין לתוכן</span>
+                <span>{t("settings.interests")}</span>
                 <div className="interest-editor">
                   {form.interests.map((interest) => (
                     <span key={interest}>
                       {interest}
                       <button
                         type="button"
-                        aria-label={"הסרת " + interest}
+                        aria-label={t("settings.removeInterest", { interest })}
                         onClick={() =>
                           patch({
                             interests: form.interests.filter(
@@ -490,7 +487,7 @@ export function SettingsPage() {
               </div>
               <div className="add-interest-row">
                 <input
-                  aria-label="תחום עניין חדש"
+                  aria-label={t("settings.newInterest")}
                   value={newInterest}
                   maxLength={100}
                   onChange={(event) => setNewInterest(event.target.value)}
@@ -500,7 +497,7 @@ export function SettingsPage() {
                       addInterest();
                     }
                   }}
-                  placeholder="למשל: חלל"
+                  placeholder={t("settings.interestPlaceholder")}
                 />
                 <button
                   type="button"
@@ -508,16 +505,15 @@ export function SettingsPage() {
                   disabled={!newInterest.trim() || form.interests.length >= 100}
                   onClick={addInterest}
                 >
-                  הוספה
+                  {t("settings.add")}
                 </button>
               </div>
             </section>
           </fieldset>
           <div className="settings-card">
-            <h2>תזכורות</h2>
+            <h2>{t("settings.remindersTitle")}</h2>
             <p className="muted-note">
-              שליחת תזכורות וסיכום שבועי מחכה לשירות הדוא״ל המתוכנן. לא מופעל
-              כאן מנגנון הודעות מדומה.
+              {t("settings.remindersDescription")}
             </p>
           </div>
           {error && (
@@ -533,7 +529,7 @@ export function SettingsPage() {
                 onClick={() => setResetOpen(true)}
               >
                 <RotateCcw size={17} />
-                איפוס נתוני הדמו
+                {t("settings.resetDemoData")}
               </button>
             )}
             <button
@@ -548,12 +544,12 @@ export function SettingsPage() {
               ) : (
                 <Save size={18} />
               )}
-              {saving ? "שומר…" : saved ? "נשמר בהצלחה" : "שמירת שינויים"}
+              {saving ? t("settings.saving") : saved ? t("settings.saved") : t("settings.saveChanges")}
             </button>
           </div>
           {saved && (
             <p className="sr-only" role="status">
-              השינויים נשמרו בהצלחה
+              {t("settings.changesSaved")}
             </p>
           )}
         </div>
@@ -561,19 +557,18 @@ export function SettingsPage() {
       <Modal
         open={resetOpen}
         onClose={() => setResetOpen(false)}
-        title="איפוס סביבת הדמו"
+        title={t("settings.resetDemoTitle")}
       >
         <div className="modal-body">
           <p>
-            פעולה זו מחליפה את נתוני הדמו המקומיים במילות הדוגמה ומוחקת את
-            היסטוריית התרגול המקומית בלבד. אין שינוי בחשבון אמיתי.
+            {t("settings.resetDemoDescription")}
           </p>
           <div className="modal-actions">
             <button
               className="button secondary"
               onClick={() => setResetOpen(false)}
             >
-              ביטול
+              {t("feedback.cancel")}
             </button>
             <button
               className="button primary"
@@ -583,7 +578,7 @@ export function SettingsPage() {
                 setSaved(false);
               }}
             >
-              איפוס דמו
+              {t("settings.resetDemo")}
             </button>
           </div>
         </div>

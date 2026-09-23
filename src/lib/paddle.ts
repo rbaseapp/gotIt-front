@@ -1,5 +1,6 @@
 import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 import { z } from "zod";
+import i18n from "../i18n";
 
 const environmentSchema = z.enum(["sandbox", "production"]);
 const countryCodeSchema = z.string().regex(/^[A-Z]{2}$/u);
@@ -37,14 +38,13 @@ async function publicConfiguration() {
     runtime?.paddleEnvironment ?? import.meta.env.VITE_PADDLE_ENVIRONMENT;
   const environment = environmentSchema.safeParse(environmentValue);
 
-  if (!token)
-    throw new Error("Paddle אינו מוגדר בסביבה הזו: חסר client-side token.");
+  if (!token) throw new Error(i18n.t("paddleErrors.missingToken"));
   if (!environment.success)
-    throw new Error("Paddle אינו מוגדר בסביבה הזו: חסרה סביבת sandbox או production.");
+    throw new Error(i18n.t("paddleErrors.missingEnvironment"));
   if (environment.data === "production" && !token.startsWith("live_"))
-    throw new Error("אסימון Paddle production חייב להתחיל ב־live_.");
+    throw new Error(i18n.t("paddleErrors.invalidProductionToken"));
   if (environment.data === "sandbox" && !token.startsWith("test_"))
-    throw new Error("אסימון Paddle sandbox חייב להתחיל ב־test_.");
+    throw new Error(i18n.t("paddleErrors.invalidSandboxToken"));
 
   const parsedCountry = countryCodeSchema.safeParse(runtime?.countryCode);
   const monthlyPriceId =
@@ -57,9 +57,9 @@ async function publicConfiguration() {
     import.meta.env.VITE_PADDLE_PRO_YEARLY_PRICE_ID?.trim();
   const priceIdSchema = z.string().regex(/^pri_[a-z0-9]{26}$/u);
   if (!priceIdSchema.safeParse(monthlyPriceId).success)
-    throw new Error("חסר מזהה מחיר חודשי תקין של Paddle Pro.");
+    throw new Error(i18n.t("paddleErrors.invalidMonthlyPrice"));
   if (yearlyPriceId && !priceIdSchema.safeParse(yearlyPriceId).success)
-    throw new Error("מזהה המחיר השנתי של Paddle Pro אינו תקין.");
+    throw new Error(i18n.t("paddleErrors.invalidYearlyPrice"));
   return {
     token,
     environment: environment.data as PaddleEnvironment,
@@ -85,7 +85,7 @@ export function getPaddleRuntime(): Promise<PaddleRuntime> {
         },
       },
     });
-    if (!paddle) throw new Error("לא ניתן לאתחל את Paddle Checkout.");
+    if (!paddle) throw new Error(i18n.t("paddleErrors.initialization"));
     return {
       paddle,
       priceIds: configuration.priceIds,
@@ -100,10 +100,13 @@ export function getPaddleRuntime(): Promise<PaddleRuntime> {
 export function transactionIdFromCheckoutUrl(value: string) {
   const transactionId = new URL(value).searchParams.get("_ptxn");
   if (!transactionId || !/^txn_[a-z0-9]{26}$/u.test(transactionId))
-    throw new Error("Paddle החזיר קישור תשלום ללא מזהה עסקה תקין.");
+    throw new Error(i18n.t("paddleErrors.invalidTransaction"));
   return transactionId;
 }
 
 export function checkoutSuccessUrl() {
-  return new URL("/billing?checkout=success", window.location.origin).toString();
+  return new URL(
+    "/billing?checkout=success",
+    window.location.origin,
+  ).toString();
 }

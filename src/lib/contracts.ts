@@ -1,4 +1,5 @@
 import type { AuthTokens, AuthUser, ProfilePatch } from "../types";
+import i18n from "../i18n";
 
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value))
@@ -67,17 +68,17 @@ export function validateProfile(profile: ProfilePatch): string | null {
             ].includes(s),
         ))
     )
-      return "יש לבחור לפחות כישור אחד, ללא כפילויות";
+      return i18n.t("validation.skills");
     if (
       profile.defaultSourceLanguage !== null &&
       !canonicalLanguage(profile.defaultSourceLanguage)
     )
-      return "יש לבחור שפת מקור תקינה או זיהוי אוטומטי";
+      return i18n.t("validation.sourceLanguage");
     if (
       profile.defaultTranslationLanguage !== null &&
       !canonicalLanguage(profile.defaultTranslationLanguage)
     )
-      return "יש לבחור קוד שפה תקין";
+      return i18n.t("validation.translationLanguage");
     new Intl.DateTimeFormat("en", { timeZone: profile.timezone }).format();
     if (
       !["items", "minutes", "attempts"].includes(profile.dailyGoal.type) ||
@@ -85,22 +86,22 @@ export function validateProfile(profile: ProfilePatch): string | null {
       profile.dailyGoal.value < 1 ||
       profile.dailyGoal.value > 100000
     )
-      return "היעד היומי חייב להיות מספר שלם בין 1 ל־100,000";
+      return i18n.t("validation.dailyGoal");
     if (
       !Number.isInteger(profile.defaultNewItemsPerDay) ||
       profile.defaultNewItemsPerDay < 0 ||
       profile.defaultNewItemsPerDay > 10000
     )
-      return "מספר המילים החדשות חייב להיות בין 0 ל־10,000";
+      return i18n.t("validation.newWords");
     if (
       profile.translationMethodPreference !== null &&
       !["auto", "dictionary", "ai"].includes(
         profile.translationMethodPreference,
       )
     )
-      return "שיטת התרגום אינה תקינה";
+      return i18n.t("validation.translationMethod");
     if (profile.languages.length > 100 || profile.interests.length > 100)
-      return "ניתן לשמור עד 100 שפות ותחומי עניין";
+      return i18n.t("validation.profileLimits");
     const codes = profile.languages.map((language) => {
       if (
         language.selfAssessedLevel !== null &&
@@ -112,7 +113,7 @@ export function validateProfile(profile: ProfilePatch): string | null {
       return canonicalLanguage(language.languageCode).toLowerCase();
     });
     if (codes.some((code) => !code) || new Set(codes).size !== codes.length)
-      return "שפות חייבות להיות תקינות וללא כפילויות";
+      return i18n.t("validation.languages");
     const interests = profile.interests.map((value) =>
       value.normalize("NFKC").replace(/\s+/gu, " ").trim().toLowerCase(),
     );
@@ -120,10 +121,10 @@ export function validateProfile(profile: ProfilePatch): string | null {
       interests.some((value) => !value || value.length > 100) ||
       new Set(interests).size !== interests.length
     )
-      return "תחומי עניין חייבים להיות ייחודיים ובאורך 1–100 תווים";
+      return i18n.t("validation.interests");
     return null;
   } catch {
-    return "קוד שפה, רמה או אזור זמן אינם תקינים";
+    return i18n.t("validation.profileFields");
   }
 }
 export function parseProfile(payload: unknown): ProfilePatch {
@@ -136,7 +137,8 @@ export function parseProfile(payload: unknown): ProfilePatch {
       ? { learningPreferences: object(value.learningPreferences) }
       : {}),
     defaultSourceLanguage:
-      value.defaultSourceLanguage === undefined || value.defaultSourceLanguage === null
+      value.defaultSourceLanguage === undefined ||
+      value.defaultSourceLanguage === null
         ? null
         : text(value.defaultSourceLanguage),
     defaultTranslationLanguage:

@@ -21,7 +21,9 @@ import { useResource } from "../lib/useResource";
 import { textSegments } from "../lib/reading";
 import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useTranslation } from "react-i18next";
 export function LiveReadingPage() {
+  const { t, i18n } = useTranslation();
   const { profile } = useApp();
   const { hasEntitlement } = useSubscription();
   const canGenerate = hasEntitlement("reading.ai");
@@ -64,7 +66,7 @@ export function LiveReadingPage() {
   );
   const generate = async () => {
     if (!canGenerate) {
-      setError("יצירת כתבות AI זמינה בתקופת הניסיון ובמנוי PRO.");
+      setError(t("reading.proRequired"));
       return;
     }
     setBusy(true);
@@ -132,10 +134,9 @@ export function LiveReadingPage() {
   };
   const remove = async (id: string) => {
     const approved = await confirm({
-      title: "להסיר את הקריאה?",
-      message:
-        "הקריאה תוסר מההיסטוריה, אך היסטוריית התרגול וההתקדמות שלך יישמרו.",
-      confirmLabel: "הסרה מההיסטוריה",
+      title: t("reading.removeTitle"),
+      message: t("reading.removeDescription"),
+      confirmLabel: t("reading.removeConfirm"),
       tone: "danger",
     });
     if (!approved) return;
@@ -145,7 +146,7 @@ export function LiveReadingPage() {
       await product(z.object({ id: uuid }), `reading/${id}`, "DELETE");
       if (reading?.id === id) setReading(undefined);
       await history.reload();
-      toast("הקריאה הוסרה מההיסטוריה.", { tone: "success" });
+      toast(t("reading.removed"), { tone: "success" });
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
@@ -156,15 +157,15 @@ export function LiveReadingPage() {
     <div className="reading-page live-page page-enter">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">מילים שחיות בתוך סיפור</p>
-          <h1>קריאה בהקשר</h1>
-          <p>קטע אישי שמשלב מילים מהתור שלך, בשפת הלימוד ובגובה העיניים.</p>
+          <p className="eyebrow">{t("reading.eyebrow")}</p>
+          <h1>{t("reading.title")}</h1>
+          <p>{t("reading.description")}</p>
         </div>
         <BookOpenText size={36} />
       </section>
       <div className="live-two-columns">
         <section className="live-panel form-stack">
-          <h2>מה נרצה לקרוא?</h2>
+          <h2>{t("reading.promptTitle")}</h2>
           <fieldset
             disabled={
               busy ||
@@ -175,16 +176,16 @@ export function LiveReadingPage() {
             className="plain-fieldset form-stack"
           >
             <label className="field">
-              <span>נושא — רשות</span>
+              <span>{t("reading.topic")}</span>
               <input
                 maxLength={500}
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="השרת יבחר מתוך תחומי העניין אם יישאר ריק"
+                placeholder={t("reading.topicPlaceholder")}
               />
             </label>
             <label className="field">
-              <span>שפת הלימוד — קוד BCP-47</span>
+              <span>{t("reading.language")}</span>
               <input
                 maxLength={64}
                 dir="ltr"
@@ -194,44 +195,38 @@ export function LiveReadingPage() {
             </label>
             <div className="live-form-grid">
               <label className="field">
-                <span>רמת הקריאה</span>
+                <span>{t("reading.level")}</span>
                 <select
                   value={level}
                   onChange={(e) => setLevel(e.target.value)}
                 >
-                  <option value="">הרמה האפקטיבית מהשרת</option>
+                  <option value="">{t("reading.effectiveLevel")}</option>
                   {["A1", "A2", "B1", "B2", "C1", "C2"].map((l) => (
                     <option key={l}>{l}</option>
                   ))}
                 </select>
               </label>
               <label className="field">
-                <span>אורך</span>
+                <span>{t("reading.length")}</span>
                 <select
                   value={length}
                   onChange={(e) => setLength(e.target.value)}
                 >
-                  <option value="short">קצר</option>
-                  <option value="medium">בינוני</option>
-                  <option value="long">ארוך</option>
+                  <option value="short">{t("reading.short")}</option>
+                  <option value="medium">{t("reading.medium")}</option>
+                  <option value="long">{t("reading.long")}</option>
                 </select>
               </label>
             </div>
             <label className="field">
-              <span>סוג תוכן</span>
+              <span>{t("reading.contentType")}</span>
               <select
                 value={contentType}
                 onChange={(e) => setContentType(e.target.value)}
               >
-                {Object.entries({
-                  article: "מאמר",
-                  story: "סיפור",
-                  essay: "מסה",
-                  news_style: "בסגנון חדשות",
-                  other: "אחר",
-                }).map(([k, v]) => (
+                {["article", "story", "essay", "news_style", "other"].map((k) => (
                   <option key={k} value={k}>
-                    {v}
+                    {t(`reading.types.${k}`)}
                   </option>
                 ))}
               </select>
@@ -242,23 +237,20 @@ export function LiveReadingPage() {
               onClick={() => void generate()}
             >
               <Sparkles size={17} />
-              {busy ? "מכין…" : "יצירת תצוגה מקדימה"}
+              {busy ? t("reading.preparing") : t("reading.createPreview")}
             </button>
           </fieldset>
           <p className="muted-note">
             {canGenerate && quota.data?.quota
-              ? `נותרו ${quota.data.quota.remaining} מתוך ${quota.data.quota.limit} כתבות AI החודש.`
+              ? t("reading.quota", { remaining: quota.data.quota.remaining, limit: quota.data.quota.limit })
               : !canGenerate
-                ? "יצירת כתבות חדשות זמינה בתקופת ניסיון או במנוי PRO. ההיסטוריה שלך נשארת זמינה לצפייה."
-                : "מכסת ה־AI החודשית נטענת…"}
+                ? t("reading.lockedQuota")
+                : t("reading.loadingQuota")}
           </p>
-          <p className="muted-note">
-            אם לא הוגדר ספק קריאה בשרת, יצירת תוכן לא תהיה זמינה. לא מוצגים
-            טקסטים מדומים לחשבון אמיתי.
-          </p>
+          <p className="muted-note">{t("reading.providerNote")}</p>
         </section>
         <section className="live-panel">
-          <h2>היסטוריית הקריאה</h2>
+          <h2>{t("reading.history")}</h2>
           <RemoteState
             loading={history.loading}
             error={history.error}
@@ -275,26 +267,26 @@ export function LiveReadingPage() {
               </button>
               <small>
                 {r.targetLanguageCode} ·{" "}
-                {new Date(r.openedAt).toLocaleDateString("he-IL")}
+                {new Date(r.openedAt).toLocaleDateString(i18n.resolvedLanguage)}
               </small>
               <button
                 className="button ghost danger-text"
                 disabled={busy}
                 onClick={() => void remove(r.id)}
               >
-                הסרה
+                {t("reading.remove")}
               </button>
             </div>
           ))}
           {history.data && !history.data.items.length && (
-            <p>קטעים שפתחתם יופיעו כאן.</p>
+            <p>{t("reading.emptyHistory")}</p>
           )}
           {history.data?.nextCursor && (
             <button
               className="button ghost"
               onClick={() => setCursor(history.data!.nextCursor!)}
             >
-              קטעים נוספים
+              {t("reading.more")}
             </button>
           )}
         </section>
@@ -306,30 +298,30 @@ export function LiveReadingPage() {
       )}
       {preview && (
         <section className="live-panel">
-          <p className="eyebrow">מוכן לפתיחה</p>
+          <p className="eyebrow">{t("reading.ready")}</p>
           <h2>{preview.reading.title}</h2>
           <p>
-            {preview.reading.targets.length} מילים ·{" "}
-            {preview.reading.effectiveLevel || "רמה לא הוגדרה"} ·{" "}
+            {t("reading.previewWords", { count: preview.reading.targets.length })} ·{" "}
+            {preview.reading.effectiveLevel || t("reading.noLevelSet")} ·{" "}
             {preview.provider.name}
           </p>
           <small>
-            תקף עד {new Date(preview.expiresAt).toLocaleTimeString("he-IL")}
+            {t("reading.validUntil", { time: new Date(preview.expiresAt).toLocaleTimeString(i18n.resolvedLanguage) })}
           </small>
-          <p>הטקסט ייפתח ויירשם בהיסטוריה רק בלחיצה הבאה.</p>
+          <p>{t("reading.openNote")}</p>
           <button
             className="button primary"
             disabled={busy}
             onClick={() => void open()}
           >
-            {pending ? "ניסיון נוסף לאותה פתיחה" : "פתיחת הקטע"}
+            {pending ? t("reading.retryOpen") : t("reading.open")}
           </button>
         </section>
       )}
       {reading && (
         <article className="live-panel live-reading">
           <p className="eyebrow">
-            {reading.targetLanguageCode} · {reading.effectiveLevel || "ללא רמה"}
+            {reading.targetLanguageCode} · {reading.effectiveLevel || t("reading.noLevel")}
           </p>
           <h2 dir="auto">{reading.title}</h2>
           <div
@@ -343,7 +335,7 @@ export function LiveReadingPage() {
                   className="reading-word"
                   key={index}
                   to={`/vocabulary?item=${segment.itemId}`}
-                  title="פתיחת פרטי המילה"
+                  title={t("reading.openWord")}
                 >
                   {segment.text}
                 </Link>
@@ -352,12 +344,12 @@ export function LiveReadingPage() {
               ),
             )}
           </div>
-          <p>עצם הקריאה אינה מעלה שליטה או XP.</p>
+          <p>{t("reading.noXp")}</p>
           <Link
             className="button primary"
             to={`/learn/session/article_quiz?reading=${reading.id}`}
           >
-            תרגול המילים מתוך הקטע
+            {t("reading.practiceWords")}
           </Link>
         </article>
       )}

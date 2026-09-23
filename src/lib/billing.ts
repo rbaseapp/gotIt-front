@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { api, ApiError } from "./api";
+import i18n from "../i18n";
 
 const plan = z.object({
   id: z.string().uuid(),
@@ -50,7 +51,7 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
     throw new ApiError(
       502,
       "INVALID_RESPONSE",
-      "שירות המנויים החזיר תשובה לא תקינה.",
+      i18n.t("apiErrors.invalidBillingResponse"),
     );
   return result.data;
 }

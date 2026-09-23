@@ -1,30 +1,26 @@
 import { Check, Crown, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "../context/SubscriptionContext";
-
-const benefits = [
-  "שמירת מילים חדשות",
-  "כל המשחקים והתרגולים",
-  "דיבור, האזנה והגייה",
-  "עד 4 כתבות AI בחודש",
-];
+import { useTranslation } from "react-i18next";
 
 export function SubscriptionBanner() {
+  const { t } = useTranslation();
   const { status, loading } = useSubscription();
+  const benefits = t("subscription.benefits", { returnObjects: true }) as string[];
   if (loading || !status) return null;
 
   if (status.tier === "paid")
     return (
-      <section className="subscription-banner pro" aria-label="מצב מנוי">
+      <section className="subscription-banner pro" aria-label={t("subscription.statusLabel")}>
         <span className="subscription-icon">
           <Crown size={20} />
         </span>
         <div>
-          <strong>משתמש PRO</strong>
-          <small>כל יכולות GotIt פתוחות בחשבון שלך</small>
+          <strong>{t("subscription.proUser")}</strong>
+          <small>{t("subscription.proOpen")}</small>
         </div>
         <Link className="subscription-manage-link" to="/billing">
-          ניהול המנוי
+          {t("subscription.manage")}
         </Link>
       </section>
     );
@@ -44,23 +40,23 @@ export function SubscriptionBanner() {
           <p className="eyebrow">
             {trial
               ? lastDay
-                ? "זהו היום האחרון לניסיון"
-                : `נותרו ${days} ימים לניסיון`
-              : "תקופת הניסיון הסתיימה"}
+                ? t("subscription.lastTrialDay")
+                : t("subscription.trialDays", { count: days })
+              : t("subscription.trialEnded")}
           </p>
           <strong>
             {trial
-              ? "כל יכולות ה־PRO פתוחות עבורך עכשיו"
-              : "ממשיכים ללמוד עם GotIt PRO"}
+              ? t("subscription.trialOpen")
+              : t("subscription.keepLearning")}
           </strong>
           <small>
             {trial
-              ? "שדרגו עכשיו כדי לשמור על רצף הלמידה גם אחרי הניסיון."
-              : "המילים והנתונים שלך שמורים. שדרגו כדי להמשיך ללמוד ולשמור מילים."}
+              ? t("subscription.trialPrompt")
+              : t("subscription.expiredPrompt")}
           </small>
         </div>
       </div>
-      <ul className="subscription-benefits" aria-label="הטבות PRO">
+      <ul className="subscription-benefits" aria-label={t("subscription.benefitsLabel")}>
         {benefits.map((benefit) => (
           <li key={benefit}>
             <Check size={15} />
@@ -69,7 +65,7 @@ export function SubscriptionBanner() {
         ))}
       </ul>
       <Link className="button primary subscription-upgrade" to="/billing">
-        שדרוג ל־PRO
+        {t("subscription.upgrade")}
       </Link>
     </section>
   );

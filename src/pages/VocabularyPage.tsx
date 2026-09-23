@@ -25,6 +25,7 @@ import type { LearningItem, LearningStatus, SkillKey } from "../types";
 import { AddWordModal } from "../components/AddWordModal";
 import { CapabilityNotice } from "../components/CapabilityNotice";
 import { Modal } from "../components/Modal";
+import { useTranslation } from "react-i18next";
 
 type FilterKey =
   | "ALL"
@@ -35,18 +36,18 @@ type FilterKey =
   | "PAUSED"
   | "ARCHIVED"
   | "DELETED";
-const filters: Array<{ id: FilterKey; label: string }> = [
-  { id: "ALL", label: "הכול" },
-  { id: "NEW", label: "חדשות" },
-  { id: "LEARNING", label: "בלמידה" },
-  { id: "REVIEWING", label: "בחזרה" },
-  { id: "MASTERED", label: "נלמדו" },
-  { id: "DUE", label: "לחזרה היום" },
-  { id: "HARD", label: "קשות" },
-  { id: "HIGH", label: "עדיפות גבוהה" },
-  { id: "PAUSED", label: "מושהות" },
-  { id: "ARCHIVED", label: "ארכיון" },
-  { id: "DELETED", label: "נמחקו" },
+const filters: FilterKey[] = [
+  "ALL",
+  "NEW",
+  "LEARNING",
+  "REVIEWING",
+  "MASTERED",
+  "DUE",
+  "HARD",
+  "HIGH",
+  "PAUSED",
+  "ARCHIVED",
+  "DELETED",
 ];
 
 function WordDetail({
@@ -58,16 +59,22 @@ function WordDetail({
   onClose: () => void;
   onEdit: () => void;
 }) {
+  const { t, i18n } = useTranslation();
   const { updateItem, deleteItem, attempts } = useApp();
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);
   return (
-    <Modal open onClose={onClose} title="פרטי מילה" size="lg">
+    <Modal
+      open
+      onClose={onClose}
+      title={t("demoVocabulary.wordDetails")}
+      size="lg"
+    >
       <div className="word-detail">
         <div className="word-detail-hero">
           <button
             className="sound-orb-small"
-            aria-label="השמעת מילה"
+            aria-label={t("demoVocabulary.playWord")}
             onClick={() => speak(item.source, item.sourceLanguage)}
           >
             <Volume2 size={21} />
@@ -103,14 +110,12 @@ function WordDetail({
           </div>
         </div>
         {item.masterySource === "USER" && (
-          <p className="muted-note">
-            מצב הלמידה נקבע ידנית. ציון המיומנויות לא הומצא ולא שונה.
-          </p>
+          <p className="muted-note">{t("demoVocabulary.manualStatusNote")}</p>
         )}
         <div className="detail-section">
-          <span>ההקשר שבו נשמרה</span>
+          <span>{t("demoVocabulary.savedContext")}</span>
           <blockquote dir="auto">
-            “{item.context || "לא נשמר משפט מקור"}”
+            “{item.context || t("demoVocabulary.noSourceSentence")}”
           </blockquote>
           {item.sourceTitle && (
             <small>
@@ -126,7 +131,7 @@ function WordDetail({
         </div>
         {item.examples?.length ? (
           <div className="detail-section">
-            <span>דוגמאות נוספות</span>
+            <span>{t("demoVocabulary.moreExamples")}</span>
             {item.examples.map((example) => (
               <blockquote dir="auto" key={example}>
                 {example}
@@ -135,7 +140,7 @@ function WordDetail({
           </div>
         ) : null}
         <div className="detail-section">
-          <span>מיומנויות · ציוני דוגמה עד חיבור B4</span>
+          <span>{t("demoVocabulary.skillsNote")}</span>
           <div className="detail-skills">
             {Object.entries(item.skills).map(([key, value]) => (
               <div key={key}>
@@ -149,7 +154,7 @@ function WordDetail({
           </div>
         </div>
         <div className="detail-section">
-          <span>תגיות</span>
+          <span>{t("vocabulary.tag")}</span>
           <div className="tag-list">
             {item.tags.length ? (
               item.tags.map((tag) => (
@@ -159,7 +164,7 @@ function WordDetail({
                 </span>
               ))
             ) : (
-              <small>אין תגיות</small>
+              <small>{t("demoVocabulary.noTags")}</small>
             )}
           </div>
         </div>
@@ -174,11 +179,11 @@ function WordDetail({
             }
           >
             <Play size={17} />
-            לתרגל מילה זו
+            {t("demoVocabulary.practiceThisWord")}
           </button>
           <button className="button secondary" onClick={onEdit}>
             <Pencil size={17} />
-            עריכה
+            {t("vocabulary.edit")}
           </button>
           <button
             className="button secondary"
@@ -189,7 +194,9 @@ function WordDetail({
             }
           >
             <Pause size={17} />
-            {item.userStatus === "ACTIVE" ? "השהיה" : "החזרה ללמידה"}
+            {item.userStatus === "ACTIVE"
+              ? t("vocabulary.actions.pause")
+              : t("vocabulary.actions.return_to_learning")}
           </button>
           <button
             className="button secondary"
@@ -205,7 +212,9 @@ function WordDetail({
             }
           >
             <Check size={17} />
-            {item.status === "MASTERED" ? "חזרה ללמידה" : "סימון כנלמד"}
+            {item.status === "MASTERED"
+              ? t("vocabulary.actions.return_to_learning")
+              : t("vocabulary.markMastered")}
           </button>
           <button
             className="button secondary"
@@ -216,13 +225,17 @@ function WordDetail({
             }
           >
             <Flag size={17} />
-            {item.priority === "HIGH" ? "עדיפות רגילה" : "עדיפות גבוהה"}
+            {item.priority === "HIGH"
+              ? t("vocabulary.actions.normal_priority")
+              : t("vocabulary.actions.high_priority")}
           </button>
           <button
             className="button secondary"
             onClick={() => updateItem(item.id, { hard: !item.hard })}
           >
-            {item.hard ? "ביטול סימון קשה" : "סימון כקשה"}
+            {item.hard
+              ? t("vocabulary.actions.clear_hard")
+              : t("vocabulary.actions.mark_hard")}
           </button>
           <button
             className="button secondary"
@@ -234,11 +247,17 @@ function WordDetail({
             }
           >
             <Archive size={17} />
-            {item.userStatus === "ARCHIVED" ? "הוצאה מארכיון" : "ארכיון"}
+            {item.userStatus === "ARCHIVED"
+              ? t("demoVocabulary.unarchive")
+              : t("labels.archived")}
           </button>
           <button
             className="button icon-danger"
-            aria-label={item.deletedAt ? "שחזור מילה" : "מחיקת מילה"}
+            aria-label={
+              item.deletedAt
+                ? t("demoVocabulary.restoreWord")
+                : t("demoVocabulary.deleteWord")
+            }
             onClick={() =>
               item.deletedAt
                 ? updateItem(item.id, { deletedAt: null })
@@ -250,12 +269,12 @@ function WordDetail({
         </div>
         {confirmDelete && (
           <div className="delete-confirm">
-            <p>המילה תוסתר, אך ההיסטוריה תישמר ואפשר יהיה לשחזר אותה.</p>
+            <p>{t("demoVocabulary.softDeleteDescription")}</p>
             <button
               className="button secondary"
               onClick={() => setConfirmDelete(false)}
             >
-              ביטול
+              {t("feedback.cancel")}
             </button>
             <button
               className="button primary"
@@ -264,12 +283,12 @@ function WordDetail({
                 onClose();
               }}
             >
-              מחיקה רכה
+              {t("demoVocabulary.softDelete")}
             </button>
           </div>
         )}
         <div className="detail-section">
-          <span>ניסיונות אחרונים</span>
+          <span>{t("demoVocabulary.recentAttempts")}</span>
           {attempts
             .filter((attempt) => attempt.itemId === item.id)
             .slice(-5)
@@ -278,15 +297,17 @@ function WordDetail({
               <div className="attempt-history-row" key={attempt.id}>
                 <span>{attempt.game}</span>
                 <b>
-                  {attempt.result === "skipped" ? "דילוג" : attempt.score + "%"}
+                  {attempt.result === "skipped"
+                    ? t("labels.skipped")
+                    : attempt.score + "%"}
                 </b>
                 <small>
-                  {new Date(attempt.createdAt).toLocaleString("he-IL")}
+                  {new Date(attempt.createdAt).toLocaleString(i18n.language)}
                 </small>
               </div>
             ))}
           {!attempts.some((attempt) => attempt.itemId === item.id) && (
-            <p className="muted-note">לא נשמרו ניסיונות חדשים בדמו.</p>
+            <p className="muted-note">{t("demoVocabulary.noAttempts")}</p>
           )}
         </div>
       </div>
@@ -295,6 +316,7 @@ function WordDetail({
 }
 
 export function VocabularyPage() {
+  const { t, i18n } = useTranslation();
   const { items, updateItem, mode } = useApp();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterKey>("ALL");
@@ -394,23 +416,23 @@ export function VocabularyPage() {
   if (mode !== "demo")
     return (
       <CapabilityNotice
-        title="אוצר המילים שלך"
-        milestone="B2/B7: אוצר מילים, הקשרים ותגיות"
+        title={t("demoVocabulary.capabilityTitle")}
+        milestone={t("demoVocabulary.capabilityMilestone")}
       />
     );
   return (
     <div className="vocabulary-page page-enter">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">הספרייה האישית שלך · דמו</p>
-          <h1>אוצר המילים</h1>
+          <p className="eyebrow">{t("demoVocabulary.eyebrow")}</p>
+          <h1>{t("vocabulary.title")}</h1>
           <p>
             {
               items.filter(
                 (item) => !item.deletedAt && item.userStatus !== "ARCHIVED",
               ).length
             }{" "}
-            מילים וביטויים
+            {t("demoVocabulary.wordsAndPhrases")}
           </p>
         </div>
         <button
@@ -421,7 +443,7 @@ export function VocabularyPage() {
           }}
         >
           <Plus size={18} />
-          מילה חדשה
+          {t("vocabulary.newWord")}
         </button>
       </section>
       <section className="library-toolbar">
@@ -429,27 +451,33 @@ export function VocabularyPage() {
           <Search size={19} />
           <input
             ref={searchRef}
-            aria-label="חיפוש באוצר המילים"
+            aria-label={t("demoVocabulary.searchAria")}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="חיפוש מילה, תרגום או תגית..."
+            placeholder={t("demoVocabulary.searchPlaceholder")}
           />
           <kbd>Ctrl K</kbd>
         </div>
         <div className="sort-box">
           <SlidersHorizontal size={17} />
-          <span>מיון:</span>
+          <span>{t("vocabulary.sort")}:</span>
           <select
-            aria-label="מיון מילים"
+            aria-label={t("demoVocabulary.sortAria")}
             value={sort}
             onChange={(event) => setSort(event.target.value)}
           >
-            <option value="recent">נוספו לאחרונה</option>
-            <option value="weakest">החלשות ביותר</option>
-            <option value="strongest">החזקות ביותר</option>
-            <option value="alphabetical">לפי א׳–ב׳</option>
-            <option value="due">החזרה הקרובה</option>
-            <option value="practiced">הכי מתורגלות</option>
+            <option value="recent">{t("vocabulary.sortOptions.recent")}</option>
+            <option value="weakest">{t("demoVocabulary.sort.weakest")}</option>
+            <option value="strongest">
+              {t("demoVocabulary.sort.strongest")}
+            </option>
+            <option value="alphabetical">
+              {t("vocabulary.sortOptions.alphabetical")}
+            </option>
+            <option value="due">{t("demoVocabulary.sort.due")}</option>
+            <option value="practiced">
+              {t("demoVocabulary.sort.practiced")}
+            </option>
           </select>
           <ChevronDown size={15} />
         </div>
@@ -458,36 +486,36 @@ export function VocabularyPage() {
         <Filter size={17} />
         {filters.map((option) => (
           <button
-            aria-pressed={filter === option.id}
-            key={option.id}
+            aria-pressed={filter === option}
+            key={option}
             onClick={() => {
-              setFilter(option.id);
+              setFilter(option);
               setSelected([]);
             }}
-            className={filter === option.id ? "active" : ""}
+            className={filter === option ? "active" : ""}
           >
-            {option.label}
-            {option.id === "DUE" && <span>{items.filter(isDue).length}</span>}
+            {t(`demoVocabulary.filters.${option}`)}
+            {option === "DUE" && <span>{items.filter(isDue).length}</span>}
           </button>
         ))}
       </div>
       <div className="library-secondary-filters">
         <label>
-          תגית{" "}
+          {t("vocabulary.tag")}{" "}
           <select value={tag} onChange={(event) => setTag(event.target.value)}>
-            <option value="">כל התגיות</option>
+            <option value="">{t("vocabulary.allTags")}</option>
             {tags.map((value) => (
               <option key={value}>{value}</option>
             ))}
           </select>
         </label>
         <label>
-          שפות{" "}
+          {t("demoVocabulary.languages")}{" "}
           <select
             value={pair}
             onChange={(event) => setPair(event.target.value)}
           >
-            <option value="">כל השפות</option>
+            <option value="">{t("demoVocabulary.allLanguages")}</option>
             {pairs.map((value) => (
               <option key={value}>{value}</option>
             ))}
@@ -496,7 +524,9 @@ export function VocabularyPage() {
       </div>
       {visibleSelection.length > 0 && (
         <div className="bulk-bar">
-          <b>{visibleSelection.length} נבחרו</b>
+          <b>
+            {t("demoVocabulary.selected", { count: visibleSelection.length })}
+          </b>
           <button
             onClick={() =>
               practice(
@@ -505,7 +535,7 @@ export function VocabularyPage() {
             }
           >
             <Play size={16} />
-            תרגול
+            {t("demoVocabulary.practice")}
           </button>
           <button
             onClick={() =>
@@ -515,11 +545,13 @@ export function VocabularyPage() {
             }
           >
             <Pause size={16} />
-            {filter === "PAUSED" ? "חידוש" : "השהיה"}
+            {filter === "PAUSED"
+              ? t("demoVocabulary.resume")
+              : t("vocabulary.actions.pause")}
           </button>
           <button onClick={() => bulkUpdate({ priority: "HIGH" })}>
             <Flag size={16} />
-            עדיפות
+            {t("demoVocabulary.priority")}
           </button>
           <button
             onClick={() =>
@@ -529,20 +561,22 @@ export function VocabularyPage() {
             }
           >
             <Archive size={16} />
-            {filter === "ARCHIVED" ? "שחזור" : "ארכיון"}
+            {filter === "ARCHIVED"
+              ? t("vocabulary.actions.restore")
+              : t("labels.archived")}
           </button>
           <button onClick={() => setBulkTags("")}>
             <Tag size={16} />
-            תגיות
+            {t("vocabulary.manageTags")}
           </button>
           {filter === "DELETED" && (
             <button onClick={() => bulkUpdate({ deletedAt: null })}>
-              שחזור
+              {t("vocabulary.actions.restore")}
             </button>
           )}
           <button
             className="icon-button"
-            aria-label="ביטול בחירה"
+            aria-label={t("demoVocabulary.clearSelection")}
             onClick={() => setSelected([])}
           >
             <X size={17} />
@@ -551,12 +585,14 @@ export function VocabularyPage() {
       )}
       <section className="word-table-wrap">
         <table className="word-table">
-          <caption className="sr-only">אוצר המילים המסונן</caption>
+          <caption className="sr-only">
+            {t("demoVocabulary.filteredVocabulary")}
+          </caption>
           <thead>
             <tr>
               <th>
                 <button
-                  aria-label="בחירת כל המילים המוצגות"
+                  aria-label={t("demoVocabulary.selectAllDisplayed")}
                   aria-pressed={allSelected}
                   className={cn("checkbox", allSelected && "checked")}
                   onClick={() =>
@@ -568,12 +604,12 @@ export function VocabularyPage() {
                   {allSelected && <Check size={13} />}
                 </button>
               </th>
-              <th>מילה ומשמעות</th>
-              <th>מצב</th>
-              <th>שליטה</th>
-              <th>מיומנות חלשה</th>
-              <th>לחזרה</th>
-              <th>תגיות</th>
+              <th>{t("demoVocabulary.wordMeaning")}</th>
+              <th>{t("demoVocabulary.status")}</th>
+              <th>{t("demoVocabulary.mastery")}</th>
+              <th>{t("demoVocabulary.weakSkill")}</th>
+              <th>{t("demoVocabulary.review")}</th>
+              <th>{t("vocabulary.manageTags")}</th>
               <th />
             </tr>
           </thead>
@@ -586,7 +622,9 @@ export function VocabularyPage() {
                 <tr key={item.id} onClick={() => setDetailId(item.id)}>
                   <td onClick={(event) => event.stopPropagation()}>
                     <button
-                      aria-label={"בחירת " + item.source}
+                      aria-label={t("vocabulary.selectWord", {
+                        word: item.source,
+                      })}
                       aria-pressed={selected.includes(item.id)}
                       className={cn(
                         "checkbox",
@@ -600,7 +638,9 @@ export function VocabularyPage() {
                   <td>
                     <div className="table-word">
                       <button
-                        aria-label={"השמעת " + item.source}
+                        aria-label={t("demoVocabulary.playNamedWord", {
+                          word: item.source,
+                        })}
                         onClick={(event) => {
                           event.stopPropagation();
                           speak(item.source, item.sourceLanguage);
@@ -629,11 +669,11 @@ export function VocabularyPage() {
                       }
                     >
                       {item.deletedAt
-                        ? "נמחקה"
+                        ? t("labels.deleted")
                         : item.userStatus === "ARCHIVED"
-                          ? "ארכיון"
+                          ? t("labels.archived")
                           : item.userStatus === "PAUSED"
-                            ? "מושהה"
+                            ? t("labels.paused")
                             : statusLabels[item.status]}
                     </span>
                   </td>
@@ -656,11 +696,14 @@ export function VocabularyPage() {
                       {item.userStatus !== "ACTIVE" || item.deletedAt
                         ? "—"
                         : isDue(item)
-                          ? "היום"
-                          : new Date(item.dueAt).toLocaleDateString("he-IL", {
-                              day: "numeric",
-                              month: "short",
-                            })}
+                          ? t("demoVocabulary.today")
+                          : new Date(item.dueAt).toLocaleDateString(
+                              i18n.language,
+                              {
+                                day: "numeric",
+                                month: "short",
+                              },
+                            )}
                     </span>
                   </td>
                   <td>
@@ -673,7 +716,9 @@ export function VocabularyPage() {
                   <td>
                     <button
                       className="icon-button"
-                      aria-label={"עריכת " + item.source}
+                      aria-label={t("demoVocabulary.editNamedWord", {
+                        word: item.source,
+                      })}
                       onClick={(event) => {
                         event.stopPropagation();
                         setEditId(item.id);
@@ -691,8 +736,8 @@ export function VocabularyPage() {
         {visible.length === 0 && (
           <div className="empty-library">
             <Search size={30} />
-            <h3>לא מצאנו מילים מתאימות</h3>
-            <p>נסו חיפוש אחר או שנו את המסנן.</p>
+            <h3>{t("demoVocabulary.emptyTitle")}</h3>
+            <p>{t("demoVocabulary.emptyDescription")}</p>
             <button
               className="button secondary"
               onClick={() => {
@@ -702,15 +747,13 @@ export function VocabularyPage() {
                 setTag("");
               }}
             >
-              ניקוי מסננים
+              {t("demoVocabulary.clearFilters")}
             </button>
           </div>
         )}
       </section>
       <div className="table-footer">
-        <span>
-          מציג {visible.length} מילים · שליטה ותאריכי חזרה הם נתוני דוגמה
-        </span>
+        <span>{t("demoVocabulary.footer", { count: visible.length })}</span>
         <button
           className="button secondary"
           disabled={
@@ -720,7 +763,7 @@ export function VocabularyPage() {
           }
           onClick={() => practice(visible)}
         >
-          תרגול המילים המסוננות <ArrowLeft size={17} />
+          {t("demoVocabulary.practiceFiltered")} <ArrowLeft size={17} />
         </button>
       </div>
       <AddWordModal
@@ -742,7 +785,7 @@ export function VocabularyPage() {
       <Modal
         open={bulkTags !== null}
         onClose={() => setBulkTags(null)}
-        title="הוספת תגיות לבחירה"
+        title={t("demoVocabulary.addTagsToSelection")}
       >
         <form
           className="modal-body form-stack"
@@ -768,13 +811,15 @@ export function VocabularyPage() {
           }}
         >
           <label className="field">
-            <span>תגיות מופרדות בפסיק</span>
+            <span>{t("demoAdd.commaSeparated")}</span>
             <input
               value={bulkTags || ""}
               onChange={(event) => setBulkTags(event.target.value)}
             />
           </label>
-          <button className="button primary">הוספת תגיות</button>
+          <button className="button primary">
+            {t("demoVocabulary.addTags")}
+          </button>
         </form>
       </Modal>
     </div>

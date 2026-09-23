@@ -23,12 +23,7 @@ import {
   type WordPackEntry,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
-
-const levelLabels = {
-  beginner: "מתחילים",
-  intermediate: "בינוניים",
-  advanced: "מתקדמים",
-};
+import { useTranslation } from "react-i18next";
 
 type PackDialog = {
   pack: WordPack;
@@ -38,6 +33,7 @@ type PackDialog = {
 };
 
 export function WordPacksPage() {
+  const { t } = useTranslation();
   const packs = useResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
   );
@@ -101,7 +97,7 @@ export function WordPacksPage() {
         { entryIds: dialog.selected },
       );
       toast(
-        `המאגר נוסף עם ${dialog.selected.length} מילים: ${receipt.added} חדשות ו־${receipt.linkedExisting} שכבר היו בספרייה.`,
+        t("packs.added", { selected: dialog.selected.length, added: receipt.added, existing: receipt.linkedExisting }),
         { tone: "success" },
       );
       setDialog(undefined);
@@ -115,11 +111,11 @@ export function WordPacksPage() {
 
   const remove = async (pack: WordPack, keepWords: boolean) => {
     const approved = await confirm({
-      title: keepWords ? "הסרת שיוך המאגר" : "הסרת המאגר",
+      title: keepWords ? t("packs.unlinkTitle") : t("packs.removeTitle"),
       message: keepWords
-        ? "המאגר יוסר, אך כל המילים יישארו פעילות בספרייה שלך."
-        : "מילים שהגיעו רק מהמאגר יעברו לארכיון. מילים ממקור נוסף והתקדמות הלימוד יישמרו.",
-      confirmLabel: keepWords ? "הסר והשאר מילים" : "הסר מאגר",
+        ? t("packs.unlinkDescription")
+        : t("packs.removeDescription"),
+      confirmLabel: keepWords ? t("packs.unlinkConfirm") : t("packs.removeConfirm"),
       tone: keepWords ? "warning" : "danger",
     });
     if (!approved) return;
@@ -132,8 +128,8 @@ export function WordPacksPage() {
       );
       toast(
         keepWords
-          ? `${receipt.retained} מילים נשארו בספרייה.`
-          : `${receipt.archived} מילים עברו לארכיון ו־${receipt.retained} נשארו פעילות.`,
+          ? t("packs.retained", { count: receipt.retained })
+          : t("packs.archived", { archived: receipt.archived, retained: receipt.retained }),
         { tone: "success" },
       );
       await packs.reload();
@@ -160,9 +156,9 @@ export function WordPacksPage() {
     <div className="word-packs-page live-page page-enter">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">מסלולי מילים לפי נושא ורמה</p>
-          <h1>מאגרי מילים</h1>
-          <p>צפו במילים, בחרו מה להוסיף ולמדו את כל המאגר בסשן ממוקד.</p>
+          <p className="eyebrow">{t("packs.eyebrow")}</p>
+          <h1>{t("packs.title")}</h1>
+          <p>{t("packs.description")}</p>
         </div>
       </section>
       <RemoteState
@@ -179,7 +175,7 @@ export function WordPacksPage() {
             <div>
               <h2>{group.title}</h2>
               <p>
-                {levelLabels[group.packs[0]!.track.levelCode]} · CEFR{" "}
+                {t(`packs.levels.${group.packs[0]!.track.levelCode}`)} · CEFR{" "}
                 {group.packs[0]!.track.cefrFrom}–{group.packs[0]!.track.cefrTo}
               </p>
             </div>
@@ -192,14 +188,14 @@ export function WordPacksPage() {
               >
                 <div className="pack-card-top">
                   <span className="pack-module">
-                    <Layers3 size={16} /> יחידה {pack.moduleNumber}
+                    <Layers3 size={16} /> {t("packs.module", { number: pack.moduleNumber })}
                   </span>
                   {pack.installed && (
                     <span className="pack-installed">
                       <BookOpenCheck size={15} />
                       {pack.installedVersion !== pack.version
-                        ? "עדכון זמין"
-                        : "נוסף"}
+                        ? t("packs.updateAvailable")
+                        : t("packs.installed")}
                     </span>
                   )}
                 </div>
@@ -207,15 +203,15 @@ export function WordPacksPage() {
                 <p>{pack.description}</p>
                 <div className="pack-counts">
                   <span>
-                    <b>{pack.wordCount}</b> מילים
+                    {t("packs.wordCount", { count: pack.wordCount })}
                   </span>
                   {pack.installed && (
                     <>
                       <span>
-                        <b>{pack.progress.linked}</b> נבחרו
+                        {t("packs.selectedCount", { count: pack.progress.linked })}
                       </span>
                       <span>
-                        <b>{pack.progress.mastered}</b> הושלמו
+                        {t("packs.masteredCount", { count: pack.progress.mastered })}
                       </span>
                     </>
                   )}
@@ -225,7 +221,7 @@ export function WordPacksPage() {
                   disabled={busy === pack.id || detailLoading}
                   onClick={() => void openWords(pack, false)}
                 >
-                  <Eye size={17} /> הצגת המילים
+                  <Eye size={17} /> {t("packs.showWords")}
                 </button>
                 {pack.installed ? (
                   <div className="pack-actions">
@@ -235,30 +231,30 @@ export function WordPacksPage() {
                       onClick={() => void openWords(pack, true)}
                     >
                       {pack.installedVersion !== pack.version
-                        ? "עדכון ובחירת מילים"
-                        : "עריכת בחירת המילים"}
+                        ? t("packs.updateSelection")
+                        : t("packs.editSelection")}
                     </button>
                     <Link
                       className="button primary"
                       to={`/learn/session/smart?pack=${pack.id}`}
                     >
-                      <Play size={17} /> לימוד כל המאגר
+                      <Play size={17} /> {t("packs.learnAll")}
                     </Link>
                     <details className="pack-manage">
-                      <summary>ניהול מאגר</summary>
+                      <summary>{t("packs.manage")}</summary>
                       <button
                         className="button ghost"
                         disabled={busy === pack.id}
                         onClick={() => void remove(pack, true)}
                       >
-                        הסר שיוך והשאר מילים
+                        {t("packs.unlinkKeep")}
                       </button>
                       <button
                         className="button danger"
                         disabled={busy === pack.id}
                         onClick={() => void remove(pack, false)}
                       >
-                        <Trash2 size={16} /> הסר מילים בלעדיות
+                        <Trash2 size={16} /> {t("packs.removeExclusive")}
                       </button>
                     </details>
                   </div>
@@ -268,7 +264,7 @@ export function WordPacksPage() {
                     disabled={busy === pack.id}
                     onClick={() => void openWords(pack, true)}
                   >
-                    בחר והוסף מילים
+                    {t("packs.chooseAdd")}
                   </button>
                 )}
               </article>
@@ -278,13 +274,13 @@ export function WordPacksPage() {
       ))}
       {!packs.loading && !packs.error && !grouped.length && (
         <section className="live-panel">
-          <p>אין כרגע מאגרים זמינים לצמד השפות שלך.</p>
+          <p>{t("packs.empty")}</p>
         </section>
       )}
       <Modal
         open={Boolean(dialog)}
         onClose={() => !busy && setDialog(undefined)}
-        title={dialog?.pack.title || "מילות המאגר"}
+        title={dialog?.pack.title || t("packs.packWords")}
         size="lg"
       >
         {dialog && (
@@ -293,8 +289,8 @@ export function WordPacksPage() {
               <div className="pack-selection-summary">
                 <p>
                   {dialog.selectable
-                    ? `${dialog.selected.length} מתוך ${dialog.entries.length} מילים מסומנות להוספה.`
-                    : `${dialog.entries.length} מילים במאגר.`}
+                    ? t("packs.selectionSummary", { selected: dialog.selected.length, total: dialog.entries.length })
+                    : t("packs.dialogCount", { count: dialog.entries.length })}
                 </p>
                 {dialog.selectable && (
                   <div className="live-options">
@@ -308,14 +304,14 @@ export function WordPacksPage() {
                         })
                       }
                     >
-                      סמן הכול
+                      {t("packs.selectAll")}
                     </button>
                     <button
                       type="button"
                       className="button ghost"
                       onClick={() => setDialog({ ...dialog, selected: [] })}
                     >
-                      נקה בחירה
+                      {t("packs.clearSelection")}
                     </button>
                   </div>
                 )}
@@ -342,7 +338,7 @@ export function WordPacksPage() {
                     {dialog.pack.installed &&
                       entry.learningItemId &&
                       !entry.excludedAt && (
-                        <em className="pack-included">בספרייה</em>
+                        <em className="pack-included">{t("packs.inLibrary")}</em>
                       )}
                   </label>
                 ))}
@@ -354,7 +350,7 @@ export function WordPacksPage() {
                 className="button ghost"
                 onClick={() => setDialog(undefined)}
               >
-                {dialog.selectable ? "ביטול" : "סגירה"}
+                {dialog.selectable ? t("feedback.cancel") : t("common.close")}
               </button>
               {dialog.selectable && (
                 <button
@@ -364,8 +360,8 @@ export function WordPacksPage() {
                   onClick={() => void add()}
                 >
                   {busy === dialog.pack.id
-                    ? "מוסיף…"
-                    : `הוסף ${dialog.selected.length} מילים`}
+                    ? t("packs.adding")
+                    : t("packs.addCount", { count: dialog.selected.length })}
                 </button>
               )}
             </div>

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export function RemoteState({
   loading,
   error,
@@ -7,18 +9,19 @@ export function RemoteState({
   error: string;
   retry: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <>
       {loading && (
         <p role="status" className="remote-status">
-          טוען מהשרת…
+          {t("common.loadingFromServer")}
         </p>
       )}
       {error && (
         <div role="alert" className="form-error">
           {error}
           <button type="button" className="button ghost" onClick={retry}>
-            ניסיון נוסף
+            {t("common.tryAgain")}
           </button>
         </div>
       )}

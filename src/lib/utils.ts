@@ -1,18 +1,37 @@
 import type { LearningItem, SkillKey } from "../types";
+import i18n from "../i18n";
 
 export const statusLabels = {
-  NEW: "חדש",
-  LEARNING: "בלמידה",
-  REVIEWING: "בחזרה",
-  MASTERED: "נלמד",
+  get NEW() {
+    return i18n.t("labels.new");
+  },
+  get LEARNING() {
+    return i18n.t("labels.learning");
+  },
+  get REVIEWING() {
+    return i18n.t("labels.reviewing");
+  },
+  get MASTERED() {
+    return i18n.t("labels.mastered");
+  },
 } as const;
 
 export const skillLabels: Record<SkillKey, string> = {
-  recognition: "זיהוי",
-  recall: "שליפה",
-  listening: "האזנה",
-  spelling: "איות",
-  pronunciation: "הגייה",
+  get recognition() {
+    return i18n.t("labels.recognition");
+  },
+  get recall() {
+    return i18n.t("labels.recall");
+  },
+  get listening() {
+    return i18n.t("labels.listening");
+  },
+  get spelling() {
+    return i18n.t("labels.spelling");
+  },
+  get pronunciation() {
+    return i18n.t("labels.pronunciation");
+  },
 };
 
 export function isDue(item: LearningItem) {

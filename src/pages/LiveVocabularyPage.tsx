@@ -8,6 +8,7 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { Plus, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
 import { Modal } from "../components/Modal";
 import { RemoteState } from "../components/RemoteState";
@@ -31,21 +32,22 @@ import { useResource } from "../lib/useResource";
 import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
 
-const actions: Record<string, string> = {
-  pause: "השהיה",
-  resume: "הפעלה",
-  archive: "העברה לארכיון",
-  delete: "מחיקה לסל",
-  restore: "שחזור",
-  mark_mastered: "סימון ידני כנלמד",
-  return_to_learning: "החזרה ללמידה",
-  high_priority: "עדיפות גבוהה",
-  normal_priority: "עדיפות רגילה",
-  mark_hard: "סימון כקשה",
-  clear_hard: "ביטול סימון קשה",
-};
+const actions = [
+  "pause",
+  "resume",
+  "archive",
+  "delete",
+  "restore",
+  "mark_mastered",
+  "return_to_learning",
+  "high_priority",
+  "normal_priority",
+  "mark_hard",
+  "clear_hard",
+] as const;
 const bulkReceipt = z.object({ ids: z.array(uuid), action: z.string() });
 export function LiveVocabularyPage() {
+  const { t } = useTranslation();
   const { confirm, toast } = useFeedback();
   const { hasEntitlement } = useSubscription();
   const canWrite = hasEntitlement("vocabulary.write");
@@ -116,7 +118,7 @@ export function LiveVocabularyPage() {
   };
   const apply = async (ids = selected, operation = action) => {
     if (!canWrite) {
-      toast("עריכת מילים ושמירת מילים חדשות זמינות ב־PRO.", {
+      toast(t("vocabulary.proRequired"), {
         tone: "info",
       });
       return;
@@ -124,14 +126,17 @@ export function LiveVocabularyPage() {
     if (!ids.length || busy) return;
     if (["delete", "mark_mastered", "restore"].includes(operation)) {
       const approved = await confirm({
-        title: `${actions[operation]} עבור ${ids.length} מילים?`,
+        title: t("vocabulary.confirmBulk", {
+          action: t(`vocabulary.actions.${operation}`),
+          count: ids.length,
+        }),
         message:
           operation === "delete"
-            ? "המילים יועברו לסל ויהיה אפשר לשחזר אותן בהמשך."
+            ? t("vocabulary.deleteDescription")
             : operation === "restore"
-              ? "המילים יחזרו לספרייה הפעילה שלך."
-              : "זהו סימון ידני ולא ציון שנקבע על ידי מערכת הלמידה.",
-        confirmLabel: actions[operation],
+              ? t("vocabulary.restoreDescription")
+              : t("vocabulary.manualMasteryDescription"),
+        confirmLabel: t(`vocabulary.actions.${operation}`),
         tone: operation === "delete" ? "danger" : "warning",
       });
       if (!approved) return;
@@ -144,7 +149,7 @@ export function LiveVocabularyPage() {
         action: operation,
       });
       setSelected([]);
-      toast("השינוי נשמר בשרת.", { tone: "success" });
+      toast(t("vocabulary.changeSaved"), { tone: "success" });
       await resource.reload();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -156,18 +161,18 @@ export function LiveVocabularyPage() {
     <div className="vocabulary-page page-enter live-page">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">המילים שלך, מכל מקום</p>
-          <h1>אוצר המילים שלי</h1>
-          <p>משמעויות והקשרים נפרדים. כל ההתקדמות מגיעה מהשרת.</p>
+          <p className="eyebrow">{t("vocabulary.eyebrow")}</p>
+          <h1>{t("vocabulary.title")}</h1>
+          <p>{t("vocabulary.description")}</p>
         </div>
         {canWrite ? (
           <button className="button primary" onClick={() => setAdd(true)}>
             <Plus size={18} />
-            מילה חדשה
+            {t("vocabulary.newWord")}
           </button>
         ) : (
           <Link className="button primary" to="/billing">
-            שדרוג לשמירת מילים
+            {t("vocabulary.upgradeToSave")}
           </Link>
         )}
       </section>
@@ -180,28 +185,28 @@ export function LiveVocabularyPage() {
           }}
         >
           <label className="field">
-            <span>חיפוש בטקסט המקור</span>
+            <span>{t("vocabulary.searchSource")}</span>
             <input
               maxLength={500}
               dir="auto"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="איזו מילה מחפשים?"
+              placeholder={t("vocabulary.searchPlaceholder")}
             />
           </label>
           <button className="button secondary">
             <Search size={18} />
-            חיפוש
+            {t("vocabulary.search")}
           </button>
         </form>
         <div className="live-filter-grid">
           <label className="field">
-            <span>מצב משתמש</span>
+            <span>{t("vocabulary.userStatus")}</span>
             <select
               value={filters.userStatus}
               onChange={(e) => change("userStatus", e.target.value)}
             >
-              <option value="all">הכול (ללא סל)</option>
+              <option value="all">{t("vocabulary.allExceptDeleted")}</option>
               {["active", "paused", "archived", "deleted"].map((s) => (
                 <option key={s} value={s}>
                   {labels[s]}
@@ -221,7 +226,7 @@ export function LiveVocabularyPage() {
                       change("tagId", "");
                     }}
                   >
-                    תגיות קודמות
+                    {t("vocabulary.previousTags")}
                   </button>
                 )}
                 {tags.data?.nextCursor && (
@@ -234,19 +239,19 @@ export function LiveVocabularyPage() {
                       change("tagId", "");
                     }}
                   >
-                    תגיות נוספות
+                    {t("vocabulary.moreTags")}
                   </button>
                 )}
               </span>
             )}
           </label>
           <label className="field">
-            <span>מצב למידה</span>
+            <span>{t("vocabulary.learningStatus")}</span>
             <select
               value={filters.learningStatus || ""}
               onChange={(e) => change("learningStatus", e.target.value)}
             >
-              <option value="">כל המצבים</option>
+              <option value="">{t("vocabulary.allStatuses")}</option>
               {["new", "learning", "reviewing", "mastered"].map((s) => (
                 <option key={s} value={s}>
                   {labels[s]}
@@ -255,32 +260,32 @@ export function LiveVocabularyPage() {
             </select>
           </label>
           <label className="field">
-            <span>מיון</span>
+            <span>{t("vocabulary.sort")}</span>
             <select
               value={filters.sort}
               onChange={(e) => change("sort", e.target.value)}
             >
-              {Object.entries({
-                recent: "האחרונות שנוספו",
-                alphabetical: "אלפביתי",
-                weakest: "החלשות תחילה",
-                strongest: "החזקות תחילה",
-                due_next: "מועד החזרה",
-                most_practiced: "המתורגלות ביותר",
-              }).map(([k, v]) => (
+              {[
+                "recent",
+                "alphabetical",
+                "weakest",
+                "strongest",
+                "due_next",
+                "most_practiced",
+              ].map((k) => (
                 <option key={k} value={k}>
-                  {v}
+                  {t(`vocabulary.sortOptions.${k}`)}
                 </option>
               ))}
             </select>
           </label>
           <label className="field">
-            <span>תגית</span>
+            <span>{t("vocabulary.tag")}</span>
             <select
               value={filters.tagId || ""}
               onChange={(e) => change("tagId", e.target.value)}
             >
-              <option value="">כל התגיות</option>
+              <option value="">{t("vocabulary.allTags")}</option>
               {tags.data?.tags.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -289,7 +294,7 @@ export function LiveVocabularyPage() {
             </select>
           </label>
           <label className="field">
-            <span>שפת המקור</span>
+            <span>{t("vocabulary.sourceLanguage")}</span>
             <input
               dir="ltr"
               maxLength={64}
@@ -299,7 +304,7 @@ export function LiveVocabularyPage() {
             />
           </label>
           <label className="field">
-            <span>שפת התרגום</span>
+            <span>{t("vocabulary.translationLanguage")}</span>
             <input
               dir="ltr"
               maxLength={64}
@@ -311,7 +316,7 @@ export function LiveVocabularyPage() {
             />
           </label>
           <fieldset className="field pack-filter-field">
-            <legend>סינון לפי מאגרים</legend>
+            <legend>{t("vocabulary.filterPacks")}</legend>
             <span className="pack-filter-options">
               {installedPacks?.map((pack) => (
                 <label className="live-checkbox" key={pack.id}>
@@ -328,24 +333,20 @@ export function LiveVocabularyPage() {
                 </label>
               ))}
               {installedPacks && !installedPacks.length && (
-                <small>אין מאגרים פעילים. אפשר להוסיף מאגר ממסך המאגרים.</small>
+                <small>{t("vocabulary.noActivePacks")}</small>
               )}
             </span>
           </fieldset>
         </div>
         <div className="live-options">
-          {[
-            ["difficult", "קשות בלבד"],
-            ["highPriority", "עדיפות גבוהה"],
-            ["due", "לחזרה עכשיו"],
-          ].map(([key, label]) => (
+          {["difficult", "highPriority", "due"].map((key) => (
             <label className="live-checkbox" key={key}>
               <input
                 type="checkbox"
                 checked={filters[key] === "true"}
                 onChange={(e) => change(key, e.target.checked ? "true" : "")}
               />
-              {label}
+              {t(`vocabulary.filters.${key}`)}
             </label>
           ))}
           <button
@@ -353,7 +354,7 @@ export function LiveVocabularyPage() {
             disabled={!canWrite}
             onClick={() => setTagsOpen(true)}
           >
-            ניהול תגיות
+            {t("vocabulary.manageTags")}
           </button>
         </div>
       </section>
@@ -390,22 +391,24 @@ export function LiveVocabularyPage() {
                   )
                 }
               />
-              בחירת העמוד ({resource.data.items.length})
+              {t("vocabulary.selectPage", {
+                count: resource.data.items.length,
+              })}
             </label>
             <select
-              aria-label="פעולה קבוצתית"
+              aria-label={t("vocabulary.bulkAction")}
               value={action}
               onChange={(e) => setAction(e.target.value)}
             >
-              {Object.entries(actions)
-                .filter(([a]) =>
+              {actions
+                .filter((a) =>
                   filters.userStatus === "deleted"
                     ? a === "restore"
                     : a !== "restore",
                 )
-                .map(([k, v]) => (
+                .map((k) => (
                   <option key={k} value={k}>
-                    {v}
+                    {t(`vocabulary.actions.${k}`)}
                   </option>
                 ))}
             </select>
@@ -414,7 +417,7 @@ export function LiveVocabularyPage() {
               disabled={!canWrite || !selected.length || busy}
               onClick={() => void apply()}
             >
-              החלה על {selected.length} נבחרות
+              {t("vocabulary.applySelected", { count: selected.length })}
             </button>
             {Boolean(filters.packIds) && resource.data.items.length > 0 && (
               <button
@@ -423,7 +426,9 @@ export function LiveVocabularyPage() {
                   setSelected(resource.data!.items.map((item) => item.id))
                 }
               >
-                בחירת כל מילות המאגרים ({resource.data.items.length})
+                {t("vocabulary.selectAllPackWords", {
+                  count: resource.data.items.length,
+                })}
               </button>
             )}
             {selected.length > 0 && filters.userStatus !== "deleted" && (
@@ -431,7 +436,7 @@ export function LiveVocabularyPage() {
                 className="button primary"
                 to={`/learn/session/recall?items=${selected.join(",")}`}
               >
-                תרגול הנבחרות
+                {t("vocabulary.practiceSelected")}
               </Link>
             )}
           </div>
@@ -440,7 +445,9 @@ export function LiveVocabularyPage() {
               <article className="live-word-row" key={item.id}>
                 <input
                   type="checkbox"
-                  aria-label={`בחירת ${item.sourceText}`}
+                  aria-label={t("vocabulary.selectWord", {
+                    word: item.sourceText,
+                  })}
                   checked={selected.includes(item.id)}
                   onChange={(e) =>
                     setSelected((current) =>
@@ -457,7 +464,7 @@ export function LiveVocabularyPage() {
                 >
                   <strong dir="auto">{item.sourceText}</strong>
                   <span dir="auto">
-                    {item.primaryTranslation || "ללא משמעות"}
+                    {item.primaryTranslation || t("vocabulary.noMeaning")}
                   </span>
                   <small>
                     {item.sourceLanguageCode} ← {item.translationLanguageCode}
@@ -465,7 +472,7 @@ export function LiveVocabularyPage() {
                 </button>
                 <span className="pill">
                   {filters.userStatus === "deleted"
-                    ? "בסל המחזור"
+                    ? t("labels.deleted")
                     : labels[item.userStatus]}
                 </span>
                 <span className="pill">{labels[item.learningStatus]}</span>
@@ -474,11 +481,20 @@ export function LiveVocabularyPage() {
                   <progress
                     value={item.overallMasteryScore}
                     max={100}
-                    aria-label="שליטה כוללת מהשרת"
+                    aria-label={t("vocabulary.serverMastery")}
                   />
                   {item.masteryRequirements?.needsTypedRecall && (
                     <small className="live-mastery-guidance">
-                      {`שליפה מוקלדת: ${item.masteryRequirements.activeRecallSuccesses}/${item.masteryRequirements.minimumActiveRecallSuccesses} · ימים: ${item.masteryRequirements.activeRecallCalendarDays}/${item.masteryRequirements.minimumActiveRecallCalendarDays}`}
+                      {t("vocabulary.typedRecallProgress", {
+                        successes:
+                          item.masteryRequirements.activeRecallSuccesses,
+                        requiredSuccesses:
+                          item.masteryRequirements.minimumActiveRecallSuccesses,
+                        days: item.masteryRequirements.activeRecallCalendarDays,
+                        requiredDays:
+                          item.masteryRequirements
+                            .minimumActiveRecallCalendarDays,
+                      })}
                       <br />
                       {masteryRequirementText(item.masteryRequirements)}
                     </small>
@@ -490,7 +506,7 @@ export function LiveVocabularyPage() {
                     disabled={busy}
                     onClick={() => void apply([item.id], "restore")}
                   >
-                    שחזור
+                    {t("vocabulary.actions.restore")}
                   </button>
                 )}
               </article>
@@ -498,15 +514,15 @@ export function LiveVocabularyPage() {
           </div>
           {!resource.data.items.length && (
             <div className="live-empty">
-              <h2>אין מילים להצגה</h2>
-              <p>נסו סינון אחר או הוסיפו את המילה הראשונה.</p>
+              <h2>{t("vocabulary.emptyTitle")}</h2>
+              <p>{t("vocabulary.emptyDescription")}</p>
               {canWrite ? (
                 <button className="button primary" onClick={() => setAdd(true)}>
-                  הוספת מילה
+                  {t("vocabulary.addWord")}
                 </button>
               ) : (
                 <Link className="button primary" to="/billing">
-                  שדרוג ל־PRO
+                  {t("vocabulary.upgradePro")}
                 </Link>
               )}
             </div>
@@ -520,7 +536,7 @@ export function LiveVocabularyPage() {
                   setSelected([]);
                 }}
               >
-                לעמוד הראשון
+                {t("vocabulary.firstPage")}
               </button>
             )}
             {resource.data.nextCursor && (
@@ -531,7 +547,7 @@ export function LiveVocabularyPage() {
                   setSelected([]);
                 }}
               >
-                לעמוד הבא
+                {t("vocabulary.nextPage")}
               </button>
             )}
           </div>
@@ -546,7 +562,7 @@ export function LiveVocabularyPage() {
         <Modal
           open
           onClose={() => setSearchParams({})}
-          title="פרטי המילה"
+          title={t("vocabulary.wordDetails")}
           size="lg"
         >
           <LiveWordDetail
@@ -560,7 +576,7 @@ export function LiveVocabularyPage() {
       <Modal
         open={tagsOpen}
         onClose={() => setTagsOpen(false)}
-        title="ניהול תגיות"
+        title={t("vocabulary.manageTags")}
       >
         <TagManager
           tags={tags.data?.tags || []}
@@ -619,6 +635,7 @@ function DetailForm({
   tags: z.infer<typeof tagSchema>[];
   refresh: () => Promise<void>;
 }) {
+  const { t, i18n } = useTranslation();
   const { confirm, toast } = useFeedback();
   const primary = item.translations.find((t) => t.isPrimary)?.text || "";
   const [source, setSource] = useState(item.sourceText);
@@ -654,7 +671,7 @@ function DetailForm({
     setError("");
     try {
       await run();
-      toast("נשמר בשרת.", { tone: "success" });
+      toast(t("vocabulary.savedOnServer"), { tone: "success" });
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -670,10 +687,9 @@ function DetailForm({
       !item.translations.some((t) => t.text === translation);
     if (semantic) {
       const approved = await confirm({
-        title: "לשמור את השינוי במילה?",
-        message:
-          "שינוי המילה, השפה או המשמעות עשוי לאפס את השליטה והכישורים לגרסת למידה חדשה. ההיסטוריה תישמר.",
-        confirmLabel: "שמירת השינוי",
+        title: t("vocabulary.confirmWordChange"),
+        message: t("vocabulary.wordChangeDescription"),
+        confirmLabel: t("vocabulary.saveChange"),
         tone: "warning",
       });
       if (!approved) return;
@@ -713,10 +729,10 @@ function DetailForm({
         <span className="pill">
           {labels[item.learningStatus]} ·{" "}
           {item.masterySource === "user"
-            ? "סימון משתמש"
+            ? t("vocabulary.masterySources.user")
             : item.masterySource === "system"
-              ? "מנוע הלמידה"
-              : "טרם נצברה ראיה"}
+              ? t("vocabulary.masterySources.system")
+              : t("vocabulary.masterySources.none")}
         </span>
       </div>
       <div className="live-skill-grid">
@@ -725,41 +741,47 @@ function DetailForm({
             <b>{labels[s.skillType]}</b>
             <progress max={100} value={s.masteryScore} />
             <span>
-              {Math.round(s.masteryScore)}% · {s.attemptCount} ניסיונות · ביטחון{" "}
-              {Math.round(s.confidence * 100)}%
+              {t("vocabulary.skillProgress", {
+                score: Math.round(s.masteryScore),
+                attempts: s.attemptCount,
+                confidence: Math.round(s.confidence * 100),
+              })}
             </span>
           </div>
         ))}
       </div>
       <p>
-        שלב חזרה: {item.reviewStage} · מועד הבא:{" "}
-        {item.nextReviewAt
-          ? new Date(item.nextReviewAt).toLocaleString("he-IL")
-          : "טרם נקבע"}{" "}
-        · {item.occurrenceCount} הקשרים
+        {t("vocabulary.reviewSummary", {
+          stage: item.reviewStage,
+          next: item.nextReviewAt
+            ? new Date(item.nextReviewAt).toLocaleString(i18n.language)
+            : t("game.notScheduled"),
+          count: item.occurrenceCount,
+        })}
       </p>
       <Link
         className="button primary"
         to={`/learn/session/recall?items=${item.id}`}
       >
-        תרגול המילה
+        {t("vocabulary.practiceWord")}
       </Link>
       <details>
-        <summary>כל התרגומים ומקורם</summary>
+        <summary>{t("vocabulary.allTranslations")}</summary>
         {item.translations.map((t) => (
           <p key={t.id} dir="auto">
             {t.text}
-            {t.isPrimary ? " · ראשי" : ""} · {t.sourceKind}
+            {t.isPrimary ? ` · ${i18n.t("vocabulary.primary")}` : ""} ·{" "}
+            {t.sourceKind}
             {t.providerName ? ` / ${t.providerName}` : ""}
-            {t.isUserEdited ? " · נערך ידנית" : ""}
+            {t.isUserEdited ? ` · ${i18n.t("vocabulary.editedManually")}` : ""}
           </p>
         ))}
       </details>
       <details>
-        <summary>עריכת מילה ומשמעות</summary>
+        <summary>{t("vocabulary.editWordMeaning")}</summary>
         <fieldset disabled={busy} className="form-stack plain-fieldset">
           <label className="field">
-            <span>טקסט המקור</span>
+            <span>{t("vocabulary.sourceText")}</span>
             <input
               maxLength={500}
               dir="auto"
@@ -769,7 +791,7 @@ function DetailForm({
           </label>
           <div className="live-form-grid">
             <label className="field">
-              <span>שפת מקור</span>
+              <span>{t("vocabulary.sourceLanguage")}</span>
               <input
                 maxLength={64}
                 value={sourceLanguage}
@@ -777,7 +799,7 @@ function DetailForm({
               />
             </label>
             <label className="field">
-              <span>שפת תרגום</span>
+              <span>{t("vocabulary.translationLanguage")}</span>
               <input
                 maxLength={64}
                 value={targetLanguage}
@@ -786,7 +808,7 @@ function DetailForm({
             </label>
           </div>
           <label className="field">
-            <span>משמעות ראשית</span>
+            <span>{t("vocabulary.primaryMeaning")}</span>
             <input
               dir="auto"
               maxLength={1000}
@@ -805,12 +827,12 @@ function DetailForm({
             }
             onClick={() => void save()}
           >
-            שמירת עריכה
+            {t("vocabulary.saveEdit")}
           </button>
         </fieldset>
       </details>
       <details>
-        <summary>דוגמאות והקשרים</summary>
+        <summary>{t("vocabulary.examplesContexts")}</summary>
         <RemoteState
           loading={exampleResource.loading}
           error={exampleResource.error}
@@ -824,7 +846,7 @@ function DetailForm({
         {exampleResource.data && (
           <>
             <label className="field">
-              <span>דוגמאות ידניות — אחת בכל שורה, עד 20</span>
+              <span>{t("vocabulary.manualExamplesHelp")}</span>
               <textarea
                 maxLength={80000}
                 value={
@@ -858,7 +880,7 @@ function DetailForm({
                 })
               }
             >
-              שמירת דוגמאות ידניות
+              {t("vocabulary.saveManualExamples")}
             </button>
           </>
         )}
@@ -872,10 +894,12 @@ function DetailForm({
             <p dir="auto">{o.sentenceText || o.selectedText}</p>
             {o.pageUrl && /^https?:\/\//i.test(o.pageUrl) && (
               <a href={o.pageUrl} target="_blank" rel="noopener noreferrer">
-                {o.pageTitle || "מקור"}
+                {o.pageTitle || t("vocabulary.source")}
               </a>
             )}
-            <small>{new Date(o.capturedAt).toLocaleDateString("he-IL")}</small>
+            <small>
+              {new Date(o.capturedAt).toLocaleDateString(i18n.language)}
+            </small>
           </blockquote>
         ))}
         {occurrences.data?.nextCursor && (
@@ -883,16 +907,13 @@ function DetailForm({
             className="button ghost"
             onClick={() => setOccurrenceCursor(occurrences.data!.nextCursor!)}
           >
-            הקשרים נוספים
+            {t("vocabulary.moreContexts")}
           </button>
         )}
       </details>
       <details>
-        <summary>החלפת תגיות</summary>
-        <p>
-          השרת אינו מחזיר כרגע את שיוכי התגיות בפרטי המילה. הפעולה הבאה מחליפה
-          את כל השיוכים, ולא מוסיפה לרשימה נסתרת.
-        </p>
+        <summary>{t("vocabulary.replaceTags")}</summary>
+        <p>{t("vocabulary.replaceTagsDescription")}</p>
         <div className="live-options">
           {tags.map((t) => (
             <label className="live-checkbox" key={t.id}>
@@ -916,10 +937,9 @@ function DetailForm({
           disabled={busy}
           onClick={() =>
             void confirm({
-              title: "להחליף את כל תגיות המילה?",
-              message:
-                "הבחירה הנוכחית תחליף את כל שיוכי התגיות הקיימים של המילה.",
-              confirmLabel: "החלפת התגיות",
+              title: t("vocabulary.confirmReplaceTags"),
+              message: t("vocabulary.confirmReplaceTagsDescription"),
+              confirmLabel: t("vocabulary.replaceTags"),
               tone: "warning",
             }).then((approved) => {
               if (approved)
@@ -934,7 +954,7 @@ function DetailForm({
             })
           }
         >
-          החלפת כל התגיות
+          {t("vocabulary.replaceAllTags")}
         </button>
       </details>
       <div className="live-options">
@@ -958,10 +978,9 @@ function DetailForm({
                 if (
                   a === "mark_mastered" &&
                   !(await confirm({
-                    title: "לסמן את המילה כנלמדה?",
-                    message:
-                      "זהו סימון ידני ולא ציון שנקבע על ידי מערכת הלמידה.",
-                    confirmLabel: "סימון כנלמד",
+                    title: t("vocabulary.confirmMastered"),
+                    message: t("vocabulary.manualMasteryDescription"),
+                    confirmLabel: t("vocabulary.markMastered"),
                     tone: "warning",
                   }))
                 )
@@ -975,7 +994,7 @@ function DetailForm({
               })()
             }
           >
-            {actions[a]}
+            {t(`vocabulary.actions.${a}`)}
           </button>
         ))}
       </div>
@@ -994,6 +1013,7 @@ function TagManager({
   tags: z.infer<typeof tagSchema>[];
   reload: () => void;
 }) {
+  const { t } = useTranslation();
   const { confirm, toast } = useFeedback();
   const [name, setName] = useState("");
   const [id, setId] = useState<string>();
@@ -1018,7 +1038,7 @@ function TagManager({
       setName("");
       setId(undefined);
       reload();
-      toast(remove ? "התגית נמחקה." : "התגית נשמרה.", {
+      toast(remove ? t("vocabulary.tagDeleted") : t("vocabulary.tagSaved"), {
         tone: "success",
       });
     } catch (reason) {
@@ -1031,7 +1051,7 @@ function TagManager({
   return (
     <div className="modal-body form-stack">
       <label className="field">
-        <span>{id ? "שם חדש לתגית" : "תגית חדשה"}</span>
+        <span>{id ? t("vocabulary.newTagName") : t("vocabulary.newTag")}</span>
         <input
           maxLength={100}
           value={name}
@@ -1043,7 +1063,7 @@ function TagManager({
         disabled={busy || !name.trim()}
         onClick={() => void run()}
       >
-        שמירה
+        {t("vocabulary.save")}
       </button>
       {id && (
         <button
@@ -1053,37 +1073,37 @@ function TagManager({
             setName("");
           }}
         >
-          ביטול עריכה
+          {t("vocabulary.cancelEdit")}
         </button>
       )}
-      {tags.map((t) => (
-        <div className="live-toolbar" key={t.id}>
-          <span>{t.name}</span>
+      {tags.map((tag) => (
+        <div className="live-toolbar" key={tag.id}>
+          <span>{tag.name}</span>
           <button
             className="button ghost"
             disabled={busy}
             onClick={() => {
-              setId(t.id);
-              setName(t.name);
+              setId(tag.id);
+              setName(tag.name);
             }}
           >
-            עריכה
+            {t("vocabulary.edit")}
           </button>
           <button
             className="button ghost danger-text"
             disabled={busy}
             onClick={() =>
               void confirm({
-                title: `למחוק את התגית „${t.name}”?`,
-                message: "מחיקת התגית תסיר את כל השיוכים שלה מהמילים.",
-                confirmLabel: "מחיקת התגית",
+                title: t("vocabulary.confirmDeleteTag", { name: tag.name }),
+                message: t("vocabulary.deleteTagDescription"),
+                confirmLabel: t("vocabulary.deleteTag"),
                 tone: "danger",
               }).then((approved) => {
-                if (approved) void run(t.id);
+                if (approved) void run(tag.id);
               })
             }
           >
-            מחיקה
+            {t("vocabulary.delete")}
           </button>
         </div>
       ))}

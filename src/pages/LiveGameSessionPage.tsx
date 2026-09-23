@@ -15,7 +15,6 @@ import {
   errorMessage,
   exerciseSchema,
   intent,
-  labels,
   masteryRequirementText,
   product,
   sessionSchema,
@@ -33,6 +32,7 @@ import { recordVoice } from "../lib/voice";
 import { useApp } from "../context/AppContext";
 import { useFeedback } from "../components/Feedback";
 import { speak } from "../lib/utils";
+import { useTranslation } from "react-i18next";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -45,6 +45,7 @@ const modes: Record<string, string> = {
 };
 type Submission = Intent & { path: string };
 export function LiveGameSessionPage() {
+  const { t, i18n } = useTranslation();
   const { type = "" } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ export function LiveGameSessionPage() {
         if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
         if (!card.audioUrl) {
           if (!speak(card.sourceText, card.sourceLanguageCode) && reportError)
-            setError("הקראה אינה זמינה במכשיר הזה.");
+            setError(t("game.speechUnavailable"));
           return;
         }
         const blob = await api.audio(card.learningItemId);
@@ -99,10 +100,10 @@ export function LiveGameSessionPage() {
           reportError &&
           mounted.current
         )
-          setError("לא הצלחנו להשמיע את המילה כרגע.");
+          setError(t("game.playFailed"));
       }
     },
-    [],
+    [t],
   );
   useEffect(() => {
     mounted.current = true;
@@ -219,13 +220,13 @@ export function LiveGameSessionPage() {
             ids &&
             (ids.length > 100 || ids.some((id) => !uuid.safeParse(id).success))
           )
-            throw new Error("רשימת המילים אינה תקינה.");
+            throw new Error(t("game.invalidItems"));
           const readingId = params.get("reading");
           const packId = params.get("pack");
           if (packId && !uuid.safeParse(packId).success)
-            throw new Error("המאגר שנבחר אינו תקין.");
+            throw new Error(t("game.invalidPack"));
           if (type === "article_quiz" && !uuid.safeParse(readingId).success)
-            throw new Error("יש לפתוח טקסט לפני תרגול הקריאה.");
+            throw new Error(t("game.openReadingFirst"));
           creation.current ??= intent({
             sessionType: modes[type],
             count: packId ? 100 : count,
@@ -333,7 +334,7 @@ export function LiveGameSessionPage() {
       );
       if (mounted.current) setSession(result.session);
       if (status === "abandoned") {
-        toast("התרגול הופסק. התשובות שכבר אושרו נשמרו.", {
+        toast(t("game.stoppedToast"), {
           tone: "info",
         });
         navigate("/learn");
@@ -351,11 +352,10 @@ export function LiveGameSessionPage() {
       return;
     }
     const approved = await confirm({
-      title: "לצאת מהתרגול?",
-      message:
-        "התרגול יסומן כמופסק. התשובות שכבר אושרו נשמרו ואפשר להתחיל תרגול חדש בכל רגע.",
-      confirmLabel: "יציאה מהתרגול",
-      cancelLabel: "להמשיך ללמוד",
+      title: t("game.exitTitle"),
+      message: t("game.exitDescription"),
+      confirmLabel: t("game.exitConfirm"),
+      cancelLabel: t("game.keepLearning"),
       tone: "warning",
     });
     if (approved) void close("abandoned");
@@ -405,8 +405,8 @@ export function LiveGameSessionPage() {
   if (!modes[type])
     return (
       <div className="empty-session">
-        <h1>סוג התרגול אינו מוכר</h1>
-        <Link to="/learn">חזרה ללמידה</Link>
+        <h1>{t("game.unknownType")}</h1>
+        <Link to="/learn">{t("game.backToLearn")}</Link>
       </div>
     );
   return (
@@ -418,10 +418,10 @@ export function LiveGameSessionPage() {
           onClick={() => void requestExit()}
         >
           <ArrowRight size={18} />
-          יציאה
+          {t("game.exit")}
         </button>
         <Logo />
-        <span>{labels[modes[type]]}</span>
+        <span>{t(`labels.${modes[type]}`)}</span>
       </header>
       <main className="live-session-main">
         {error && (
@@ -431,18 +431,15 @@ export function LiveGameSessionPage() {
         )}
         {!exercise && !studyCard && session?.status !== "completed" && (
           <section className="live-panel form-stack">
-            <p className="eyebrow">תרגול אישי מהשרת</p>
-            <h1>{labels[modes[type]]}</h1>
-            <p>
-              התור, השאלות, בדיקת התשובות וההתקדמות נקבעים בשרת. שמע והגייה
-              זמינים רק עם ספק מוגדר.
-            </p>
+            <p className="eyebrow">{t("game.serverPractice")}</p>
+            <h1>{t(`labels.${modes[type]}`)}</h1>
+            <p>{t("game.serverPracticeDescription")}</p>
             <fieldset
               className="plain-fieldset form-stack"
               disabled={busy || !!creation.current || !!session}
             >
               <label className="field">
-                <span>עד כמה מילים?</span>
+                <span>{t("game.maxWords")}</span>
                 <input
                   type="number"
                   min={1}
@@ -455,26 +452,26 @@ export function LiveGameSessionPage() {
               </label>
               {!["listening", "pronunciation", "smart"].includes(type) && (
                 <label className="field">
-                  <span>כיוון התרגול</span>
+                  <span>{t("game.direction")}</span>
                   <select
                     value={direction}
                     onChange={(e) => setDirection(e.target.value)}
                   >
-                    <option value="translation_to_source">ממשמעות למקור</option>
-                    <option value="source_to_translation">ממקור למשמעות</option>
+                    <option value="translation_to_source">{t("game.meaningToSource")}</option>
+                    <option value="source_to_translation">{t("game.sourceToMeaning")}</option>
                   </select>
                 </label>
               )}
               {["recall", "article_quiz"].includes(type) && (
                 <label className="field">
-                  <span>סוג תשובה</span>
+                  <span>{t("game.answerType")}</span>
                   <select
                     value={kind}
                     onChange={(e) => setKind(e.target.value)}
                   >
-                    <option value="typed">הקלדה</option>
+                    <option value="typed">{t("game.typed")}</option>
                     <option value="multiple_choice">
-                      בחירה (לפחות שתי מילים)
+                      {t("game.multipleChoice")}
                     </option>
                   </select>
                 </label>
@@ -486,55 +483,53 @@ export function LiveGameSessionPage() {
               onClick={() => void start()}
             >
               {busy
-                ? "מכין תרגול…"
+                ? t("game.preparing")
                 : session
-                  ? "הנפקת שאלות לתרגול הקיים"
+                  ? t("game.issueQuestions")
                   : creation.current
-                    ? "ניסיון נוסף לאותה יצירת תרגול"
-                    : "מתחילים"}
+                    ? t("game.retryCreation")
+                    : t("game.start")}
             </button>
             {creation.current && !session && (
-              <p>
-                לאחר כשל רשת נשלח אותו מזהה יצירה. אין יצירת סשן נוסף אוטומטית.
-              </p>
+              <p>{t("game.retryCreationHelp")}</p>
             )}
           </section>
         )}
         {session?.status === "completed" ? (
           <section className="live-panel live-empty">
-            <p className="eyebrow">כל התוצאות נשמרו בשרת</p>
-            <h1>כל הכבוד, סיימת!</h1>
+            <p className="eyebrow">{t("game.resultsSaved")}</p>
+            <h1>{t("game.completed")}</h1>
             <div className="live-stats-grid">
               <div>
                 <b>{session.attemptCount}</b>
-                <span>ניסיונות</span>
+                <span>{t("game.attempts")}</span>
               </div>
               <div>
                 <b>{session.correctCount}</b>
-                <span>תשובות נכונות</span>
+                <span>{t("game.correctAnswers")}</span>
               </div>
               <div>
                 <b>{session.xpEarned}</b>
-                <span>XP כולל תגמול סיום</span>
+                <span>{t("game.totalXp")}</span>
               </div>
             </div>
             <Link className="button primary" to="/dashboard">
-              להתקדמות שלי
+              {t("game.myProgress")}
             </Link>
           </section>
         ) : studyCard ? (
           <>
             <div className="live-toolbar study-toolbar">
               <span>
-                שינון {studyIndex + 1} מתוך {studyCards.length}
+                {t("game.studyProgress", { current: studyIndex + 1, total: studyCards.length })}
               </span>
-              <span>היכרות לפני החזרה</span>
+              <span>{t("game.familiarize")}</span>
               <button
                 className="button primary study-skip"
                 disabled={busy}
                 onClick={() => void beginReview()}
               >
-                דלג לחזרה
+                {t("game.skipToReview")}
                 <ArrowLeft size={17} />
               </button>
             </div>
@@ -542,7 +537,7 @@ export function LiveGameSessionPage() {
               className="live-session-progress"
               value={studyIndex + 1}
               max={studyCards.length}
-              aria-label="התקדמות בשינון"
+              aria-label={t("game.studyProgressAria")}
             />
             <section className="memorization-card live-panel">
               {(studyImage === undefined ||
@@ -552,20 +547,20 @@ export function LiveGameSessionPage() {
                     <img
                       src={studyImage.url}
                       alt={
-                        studyImage.alt || `תמונה עבור ${studyCard.sourceText}`
+                        studyImage.alt || t("game.imageFor", { word: studyCard.sourceText })
                       }
                       onError={() => setStudyImageFailed(true)}
                     />
                   ) : (
                     <div
                       className="memorization-image-loading"
-                      aria-label="טוען תמונה"
+                      aria-label={t("game.loadingImage")}
                     />
                   )}
                   {studyImage && (
                     <small className="image-credit">
                       {studyImage.generated ? (
-                        "איור שנוצר במיוחד כדי להמחיש את משמעות המילה"
+                        t("game.generatedImage")
                       ) : studyImage.sourceUrl ? (
                         <a
                           href={studyImage.sourceUrl}
@@ -573,18 +568,18 @@ export function LiveGameSessionPage() {
                           rel="noreferrer"
                         >
                           {studyImage.creator
-                            ? `תמונה מאת ${studyImage.creator} דרך ${studyImage.provider || "Pixabay"}`
-                            : `תמונה דרך ${studyImage.provider || "Pixabay"}`}
+                            ? t("game.imageBy", { creator: studyImage.creator, provider: studyImage.provider || "Pixabay" })
+                            : t("game.imageVia", { provider: studyImage.provider || "Pixabay" })}
                         </a>
                       ) : (
-                        `תמונה דרך ${studyImage.provider || "מקור חיצוני"}`
+                        t("game.imageVia", { provider: studyImage.provider || t("game.externalSource") })
                       )}
                     </small>
                   )}
                 </div>
               )}
               <div className="memorization-copy">
-                <p className="eyebrow">מכינים את הזיכרון</p>
+                <p className="eyebrow">{t("game.prepareMemory")}</p>
                 <h1 dir="auto">{studyCard.sourceText}</h1>
                 <p className="memorization-translation" dir="auto">
                   {studyCard.translationText}
@@ -595,7 +590,7 @@ export function LiveGameSessionPage() {
                   onClick={() => void playStudyCard(studyCard)}
                 >
                   <Volume2 size={19} />
-                  השמעה נוספת
+                  {t("game.playAgain")}
                 </button>
                 {studyCard.context && (
                   <blockquote dir="auto">{studyCard.context}</blockquote>
@@ -612,10 +607,10 @@ export function LiveGameSessionPage() {
                   }}
                 >
                   {busy
-                    ? "מכין חזרה…"
+                    ? t("game.preparingReview")
                     : studyIndex + 1 === studyCards.length
-                      ? "מתחילים את החזרה"
-                      : "למילה הבאה"}
+                      ? t("game.startReview")
+                      : t("game.nextWord")}
                   <ArrowLeft size={18} />
                 </button>
               </div>
@@ -626,25 +621,24 @@ export function LiveGameSessionPage() {
             <>
               <div className="live-toolbar">
                 <span>
-                  {index + 1} מתוך {exercises.length}
+                  {t("game.exerciseProgress", { current: index + 1, total: exercises.length })}
                 </span>
-                <span>{labels[exercise.exerciseType]}</span>
-                {/* גרסת האלגוריתם נשמרת בשרת ואינה נחוצה בממשק הלומד. */}
+                <span>{t(`labels.${exercise.exerciseType}`)}</span>
               </div>
               <progress
                 className="live-session-progress"
                 value={index}
                 max={exercises.length}
-                aria-label="התקדמות בתרגול"
+                aria-label={t("game.exerciseProgressAria")}
               />
               <section className="live-exercise live-panel">
                 <p className="eyebrow">
                   {exercise.direction === "translation_to_source"
-                    ? "איך אומרים במקור?"
-                    : "מה המשמעות?"}
+                    ? t("game.sayInSource")
+                    : t("game.whatMeaning")}
                 </p>
                 <h1 dir="auto">
-                  {exercise.prompt.text || "הקשיבו וכתבו את המילה"}
+                  {exercise.prompt.text || t("game.listenAndType")}
                 </h1>
                 {exercise.prompt.context && (
                   <blockquote dir="auto">{exercise.prompt.context}</blockquote>
@@ -656,7 +650,7 @@ export function LiveGameSessionPage() {
                     onClick={() => void play()}
                   >
                     <Volume2 size={19} />
-                    השמעת המקור
+                    {t("game.playSource")}
                   </button>
                 )}
                 {!receipt && (
@@ -669,7 +663,7 @@ export function LiveGameSessionPage() {
                             disabled={busy || !!pending}
                             onClick={() => setFlipped(true)}
                           >
-                            הצגת התשובה
+                            {t("game.revealAnswer")}
                           </button>
                         ) : (
                           <>
@@ -677,24 +671,19 @@ export function LiveGameSessionPage() {
                               {exercise.prompt.answer}
                             </p>
                             <div className="live-options">
-                              {Object.entries({
-                                again: "שוב",
-                                hard: "קשה",
-                                good: "טוב",
-                                easy: "קל",
-                              }).map(([selfRating, label]) => (
+                              {["again", "hard", "good", "easy"].map((selfRating) => (
                                 <button
                                   className="button secondary"
                                   key={selfRating}
                                   disabled={busy || !!pending}
                                   onClick={() => void submit({ selfRating })}
                                 >
-                                  {label}
+                                  {t(`game.ratings.${selfRating}`)}
                                 </button>
                               ))}
                             </div>
                             <p className="muted-note">
-                              זה דירוג עצמי, לא בדיקת איות או שליפה אובייקטיבית.
+                              {t("game.selfRatingHelp")}
                             </p>
                           </>
                         )}
@@ -715,10 +704,7 @@ export function LiveGameSessionPage() {
                       </div>
                     ) : exercise.kind === "provider" ? (
                       <>
-                        <p>
-                          לחצו והחזיקו כדי לדבר; שחררו כדי לשלוח להערכה. ההקלטה
-                          מוגבלת ל־6 שניות והאתר אינו שומר את הקובץ.
-                        </p>
+                        <p>{t("game.recordingHelp")}</p>
                         <button
                           className={`button primary hold-to-talk${recording ? " recording" : ""}`}
                           disabled={busy || !!pending}
@@ -755,15 +741,15 @@ export function LiveGameSessionPage() {
                         >
                           <Mic size={19} />
                           {recording
-                            ? "שחררו כדי לשלוח"
-                            : "לחצו והחזיקו כדי לדבר"}
+                            ? t("game.releaseToSend")
+                            : t("game.holdToTalk")}
                         </button>
                         {recording && (
                           <button
                             className="button ghost"
                             onClick={cancelRecording}
                           >
-                            ביטול הקלטה
+                            {t("game.cancelRecording")}
                           </button>
                         )}
                       </>
@@ -776,11 +762,11 @@ export function LiveGameSessionPage() {
                         }}
                       >
                         <div className="field">
-                          <span>התשובה שלך</span>
+                          <span>{t("game.yourAnswer")}</span>
                           {exercise.prompt.letterCount ? (
                             <LetterBoxesInput
                               autoFocus
-                              label="התשובה שלך"
+                              label={t("game.yourAnswer")}
                               value={answer}
                               length={exercise.prompt.letterCount}
                               disabled={busy || !!pending}
@@ -789,7 +775,7 @@ export function LiveGameSessionPage() {
                           ) : (
                             <input
                               autoFocus
-                              aria-label="התשובה שלך"
+                              aria-label={t("game.yourAnswer")}
                               dir="auto"
                               maxLength={2000}
                               autoComplete="off"
@@ -804,21 +790,19 @@ export function LiveGameSessionPage() {
                           className="button primary"
                           disabled={!answer.trim() || busy || !!pending}
                         >
-                          בדיקת תשובה
+                          {t("game.checkAnswer")}
                         </button>
                       </form>
                     )}
                     {pending ? (
                       <>
-                        <p>
-                          התשובה נעולה עד אישור השרת. לא נרשמה התקדמות מקומית.
-                        </p>
+                        <p>{t("game.answerLocked")}</p>
                         <button
                           className="button primary"
                           disabled={busy}
                           onClick={() => void submit({})}
                         >
-                          ניסיון נוסף לאותה תשובה
+                          {t("game.retryAnswer")}
                         </button>
                       </>
                     ) : (
@@ -827,7 +811,7 @@ export function LiveGameSessionPage() {
                         disabled={busy || recording}
                         onClick={() => void submit({ skipped: true })}
                       >
-                        דילוג
+                        {t("game.skip")}
                       </button>
                     )}
                   </>
@@ -837,39 +821,25 @@ export function LiveGameSessionPage() {
                     className={`live-feedback ${receipt.attempt.result}`}
                     role="status"
                   >
-                    <h2>{labels[receipt.attempt.result]}</h2>
+                    <h2>{t(`labels.${receipt.attempt.result}`)}</h2>
                     {receipt.attempt.expectedAnswer && (
-                      <p dir="auto">תשובה: {receipt.attempt.expectedAnswer}</p>
+                      <p dir="auto">{t("game.expectedAnswer", { answer: receipt.attempt.expectedAnswer })}</p>
                     )}
                     {receipt.attempt.pronunciationFeedback && (
                       <p>{receipt.attempt.pronunciationFeedback}</p>
                     )}
                     <p>
-                      ציון מהשרת: {receipt.attempt.score ?? "ללא ציון"} ·{" "}
-                      {receipt.attempt.xpEarned} XP ·{" "}
-                      {labels[receipt.progress.status]}
+                      {t("game.serverScore", { score: receipt.attempt.score ?? t("game.noScore"), xp: receipt.attempt.xpEarned, status: t(`labels.${receipt.progress.status}`) })}
                     </p>
                     {receipt.attempt.xpStatus?.dailyXpCapReached && (
-                      <p>
-                        עברת את סף ה־XP היומי (
-                        {receipt.attempt.xpStatus.dailyXpCap} XP). הצבירה ממשיכה
-                        ב־{receipt.attempt.xpStatus.postDailyCapPercent ?? 25}%
-                        עד היום הבא לפי אזור הזמן בפרופיל.
-                      </p>
+                      <p>{t("game.xpCap", { cap: receipt.attempt.xpStatus.dailyXpCap, percent: receipt.attempt.xpStatus.postDailyCapPercent ?? 25 })}</p>
                     )}
                     <p>
-                      שליטה: {Math.round(receipt.progress.masteryScore)}% · חזרה
-                      הבאה:{" "}
-                      {receipt.progress.nextReviewAt
-                        ? new Date(
-                            receipt.progress.nextReviewAt,
-                          ).toLocaleDateString("he-IL")
-                        : "טרם נקבעה"}
+                      {t("game.masteryNext", { mastery: Math.round(receipt.progress.masteryScore), next: receipt.progress.nextReviewAt ? new Date(receipt.progress.nextReviewAt).toLocaleDateString(i18n.resolvedLanguage) : t("game.notScheduled") })}
                     </p>
                     {masteryRequirements?.needsTypedRecall && (
                       <p>
-                        כדי לעבור ל״נלמד״:{" "}
-                        {masteryRequirementText(masteryRequirements)}
+                        {t("game.toMastered", { requirement: masteryRequirementText(masteryRequirements) })}
                       </p>
                     )}
                     <button
@@ -887,8 +857,8 @@ export function LiveGameSessionPage() {
                       }}
                     >
                       {index + 1 === exercises.length
-                        ? "סיום ושמירת הסיכום"
-                        : "למילה הבאה"}
+                        ? t("game.finish")
+                        : t("game.nextWord")}
                     </button>
                   </div>
                 )}

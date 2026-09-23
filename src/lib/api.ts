@@ -5,6 +5,7 @@ import {
   profilePayload,
 } from "./contracts";
 import type { AuthTokens, AuthUser, ProfilePatch } from "../types";
+import i18n from "../i18n";
 
 const coreUrl = (import.meta.env.VITE_CORE_API_URL || "/core-api").replace(
   /\/$/,
@@ -25,44 +26,37 @@ export class ApiError extends Error {
   }
 }
 
-const messages: Record<string, string> = {
-  SUBSCRIPTION_REQUIRED: "היכולת הזו זמינה במנוי Pro. אפשר לשדרג מעמוד המנוי.",
-  AI_MONTHLY_LIMIT_REACHED:
-    "נוצלו 4 כתבות ה־AI החודשיות. המכסה תתחדש בתחילת החודש הבא.",
-  BILLING_NOT_CONFIGURED: "שירות התשלומים עדיין אינו מוגדר.",
-  INVALID_CREDENTIALS: "כתובת האימייל או הסיסמה אינן נכונות.",
-  USER_ALREADY_EXISTS: "כבר קיים חשבון עם כתובת האימייל הזו.",
-  USER_DISABLED: "החשבון אינו פעיל.",
-  VALIDATION_ERROR: "הפרטים אינם תקינים. בדקו את השדות ונסו שוב.",
-  INVALID_REFRESH_TOKEN: "הכניסה פגה. יש להיכנס מחדש.",
-  INVALID_ACCESS_TOKEN: "הכניסה פגה. יש להיכנס מחדש.",
-  UNAUTHORIZED: "הכניסה פגה. יש להיכנס מחדש.",
-  CORE_AUTH_UNAVAILABLE: "שירות האימות אינו זמין כרגע. נסו שוב בעוד רגע.",
-  SPEECH_NOT_CONFIGURED: "האזנה והגייה אינן זמינות כרגע לשפת המילה הזו.",
-  SPEECH_UNAVAILABLE: "שירות השמע אינו זמין זמנית. נסו שוב בעוד רגע.",
-  AUDIO_INVALID: "ההקלטה לא נקלטה היטב. נסו להקליט שוב במקום שקט.",
-  SKILL_UNAVAILABLE: "התרגול הזה אינו פעיל כרגע בהעדפות הלמידה.",
-  READING_PROVIDER_AUTHENTICATION:
-    "Anthropic דחה את מפתח ה־API שמוגדר בשרת. יש להחליף את ANTHROPIC_API_KEY ולבצע Deploy מחדש.",
-  READING_PROVIDER_BILLING:
-    "חשבון Anthropic דורש הגדרת Billing או קרדיט API פעיל.",
-  READING_PROVIDER_PERMISSION:
-    "למפתח Anthropic אין הרשאה ל־Workspace או למודל שנבחר.",
-  READING_PROVIDER_WORKSPACE:
-    "ה־Workspace שמוגדר בשרת אינו תואם למפתח Anthropic. יש להסיר או לתקן את ANTHROPIC_WORKSPACE_ID.",
-  READING_PROVIDER_MODEL_ACCESS:
-    "המודל שמוגדר בשרת אינו זמין למפתח Anthropic. יש לבדוק את AI_READING_MODEL.",
-  READING_PROVIDER_RATE_LIMIT:
-    "מגבלת הבקשות של Anthropic נוצלה כרגע. יש לנסות שוב בעוד רגע.",
-  READING_PROVIDER_REQUEST_INVALID:
-    "Anthropic דחה את מבנה הבקשה. יש לבדוק את הגדרות המודל בשרת.",
-  READING_PROVIDER_TIMEOUT:
-    "Anthropic לא השיב בתוך 30 שניות. יש לנסות שוב או לבדוק את זמני התגובה ב־Render.",
-  READING_PROVIDER_RESPONSE_INVALID:
-    "Anthropic החזיר תשובה שהשרת לא הצליח לעבד. יש לבדוק את המודל וה־structured output.",
-  READING_PROVIDER_UPSTREAM:
-    "הבקשה ל־Anthropic נכשלה לפני שהתקבלה תשובה תקינה.",
-};
+const messageCodes = new Set([
+  "SUBSCRIPTION_REQUIRED",
+  "AI_MONTHLY_LIMIT_REACHED",
+  "BILLING_NOT_CONFIGURED",
+  "INVALID_CREDENTIALS",
+  "USER_ALREADY_EXISTS",
+  "USER_DISABLED",
+  "VALIDATION_ERROR",
+  "INVALID_REFRESH_TOKEN",
+  "INVALID_ACCESS_TOKEN",
+  "UNAUTHORIZED",
+  "CORE_AUTH_UNAVAILABLE",
+  "SPEECH_NOT_CONFIGURED",
+  "SPEECH_UNAVAILABLE",
+  "AUDIO_INVALID",
+  "SKILL_UNAVAILABLE",
+  "READING_PROVIDER_AUTHENTICATION",
+  "READING_PROVIDER_BILLING",
+  "READING_PROVIDER_PERMISSION",
+  "READING_PROVIDER_WORKSPACE",
+  "READING_PROVIDER_MODEL_ACCESS",
+  "READING_PROVIDER_RATE_LIMIT",
+  "READING_PROVIDER_REQUEST_INVALID",
+  "READING_PROVIDER_TIMEOUT",
+  "READING_PROVIDER_RESPONSE_INVALID",
+  "READING_PROVIDER_UPSTREAM",
+]);
+
+function localizedMessage(code: string): string {
+  return messageCodes.has(code) ? i18n.t(`apiErrors.${code}`) : "";
+}
 
 async function request(
   base: string,
@@ -94,11 +88,7 @@ async function request(
       credentials: "omit",
     });
   } catch {
-    throw new ApiError(
-      0,
-      "NETWORK_ERROR",
-      "לא ניתן להגיע לשירות. בדקו חיבור, כתובות API ומדיניות CORS.",
-    );
+    throw new ApiError(0, "NETWORK_ERROR", i18n.t("apiErrors.network"));
   }
   if (response.status === 204) return undefined;
   const payload: unknown = await response.json().catch(() => undefined);
@@ -111,10 +101,10 @@ async function request(
     throw new ApiError(
       response.status,
       code,
-      messages[code] ||
+      localizedMessage(code) ||
         (response.status >= 500
-          ? "השירות אינו זמין זמנית. נסו שוב."
-          : "לא הצלחנו להשלים את הבקשה."),
+          ? i18n.t("apiErrors.serverUnavailable")
+          : i18n.t("apiErrors.requestFailed")),
     );
   }
   return payload;
@@ -127,7 +117,7 @@ function checked<T>(parser: (value: unknown) => T, payload: unknown): T {
     throw new ApiError(
       502,
       "INVALID_RESPONSE",
-      "השירות החזיר תשובה לא תקינה. נסו שוב.",
+      i18n.t("apiErrors.invalidResponse"),
     );
   }
 }
@@ -172,13 +162,13 @@ export const api = {
       throw new ApiError(
         400,
         "VALIDATION_ERROR",
-        "אישור Google אינו תקין. נסו שוב.",
+        i18n.t("apiErrors.invalidGoogleCredential"),
       );
     clearTokens();
     const requestGeneration = generation;
     const payload = await request(coreUrl, "auth/google", "POST", { idToken });
     if (requestGeneration !== generation)
-      throw new ApiError(401, "UNAUTHORIZED", "הסשן הסתיים.");
+      throw new ApiError(401, "UNAUTHORIZED", i18n.t("apiErrors.sessionEnded"));
     checked(parseUser, payload);
     setTokens(checked(parseTokens, payload));
     return this.me();
@@ -195,7 +185,7 @@ export const api = {
       password,
     });
     if (requestGeneration !== generation)
-      throw new ApiError(401, "UNAUTHORIZED", "הסשן הסתיים.");
+      throw new ApiError(401, "UNAUTHORIZED", i18n.t("apiErrors.sessionEnded"));
     checked(parseUser, payload);
     setTokens(checked(parseTokens, payload));
     return this.me();
@@ -206,12 +196,20 @@ export const api = {
       const requestGeneration = generation;
       const refreshToken = tokens?.refreshToken || storedRefresh();
       if (!refreshToken)
-        throw new ApiError(401, "INVALID_REFRESH_TOKEN", "יש להיכנס לחשבון.");
+        throw new ApiError(
+          401,
+          "INVALID_REFRESH_TOKEN",
+          i18n.t("apiErrors.signInRequired"),
+        );
       const payload = await request(coreUrl, "auth/refresh", "POST", {
         refreshToken,
       });
       if (requestGeneration !== generation)
-        throw new ApiError(401, "UNAUTHORIZED", "הסשן הסתיים.");
+        throw new ApiError(
+          401,
+          "UNAUTHORIZED",
+          i18n.t("apiErrors.sessionEnded"),
+        );
       setTokens(checked(parseTokens, payload));
       return tokens!.accessToken;
     })();
@@ -301,18 +299,22 @@ export const api = {
         throw new ApiError(
           402,
           "SUBSCRIPTION_REQUIRED",
-          messages.SUBSCRIPTION_REQUIRED!,
+          localizedMessage("SUBSCRIPTION_REQUIRED"),
         );
     }
     if (!response.ok)
       throw new ApiError(
         response.status,
         "AUDIO_UNAVAILABLE",
-        "שמע אינו זמין. ודאו שהוגדר ספק דיבור בשרת.",
+        i18n.t("apiErrors.audioUnavailable"),
       );
     const blob = await response.blob();
     if (!blob.type.startsWith("audio/") || blob.size > 5000000)
-      throw new ApiError(502, "INVALID_RESPONSE", "קובץ השמע אינו תקין.");
+      throw new ApiError(
+        502,
+        "INVALID_RESPONSE",
+        i18n.t("apiErrors.invalidAudio"),
+      );
     return blob;
   },
   async me(): Promise<AuthUser> {

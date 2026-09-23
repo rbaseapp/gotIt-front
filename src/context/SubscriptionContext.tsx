@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { billing, type BillingStatus } from "../lib/billing";
+import i18n from "../i18n";
 
 type SubscriptionContextValue = {
   status?: BillingStatus;
@@ -42,7 +43,7 @@ export function SubscriptionProvider({
       setError(
         reason instanceof Error
           ? reason.message
-          : "לא ניתן לטעון את מצב המנוי כרגע.",
+          : i18n.t("subscription.loadFailed"),
       );
     } finally {
       setLoading(false);

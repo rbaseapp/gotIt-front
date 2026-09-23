@@ -14,14 +14,15 @@ import { RemoteState } from "../components/RemoteState";
 import {
   dashboardSchema,
   itemSchema,
-  labels,
   needsStrengthening,
   page,
   product,
   wordPacksSchema,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
+import { useTranslation } from "react-i18next";
 export function LiveDashboardPage() {
+  const { t, i18n } = useTranslation();
   const { profile } = useApp();
   const resource = useResource(
     useCallback(() => product(dashboardSchema, "dashboard"), []),
@@ -46,15 +47,15 @@ export function LiveDashboardPage() {
     <div className="dashboard-page live-page page-enter">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">כל יום, קצת יותר שלך</p>
+          <p className="eyebrow">{t("dashboard.eyebrow")}</p>
           <h1>
-            שלום {profile.name} <span aria-hidden="true">☀</span>
+            {t("dashboard.greeting", { name: profile.name })} <span aria-hidden="true">☀</span>
           </h1>
-          <p>מילים שפגשת. ידע שנשאר.</p>
+          <p>{t("dashboard.tagline")}</p>
         </div>
         <Link className="button primary" to="/learn/session/smart">
           <Play size={18} />
-          התחלת חזרה
+          {t("dashboard.startReview")}
         </Link>
       </section>
       <RemoteState
@@ -68,50 +69,49 @@ export function LiveDashboardPage() {
             <div>
               <span>
                 <Zap size={18} />
-                XP מהשרת
+                {t("dashboard.serverXp")}
               </span>
               <b>{d.gamification.totalXp.toLocaleString()}</b>
               <small>
-                רמה {d.gamification.level} · הרמה הבאה ב־
-                {d.gamification.nextLevelXp} XP
+                {t("dashboard.level", { level: d.gamification.level, next: d.gamification.nextLevelXp })}
               </small>
               <small>
                 {d.gamification.dailyXpCapReached
-                  ? `עברת את הסף היומי (${d.gamification.dailyXpCap} XP). הצבירה ממשיכה ב־${d.gamification.postDailyCapPercent}% עד היום הבא לפי אזור הזמן בפרופיל (${d.weeklyActivity.timezone}).`
-                  : `${d.gamification.todayXp} מתוך ${d.gamification.dailyXpCap} XP בתגמול מלא היום`}
+                  ? t("dashboard.capReached", { cap: d.gamification.dailyXpCap, percent: d.gamification.postDailyCapPercent, timezone: d.weeklyActivity.timezone })
+                  : t("dashboard.todayXp", { current: d.gamification.todayXp, cap: d.gamification.dailyXpCap })}
               </small>
             </div>
             <div>
               <span>
                 <Flame size={18} />
-                רצף תרגול
+                {t("dashboard.streak")}
               </span>
               <b>{d.gamification.currentStreakDays}</b>
-              <small>שיא: {d.gamification.longestStreakDays} ימים</small>
+              <small>{t("dashboard.streakRecord", { count: d.gamification.longestStreakDays })}</small>
             </div>
             <div>
               <span>
                 <Trophy size={18} />
-                מילים שנלמדו
+                {t("dashboard.masteredWords")}
               </span>
               <b>{d.counts.mastered}</b>
-              <small>כולל החלטות ידניות ומערכת</small>
+              <small>{t("dashboard.masteredHelp")}</small>
             </div>
             <div>
               <span>
                 <Brain size={18} />
-                לחזרה עכשיו
+                {t("dashboard.dueNow")}
               </span>
               <b>{d.counts.due}</b>
-              <small>מילים פעילות שהגיע מועדן</small>
+              <small>{t("dashboard.dueHelp")}</small>
             </div>
             <div>
               <span>
                 <Sparkles size={18} />
-                בדרך ל״נלמד״
+                {t("dashboard.awaitingTitle")}
               </span>
               <b>{d.counts.awaitingRecall}</b>
-              <small>מילים שממתינות להשלמת שליפה מוקלדת</small>
+              <small>{t("dashboard.awaitingHelp")}</small>
             </div>
           </div>
           <section className="smart-session-card">
@@ -121,32 +121,32 @@ export function LiveDashboardPage() {
             <div className="smart-copy">
               <span className="pill light">
                 <Sparkles size={15} />
-                השרת בוחר מה לתרגל
+                {t("dashboard.serverChooses")}
               </span>
-              <h2>הצעד הקטן של היום</h2>
+              <h2>{t("dashboard.smallStep")}</h2>
               <p>
                 {d.counts.total === 0
-                  ? "הוסיפו את המילה הראשונה שלכם כדי להתחיל."
-                  : `${d.counts.total} מילים בספרייה. חזרה קצרה תעזור למילים להישאר.`}
+                  ? t("dashboard.addFirstWord")
+                  : t("dashboard.libraryReview", { count: d.counts.total })}
               </p>
             </div>
             <Link
               className="button smart-start"
               to={d.counts.total ? "/learn/session/smart" : "/vocabulary"}
             >
-              {d.counts.total ? "לתרגול החכם" : "לאוצר המילים"}
+              {d.counts.total ? t("dashboard.smartPractice") : t("dashboard.toVocabulary")}
             </Link>
           </section>
           <section className="live-panel dashboard-packs-panel">
             <div className="pack-dashboard-heading">
               <div>
                 <span className="pill light">
-                  <LibraryBig size={15} /> למידה לפי מאגר
+                  <LibraryBig size={15} /> {t("dashboard.packLearning")}
                 </span>
-                <h2>המאגרים שבלמידה</h2>
+                <h2>{t("dashboard.installedPacks")}</h2>
               </div>
               <Link className="text-link" to="/word-packs">
-                לכל המאגרים
+                {t("dashboard.allPacks")}
               </Link>
             </div>
             <RemoteState
@@ -172,17 +172,16 @@ export function LiveDashboardPage() {
                       <progress
                         max={100}
                         value={percent}
-                        aria-label={`התקדמות במאגר ${pack.title}`}
+                        aria-label={t("dashboard.packProgress", { title: pack.title })}
                       />
                       <p>
-                        {pack.progress.mastered} מתוך {pack.progress.linked}{" "}
-                        מילים הושלמו
+                        {t("dashboard.packCompleted", { mastered: pack.progress.mastered, linked: pack.progress.linked })}
                       </p>
                       <Link
                         className="button secondary"
                         to={`/learn/session/smart?pack=${pack.id}`}
                       >
-                        <Play size={16} /> המשך לימוד
+                        <Play size={16} /> {t("dashboard.continueLearning")}
                       </Link>
                     </article>
                   );
@@ -191,61 +190,56 @@ export function LiveDashboardPage() {
             )}
             {installedPacks && !installedPacks.length && (
               <div className="live-empty">
-                <p>עדיין לא הוספת מאגר ללמידה.</p>
+                <p>{t("dashboard.noPacks")}</p>
                 <Link className="button secondary" to="/word-packs">
-                  בחירת מאגר ראשון
+                  {t("dashboard.chooseFirstPack")}
                 </Link>
               </div>
             )}
           </section>
           <div className="live-two-columns">
             <section className="live-panel">
-              <h2>היעד היומי</h2>
+              <h2>{t("dashboard.dailyGoal")}</h2>
               <p>
-                {d.dailyGoal.current} מתוך {d.dailyGoal.value}{" "}
-                {d.dailyGoal.type === "minutes"
-                  ? "דקות"
-                  : d.dailyGoal.type === "attempts"
-                    ? "ניסיונות"
-                    : "מילים ייחודיות"}
+                {t("dashboard.goalProgress", { current: d.dailyGoal.current, value: d.dailyGoal.value, unit: t(`settings.${d.dailyGoal.type === "items" ? "uniqueWords" : d.dailyGoal.type}`) })}
               </p>
               <progress
                 max={d.dailyGoal.value || 1}
                 value={Math.min(d.dailyGoal.current, d.dailyGoal.value)}
-                aria-label="היעד היומי מהשרת"
+                aria-label={t("dashboard.dailyGoalAria")}
               />
               <p>
                 {d.dailyGoal.completed
-                  ? "היעד הושלם!"
-                  : "בקצב שלך, צעד אחר צעד."}
+                  ? t("dashboard.goalCompleted")
+                  : t("dashboard.goalEncouragement")}
               </p>
-              <small>תאריך לפי אזור הזמן שלך: {d.dailyGoal.date}</small>
+              <small>{t("dashboard.goalDate", { date: d.dailyGoal.date })}</small>
             </section>
             <section className="live-panel">
-              <h2>תמונת הספרייה</h2>
+              <h2>{t("dashboard.librarySnapshot")}</h2>
               <div className="live-count-list">
                 {["new", "learning", "reviewing", "mastered"].map((s) => (
                   <span key={s}>
-                    {labels[s]} <b>{d.counts[s as "new"]}</b>
+                    {t(`labels.${s}`)} <b>{d.counts[s as "new"]}</b>
                   </span>
                 ))}
                 <span>
-                  קשות <b>{d.counts.difficult}</b>
+                  {t("dashboard.difficult")} <b>{d.counts.difficult}</b>
                 </span>
                 <span>
-                  עדיפות גבוהה <b>{d.counts.highPriority}</b>
+                  {t("dashboard.highPriority")} <b>{d.counts.highPriority}</b>
                 </span>
                 <span>
-                  ממתינות לשליפה <b>{d.counts.awaitingRecall}</b>
+                  {t("dashboard.awaitingRecall")} <b>{d.counts.awaitingRecall}</b>
                 </span>
               </div>
               <small>
-                הספירה כוללת מילים מושהות ובארכיון, ללא מילים שנמחקו.
+                {t("dashboard.libraryCountHelp")}
               </small>
             </section>
           </div>
           <section className="live-panel">
-            <h2>חמשת כישורי השפה</h2>
+            <h2>{t("dashboard.fiveSkills")}</h2>
             <div className="live-skill-grid">
               {[
                 "recognition",
@@ -257,17 +251,17 @@ export function LiveDashboardPage() {
                 const value = d.skills.find((v) => v.skill === s);
                 return (
                   <div key={s}>
-                    <b>{labels[s]}</b>
+                    <b>{t(`labels.${s}`)}</b>
                     {value ? (
                       <>
                         <progress value={value.masteryScore} max={100} />
                         <span>
                           {Math.round(value.masteryScore)}% ·{" "}
-                          {value.evidenceAttempts} ניסיונות
+                          {t("dashboard.skillAttempts", { count: value.evidenceAttempts })}
                         </span>
                       </>
                     ) : (
-                      <span>טרם נצברו נתונים</span>
+                      <span>{t("dashboard.noSkillData")}</span>
                     )}
                   </div>
                 );
@@ -276,20 +270,17 @@ export function LiveDashboardPage() {
           </section>
           <div className="live-two-columns">
             <section className="live-panel">
-              <h2>השבוע שלך</h2>
+              <h2>{t("dashboard.yourWeek")}</h2>
               <p>
-                {Math.floor(
+                {t("dashboard.weekSummary", { minutes: Math.floor(
                   d.weeklyActivity.days.reduce(
                     (sum, day) => sum + day.practiceSeconds,
                     0,
                   ) / 60,
-                )}{" "}
-                דקות תרגול ·{" "}
-                {d.weeklyActivity.days.reduce(
+                ), mastered: d.weeklyActivity.days.reduce(
                   (sum, day) => sum + day.itemsMastered,
                   0,
-                )}{" "}
-                מילים שנלמדו
+                ) })}
               </p>
               <div className="live-activity">
                 {d.weeklyActivity.days.length ? (
@@ -304,18 +295,18 @@ export function LiveDashboardPage() {
                         value={day.attempts}
                       />
                       <small>
-                        {day.attempts} ניסיונות · {day.xpEarned} XP
+                        {t("dashboard.dayActivity", { count: day.attempts, xp: day.xpEarned })}
                       </small>
                     </div>
                   ))
                 ) : (
-                  <p>כאן תופיע הפעילות הראשונה שלך.</p>
+                  <p>{t("dashboard.noActivity")}</p>
                 )}
               </div>
               <small>{d.weeklyActivity.timezone}</small>
             </section>
             <section className="live-panel">
-              <h2>כדאי לחזק</h2>
+              <h2>{t("dashboard.strengthen")}</h2>
               <RemoteState
                 loading={weakest.loading}
                 error={weakest.error}
@@ -333,29 +324,27 @@ export function LiveDashboardPage() {
                 </Link>
               ))}
               {weakItems && !weakItems.length && (
-                <p>אין כרגע מילים שדורשות חיזוק.</p>
+                <p>{t("dashboard.noWeakWords")}</p>
               )}
             </section>
           </div>
           <section className="live-panel">
-            <h2>התרגולים האחרונים</h2>
+            <h2>{t("dashboard.recentPractice")}</h2>
             <div className="live-count-list">
               {d.modes.map((m) => (
                 <span key={m.exerciseType}>
-                  {labels[m.exerciseType] || m.exerciseType}: {m.attempts}{" "}
-                  ניסיונות · ציון ממוצע{" "}
-                  {m.averageScore === null ? "—" : Math.round(m.averageScore)}
+                  {t(`labels.${m.exerciseType}`, { defaultValue: m.exerciseType })}: {t("dashboard.modeSummary", { count: m.attempts, score: m.averageScore === null ? "—" : Math.round(m.averageScore) })}
                 </span>
               ))}
             </div>
             {d.recentActivity.map((a) => (
               <div className="live-toolbar" key={a.id}>
                 <Link to={`/vocabulary?item=${a.learningItemId}`}>
-                  פרטי המילה
+                  {t("dashboard.wordDetails")}
                 </Link>
-                <span>{labels[a.exerciseType] || a.exerciseType}</span>
-                <span>{labels[a.result] || a.result}</span>
-                <small>{new Date(a.createdAt).toLocaleString("he-IL")}</small>
+                <span>{t(`labels.${a.exerciseType}`, { defaultValue: a.exerciseType })}</span>
+                <span>{t(`labels.${a.result}`, { defaultValue: a.result })}</span>
+                <small>{new Date(a.createdAt).toLocaleString(i18n.resolvedLanguage)}</small>
               </div>
             ))}
           </section>

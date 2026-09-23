@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 export function encodeWav(samples: Float32Array): Uint8Array {
   const bytes = new Uint8Array(44 + samples.length * 2);
   const view = new DataView(bytes.buffer);
@@ -37,14 +39,14 @@ export async function recordVoice(
     !navigator.mediaDevices?.getUserMedia ||
     !window.MediaRecorder
   )
-    throw new Error("הקלטה דורשת HTTPS, הרשאת מיקרופון ודפדפן תומך.");
+    throw new Error(i18n.t("voiceErrors.unsupported"));
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { channelCount: 1, echoCancellation: true },
     video: false,
   });
   let audioContext: AudioContext | undefined;
   try {
-    if (signal.aborted) throw new Error("ההקלטה בוטלה.");
+    if (signal.aborted) throw new Error(i18n.t("voiceErrors.cancelled"));
     const mimeType = [
       "audio/webm;codecs=opus",
       "audio/ogg;codecs=opus",
@@ -59,7 +61,7 @@ export async function recordVoice(
       let size = 0;
       const abort = () => {
         if (recorder.state !== "inactive") recorder.stop();
-        reject(new Error("ההקלטה בוטלה."));
+        reject(new Error(i18n.t("voiceErrors.cancelled")));
       };
       const release = () => {
         if (recorder.state !== "inactive") recorder.stop();
@@ -84,25 +86,25 @@ export async function recordVoice(
       };
       recorder.onstop = () => {
         clean();
-        if (signal.aborted) reject(new Error("ההקלטה בוטלה."));
+        if (signal.aborted) reject(new Error(i18n.t("voiceErrors.cancelled")));
         else resolve(new Blob(parts, { type: recorder.mimeType }));
       };
       recorder.onerror = () => {
         clean();
-        reject(new Error("לא ניתן להקליט. בדקו הרשאת מיקרופון."));
+        reject(new Error(i18n.t("voiceErrors.permission")));
       };
       recorder.start(250);
       if (releaseSignal.aborted) queueMicrotask(release);
     });
     stream.getTracks().forEach((track) => track.stop());
-    if (signal.aborted) throw new Error("ההקלטה בוטלה.");
-    if (!blob.size) throw new Error("ההקלטה קצרה מדי.");
+    if (signal.aborted) throw new Error(i18n.t("voiceErrors.cancelled"));
+    if (!blob.size) throw new Error(i18n.t("voiceErrors.tooShort"));
     audioContext = new AudioContext();
     const decoded = await audioContext.decodeAudioData(
       await blob.arrayBuffer(),
     );
     const duration = Math.min(decoded.duration, 6);
-    if (duration < 0.1) throw new Error("ההקלטה קצרה מדי.");
+    if (duration < 0.1) throw new Error(i18n.t("voiceErrors.tooShort"));
     const offline = new OfflineAudioContext(
       1,
       Math.ceil(duration * 16000),
@@ -113,7 +115,7 @@ export async function recordVoice(
     source.connect(offline.destination);
     source.start();
     const wav = encodeWav((await offline.startRendering()).getChannelData(0));
-    if (signal.aborted) throw new Error("ההקלטה בוטלה.");
+    if (signal.aborted) throw new Error(i18n.t("voiceErrors.cancelled"));
     let binary = "";
     for (let i = 0; i < wav.length; i += 8192)
       binary += String.fromCharCode(...wav.subarray(i, i + 8192));

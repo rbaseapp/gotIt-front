@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { tagSchema, uuid } from "./product";
+import i18n from "../i18n";
 const language = z
   .string()
   .max(64)
@@ -173,11 +174,8 @@ export const exportPage = z.object({
 });
 export function parseImportFile(content: string): ImportInput {
   if (new TextEncoder().encode(content).length > 256 * 1024)
-    throw new Error("קובץ הייבוא מוגבל ל־256KB.");
+    throw new Error(i18n.t("transferErrors.tooLarge"));
   const parsed = importInput.safeParse(JSON.parse(content));
-  if (!parsed.success)
-    throw new Error(
-      "קובץ הייבוא חייב להתאים ל־capture_requests_v1, עם 1–100 מילים ומזהי אירוע ייחודיים. קובץ הייצוא אינו פורמט ייבוא.",
-    );
+  if (!parsed.success) throw new Error(i18n.t("transferErrors.invalidFormat"));
   return parsed.data;
 }

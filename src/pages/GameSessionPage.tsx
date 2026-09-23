@@ -35,15 +35,16 @@ import type {
   LearningItem,
   PracticeSession,
 } from "../types";
+import { useTranslation } from "react-i18next";
 
-const titles: Record<GameType, string> = {
-  smart: "סשן חכם",
-  flashcards: "כרטיסיות",
-  recall: "שליפה מהזיכרון",
-  listening: "האזנה ואיות",
-  matching: "התאמות",
-  pronunciation: "תרגול הגייה",
-};
+const gameTypes = new Set<GameType>([
+  "smart",
+  "flashcards",
+  "recall",
+  "listening",
+  "matching",
+  "pronunciation",
+]);
 type Outcome = {
   score: number;
   userAnswer?: string;
@@ -66,6 +67,7 @@ function Feedback({
   onNext: () => void;
   disabled?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn("answer-feedback", score >= 60 ? "correct" : "wrong")}
@@ -77,15 +79,15 @@ function Feedback({
       <div>
         <b>
           {score === 100
-            ? "בדיוק!"
+            ? t("demoGame.feedback.exact")
             : score >= 60
-              ? "כמעט נכון — זוהתה טעות הקלדה"
-              : "עוד הזדמנות לזכור"}
+              ? t("demoGame.feedback.almost")
+              : t("demoGame.feedback.tryAgain")}
         </b>
         <strong dir="auto">{answer}</strong>
       </div>
       <button className="button primary" disabled={disabled} onClick={onNext}>
-        להמשיך <ArrowLeft size={18} />
+        {t("demoGame.continue")} <ArrowLeft size={18} />
       </button>
     </div>
   );
@@ -98,6 +100,7 @@ function Flashcard({
   item: LearningItem;
   onScore: ScoreHandler;
 }) {
+  const { t } = useTranslation();
   const [revealed, setRevealed] = useState(false);
   const [reverse, setReverse] = useState(false);
   return (
@@ -110,15 +113,15 @@ function Flashcard({
         }}
       >
         <RotateCcw size={15} />
-        {reverse ? "משמעות ← מילה" : "מילה ← משמעות"}
+        {reverse ? t("demoGame.meaningToWord") : t("demoGame.wordToMeaning")}
       </button>
       <div className={cn("flashcard", revealed && "revealed")}>
         <span className="exercise-label">
-          {reverse ? "איזו מילה מתאימה?" : "מה המשמעות?"}
+          {reverse ? t("demoGame.whichWord") : t("game.whatMeaning")}
         </span>
         <button
           className="sound-button"
-          aria-label="השמעת מילה"
+          aria-label={t("demoGame.playWord")}
           onClick={() => speak(item.source, item.sourceLanguage)}
         >
           <Volume2 size={19} />
@@ -136,7 +139,7 @@ function Flashcard({
         )}
         {revealed ? (
           <div className="card-answer">
-            <span>התשובה</span>
+            <span>{t("demoGame.answer")}</span>
             <strong dir="auto">
               {reverse ? item.source : item.translation}
             </strong>
@@ -146,22 +149,22 @@ function Flashcard({
             className="button secondary reveal-button"
             onClick={() => setRevealed(true)}
           >
-            גילוי התשובה
+            {t("demoGame.revealAnswer")}
           </button>
         )}
       </div>
       {revealed && (
         <div className="rating-area">
-          <p>כמה קל היה לזכור? זהו דיווח עצמי, לא ציון אובייקטיבי.</p>
+          <p>{t("demoGame.ratingHelp")}</p>
           <div className="rating-buttons">
             {(
               [
-                ["again", "שוב", 0],
-                ["hard", "קשה", 40],
-                ["good", "טוב", 80],
-                ["easy", "קל", 100],
+                ["again", 0],
+                ["hard", 40],
+                ["good", 80],
+                ["easy", 100],
               ] as const
-            ).map(([rating, label, score]) => (
+            ).map(([rating, score]) => (
               <button
                 key={rating}
                 onClick={() =>
@@ -176,7 +179,7 @@ function Flashcard({
                   })
                 }
               >
-                <span>{label}</span>
+                <span>{t(`game.ratings.${rating}`)}</span>
               </button>
             ))}
           </div>
@@ -195,6 +198,7 @@ function TypedExercise({
   listening: boolean;
   onScore: ScoreHandler;
 }) {
+  const { t } = useTranslation();
   const [value, setValue] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [hints, setHints] = useState(0);
@@ -205,7 +209,7 @@ function TypedExercise({
   const score = hints ? Math.min(quality, 80) : quality;
   const play = () => {
     if (!speak(item.source, item.sourceLanguage))
-      setAudioError("השמעת קול אינה נתמכת בדפדפן הזה. אפשר לבחור משחק שליפה.");
+      setAudioError(t("demoGame.audioUnsupported"));
   };
   const submit = () => {
     if (value.trim() && submitted === null) setSubmitted(value);
@@ -214,16 +218,16 @@ function TypedExercise({
     <div className="exercise-area">
       <div className={cn("exercise-prompt", listening && "listening-prompt")}>
         <span className="exercise-label">
-          {listening ? "מה שמעת?" : "איזו מילה מתאימה?"}
+          {listening ? t("demoGame.whatDidYouHear") : t("demoGame.whichWord")}
         </span>
         {listening ? (
           <button
             className="listen-orb"
-            aria-label="השמעת המילה"
+            aria-label={t("demoGame.playWord")}
             onClick={play}
           >
             <Headphones size={35} />
-            <span>להשמעה</span>
+            <span>{t("demoGame.play")}</span>
           </button>
         ) : (
           <h1 dir="auto">{item.translation}</h1>
@@ -242,7 +246,7 @@ function TypedExercise({
         }}
       >
         <LetterBoxesInput
-          label="התשובה שלך"
+          label={t("game.yourAnswer")}
           autoFocus
           disabled={submitted !== null}
           value={value}
@@ -261,22 +265,22 @@ function TypedExercise({
           onClick={() => setHints((count) => count + 1)}
         >
           <Lightbulb size={17} />
-          רמז
+          {t("demoGame.hint")}
         </button>
         <button
           type="submit"
           className="button primary"
           disabled={!value.trim() || submitted !== null}
         >
-          בדיקה
+          {t("demoGame.checkAnswer")}
         </button>
       </form>
       {submitted !== null && quality < 100 && (
         <div className="field correction-field">
-          <span>הקלידו את המילה הנכונה כדי לחזק את הזיכרון</span>
+          <span>{t("demoGame.typeCorrectWord")}</span>
           <LetterBoxesInput
             autoFocus
-            label="הקלידו את המילה הנכונה כדי לחזק את הזיכרון"
+            label={t("demoGame.typeCorrectWord")}
             value={correction}
             length={Array.from(item.source).length}
             onChange={setCorrection}
@@ -322,6 +326,7 @@ function Recall({
   allItems: LearningItem[];
   onScore: ScoreHandler;
 }) {
+  const { t } = useTranslation();
   const [typed, setTyped] = useState(false);
   const [selected, setSelected] = useState<LearningItem | null>(null);
   const choices = useMemo(() => {
@@ -366,12 +371,14 @@ function Recall({
         className="button ghost direction-toggle"
         onClick={() => setTyped(true)}
       >
-        העדפת הקלדה? <ChevronLeft size={15} />
+        {t("demoGame.preferTyping")} <ChevronLeft size={15} />
       </button>
       <div className="exercise-prompt">
-        <span className="exercise-label">איזו מילה מתאימה למשמעות?</span>
+        <span className="exercise-label">
+          {t("demoGame.whichWordForMeaning")}
+        </span>
         <h1 dir="auto">{item.translation}</h1>
-        <p>בחרו תשובה או השתמשו במקשי המספרים</p>
+        <p>{t("demoGame.chooseOrNumbers")}</p>
       </div>
       <div className="choice-grid">
         {choices.map((choice, index) => (
@@ -415,6 +422,7 @@ function Pronunciation({
   item: LearningItem;
   onScore: ScoreHandler;
 }) {
+  const { t } = useTranslation();
   const [state, setState] = useState<
     "idle" | "requesting" | "recording" | "ready"
   >("idle");
@@ -444,7 +452,7 @@ function Pronunciation({
         !("MediaRecorder" in window)
       ) {
         setState("idle");
-        setError("הקלטה אינה נתמכת בדפדפן הזה.");
+        setError(t("demoGame.recordingUnsupported"));
         return;
       }
       const media = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -485,23 +493,25 @@ function Pronunciation({
       setState("idle");
       setError(
         name === "NotAllowedError" || name === "SecurityError"
-          ? "הרשאת מיקרופון נדחתה. אפשר לאשר בדפדפן או לדלג."
+          ? t("demoGame.microphoneDenied")
           : name === "NotFoundError"
-            ? "לא נמצא מיקרופון במכשיר. אפשר להמשיך ללא הקלטה."
-            : "לא ניתן להקליט. בדקו שהמיקרופון פנוי ונסו שוב.",
+            ? t("demoGame.microphoneMissing")
+            : t("demoGame.recordingFailed"),
       );
     }
   };
   return (
     <div className="exercise-area">
       <div className="pronunciation-card">
-        <span className="exercise-label">תרגול הגייה ללא ציון</span>
+        <span className="exercise-label">
+          {t("demoGame.pronunciationNoScore")}
+        </span>
         <button
           className="sound-button large"
           onClick={() => speak(item.source, item.sourceLanguage)}
         >
           <Volume2 size={21} />
-          שמיעת דוגמה
+          {t("demoGame.playExample")}
         </button>
         <h1 dir="auto">{item.source}</h1>
         <span className="phonetic" dir="ltr">
@@ -517,14 +527,18 @@ function Pronunciation({
           <Mic2 size={30} />
           <span>
             {state === "recording"
-              ? "עצירת הקלטה"
+              ? t("demoGame.stopRecording")
               : state === "requesting"
-                ? "מבקש הרשאה…"
-                : "לחצו ודברו"}
+                ? t("demoGame.requestingPermission")
+                : t("demoGame.pressAndSpeak")}
           </span>
         </button>
         {audio && (
-          <audio controls src={audio} aria-label="האזנה להקלטה הזמנית שלך" />
+          <audio
+            controls
+            src={audio}
+            aria-label={t("demoGame.playTemporaryRecording")}
+          />
         )}
         {error && (
           <p className="form-error" role="alert">
@@ -532,19 +546,16 @@ function Pronunciation({
           </p>
         )}
         <p className="pronunciation-disclaimer">
-          הערכת הגייה דורשת את ממשק B6 וספק שטרם נבחר. לא נציג ציון מומצא ולא
-          נעניק XP להקלטה.
+          {t("demoGame.pronunciationDisclaimer")}
         </p>
-        <small className="privacy-note">
-          הקול נשאר בזיכרון המכשיר בלבד ונמחק ביציאה מהתרגיל.
-        </small>
+        <small className="privacy-note">{t("demoGame.recordingPrivacy")}</small>
       </div>
       <button
         className="button secondary wide-next"
         disabled={state === "recording" || state === "requesting"}
         onClick={() => onScore({ score: 0, result: "skipped" })}
       >
-        המשך ללא ציון <ArrowLeft size={18} />
+        {t("demoGame.continueWithoutScore")} <ArrowLeft size={18} />
       </button>
     </div>
   );
@@ -559,6 +570,7 @@ function Matching({
   onAttempt: (item: LearningItem, outcome: Outcome) => void;
   onDone: () => void;
 }) {
+  const { t } = useTranslation();
   const pool = items;
   const [left, setLeft] = useState<string | null>(null);
   const [right, setRight] = useState<string | null>(null);
@@ -592,8 +604,8 @@ function Matching({
   return (
     <div className="exercise-area matching-area">
       <div className="exercise-prompt">
-        <span className="exercise-label">חברו בין מילה למשמעות</span>
-        <h2>מצאו את כל הזוגות</h2>
+        <span className="exercise-label">{t("demoGame.matchWordMeaning")}</span>
+        <h2>{t("demoGame.findPairs")}</h2>
       </div>
       <div className="matching-board">
         <div>
@@ -641,7 +653,10 @@ function Matching({
       </div>
       <div className="match-counter" role="status">
         <Check size={17} />
-        {matched.length} מתוך {pool.length} זוגות
+        {t("demoGame.pairsProgress", {
+          current: matched.length,
+          total: pool.length,
+        })}
       </div>
     </div>
   );
@@ -656,6 +671,7 @@ function Session({
   ids?: string[];
   onRestart: () => void;
 }) {
+  const { t } = useTranslation();
   const { items, recordAttempt, saveSession } = useApp();
   const navigate = useNavigate();
   const [queue] = useState(() =>
@@ -776,10 +792,10 @@ function Session({
     return (
       <div className="empty-session">
         <Sparkles size={42} />
-        <h2>אין מילים פעילות לתרגול</h2>
-        <p>מילים מושהות, בארכיון או שנמחקו אינן נכנסות לסשן.</p>
+        <h2>{t("demoGame.noActiveWords")}</h2>
+        <p>{t("demoGame.noActiveDescription")}</p>
         <Link className="button primary" to="/vocabulary">
-          לאוצר המילים
+          {t("demoGame.toVocabulary")}
         </Link>
       </div>
     );
@@ -801,43 +817,42 @@ function Session({
           <div className="trophy-circle">
             <Trophy size={44} />
           </div>
-          <p className="eyebrow">סשן הדמו הושלם</p>
-          <h1>עבודה מעולה!</h1>
-          <p>הניסיונות נשמרו. דיווח כרטיסיות הוא הערכה עצמית.</p>
+          <p className="eyebrow">{t("demoGame.completedEyebrow")}</p>
+          <h1>{t("demoGame.greatWork")}</h1>
+          <p>{t("demoGame.savedDescription")}</p>
           <div className="finish-stats">
             <div>
               <strong>{accuracy === null ? "—" : accuracy + "%"}</strong>
-              <span>הצלחה / דיווח עצמי</span>
+              <span>{t("demoGame.successSelfReport")}</span>
             </div>
             <div>
               <strong>{queue.length}</strong>
-              <span>מילים</span>
+              <span>{t("demoLearn.words")}</span>
             </div>
             <div>
               <strong>
                 +{outcomes.reduce((sum, outcome) => sum + outcome.xp, 0)}
               </strong>
-              <span>XP לדמו</span>
+              <span>{t("demoDashboard.metrics.demoXp")}</span>
             </div>
           </div>
           <p>
-            {sessionRef.current.durationSeconds} שניות · {outcomes.length}{" "}
-            ניסיונות
+            {t("demoGame.summary", {
+              seconds: sessionRef.current.durationSeconds,
+              count: outcomes.length,
+            })}
           </p>
-          <p className="auth-footnote">
-            שליטה ותאריך חזרה ייקבעו בשרת בעת חיבור B3/B4. סשן חוזר לא מעניק XP
-            בלתי מוגבל.
-          </p>
+          <p className="auth-footnote">{t("demoGame.serverDecisions")}</p>
           <div className="finish-actions">
             <button
               className="button primary"
               onClick={() => navigate("/dashboard")}
             >
-              להיום שלי <ChevronLeft size={18} />
+              {t("demoGame.toMyDay")} <ChevronLeft size={18} />
             </button>
             <button className="button secondary" onClick={onRestart}>
               <RotateCcw size={17} />
-              עוד סיבוב
+              {t("demoGame.anotherRound")}
             </button>
           </div>
         </div>
@@ -851,21 +866,24 @@ function Session({
         <button
           className="icon-button"
           onClick={() => navigate("/learn")}
-          aria-label="יציאה ושמירת סשן חלקי"
+          aria-label={t("demoGame.exitPartial")}
         >
           <X size={21} />
         </button>
         <div className="session-progress">
           <div>
-            <b>{titles[game]}</b>
+            <b>{t(`demoGame.titles.${game}`)}</b>
             <span>
-              {index + 1} מתוך {queue.length}
+              {t("demoGame.progress", {
+                current: index + 1,
+                total: queue.length,
+              })}
             </span>
           </div>
           <div
             className="progress-track large"
             role="progressbar"
-            aria-label="התקדמות הסשן"
+            aria-label={t("demoGame.progressAria")}
             aria-valuenow={index}
             aria-valuemin={0}
             aria-valuemax={queue.length}
@@ -873,7 +891,7 @@ function Session({
             <span style={{ width: (index / queue.length) * 100 + "%" }} />
           </div>
         </div>
-        <span className="session-xp">דמו בלבד</span>
+        <span className="session-xp">{t("demoGame.demoOnly")}</span>
       </header>
       <main className="session-main">
         <div key={item.id + ":" + effectiveGame}>
@@ -897,30 +915,31 @@ function Session({
               className="button ghost skip-button"
               onClick={() => next({ score: 0, result: "skipped" })}
             >
-              דילוג ללא ציון
+              {t("demoGame.skipWithoutScore")}
             </button>
           )}
         </div>
       </main>
       <footer className="session-footer">
         <Clock3 size={15} />
-        <span>הניסיונות נשמרים בדפדפן · החלטות למידה מחכות לשרת</span>
+        <span>{t("demoGame.footer")}</span>
       </footer>
     </div>
   );
 }
 
 export function GameSessionPage() {
+  const { t } = useTranslation();
   const { mode } = useApp();
   const { type = "smart" } = useParams();
   const [params] = useSearchParams();
-  const game = (Object.hasOwn(titles, type) ? type : "smart") as GameType;
+  const game = (gameTypes.has(type as GameType) ? type : "smart") as GameType;
   const [run, setRun] = useState(0);
   if (mode !== "demo")
     return (
       <CapabilityNotice
-        title="תרגול מילים"
-        milestone="B3–B6: סשנים, ניסיונות, למידה והגייה"
+        title={t("demoGame.capabilityTitle")}
+        milestone={t("demoGame.capabilityMilestone")}
       />
     );
   const ids = params.has("items") ? params.get("items")!.split(",") : undefined;

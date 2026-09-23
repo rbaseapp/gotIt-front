@@ -17,6 +17,7 @@ import {
   type ReactNode,
 } from "react";
 import { Modal } from "./Modal";
+import { useTranslation } from "react-i18next";
 
 type ToastTone = "success" | "info" | "error";
 type ConfirmTone = "warning" | "danger";
@@ -57,6 +58,7 @@ const toastIcons: Record<ToastTone, LucideIcon> = {
 };
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const nextId = useRef(0);
   const timers = useRef(new Map<number, number>());
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -118,7 +120,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   return (
     <FeedbackContext.Provider value={value}>
       {children}
-      <div className="toast-viewport" aria-label="הודעות">
+      <div className="toast-viewport" aria-label={t("feedback.notifications")}>
         {toasts.map((item) => {
           const Icon = toastIcons[item.tone];
           return (
@@ -132,7 +134,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => dismiss(item.id)}
-                aria-label="סגירת ההודעה"
+                aria-label={t("feedback.closeNotification")}
               >
                 <X size={17} />
               </button>
@@ -143,7 +145,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       <Modal
         open={Boolean(confirmation)}
         onClose={() => settleConfirmation(false)}
-        title={confirmation?.title || "אישור פעולה"}
+        title={confirmation?.title || t("feedback.confirmTitle")}
         size="sm"
       >
         {confirmation && (
@@ -161,14 +163,14 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                 className="button ghost"
                 onClick={() => settleConfirmation(false)}
               >
-                {confirmation.cancelLabel || "ביטול"}
+                {confirmation.cancelLabel || t("feedback.cancel")}
               </button>
               <button
                 type="button"
                 className={`button ${confirmation.tone === "danger" ? "danger" : "primary"}`}
                 onClick={() => settleConfirmation(true)}
               >
-                {confirmation.confirmLabel || "אישור"}
+                {confirmation.confirmLabel || t("feedback.confirm")}
               </button>
             </div>
           </div>

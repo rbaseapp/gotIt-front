@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { api, ApiError } from "./api";
+import i18n from "../i18n";
 
 export const uuid = z.string().uuid();
 const count = z.number().int().nonnegative();
@@ -44,18 +45,19 @@ export function masteryRequirementText(requirements?: MasteryRequirements) {
       requirements.minimumActiveRecallCalendarDays -
         requirements.activeRecallCalendarDays,
     );
-  if (missingAttempts) return `נדרשים עוד ${missingAttempts} תרגולים מדורגים.`;
+  if (missingAttempts)
+    return i18n.t("mastery.missingAttempts", { count: missingAttempts });
   if (missingDays)
     return missingDays === 1
-      ? "נדרשת שליפה מוקלדת מוצלחת ביום נוסף."
-      : `נדרשות שליפות מוקלדות מוצלחות בעוד ${missingDays} ימים שונים.`;
+      ? i18n.t("mastery.oneMoreDay")
+      : i18n.t("mastery.moreDays", { count: missingDays });
   if (missingSuccesses)
-    return `נדרשות עוד ${missingSuccesses} שליפות מוקלדות מוצלחות.`;
+    return i18n.t("mastery.missingSuccesses", { count: missingSuccesses });
   if (requirements.activeRecallMasteryScore < requirements.masteryThreshold)
-    return `נדרש ציון שליפה של ${requirements.masteryThreshold}% לפחות.`;
+    return i18n.t("mastery.score", { score: requirements.masteryThreshold });
   if (requirements.reviewStage < requirements.learnedReviewStage)
-    return "נדרשת חזרת שליפה מוקלדת ביום נוסף.";
-  return "נדרשת שליפה מוקלדת מוצלחת נוספת.";
+    return i18n.t("mastery.reviewDay");
+  return i18n.t("mastery.anotherSuccess");
 }
 const sourceKind = z.enum([
   "user",
@@ -541,7 +543,7 @@ export async function product<T extends z.ZodType>(
     throw new ApiError(
       502,
       "INVALID_RESPONSE",
-      "השרת החזיר נתונים שאינם תואמים לחוזה. לא בוצע חישוב חלופי בדפדפן.",
+      i18n.t("productErrors.invalidContract"),
     );
   return result.data;
 }
@@ -552,56 +554,33 @@ export function query(params: Record<string, string | undefined>): string {
   });
   return search.size ? `?${search}` : "";
 }
-export const labels: Record<string, string> = {
-  new: "חדש",
-  learning: "בלמידה",
-  reviewing: "בחזרה",
-  mastered: "נלמד",
-  active: "פעיל",
-  paused: "מושהה",
-  archived: "בארכיון",
-  deleted: "נמחק",
-  recognition: "זיהוי",
-  recall: "שליפה",
-  listening: "האזנה",
-  spelling: "איות",
-  pronunciation: "הגייה",
-  smart_review: "חזרה חכמה",
-  flashcards: "כרטיסיות",
-  listening_spelling: "האזנה ואיות",
-  matching: "התאמה",
-  article_quiz: "תרגול מתוך קריאה",
-  correct: "נכון",
-  partially_correct: "נכון חלקית",
-  incorrect: "דורש חזרה",
-  skipped: "דילוג",
-  self_rated: "דירוג עצמי",
-};
+export const labels: Record<string, string> = new Proxy(
+  {},
+  {
+    get: (_target, key) =>
+      i18n.t(`labels.${String(key)}`, { defaultValue: String(key) }),
+  },
+);
 export function errorMessage(reason: unknown): string {
-  const codes: Record<string, string> = {
-    NO_ELIGIBLE_ITEMS:
-      "אין מילים פעילות מתאימות. הוסיפו מילים או עדכנו את הסינון.",
-    SPEECH_NOT_CONFIGURED:
-      "ספק דיבור אינו מוגדר בשרת. אפשר לתרגל כרטיסיות, שליפה והתאמה.",
-    READING_NOT_CONFIGURED: "ספק יצירת קריאה אינו מוגדר בשרת.",
-    INSUFFICIENT_DISTRACTORS:
-      "לשאלות בחירה דרושות לפחות שתי מילים מתאימות. נסו תשובה בהקלדה.",
-    EXERCISE_STALE: "המילה נערכה מאז יצירת התרגיל. יש להתחיל תרגול חדש.",
-    EXERCISE_EXPIRED: "התוקף של התרגיל פג. התחילו תרגול חדש.",
-    SESSION_CLOSED: "התרגול כבר הסתיים בשרת.",
-    SENSE_SELECTION_REQUIRED:
-      "יש לבחור משמעות קיימת או ליצור משמעות חדשה. בצעו תצוגה מקדימה שוב.",
-    PUBLICATION_INVALID: "התצוגה פגה או השתנתה. יש ליצור תצוגה חדשה.",
-    IDEMPOTENCY_CONFLICT:
-      "מזהה הבקשה כבר שימש לתוכן אחר. לא נשלחה בקשה חדשה אוטומטית.",
-    CONCURRENT_MODIFICATION: "המילה עודכנה בינתיים. טענו אותה מחדש לפני שמירה.",
-    WORD_PACK_NOT_ADDED: "יש להוסיף את מאגר המילים לפני פתיחת סשן ממנו.",
-  };
-  return reason instanceof ApiError && codes[reason.code]
-    ? codes[reason.code]
+  const localizedCodes = new Set([
+    "NO_ELIGIBLE_ITEMS",
+    "SPEECH_NOT_CONFIGURED",
+    "READING_NOT_CONFIGURED",
+    "INSUFFICIENT_DISTRACTORS",
+    "EXERCISE_STALE",
+    "EXERCISE_EXPIRED",
+    "SESSION_CLOSED",
+    "SENSE_SELECTION_REQUIRED",
+    "PUBLICATION_INVALID",
+    "IDEMPOTENCY_CONFLICT",
+    "CONCURRENT_MODIFICATION",
+    "WORD_PACK_NOT_ADDED",
+  ]);
+  return reason instanceof ApiError && localizedCodes.has(reason.code)
+    ? i18n.t(`productErrors.${reason.code}`)
     : reason instanceof Error
       ? reason.message
-      : "הפעולה נכשלה. נסו שוב.";
+      : i18n.t("productErrors.unknown");
 }
 export type Intent = { eventId: string; body: unknown };
 export function intent(body: unknown): Intent {

@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 export function Modal({
   open,
@@ -14,6 +15,7 @@ export function Modal({
   children: ReactNode;
   size?: "sm" | "md" | "lg";
 }) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -76,7 +78,7 @@ export function Modal({
             type="button"
             className="icon-button"
             onClick={onClose}
-            aria-label="סגירה"
+            aria-label={t("common.close")}
           >
             <X size={20} />
           </button>

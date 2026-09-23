@@ -5,6 +5,7 @@ import { canonicalLanguage } from "../lib/contracts";
 import { normalizeAnswer } from "../lib/practice";
 import type { LearningItem } from "../types";
 import { Modal } from "./Modal";
+import { useTranslation } from "react-i18next";
 
 export function AddWordModal({
   open,
@@ -15,6 +16,7 @@ export function AddWordModal({
   onClose: () => void;
   item?: LearningItem;
 }) {
+  const { t } = useTranslation();
   const { addItem, updateItem, items, profile, mode } = useApp();
   const [source, setSource] = useState("");
   const [translation, setTranslation] = useState("");
@@ -57,7 +59,7 @@ export function AddWordModal({
     event.preventDefault();
     setError("");
     if (!source.trim() || !translation.trim()) {
-      setError("יש להזין מילה ומשמעות");
+      setError(t("demoAdd.required"));
       return;
     }
     try {
@@ -99,28 +101,28 @@ export function AddWordModal({
         );
       onClose();
     } catch {
-      setError("יש להזין קודי שפה תקינים, למשל en, he, fr או pt-BR");
+      setError(t("demoAdd.invalidLanguages"));
     }
   };
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={item ? "עריכת מילה ומשמעות" : "הוספת מילה חדשה"}
+      title={item ? t("demoAdd.editTitle") : t("demoAdd.addTitle")}
     >
       {mode !== "demo" ? (
         <div className="modal-body">
-          <p>שמירת אוצר מילים בחשבון דורשת את ממשק B2 שעדיין לא ממומש.</p>
+          <p>{t("demoAdd.liveUnavailable")}</p>
         </div>
       ) : (
         <form className="modal-body form-stack" onSubmit={submit}>
           <div className="form-two-columns">
             <label className="field">
               <span>
-                שפת מקור <Languages size={13} />
+                {t("demoAdd.sourceLanguage")} <Languages size={13} />
               </span>
               <input
-                aria-label="קוד שפת מקור"
+                aria-label={t("demoAdd.sourceLanguageCode")}
                 value={sourceLanguage}
                 onChange={(event) => setSourceLanguage(event.target.value)}
                 dir="ltr"
@@ -130,9 +132,9 @@ export function AddWordModal({
               />
             </label>
             <label className="field">
-              <span>שפת תרגום</span>
+              <span>{t("demoAdd.translationLanguage")}</span>
               <input
-                aria-label="קוד שפת תרגום"
+                aria-label={t("demoAdd.translationLanguageCode")}
                 value={translationLanguage}
                 onChange={(event) => setTranslationLanguage(event.target.value)}
                 dir="ltr"
@@ -142,17 +144,15 @@ export function AddWordModal({
               />
             </label>
           </div>
-          <small className="muted-note">
-            ניתן להשתמש בכל קוד BCP-47. שינוי ברירת המחדל לא משנה מילים קיימות.
-          </small>
+          <small className="muted-note">{t("demoAdd.languageHelp")}</small>
           <label className="field">
-            <span>מילה או ביטוי</span>
+            <span>{t("demoAdd.wordOrPhrase")}</span>
             <div className="input-with-icon">
               <BookOpen size={18} />
               <input
                 value={source}
                 onChange={(event) => setSource(event.target.value)}
-                placeholder="למשל: make a difference"
+                placeholder={t("demoAdd.wordPlaceholder")}
                 dir="auto"
                 required
                 maxLength={500}
@@ -160,11 +160,11 @@ export function AddWordModal({
             </div>
           </label>
           <label className="field">
-            <span>המשמעות המדויקת</span>
+            <span>{t("demoAdd.meaning")}</span>
             <input
               value={translation}
               onChange={(event) => setTranslation(event.target.value)}
-              placeholder="התרגום המדויק בהקשר"
+              placeholder={t("demoAdd.meaningPlaceholder")}
               dir="auto"
               required
               maxLength={1000}
@@ -172,12 +172,13 @@ export function AddWordModal({
           </label>
           <label className="field">
             <span>
-              משפט מקור <small>מומלץ</small>
+              {t("demoAdd.sourceSentence")}{" "}
+              <small>{t("demoAdd.recommended")}</small>
             </span>
             <textarea
               value={context}
               onChange={(event) => setContext(event.target.value)}
-              placeholder="המשפט שבו פגשת את המילה"
+              placeholder={t("demoAdd.sentencePlaceholder")}
               dir="auto"
               rows={3}
               maxLength={3000}
@@ -185,14 +186,14 @@ export function AddWordModal({
           </label>
           {candidates.length > 0 && (
             <fieldset className="sense-picker">
-              <legend>אותו כתיב כבר קיים. בחרו במפורש את המשמעות:</legend>
+              <legend>{t("demoAdd.existingSpelling")}</legend>
               <label>
                 <input
                   type="radio"
                   checked={mergeId === "new"}
                   onChange={() => setMergeId("new")}
                 />
-                יצירת משמעות חדשה
+                {t("demoAdd.createMeaning")}
               </label>
               {candidates.map((candidate) => (
                 <label key={candidate.id}>
@@ -201,15 +202,17 @@ export function AddWordModal({
                     checked={mergeId === candidate.id}
                     onChange={() => setMergeId(candidate.id)}
                   />
-                  הוספת ההקשר ל־“{candidate.translation}”
+                  {t("demoAdd.addContextTo", {
+                    meaning: candidate.translation,
+                  })}
                 </label>
               ))}
-              <small>מיזוג לא משנה את התרגום המאושר או את ההתקדמות.</small>
+              <small>{t("demoAdd.mergeHelp")}</small>
             </fieldset>
           )}
           <label className="field">
             <span>
-              תגיות <small>מופרדות בפסיק</small>
+              {t("demoAdd.tags")} <small>{t("demoAdd.commaSeparated")}</small>
             </span>
             <div className="input-with-icon">
               <Link2 size={17} />
@@ -223,9 +226,9 @@ export function AddWordModal({
           </label>
           {item && (
             <details className="advanced-fields">
-              <summary>דוגמאות ותרגומים חלופיים</summary>
+              <summary>{t("demoAdd.examplesTranslations")}</summary>
               <label className="field">
-                <span>משפטי דוגמה — שורה לכל דוגמה</span>
+                <span>{t("demoAdd.exampleLines")}</span>
                 <textarea
                   value={examples}
                   onChange={(event) => setExamples(event.target.value)}
@@ -234,7 +237,7 @@ export function AddWordModal({
                 />
               </label>
               <label className="field">
-                <span>ניסוחים חלופיים לאותה משמעות</span>
+                <span>{t("demoAdd.alternativeWording")}</span>
                 <textarea
                   value={translations}
                   onChange={(event) => setTranslations(event.target.value)}
@@ -251,15 +254,15 @@ export function AddWordModal({
           )}
           <div className="modal-actions">
             <button type="button" className="button ghost" onClick={onClose}>
-              ביטול
+              {t("feedback.cancel")}
             </button>
             <button className="button primary" type="submit">
               {item ? <Save size={18} /> : <Plus size={18} />}
               {item
-                ? "שמירת עריכה"
+                ? t("demoAdd.saveEdit")
                 : mergeId !== "new" && candidates.length
-                  ? "הוספת ההקשר"
-                  : "הוספה לאוצר המילים"}
+                  ? t("demoAdd.addContext")
+                  : t("demoAdd.addToVocabulary")}
             </button>
           </div>
         </form>

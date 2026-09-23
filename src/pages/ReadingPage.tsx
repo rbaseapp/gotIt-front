@@ -6,6 +6,7 @@ import { readStorage, writeStorage } from "../lib/storage";
 import { speak, statusLabels } from "../lib/utils";
 import { CapabilityNotice } from "../components/CapabilityNotice";
 import type { LearningItem } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface Reading {
   id: string;
@@ -53,6 +54,7 @@ function HighlightedText({
   );
 }
 export function ReadingPage() {
+  const { t, i18n } = useTranslation();
   const { items, profile, mode } = useApp();
   const navigate = useNavigate();
   const [topic, setTopic] = useState(profile.interests[0] || "");
@@ -100,7 +102,7 @@ export function ReadingPage() {
     ).slice(0, length === "short" ? 3 : length === "medium" ? 5 : 8);
     const content: Reading = {
       id: crypto.randomUUID(),
-      title: topic.trim() || "מילים בהקשר",
+      title: topic.trim() || t("demoReading.wordsInContext"),
       body: targets.map(
         (item) =>
           item.context ||
@@ -120,7 +122,10 @@ export function ReadingPage() {
   };
   if (mode !== "demo")
     return (
-      <CapabilityNotice title="קריאה בהקשר" milestone="B9: תוכן AI ושאלונים" />
+      <CapabilityNotice
+        title={t("reading.title")}
+        milestone={t("demoReading.milestone")}
+      />
     );
   const targets = reading
     ? items.filter(
@@ -131,14 +136,14 @@ export function ReadingPage() {
     <div className="reading-page page-enter">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">המילים שלך, בתוך סיפור</p>
-          <h1>קריאה בהקשר</h1>
-          <p>ממשק לקריאה מותאמת אישית. יצירת AI מחכה לספק ולממשק B9.</p>
+          <p className="eyebrow">{t("reading.eyebrow")}</p>
+          <h1>{t("reading.title")}</h1>
+          <p>{t("demoReading.description")}</p>
         </div>
       </section>
       <div className="reading-layout">
         <section className="panel reading-controls">
-          <h2>התאמת הקריאה</h2>
+          <h2>{t("demoReading.customize")}</h2>
           <form
             className="form-stack"
             onSubmit={(event) => {
@@ -147,17 +152,17 @@ export function ReadingPage() {
             }}
           >
             <label className="field">
-              <span>נושא / תחום עניין</span>
+              <span>{t("demoReading.topic")}</span>
               <input
                 value={topic}
                 onChange={(event) => setTopic(event.target.value)}
-                placeholder="טכנולוגיה, נסיעות, עסקים..."
+                placeholder={t("demoReading.topicPlaceholder")}
                 maxLength={150}
               />
             </label>
             <div className="form-two-columns">
               <label className="field">
-                <span>שפת יעד</span>
+                <span>{t("demoReading.targetLanguage")}</span>
                 <select
                   value={language}
                   onChange={(event) => {
@@ -171,7 +176,7 @@ export function ReadingPage() {
                 </select>
               </label>
               <label className="field">
-                <span>רמת CEFR</span>
+                <span>{t("demoReading.cefrLevel")}</span>
                 <select
                   value={level}
                   onChange={(event) => setLevel(event.target.value)}
@@ -184,31 +189,34 @@ export function ReadingPage() {
             </div>
             <div className="form-two-columns">
               <label className="field">
-                <span>סוג תוכן</span>
+                <span>{t("reading.contentType")}</span>
                 <select
                   value={type}
                   onChange={(event) => setType(event.target.value)}
                 >
-                  <option value="article">מאמר</option>
-                  <option value="essay">חיבור</option>
-                  <option value="news_style">כתבה</option>
+                  <option value="article">{t("reading.types.article")}</option>
+                  <option value="essay">{t("reading.types.essay")}</option>
+                  <option value="news_style">
+                    {t("reading.types.news_style")}
+                  </option>
                 </select>
               </label>
               <label className="field">
-                <span>אורך</span>
+                <span>{t("reading.length")}</span>
                 <select
                   value={length}
                   onChange={(event) => setLength(event.target.value)}
                 >
-                  <option value="short">קצר</option>
-                  <option value="medium">בינוני</option>
-                  <option value="long">ארוך</option>
+                  <option value="short">{t("reading.short")}</option>
+                  <option value="medium">{t("reading.medium")}</option>
+                  <option value="long">{t("reading.long")}</option>
                 </select>
               </label>
             </div>
             <fieldset className="reading-item-picker">
               <legend>
-                מילים לשילוב <small>ללא בחירה: עד 8 מילים פעילות</small>
+                {t("demoReading.wordsToInclude")}{" "}
+                <small>{t("demoReading.defaultSelection")}</small>
               </legend>
               {eligible.map((item) => (
                 <label key={item.id}>
@@ -229,12 +237,9 @@ export function ReadingPage() {
             </fieldset>
             <button className="button primary" disabled={!eligible.length}>
               <BookOpen size={18} />
-              פתיחת דוגמת קריאה
+              {t("demoReading.openSample")}
             </button>
-            <p className="muted-note">
-              הדוגמה מציגה משפטי מקור קיימים, אינה יצירת AI ואינה מותאמת
-              אוטומטית לרמה או לנושא. הנתונים בבקרות מיועדים לממשק B9 בעתיד.
-            </p>
+            <p className="muted-note">{t("demoReading.sampleNote")}</p>
           </form>
         </section>
         <div className="reading-view">
@@ -243,12 +248,15 @@ export function ReadingPage() {
               <>
                 <span className="pill reading-demo-pill">
                   <Sparkles size={14} />
-                  תוכן הדגמה מתוך ההקשרים שנשמרו
+                  {t("demoReading.sampleContent")}
                 </span>
                 <h2>{reading.title}</h2>
                 <p className="reading-meta">
-                  {reading.language} · רמה מבוקשת {reading.level} ·{" "}
-                  {targets.length} מילים
+                  {t("demoReading.meta", {
+                    language: reading.language,
+                    level: reading.level,
+                    count: targets.length,
+                  })}
                 </p>
                 {reading.body.map((text, index) => (
                   <HighlightedText
@@ -267,7 +275,7 @@ export function ReadingPage() {
                     </div>
                     <button
                       className="sound-orb-small"
-                      aria-label="השמעת מילה"
+                      aria-label={t("demoReading.playWord")}
                       onClick={() => speak(word.source, word.sourceLanguage)}
                     >
                       <Volume2 size={19} />
@@ -275,7 +283,7 @@ export function ReadingPage() {
                   </div>
                 )}
                 <div className="reading-footer">
-                  <p>עצם הקריאה אינה מעלה שליטה או XP.</p>
+                  <p>{t("reading.noXp")}</p>
                   <button
                     className="button primary"
                     disabled={!targets.length}
@@ -288,24 +296,21 @@ export function ReadingPage() {
                       )
                     }
                   >
-                    תרגול המילים מהקריאה <ChevronLeft size={17} />
+                    {t("reading.practiceWords")} <ChevronLeft size={17} />
                   </button>
                 </div>
               </>
             ) : (
               <div className="empty-reading">
                 <BookOpen size={42} />
-                <h2>נותנים למילים הקשר</h2>
-                <p>
-                  בחרו מילים ופתחו דוגמת קריאה. לחיצה על מילה מודגשת מציגה את
-                  משמעותה.
-                </p>
+                <h2>{t("demoReading.emptyTitle")}</h2>
+                <p>{t("demoReading.emptyDescription")}</p>
               </div>
             )}
           </section>
           {history.length > 0 && (
             <section className="panel reading-history">
-              <h3>קריאות שנפתחו</h3>
+              <h3>{t("demoReading.openedReadings")}</h3>
               {history.slice(0, 5).map((value) => (
                 <button
                   key={value.id}
@@ -317,7 +322,9 @@ export function ReadingPage() {
                   <BookOpen size={16} />
                   <span>{value.title}</span>
                   <small>
-                    {new Date(value.createdAt).toLocaleDateString("he-IL")}
+                    {new Date(value.createdAt).toLocaleDateString(
+                      i18n.language,
+                    )}
                   </small>
                   <ChevronLeft size={16} />
                 </button>

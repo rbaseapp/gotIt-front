@@ -1,32 +1,15 @@
-export const LANGUAGE_OPTIONS = [
-  ["en", "English"],
-  ["he", "עברית"],
-  ["ar", "العربية"],
-  ["es", "Español"],
-  ["fr", "Français"],
-  ["de", "Deutsch"],
-  ["it", "Italiano"],
-  ["pt", "Português"],
-  ["pt-BR", "Português (Brasil)"],
-  ["ru", "Русский"],
-  ["uk", "Українська"],
-  ["pl", "Polski"],
-  ["nl", "Nederlands"],
-  ["tr", "Türkçe"],
-  ["el", "Ελληνικά"],
-  ["hi", "हिन्दी"],
-  ["zh-CN", "中文（简体）"],
-  ["zh-TW", "中文（繁體）"],
-  ["ja", "日本語"],
-  ["ko", "한국어"],
-  ["vi", "Tiếng Việt"],
-  ["th", "ไทย"],
-  ["id", "Bahasa Indonesia"],
-  ["sv", "Svenska"],
-  ["da", "Dansk"],
-  ["no", "Norsk"],
-  ["fi", "Suomi"],
-  ["cs", "Čeština"],
-  ["ro", "Română"],
-  ["hu", "Magyar"],
+const LANGUAGE_CODES = [
+  "en", "he", "ar", "es", "fr", "de", "it", "pt", "pt-BR", "ru",
+  "uk", "pl", "nl", "tr", "el", "hi", "zh-CN", "zh-TW", "ja", "ko",
+  "vi", "th", "id", "sv", "da", "no", "fi", "cs", "ro", "hu",
 ] as const;
+
+export function getLanguageOptions(uiLocale: string): ReadonlyArray<readonly [string, string]> {
+  let names: Intl.DisplayNames;
+  try {
+    names = new Intl.DisplayNames([uiLocale], { type: "language" });
+  } catch {
+    names = new Intl.DisplayNames(["en"], { type: "language" });
+  }
+  return LANGUAGE_CODES.map((code) => [code, names.of(code) || code] as const);
+}

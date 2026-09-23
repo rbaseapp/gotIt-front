@@ -20,60 +20,37 @@ import { useApp } from "../context/AppContext";
 import { isDue } from "../lib/utils";
 import type { GameType } from "../types";
 import { CapabilityNotice } from "../components/CapabilityNotice";
+import { useTranslation } from "react-i18next";
 
 const games: Array<{
   id: GameType;
-  title: string;
-  subtitle: string;
   icon: typeof Layers3;
   tone: string;
-  time: string;
-  skills: string;
 }> = [
   {
     id: "flashcards",
-    title: "כרטיסיות",
-    subtitle: "מגלים, נזכרים ומדרגים בעצמך",
     icon: Layers3,
     tone: "mint",
-    time: "5–8 דק׳",
-    skills: "זיהוי · שליפה",
   },
   {
     id: "recall",
-    title: "שליפה מהזיכרון",
-    subtitle: "רואים משמעות ומוצאים את המילה",
     icon: MessageCircleQuestion,
     tone: "violet",
-    time: "6–10 דק׳",
-    skills: "שליפה · איות",
   },
   {
     id: "listening",
-    title: "האזנה ואיות",
-    subtitle: "מקשיבים וכותבים בדיוק מה ששומעים",
     icon: Headphones,
     tone: "blue",
-    time: "5–8 דק׳",
-    skills: "האזנה · איות",
   },
   {
     id: "matching",
-    title: "התאמות",
-    subtitle: "מחברים במהירות בין מילה למשמעות",
     icon: MousePointer2,
     tone: "orange",
-    time: "3–5 דק׳",
-    skills: "זיהוי · מהירות",
   },
   {
     id: "pronunciation",
-    title: "תרגול הגייה",
-    subtitle: "האזנה והקלטה זמנית — הערכה מחכה ל־B6",
     icon: Mic2,
     tone: "rose",
-    time: "5–7 דק׳",
-    skills: "ללא ציון אוטומטי",
   },
 ];
 
@@ -86,6 +63,7 @@ const gameOrder: GameType[] = [
 ];
 
 export function LearnPage() {
+  const { t } = useTranslation();
   const { items, stats, mode, attempts } = useApp();
   const navigate = useNavigate();
   const due = items.filter(isDue).length;
@@ -103,8 +81,8 @@ export function LearnPage() {
   if (mode !== "demo")
     return (
       <CapabilityNotice
-        title="ללמוד מילים"
-        milestone="B3–B6: ממשקי התרגול והלמידה"
+        title={t("demoLearn.capabilityTitle")}
+        milestone={t("demoLearn.capabilityMilestone")}
       />
     );
 
@@ -112,18 +90,21 @@ export function LearnPage() {
     <div className="learn-page page-enter">
       <section className="learn-heading">
         <div>
-          <p className="eyebrow">זמן להפוך ידע לזיכרון · דמו</p>
-          <h1>איך בא לך ללמוד היום?</h1>
-          <p>אפשר להתנסות בסשן משולב, או לבחור את המשחק המתאים לך.</p>
+          <p className="eyebrow">{t("demoLearn.eyebrow")}</p>
+          <h1>{t("demoLearn.title")}</h1>
+          <p>{t("demoLearn.description")}</p>
         </div>
         <div className="session-stats">
           <span>
             <Trophy size={18} />
-            דיוק בדמו <b>{accuracy === null ? "טרם תורגל" : accuracy + "%"}</b>
+            {t("demoLearn.demoAccuracy")}{" "}
+            <b>
+              {accuracy === null ? t("demoLearn.notPracticed") : accuracy + "%"}
+            </b>
           </span>
           <span>
             <Zap size={18} />
-            {stats.xp.toLocaleString()} XP לדמו
+            {t("demoLearn.demoXp", { xp: stats.xp.toLocaleString() })}
           </span>
         </div>
       </section>
@@ -139,65 +120,63 @@ export function LearnPage() {
         <div className="smart-copy">
           <span className="pill light">
             <Sparkles size={14} />
-            סשן הדגמה משולב
+            {t("demoLearn.mixedDemo")}
           </span>
-          <h2>סשן חכם</h2>
-          <p>
-            {due} מילים הגיעו למועד החזרה בדוגמה. התור משלב כרטיסיות, שליפה
-            והאזנה; הבחירה החכמה בשרת מחכה ל־B4.
-          </p>
+          <h2>{t("demoLearn.smartSession")}</h2>
+          <p>{t("demoLearn.smartDescription", { count: due })}</p>
           <div className="smart-tags">
             <span>
               <Clock3 size={16} />
-              כ־8 דקות
+              {t("demoLearn.aboutMinutes", { count: 8 })}
             </span>
             <span>
               <PenLine size={16} />
-              עד{" "}
+              {t("demoLearn.upTo")}{" "}
               {Math.min(
                 8,
                 items.filter(
                   (item) => !item.deletedAt && item.userStatus === "ACTIVE",
                 ).length,
               )}{" "}
-              מילים
+              {t("demoLearn.words")}
             </span>
             <span>
-              <Volume2 size={16} />3 משחקים
+              <Volume2 size={16} />
+              {t("demoLearn.gamesCount", { count: 3 })}
             </span>
           </div>
         </div>
         <button className="button smart-start" onClick={() => go("smart")}>
           <Play size={19} fill="currentColor" />
-          התחלת סשן
+          {t("demoLearn.startSession")}
           <ArrowLeft size={18} />
         </button>
       </section>
 
       <div className="section-title">
         <div>
-          <h2>או לבחור משחק</h2>
-          <p>כל משחק מחזק שריר אחר בשפה</p>
+          <h2>{t("demoLearn.chooseGame")}</h2>
+          <p>{t("demoLearn.chooseGameDescription")}</p>
         </div>
       </div>
       <section className="game-grid">
         {gameOrder
           .map((id) => games.find((game) => game.id === id)!)
-          .map(({ id, title, subtitle, icon: Icon, tone, time, skills }) => (
+          .map(({ id, icon: Icon, tone }) => (
             <button className="game-card" key={id} onClick={() => go(id)}>
               <span className={`game-icon ${tone}`}>
                 <Icon size={27} />
               </span>
               <span className="game-card-copy">
-                <b>{title}</b>
-                <small>{subtitle}</small>
+                <b>{t(`demoLearn.games.${id}.title`)}</b>
+                <small>{t(`demoLearn.games.${id}.subtitle`)}</small>
               </span>
               <span className="game-card-meta">
                 <span>
                   <Clock3 size={14} />
-                  {time}
+                  {t(`demoLearn.games.${id}.time`)}
                 </span>
-                <span>{skills}</span>
+                <span>{t(`demoLearn.games.${id}.skills`)}</span>
               </span>
               <span className="game-arrow">
                 <ChevronLeft size={19} />
@@ -211,11 +190,8 @@ export function LearnPage() {
           <Sparkles size={21} />
         </span>
         <div>
-          <b>ידעת?</b>
-          <p>
-            תרגול שליפה — הניסיון להיזכר לפני שרואים את התשובה — בונה זיכרון חזק
-            יותר מקריאה חוזרת.
-          </p>
+          <b>{t("demoLearn.didYouKnow")}</b>
+          <p>{t("demoLearn.tip")}</p>
         </div>
       </section>
     </div>

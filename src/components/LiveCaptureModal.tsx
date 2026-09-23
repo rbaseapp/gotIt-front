@@ -11,7 +11,8 @@ import {
   type Intent,
 } from "../lib/product";
 import { Modal } from "./Modal";
-import { LANGUAGE_OPTIONS } from "../lib/languages";
+import { getLanguageOptions } from "../lib/languages";
+import { useTranslation } from "react-i18next";
 
 export function LiveCaptureModal({
   open,
@@ -22,8 +23,9 @@ export function LiveCaptureModal({
   onClose: () => void;
   onSaved?: () => void;
 }) {
+  const { t } = useTranslation();
   return (
-    <Modal open={open} onClose={onClose} title="מילה חדשה" size="lg">
+    <Modal open={open} onClose={onClose} title={t("capture.title")} size="lg">
       {open && <CaptureForm onClose={onClose} onSaved={onSaved} />}
     </Modal>
   );
@@ -35,6 +37,8 @@ function CaptureForm({
   onClose: () => void;
   onSaved?: () => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const languageOptions = getLanguageOptions(i18n.resolvedLanguage || "en");
   const { profile } = useApp();
   const [source, setSource] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState(
@@ -169,28 +173,28 @@ function CaptureForm({
   if (saved)
     return (
       <div className="modal-body form-stack">
-        <p role="status">המילה נשמרה בשרת. שמירה לבדה אינה משנה שליטה או XP.</p>
+        <p role="status">{t("capture.savedDescription")}</p>
         <Link
           className="button primary"
           to={`/vocabulary?item=${saved}`}
           onClick={onClose}
         >
-          פתיחת המילה
+          {t("capture.openWord")}
         </Link>
         <button className="button ghost" onClick={onClose}>
-          סגירה
+          {t("common.close")}
         </button>
       </div>
     );
   return (
     <div className="modal-body form-stack">
-      <p>שמרו מילה בהקשר שפגשתם. המשפט נשלח לספק תרגום רק אם תוסיפו אותו.</p>
+      <p>{t("capture.description")}</p>
       <fieldset
         disabled={busy || !!pending}
         className="form-stack plain-fieldset"
       >
         <label className="field">
-          <span>מילה או ביטוי במקור</span>
+          <span>{t("capture.sourceText")}</span>
           <input
             dir="auto"
             maxLength={500}
@@ -201,13 +205,13 @@ function CaptureForm({
         </label>
         <div className="live-form-grid">
           <label className="field">
-            <span>שפת המקור</span>
+            <span>{t("capture.sourceLanguage")}</span>
             <select
               value={sourceLanguage}
               onChange={(e) => setSourceLanguage(e.target.value)}
             >
-              <option value="">זיהוי אוטומטי (Google)</option>
-              {LANGUAGE_OPTIONS.map(([code, label]) => (
+              <option value="">{t("capture.autoDetect")}</option>
+              {languageOptions.map(([code, label]) => (
                 <option value={code} key={code}>
                   {label} · {code}
                 </option>
@@ -215,12 +219,12 @@ function CaptureForm({
             </select>
           </label>
           <label className="field">
-            <span>שפת התרגום</span>
+            <span>{t("capture.translationLanguage")}</span>
             <select
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
             >
-              {LANGUAGE_OPTIONS.map(([code, label]) => (
+              {languageOptions.map(([code, label]) => (
                 <option value={code} key={code}>
                   {label} · {code}
                 </option>
@@ -229,21 +233,21 @@ function CaptureForm({
           </label>
         </div>
         <label className="field">
-          <span>שיטת תרגום</span>
+          <span>{t("capture.translationMethod")}</span>
           <select
             value={method}
             onChange={(e) => setMethod(e.target.value as typeof method)}
           >
-            <option value="auto">אוטומטית</option>
-            <option value="dictionary">מילון</option>
+            <option value="auto">{t("capture.automatic")}</option>
+            <option value="dictionary">{t("capture.dictionary")}</option>
             <option value="ai">AI</option>
           </select>
         </label>
         <details>
-          <summary>הקשר ומקור — רשות</summary>
+          <summary>{t("capture.contextOptional")}</summary>
           <div className="form-stack">
             <label className="field">
-              <span>משפט מקורי</span>
+              <span>{t("capture.originalSentence")}</span>
               <textarea
                 dir="auto"
                 maxLength={4000}
@@ -252,7 +256,7 @@ function CaptureForm({
               />
             </label>
             <label className="field">
-              <span>כותרת המקור</span>
+              <span>{t("capture.sourceTitle")}</span>
               <input
                 maxLength={500}
                 value={title}
@@ -260,7 +264,7 @@ function CaptureForm({
               />
             </label>
             <label className="field">
-              <span>כתובת המקור (HTTP/HTTPS)</span>
+              <span>{t("capture.sourceUrl")}</span>
               <input
                 dir="ltr"
                 type="url"
@@ -277,14 +281,14 @@ function CaptureForm({
           disabled={!source.trim() || !targetLanguage.trim()}
           onClick={() => void runPreview()}
         >
-          בדיקת תרגום ומשמעויות
+          {t("capture.checkTranslation")}
         </button>
         {validPreview && (
           <>
             <p role="status">
               {preview.enrichment.status === "succeeded"
-                ? "בחרו הצעת תרגום או הזינו משמעות בעצמכם."
-                : "תרגום אוטומטי אינו זמין. אפשר לשמור משמעות ידנית."}
+                ? t("capture.chooseSuggestion")
+                : t("capture.manualTranslation")}
             </p>
             <div className="live-options">
               {preview.enrichment.candidates.map((c, index) => (
@@ -303,7 +307,7 @@ function CaptureForm({
               ))}
             </div>
             <label className="field">
-              <span>המשמעות לשמירה</span>
+              <span>{t("capture.meaningToSave")}</span>
               <input
                 dir="auto"
                 maxLength={1000}
@@ -316,7 +320,7 @@ function CaptureForm({
               />
             </label>
             <label className="field">
-              <span>תרגומים חלופיים — אחד בכל שורה, עד 10</span>
+              <span>{t("capture.variants")}</span>
               <textarea
                 dir="auto"
                 value={variants}
@@ -328,7 +332,7 @@ function CaptureForm({
               />
             </label>
             <label className="field">
-              <span>החלטת משמעות</span>
+              <span>{t("capture.senseDecision")}</span>
               <select
                 value={decision}
                 onChange={(e) => {
@@ -344,18 +348,17 @@ function CaptureForm({
                 }}
               >
                 <option value="" disabled>
-                  בחרו משמעות
+                  {t("capture.chooseMeaning")}
                 </option>
                 {!preview.existingSenses.items.length && (
                   <option value="auto">
-                    יצירה אוטומטית כשאין משמעות קיימת
+                    {t("capture.autoCreate")}
                   </option>
                 )}
-                <option value="create_new_sense">יצירת משמעות חדשה</option>
+                <option value="create_new_sense">{t("capture.createSense")}</option>
                 {preview.existingSenses.items.map((s) => (
                   <option key={s.learningItemId} value={s.learningItemId}>
-                    מיזוג הקשר אל: {s.primaryTranslation || s.sourceText} ·{" "}
-                    {s.userStatus}
+                    {t("capture.mergeInto", { meaning: s.primaryTranslation || s.sourceText, status: s.userStatus })}
                   </option>
                 ))}
               </select>
@@ -363,17 +366,14 @@ function CaptureForm({
             {decision &&
               decision !== "auto" &&
               decision !== "create_new_sense" && (
-                <p>
-                  במיזוג נשמר רק ההקשר החדש; המשמעות וההתקדמות הקיימות אינן
-                  מוחלפות.
-                </p>
+                <p>{t("capture.mergeHelp")}</p>
               )}
             {preview.existingSenses.hasMore && (
-              <p>יש משמעויות נוספות. חפשו בספרייה לפני יצירת משמעות חדשה.</p>
+              <p>{t("capture.moreMeanings")}</p>
             )}
             {candidate !== undefined && (
               <p className="auth-footnote">
-                הצעה מאומתת מהספק. שינוי התרגום יסמן אותה כתרגום ידני.
+                {t("capture.verifiedSuggestion")}
               </p>
             )}
           </>
@@ -385,10 +385,7 @@ function CaptureForm({
         </p>
       )}
       {pending && (
-        <p>
-          בקשת השמירה נעולה. ניסיון נוסף ישלח את אותו תוכן ואותו מזהה בלבד. לאחר
-          שגיאת משמעות יש לפתוח מחדש ולבדוק משמעויות.
-        </p>
+        <p>{t("capture.lockedRequest")}</p>
       )}
       <button
         className="button primary"
@@ -398,7 +395,7 @@ function CaptureForm({
         }
         onClick={() => void save()}
       >
-        {busy ? "שומר…" : pending ? "ניסיון נוסף לאותה שמירה" : "שמירת המילה"}
+        {busy ? t("capture.saving") : pending ? t("capture.retrySave") : t("capture.saveWord")}
       </button>
     </div>
   );

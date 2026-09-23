@@ -23,6 +23,7 @@ import { useApp } from "../context/AppContext";
 import { isDue, levelFromXp, skillLabels, xpInLevel } from "../lib/utils";
 import { CapabilityNotice } from "../components/CapabilityNotice";
 import type { SkillKey } from "../types";
+import { useTranslation } from "react-i18next";
 
 const skillIcons = {
   recognition: Brain,
@@ -32,6 +33,7 @@ const skillIcons = {
   pronunciation: Volume2,
 };
 export function DashboardPage() {
+  const { t, i18n } = useTranslation();
   const { items, profile, stats, mode, attempts, sessions } = useApp();
   const navigate = useNavigate();
   const [range, setRange] = useState(7);
@@ -54,7 +56,11 @@ export function DashboardPage() {
     100,
     Math.round((stats.learnedToday / profile.dailyGoal.value) * 100),
   );
-  const units = { items: "מילים", attempts: "ניסיונות", minutes: "דקות" };
+  const units = {
+    items: t("demoDashboard.units.items"),
+    attempts: t("demoDashboard.units.attempts"),
+    minutes: t("demoDashboard.units.minutes"),
+  };
   const dateOf = (value: string) =>
     new Intl.DateTimeFormat("en-CA", { timeZone: profile.timezone }).format(
       new Date(value),
@@ -68,7 +74,7 @@ export function DashboardPage() {
         .filter((session) => dateOf(session.startedAt) === key)
         .reduce((sum, session) => sum + session.durationSeconds, 0) / 60;
     return {
-      day: new Intl.DateTimeFormat("he", {
+      day: new Intl.DateTimeFormat(i18n.language, {
         day: "numeric",
         month: "numeric",
         timeZone: profile.timezone,
@@ -102,14 +108,19 @@ export function DashboardPage() {
       timeZone: profile.timezone,
     }).format(now),
   );
-  const greeting = hour < 12 ? "בוקר טוב" : hour < 18 ? "יום טוב" : "ערב טוב";
+  const greeting =
+    hour < 12
+      ? t("demoDashboard.morning")
+      : hour < 18
+        ? t("demoDashboard.afternoon")
+        : t("demoDashboard.evening");
   const practiceWord = (id: string) =>
     navigate("/learn/session/recall?items=" + encodeURIComponent(id));
   if (mode !== "demo")
     return (
       <CapabilityNotice
-        title="היום שלי"
-        milestone="B8: Dashboard ונתוני התקדמות"
+        title={t("demoDashboard.capabilityTitle")}
+        milestone={t("demoDashboard.capabilityMilestone")}
       />
     );
   return (
@@ -117,7 +128,7 @@ export function DashboardPage() {
       <section className="welcome-row">
         <div>
           <p className="eyebrow">
-            {new Intl.DateTimeFormat("he-IL", {
+            {new Intl.DateTimeFormat(i18n.language, {
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -129,8 +140,8 @@ export function DashboardPage() {
           </h1>
           <p>
             {progress >= 100
-              ? "היעד היומי הושלם. יפה לראות אותך מתמיד!"
-              : "תרגול קטן היום, זיכרון חזק יותר מחר."}
+              ? t("demoDashboard.goalCompletedMessage")
+              : t("demoDashboard.encouragement")}
           </p>
         </div>
         <div className="daily-goal-card">
@@ -146,15 +157,17 @@ export function DashboardPage() {
             </span>
           </div>
           <div>
-            <b>היעד היומי שלך</b>
+            <b>{t("demoDashboard.yourDailyGoal")}</b>
             <small>
               {progress >= 100
-                ? "השלמת את היעד!"
-                : "עוד " +
-                  Math.max(0, profile.dailyGoal.value - stats.learnedToday) +
-                  " " +
-                  units[profile.dailyGoal.type] +
-                  " להיום"}
+                ? t("dashboard.goalCompleted")
+                : t("demoDashboard.goalRemaining", {
+                    count: Math.max(
+                      0,
+                      profile.dailyGoal.value - stats.learnedToday,
+                    ),
+                    unit: units[profile.dailyGoal.type],
+                  })}
             </small>
           </div>
           <Check
@@ -172,28 +185,28 @@ export function DashboardPage() {
         <div className="hero-copy">
           <span className="pill light">
             <Sparkles size={14} />
-            תרגול דמו מוכן
+            {t("demoDashboard.demoReady")}
           </span>
           <h2>
             {due.length
-              ? due.length + " מילים מחכות לך"
-              : "כל זמן הוא זמן טוב לחזק מילים"}
+              ? t("demoDashboard.wordsWaiting", { count: due.length })
+              : t("demoDashboard.anyTime")}
           </h2>
-          <p>
-            סשן קצר עם כרטיסיות, שליפה והאזנה. התור משתמש במועדי החזרה לדוגמה.
-          </p>
+          <p>{t("demoDashboard.sessionDescription")}</p>
           <div className="hero-meta">
             <span>
               <Clock3 size={16} />
-              כ־6 דקות
+              {t("demoDashboard.aboutMinutes", { count: 6 })}
             </span>
             <span>
               <BookOpen size={16} />
-              עד {Math.min(8, active.length)} מילים
+              {t("demoDashboard.upToWords", {
+                count: Math.min(8, active.length),
+              })}
             </span>
             <span>
               <Zap size={16} />
-              XP מוגבל לדמו
+              {t("demoDashboard.demoXpLimited")}
             </span>
           </div>
         </div>
@@ -202,68 +215,71 @@ export function DashboardPage() {
           disabled={!active.length}
           onClick={() => navigate("/learn/session/smart")}
         >
-          מתחילים עכשיו
+          {t("demoDashboard.startNow")}
           <ArrowLeft size={19} />
         </button>
       </section>
       <section className="metric-grid">
         {[
           {
-            label: "מילים לחזרה",
+            label: t("demoDashboard.metrics.due"),
             value: due.length,
             Icon: CalendarDays,
             color: "orange",
-            sub: "לפי תאריכי דוגמה",
+            sub: t("demoDashboard.metrics.sampleDates"),
           },
           {
-            label: "מילים פעילות",
+            label: t("demoDashboard.metrics.active"),
             value: active.length,
             Icon: BookOpen,
             color: "green",
-            sub:
-              active.filter((item) => item.status === "NEW").length + " חדשות",
+            sub: t("demoDashboard.metrics.newWords", {
+              count: active.filter((item) => item.status === "NEW").length,
+            }),
           },
           {
-            label: "מילים שנלמדו",
+            label: t("demoDashboard.metrics.mastered"),
             value: mastered.length,
             Icon: Trophy,
             color: "purple",
-            sub: "נתוני דוגמה / סימון ידני",
+            sub: t("demoDashboard.metrics.sampleManual"),
           },
           {
-            label: "מילים מושהות",
+            label: t("demoDashboard.metrics.paused"),
             value: paused.length,
             Icon: Pause,
             color: "yellow",
-            sub: "מחוץ לתור התרגול",
+            sub: t("demoDashboard.metrics.outsideQueue"),
           },
           {
-            label: "רצף נוכחי",
+            label: t("demoDashboard.metrics.streak"),
             value: stats.streak,
             Icon: Flame,
             color: "orange",
-            sub: "ימי תרגול בדמו",
+            sub: t("demoDashboard.metrics.demoDays"),
           },
           {
-            label: "XP לדמו",
+            label: t("demoDashboard.metrics.demoXp"),
             value: stats.xp,
             Icon: Zap,
             color: "yellow",
-            sub: "רמה " + levelFromXp(stats.xp),
+            sub: t("demoDashboard.metrics.level", {
+              level: levelFromXp(stats.xp),
+            }),
           },
           {
-            label: "זמן למידה השבוע",
+            label: t("demoDashboard.metrics.weekTime"),
             value: stats.minutesThisWeek,
             Icon: Clock3,
             color: "green",
-            sub: "דקות שנמדדו בסשנים",
+            sub: t("demoDashboard.metrics.sessionMinutes"),
           },
           {
-            label: "נלמדו השבוע",
+            label: t("demoDashboard.metrics.masteredWeek"),
             value: masteredWeek,
             Icon: Check,
             color: "purple",
-            sub: "סימונים ידניים חדשים",
+            sub: t("demoDashboard.metrics.manualMarks"),
           },
         ].map(({ label, value, Icon, color, sub }) => (
           <article className="metric-card" key={label}>
@@ -282,17 +298,17 @@ export function DashboardPage() {
         <section className="panel activity-panel">
           <div className="panel-header">
             <div>
-              <h3>הפעילות שלך</h3>
-              <p>זמן תרגול אמיתי שנמדד בדמו</p>
+              <h3>{t("demoDashboard.activity")}</h3>
+              <p>{t("demoDashboard.activityDescription")}</p>
             </div>
             <select
               className="select-compact"
-              aria-label="טווח פעילות"
+              aria-label={t("demoDashboard.activityRange")}
               value={range}
               onChange={(event) => setRange(Number(event.target.value))}
             >
-              <option value={7}>שבוע</option>
-              <option value={28}>חודש</option>
+              <option value={7}>{t("demoDashboard.week")}</option>
+              <option value={28}>{t("demoDashboard.month")}</option>
             </select>
           </div>
           <div className="chart-area">
@@ -305,16 +321,19 @@ export function DashboardPage() {
               {activity.map((entry, index) => (
                 <div className="bar-column" key={entry.day}>
                   <div
-                    aria-label={
-                      entry.day + ": " + entry.minutes.toFixed(1) + " דקות"
-                    }
+                    aria-label={t("demoDashboard.minutesOnDay", {
+                      day: entry.day,
+                      minutes: entry.minutes.toFixed(1),
+                    })}
                     className={
                       "bar " + (index === activity.length - 1 ? "today" : "")
                     }
                     style={{ height: (entry.minutes / maxMinutes) * 100 + "%" }}
                   >
                     <span className="bar-tooltip">
-                      {entry.minutes.toFixed(1)} דק׳
+                      {t("demoDashboard.minutesShort", {
+                        count: entry.minutes.toFixed(1),
+                      })}
                     </span>
                   </div>
                   <small>{entry.day}</small>
@@ -325,18 +344,20 @@ export function DashboardPage() {
           <div className="panel-footer-stat">
             <Clock3 size={17} />
             <span>
-              <b>{stats.minutesThisWeek} דקות</b> בשבעת הימים האחרונים
+              {t("demoDashboard.lastSevenDays", {
+                count: stats.minutesThisWeek,
+              })}
             </span>
           </div>
         </section>
         <section className="panel skills-panel">
           <div className="panel-header">
             <div>
-              <h3>כישורי השפה</h3>
-              <p>ציוני מילות הדוגמה · B4 יקבע ציונים אמיתיים</p>
+              <h3>{t("demoDashboard.languageSkills")}</h3>
+              <p>{t("demoDashboard.skillsDescription")}</p>
             </div>
             <Link to="/vocabulary" className="text-link">
-              למילים <ChevronLeft size={15} />
+              {t("demoDashboard.toWords")} <ChevronLeft size={15} />
             </Link>
           </div>
           <div className="skill-list">
@@ -359,10 +380,14 @@ export function DashboardPage() {
           <div className="skill-insight">
             <Sparkles size={17} />
             <span>
-              <b>נקודה לחיזוק: {skillLabels[weakSkill]}</b>
-              <small>ציונים אינם עולים מקריאה או ניווט בלבד</small>
+              <b>
+                {t("demoDashboard.strengthenSkill", {
+                  skill: skillLabels[weakSkill],
+                })}
+              </b>
+              <small>{t("demoDashboard.scoresNote")}</small>
             </span>
-            <Link to="/learn" aria-label="מעבר לתרגול">
+            <Link to="/learn" aria-label={t("demoDashboard.goPractice")}>
               <ChevronLeft size={18} />
             </Link>
           </div>
@@ -372,11 +397,11 @@ export function DashboardPage() {
         <section className="panel weak-panel">
           <div className="panel-header">
             <div>
-              <h3>מילים שכדאי לחזק</h3>
-              <p>לפי ציון השליטה של מילות הדוגמה</p>
+              <h3>{t("dashboard.strengthen")}</h3>
+              <p>{t("demoDashboard.weakWordsDescription")}</p>
             </div>
             <Link to="/vocabulary" className="text-link">
-              לרשימה <ChevronLeft size={15} />
+              {t("demoDashboard.toList")} <ChevronLeft size={15} />
             </Link>
           </div>
           <div className="weak-list">
@@ -393,7 +418,9 @@ export function DashboardPage() {
                 <b className="mastery-number">{item.mastery}%</b>
                 <button
                   className="icon-button"
-                  aria-label={"תרגול " + item.source}
+                  aria-label={t("demoDashboard.practiceWord", {
+                    word: item.source,
+                  })}
                   onClick={() => practiceWord(item.id)}
                 >
                   <ChevronLeft size={18} />
@@ -409,20 +436,22 @@ export function DashboardPage() {
               <span>{levelFromXp(stats.xp)}</span>
             </div>
             <div>
-              <small>רמת הדמו שלך</small>
-              <h3>צעד קטן בכל יום</h3>
+              <small>{t("demoDashboard.yourDemoLevel")}</small>
+              <h3>{t("demoDashboard.smallStep")}</h3>
             </div>
           </div>
           <div className="level-xp">
             <span>{xpInLevel(stats.xp)} / 500 XP</span>
-            <b>עוד {500 - xpInLevel(stats.xp)} XP לרמה הבאה</b>
+            <b>
+              {t("demoDashboard.nextLevel", { xp: 500 - xpInLevel(stats.xp) })}
+            </b>
           </div>
           <div className="level-progress">
             <span style={{ width: (xpInLevel(stats.xp) / 500) * 100 + "%" }} />
           </div>
           <p>
             <Zap size={16} />
-            קיבלת <b>+{xpWeek} XP</b> השבוע. זו עקומת דמו בלבד.
+            {t("demoDashboard.weekXp", { xp: xpWeek })}
           </p>
         </section>
       </div>
@@ -430,8 +459,8 @@ export function DashboardPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h3>דיוק לפי משחק</h3>
-              <p>מבוסס על ניסיונות הדמו החדשים בלבד</p>
+              <h3>{t("demoDashboard.accuracyByGame")}</h3>
+              <p>{t("demoDashboard.accuracyDescription")}</p>
             </div>
           </div>
           {["recall", "listening", "matching"].map((game) => {
@@ -451,16 +480,20 @@ export function DashboardPage() {
                 <span>
                   {
                     {
-                      recall: "שליפה",
-                      listening: "האזנה ואיות",
-                      matching: "התאמות",
+                      recall: t("labels.recall"),
+                      listening: t("labels.listening_spelling"),
+                      matching: t("labels.matching"),
                     }[game]
                   }
                 </span>
                 <div className="progress-track">
                   <span style={{ width: (percent || 0) + "%" }} />
                 </div>
-                <b>{percent === null ? "טרם תורגל" : percent + "%"}</b>
+                <b>
+                  {percent === null
+                    ? t("demoLearn.notPracticed")
+                    : percent + "%"}
+                </b>
               </div>
             );
           })}
@@ -468,8 +501,8 @@ export function DashboardPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h3>פעילות אחרונה</h3>
-              <p>ניסיונות נשמרים כאירועים, לא רק כמונים</p>
+              <h3>{t("demoDashboard.recentActivity")}</h3>
+              <p>{t("demoDashboard.eventsDescription")}</p>
             </div>
           </div>
           {attempts
@@ -479,22 +512,27 @@ export function DashboardPage() {
               <div className="attempt-history-row" key={attempt.id}>
                 <span dir="auto">
                   {items.find((item) => item.id === attempt.itemId)?.source ||
-                    "מילה שנמחקה"}
+                    t("demoDashboard.deletedWord")}
                 </span>
                 <b>
-                  {attempt.result === "skipped" ? "דילוג" : attempt.score + "%"}
+                  {attempt.result === "skipped"
+                    ? t("labels.skipped")
+                    : attempt.score + "%"}
                 </b>
                 <small>
-                  {new Date(attempt.createdAt).toLocaleTimeString("he", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    timeZone: profile.timezone,
-                  })}
+                  {new Date(attempt.createdAt).toLocaleTimeString(
+                    i18n.language,
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: profile.timezone,
+                    },
+                  )}
                 </small>
               </div>
             ))}
           {!attempts.length && (
-            <p className="muted-note">הסשן הראשון שלך מחכה במסך הלמידה.</p>
+            <p className="muted-note">{t("demoDashboard.firstSession")}</p>
           )}
         </section>
       </div>

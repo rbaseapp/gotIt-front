@@ -10,7 +10,9 @@ import {
   type ImportInput,
 } from "../lib/transfer";
 import { useFeedback } from "../components/Feedback";
+import { useTranslation } from "react-i18next";
 export function TransferPage() {
+  const { t } = useTranslation();
   const { mode } = useApp();
   const { toast } = useFeedback();
   const [input, setInput] = useState<ImportInput>();
@@ -24,7 +26,7 @@ export function TransferPage() {
     setResult(undefined);
     if (!file) return;
     try {
-      if (file.size > 256 * 1024) throw new Error("קובץ הייבוא מוגבל ל־256KB.");
+      if (file.size > 256 * 1024) throw new Error(t("transfer.fileTooLarge"));
       setInput(parseImportFile(await file.text()));
     } catch (reason) {
       setError(errorMessage(reason));
@@ -48,7 +50,7 @@ export function TransferPage() {
         entries,
       });
       setResult(response);
-      toast("הייבוא נבדק בשרת. התוצאות מפורטות בהמשך.", {
+      toast(t("transfer.importChecked"), {
         tone: "success",
       });
       window.dispatchEvent(new Event("gotit:library-changed"));
@@ -96,18 +98,18 @@ export function TransferPage() {
           a.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
           toast(
-            `יוצאו ${items.length} מילים. הייצוא אינו כולל היסטוריית תרגול והקשרים.`,
+            t("transfer.exported", { count: items.length }),
             { tone: "success", duration: 6500 },
           );
           return;
         }
         if (seen.has(response.nextCursor))
-          throw new Error("השרת החזיר עימוד חוזר. הייצוא נעצר.");
+          throw new Error(t("transfer.repeatedPage"));
         seen.add(response.nextCursor);
         cursor = response.nextCursor;
       }
       throw new Error(
-        "הספרייה גדולה ממגבלת הייצוא באתר (10,000). לא הורד קובץ חלקי.",
+        t("transfer.exportLimit"),
       );
     } catch (reason) {
       setError(errorMessage(reason));
@@ -120,42 +122,33 @@ export function TransferPage() {
     <div className="live-page page-enter">
       <section className="page-heading-row">
         <div>
-          <p className="eyebrow">המילים שלך נשארות שלך</p>
-          <h1>ייבוא וייצוא</h1>
-          <p>
-            העברת הספרייה בלי לשנות היסטוריית ציונים או לסמוך על שליטה מיובאת.
-          </p>
+          <p className="eyebrow">{t("transfer.eyebrow")}</p>
+          <h1>{t("transfer.title")}</h1>
+          <p>{t("transfer.description")}</p>
         </div>
       </section>
       {mode !== "live" ? (
-        <p>ייבוא וייצוא זמינים לחשבון אמיתי בלבד.</p>
+        <p>{t("transfer.liveOnly")}</p>
       ) : (
         <>
           <div className="live-two-columns">
             <section className="live-panel form-stack">
-              <h2>ייצוא הספרייה</h2>
-              <p>
-                JSON בפורמט learning_library_v1: מילים, משמעויות, מצבים ותגיות.
-                ה־API הנוכחי אינו מייצא הקשרים והיסטוריית תרגול, ולכן זה אינו
-                גיבוי מלא ואינו קובץ לייבוא ישיר.
-              </p>
+              <h2>{t("transfer.exportTitle")}</h2>
+              <p>{t("transfer.exportDescription")}</p>
               <button
                 className="button primary"
                 disabled={busy}
                 onClick={() => void download()}
               >
                 <Download size={18} />
-                הורדת הספרייה
+                {t("transfer.download")}
               </button>
             </section>
             <section className="live-panel form-stack">
-              <h2>ייבוא מילים</h2>
-              <p>
-                capture_requests_v1 בלבד, עד 100 אירועים ו־256KB. לכל מילה נדרש
-                eventId קבוע; ניסיון נוסף שומר אותו ולא יוצר כפילויות.
-              </p>
+              <h2>{t("transfer.importTitle")}</h2>
+              <p>{t("transfer.importDescription")}</p>
               <label className="field">
-                <span>בחירת קובץ JSON</span>
+                <span>{t("transfer.chooseFile")}</span>
                 <input
                   type="file"
                   accept=".json,application/json"
@@ -165,7 +158,7 @@ export function TransferPage() {
               </label>
               {input && (
                 <>
-                  <p>{input.entries.length} מילים מוכנות לבדיקה.</p>
+                  <p>{t("transfer.readyCount", { count: input.entries.length })}</p>
                   <ul>
                     {input.entries.slice(0, 10).map((e) => (
                       <li key={e.eventId}>
@@ -181,17 +174,17 @@ export function TransferPage() {
                   >
                     <Upload size={18} />
                     {busy
-                      ? "מייבא…"
+                      ? t("transfer.importing")
                       : result
-                        ? "ניסיון נוסף עם אותם מזהים"
-                        : "אישור ושליחת הייבוא"}
+                        ? t("transfer.retrySameIds")
+                        : t("transfer.submitImport")}
                   </button>
                 </>
               )}
             </section>
           </div>
           <details className="live-panel">
-            <summary>מבנה קובץ הייבוא</summary>
+            <summary>{t("transfer.fileStructure")}</summary>
             <pre dir="ltr">
               {JSON.stringify(
                 {
@@ -206,7 +199,7 @@ export function TransferPage() {
                           translationLanguageCode: "he",
                           itemType: "word",
                         },
-                        translation: { text: "לזכור" },
+                        translation: { text: t("transfer.sampleTranslation") },
                         context: {
                           selectedText: "remember",
                           sourceType: "import",
@@ -220,10 +213,7 @@ export function TransferPage() {
                 2,
               )}
             </pre>
-            <p>
-              החליפו את מזהה הדוגמה ב־UUID חדש לכל אירוע חדש. לאחר כשל שמרו את
-              אותו מזהה לאותו תוכן.
-            </p>
+            <p>{t("transfer.uuidHelp")}</p>
           </details>
         </>
       )}
@@ -234,14 +224,14 @@ export function TransferPage() {
       )}
       {result && (
         <section className="live-panel">
-          <h2>תוצאות הייבוא</h2>
+          <h2>{t("transfer.results")}</h2>
           {result.results.map((r) => (
             <p key={r.eventId}>
               {
                 input?.entries.find((e) => e.eventId === r.eventId)?.capture
                   .item.sourceText
               }{" "}
-              · {r.status === "succeeded" ? "נשמר" : `נכשל: ${r.error.code}`}
+              · {r.status === "succeeded" ? t("transfer.saved") : t("transfer.failed", { code: r.error.code })}
             </p>
           ))}
           {result.results.some((r) => r.status === "failed") && (
@@ -250,7 +240,7 @@ export function TransferPage() {
               disabled={busy}
               onClick={() => void upload(true)}
             >
-              ניסיון נוסף לנכשלים בלבד
+              {t("transfer.retryFailed")}
             </button>
           )}
         </section>

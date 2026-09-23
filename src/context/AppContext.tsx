@@ -27,6 +27,7 @@ import type {
   PracticeSession,
   UserProfile,
 } from "../types";
+import i18n from "../i18n";
 
 const defaultProfile: UserProfile = {
   name: "",
@@ -129,7 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setLiveProfile(defaultProfile);
       setMode("signed-out");
-      setNotice("הכניסה פגה. יש להיכנס מחדש.");
+      setNotice(i18n.t("session.expired"));
     };
     window.addEventListener("gotit:session-expired", expired);
     return () => window.removeEventListener("gotit:session-expired", expired);
@@ -152,7 +153,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const identity = await api.me();
         if (cancelled) return;
         setUser(identity);
-        setProfileError("טוען את ההעדפות מהשרת…");
+        setProfileError(i18n.t("session.loadingProfile"));
         setLiveProfile({
           ...defaultProfile,
           email: identity.email,
@@ -168,14 +169,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         } catch (error) {
           if (!cancelled)
             setProfileError(
-              error instanceof Error ? error.message : "לא ניתן לטעון פרופיל",
+              error instanceof Error ? error.message : i18n.t("session.profileFailed"),
             );
         }
       } catch (error) {
         if (!cancelled) {
           clearTokens();
           setMode("signed-out");
-          setNotice(error instanceof Error ? error.message : "יש להיכנס מחדש");
+          setNotice(error instanceof Error ? error.message : i18n.t("session.signInAgain"));
         }
       }
     };
@@ -256,7 +257,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     stats,
     profileError,
     notice: storageError
-      ? "האחסון בדפדפן חסום או מלא. השינויים נשמרים לזמן הסשן בלבד."
+      ? i18n.t("session.storageUnavailable")
       : notice,
     items: mode === "demo" ? demo.items : [],
     attempts: mode === "demo" ? demo.attempts : [],
@@ -264,7 +265,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async authenticateGoogle(idToken) {
       const identity = await api.google(idToken);
       setUser(identity);
-      setProfileError("טוען את ההעדפות מהשרת…");
+      setProfileError(i18n.t("session.loadingProfile"));
       setNotice("");
       writeStorage("gotit.mode", "live");
       setLiveProfile({
@@ -279,14 +280,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProfileError("");
       } catch (error) {
         setProfileError(
-          error instanceof Error ? error.message : "לא ניתן לטעון פרופיל",
+          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
         );
       }
     },
     async authenticate(authMode, email, password) {
       const identity = await api.signIn(authMode, email, password);
       setUser(identity);
-      setProfileError("טוען את ההעדפות מהשרת…");
+      setProfileError(i18n.t("session.loadingProfile"));
       setNotice("");
       writeStorage("gotit.mode", "live");
       setLiveProfile({
@@ -301,7 +302,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProfileError("");
       } catch (error) {
         setProfileError(
-          error instanceof Error ? error.message : "לא ניתן לטעון פרופיל",
+          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
         );
       }
     },
@@ -326,7 +327,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (mode === "live") await api.logout();
       } catch {
         setNotice(
-          "יצאת מהמכשיר. לא ניתן היה לבטל את הסשן בשרת; הוא יפוג לפי מדיניות Core.",
+          i18n.t("session.logoutServerFailed"),
         );
       } finally {
         clearTokens();
@@ -347,7 +348,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setMode("signed-out");
         }
         setProfileError(
-          error instanceof Error ? error.message : "לא ניתן לטעון פרופיל",
+          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
         );
       }
     },
@@ -439,7 +440,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (mode !== "live" || profileError)
-        throw new Error("יש לטעון את הפרופיל לפני שמירת שינויים");
+        throw new Error(i18n.t("session.loadBeforeSave"));
       try {
         const result = await api.saveProfile(next);
         const name = next.name.trim() || user?.email.split("@")[0] || "";

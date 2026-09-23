@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react";
+import i18n from "../i18n";
 
 export class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -12,13 +13,13 @@ export class ErrorBoundary extends Component<
     if (this.state.failed)
       return (
         <div className="empty-session" role="alert">
-          <h1>משהו השתבש בתצוגה</h1>
-          <p>אפשר לטעון שוב. נתוני הדמו שנשמרו אינם נמחקים.</p>
+          <h1>{i18n.t("errors.boundaryTitle")}</h1>
+          <p>{i18n.t("errors.boundaryDescription")}</p>
           <button
             className="button primary"
             onClick={() => window.location.reload()}
           >
-            טעינה מחדש
+            {i18n.t("common.reload")}
           </button>
         </div>
       );

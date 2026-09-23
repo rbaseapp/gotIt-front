@@ -1,5 +1,6 @@
 import { CloudOff, Sparkles } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { useTranslation } from "react-i18next";
 
 export function CapabilityNotice({
   title,
@@ -9,24 +10,23 @@ export function CapabilityNotice({
   milestone: string;
 }) {
   const { startDemo } = useApp();
+  const { t } = useTranslation();
   return (
     <section className="capability-notice">
       <span className="capability-icon">
         <CloudOff size={34} />
       </span>
-      <p className="eyebrow">החשבון מחובר · הנתונים שלך אינם נתוני דמו</p>
+      <p className="eyebrow">{t("capability.eyebrow")}</p>
       <h1>{title}</h1>
       <p>
-        ממשק השרת עבור {milestone} עדיין לא ממומש. לא נציג נתונים מדומים או
-        נשמור שינויים מקומיים כאילו נשלחו לשרת.
+        {t("capability.unavailable", { milestone })}
       </p>
       <p>
-        אפשר להתנסות בזרימה המלאה בסביבת הדגמה נפרדת. מעבר לדמו יוציא אותך מהסשן
-        המקומי.
+        {t("capability.demoDescription")}
       </p>
       <button className="button primary" onClick={startDemo}>
         <Sparkles size={18} />
-        מעבר לדמו נפרד
+        {t("capability.openDemo")}
       </button>
     </section>
   );
