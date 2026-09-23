@@ -56,6 +56,13 @@ const games = [
     tone: "rose",
   },
 ];
+const gameOrder = [
+  "matching",
+  "flashcards",
+  "pronunciation",
+  "listening",
+  "recall",
+] as const;
 export function LiveLearnPage() {
   const queue = useResource(
     useCallback(() => product(queueSchema, "learning/queue?limit=10"), []),
@@ -106,40 +113,44 @@ export function LiveLearnPage() {
         </Link>
       </section>
       <div className="game-grid">
-        {games.map(({ icon: Icon, ...game }) => {
-          const providerMode = ["listening", "pronunciation"].includes(game.id);
-          const available =
-            !providerMode || Boolean(capabilities.data?.configured.speech);
-          return available ? (
-            <Link
-              className="game-card"
-              to={`/learn/session/${game.id}`}
-              key={game.id}
-            >
-              <span className={`game-icon ${game.tone}`}>
-                <Icon size={28} />
-              </span>
-              <span className="game-card-copy">
-                <b>{game.name}</b>
-                <small>{game.description}</small>
-              </span>
-            </Link>
-          ) : (
-            <div
-              className="game-card disabled"
-              aria-disabled="true"
-              key={game.id}
-            >
-              <span className={`game-icon ${game.tone}`}>
-                <Icon size={28} />
-              </span>
-              <span className="game-card-copy">
-                <b>{game.name}</b>
-                <small>לא זמין: ספק דיבור אינו מוגדר בשרת</small>
-              </span>
-            </div>
-          );
-        })}
+        {gameOrder
+          .map((id) => games.find((game) => game.id === id)!)
+          .map(({ icon: Icon, ...game }) => {
+            const providerMode = ["listening", "pronunciation"].includes(
+              game.id,
+            );
+            const available =
+              !providerMode || Boolean(capabilities.data?.configured.speech);
+            return available ? (
+              <Link
+                className="game-card"
+                to={`/learn/session/${game.id}`}
+                key={game.id}
+              >
+                <span className={`game-icon ${game.tone}`}>
+                  <Icon size={28} />
+                </span>
+                <span className="game-card-copy">
+                  <b>{game.name}</b>
+                  <small>{game.description}</small>
+                </span>
+              </Link>
+            ) : (
+              <div
+                className="game-card disabled"
+                aria-disabled="true"
+                key={game.id}
+              >
+                <span className={`game-icon ${game.tone}`}>
+                  <Icon size={28} />
+                </span>
+                <span className="game-card-copy">
+                  <b>{game.name}</b>
+                  <small>לא זמין: ספק דיבור אינו מוגדר בשרת</small>
+                </span>
+              </div>
+            );
+          })}
       </div>
       <section className="live-panel">
         <h2>המילים הבאות שלך</h2>

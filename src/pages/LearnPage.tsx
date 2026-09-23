@@ -77,6 +77,14 @@ const games: Array<{
   },
 ];
 
+const gameOrder: GameType[] = [
+  "matching",
+  "flashcards",
+  "pronunciation",
+  "listening",
+  "recall",
+];
+
 export function LearnPage() {
   const { items, stats, mode, attempts } = useApp();
   const navigate = useNavigate();
@@ -173,8 +181,9 @@ export function LearnPage() {
         </div>
       </div>
       <section className="game-grid">
-        {games.map(
-          ({ id, title, subtitle, icon: Icon, tone, time, skills }) => (
+        {gameOrder
+          .map((id) => games.find((game) => game.id === id)!)
+          .map(({ id, title, subtitle, icon: Icon, tone, time, skills }) => (
             <button className="game-card" key={id} onClick={() => go(id)}>
               <span className={`game-icon ${tone}`}>
                 <Icon size={27} />
@@ -194,8 +203,7 @@ export function LearnPage() {
                 <ChevronLeft size={19} />
               </span>
             </button>
-          ),
-        )}
+          ))}
       </section>
 
       <section className="learning-tip">
