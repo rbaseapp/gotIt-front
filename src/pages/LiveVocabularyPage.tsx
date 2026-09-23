@@ -28,6 +28,7 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { useFeedback } from "../components/Feedback";
+import { useSubscription } from "../context/SubscriptionContext";
 
 const actions: Record<string, string> = {
   pause: "השהיה",
@@ -45,6 +46,8 @@ const actions: Record<string, string> = {
 const bulkReceipt = z.object({ ids: z.array(uuid), action: z.string() });
 export function LiveVocabularyPage() {
   const { confirm, toast } = useFeedback();
+  const { hasEntitlement } = useSubscription();
+  const canWrite = hasEntitlement("vocabulary.write");
   const [searchParams, setSearchParams] = useSearchParams();
   const itemId = searchParams.get("item");
   const [search, setSearch] = useState("");
@@ -93,6 +96,12 @@ export function LiveVocabularyPage() {
     setSelected([]);
   };
   const apply = async (ids = selected, operation = action) => {
+    if (!canWrite) {
+      toast("עריכת מילים ושמירת מילים חדשות זמינות ב־PRO.", {
+        tone: "info",
+      });
+      return;
+    }
     if (!ids.length || busy) return;
     if (["delete", "mark_mastered", "restore"].includes(operation)) {
       const approved = await confirm({
@@ -132,10 +141,16 @@ export function LiveVocabularyPage() {
           <h1>אוצר המילים שלי</h1>
           <p>משמעויות והקשרים נפרדים. כל ההתקדמות מגיעה מהשרת.</p>
         </div>
-        <button className="button primary" onClick={() => setAdd(true)}>
-          <Plus size={18} />
-          מילה חדשה
-        </button>
+        {canWrite ? (
+          <button className="button primary" onClick={() => setAdd(true)}>
+            <Plus size={18} />
+            מילה חדשה
+          </button>
+        ) : (
+          <Link className="button primary" to="/billing">
+            שדרוג לשמירת מילים
+          </Link>
+        )}
       </section>
       <section className="live-panel">
         <form
@@ -292,7 +307,11 @@ export function LiveVocabularyPage() {
               {label}
             </label>
           ))}
-          <button className="button ghost" onClick={() => setTagsOpen(true)}>
+          <button
+            className="button ghost"
+            disabled={!canWrite}
+            onClick={() => setTagsOpen(true)}
+          >
             ניהול תגיות
           </button>
         </div>
@@ -351,7 +370,7 @@ export function LiveVocabularyPage() {
             </select>
             <button
               className="button secondary"
-              disabled={!selected.length || busy}
+              disabled={!canWrite || !selected.length || busy}
               onClick={() => void apply()}
             >
               החלה על {selected.length} נבחרות
@@ -430,9 +449,15 @@ export function LiveVocabularyPage() {
             <div className="live-empty">
               <h2>אין מילים להצגה</h2>
               <p>נסו סינון אחר או הוסיפו את המילה הראשונה.</p>
-              <button className="button primary" onClick={() => setAdd(true)}>
-                הוספת מילה
-              </button>
+              {canWrite ? (
+                <button className="button primary" onClick={() => setAdd(true)}>
+                  הוספת מילה
+                </button>
+              ) : (
+                <Link className="button primary" to="/billing">
+                  שדרוג ל־PRO
+                </Link>
+              )}
             </div>
           )}
           <div className="live-toolbar">
@@ -462,7 +487,7 @@ export function LiveVocabularyPage() {
         </>
       )}
       <LiveCaptureModal
-        open={add}
+        open={add && canWrite}
         onClose={() => setAdd(false)}
         onSaved={() => void resource.reload()}
       />

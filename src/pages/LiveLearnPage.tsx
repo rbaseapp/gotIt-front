@@ -7,6 +7,7 @@ import {
   Mic2,
   MousePointer2,
   PenLine,
+  LockKeyhole,
 } from "lucide-react";
 import { RemoteState } from "../components/RemoteState";
 import {
@@ -19,6 +20,7 @@ import {
   sessionSchema,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
+import { useSubscription } from "../context/SubscriptionContext";
 const games = [
   {
     id: "flashcards",
@@ -64,6 +66,7 @@ const gameOrder = [
   "recall",
 ] as const;
 export function LiveLearnPage() {
+  const { status, loading, hasEntitlement } = useSubscription();
   const queue = useResource(
     useCallback(() => product(queueSchema, "learning/queue?limit=10"), []),
   );
@@ -75,6 +78,25 @@ export function LiveLearnPage() {
   const sessions = useResource(
     useCallback(() => product(page(sessionSchema), sessionsUrl), [sessionsUrl]),
   );
+  if (!loading && status && !hasEntitlement("practice.play"))
+    return (
+      <div className="learn-page live-page page-enter">
+        <section className="live-panel locked-feature">
+          <span className="locked-feature-icon">
+            <LockKeyhole size={30} />
+          </span>
+          <p className="eyebrow">יכולת PRO</p>
+          <h1>המשחקים מחכים לך</h1>
+          <p>
+            המילים וההתקדמות שלך שמורות. שדרגו ל־PRO כדי לחזור לכל המשחקים,
+            לתרגולי הדיבור ולהגייה.
+          </p>
+          <Link className="button primary" to="/billing">
+            שדרוג ל־PRO
+          </Link>
+        </section>
+      </div>
+    );
   return (
     <div className="learn-page live-page page-enter">
       <section className="page-heading-row">

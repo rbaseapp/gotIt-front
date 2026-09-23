@@ -18,8 +18,9 @@ import { useResource } from "../lib/useResource";
 import { useFeedback } from "../components/Feedback";
 
 const entitlementLabels: Record<string, string> = {
-  vocabulary: "אוצר מילים אישי",
-  "practice.basic": "תרגול בסיסי ללא הגבלה",
+  "vocabulary.read": "צפייה במילים ובנתונים שכבר נשמרו",
+  "vocabulary.write": "שמירת מילים חדשות ועריכת הספרייה",
+  "practice.play": "כל המשחקים והתרגולים",
   dashboard: "מעקב אחר ההתקדמות",
   "reading.ai": "תרגול קריאה אישי עם AI",
   "speech.audio": "תרגול האזנה מתקדם",
@@ -37,7 +38,7 @@ const freeFallback: DisplayPlan = {
   name: "GotIt Free",
   kind: "free",
   billingInterval: null,
-  entitlements: ["vocabulary", "practice.basic", "dashboard"],
+  entitlements: ["vocabulary.read", "dashboard"],
 };
 
 const proMonthlyFallback: DisplayPlan = {
@@ -46,8 +47,9 @@ const proMonthlyFallback: DisplayPlan = {
   kind: "paid",
   billingInterval: "month",
   entitlements: [
-    "vocabulary",
-    "practice.basic",
+    "vocabulary.read",
+    "vocabulary.write",
+    "practice.play",
     "dashboard",
     "reading.ai",
     "speech.audio",
@@ -201,8 +203,8 @@ export function BillingPage() {
           <p className="eyebrow">המנוי שלך</p>
           <h1>בחרו את הדרך שמתאימה לכם ללמוד</h1>
           <p>
-            התחילו בחינם או פתחו את כל יכולות GotIt עם Pro. התשלום מאובטח ומנוהל
-            על ידי Paddle.
+            נסו את כל יכולות GotIt בחינם ל־14 יום, ולאחר מכן המשיכו עם Pro.
+            התשלום מאובטח ומנוהל על ידי Paddle.
           </p>
         </div>
         <CreditCard size={36} />
@@ -227,7 +229,9 @@ export function BillingPage() {
             <p>
               {status.data.tier === "paid"
                 ? "כל יכולות ה־Pro פתוחות בחשבון."
-                : "יכולות הלימוד הבסיסיות זמינות ללא תשלום."}
+                : status.data.tier === "trial"
+                  ? `תקופת הניסיון פעילה. נותרו ${status.data.trial?.daysRemaining ?? 0} ימים.`
+                  : "אפשר לצפות במילים ובנתונים שכבר שמרת. המשך הלמידה זמין ב־Pro."}
             </p>
           </div>
           {status.data.subscription && (
@@ -246,7 +250,7 @@ export function BillingPage() {
         <PlanCard
           plan={freePlan}
           price="חינם"
-          description="כל מה שצריך כדי להתחיל ללמוד ולבנות הרגל יומי."
+          description="גישה לקריאה בלבד למילים, לדשבורד ולנתונים שכבר שמרת."
           current={status.data?.plan.key === freePlan.key}
         />
 
@@ -254,7 +258,7 @@ export function BillingPage() {
           <PlanCard
             plan={selectedPaidPlan}
             price={localizedPrices[selectedPaidPlan.key]}
-            description="כל יכולות הלמידה המתקדמות, הקריאה והדיבור במקום אחד."
+            description="שמירת מילים, כל המשחקים, דיבור והגייה ועד 4 כתבות AI בחודש."
             loadingPrice={pricing}
             priceError={pricingError}
             featured

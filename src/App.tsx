@@ -6,6 +6,10 @@ import { AppShell } from "./components/AppShell";
 import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
+import {
+  SubscriptionProvider,
+  useSubscription,
+} from "./context/SubscriptionContext";
 const DashboardPage = lazy(() =>
   import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
 );
@@ -59,7 +63,9 @@ const BillingPage = lazy(() =>
   import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
 );
 const BillingCheckoutPage = lazy(() =>
-  import("./pages/BillingCheckoutPage").then((m) => ({ default: m.BillingCheckoutPage })),
+  import("./pages/BillingCheckoutPage").then((m) => ({
+    default: m.BillingCheckoutPage,
+  })),
 );
 
 export default function App() {
@@ -102,69 +108,106 @@ export default function App() {
     );
   if (mode === "signed-out") return <AuthPage />;
   return (
-    <Suspense
-      fallback={
-        <div className="empty-session" role="status">
-          <LoaderCircle className="spin" size={30} />
-          <p>טוענים את המסך…</p>
-        </div>
-      }
-    >
-      <Routes>
-        <Route
-          path="/learn/session/:type"
-          element={
-            mode === "live" ? (
-              <LiveGameSessionPage key={location.pathname + location.search} />
-            ) : (
-              <GameSessionPage />
-            )
-          }
-        />
-        <Route
-          path="*"
-          element={
-            <AppShell onLogout={() => void logout()}>
-              <Routes>
-                <Route
-                  path="/dashboard"
-                  element={
-                    mode === "live" ? <LiveDashboardPage /> : <DashboardPage />
-                  }
-                />
-                <Route
-                  path="/learn"
-                  element={mode === "live" ? <LiveLearnPage /> : <LearnPage />}
-                />
-                <Route
-                  path="/vocabulary"
-                  element={
-                    mode === "live" ? (
-                      <LiveVocabularyPage />
-                    ) : (
-                      <VocabularyPage />
-                    )
-                  }
-                />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route
-                  path="/reading"
-                  element={
-                    mode === "live" ? <LiveReadingPage /> : <ReadingPage />
-                  }
-                />
-                <Route path="/transfer" element={<TransferPage />} />
-                <Route path="/billing" element={mode === "live" ? <BillingPage /> : <Navigate to="/dashboard" replace />} />
-                <Route path="/help" element={<HelpPage />} />
-                <Route
-                  path="*"
-                  element={<Navigate to="/dashboard" replace />}
-                />
-              </Routes>
-            </AppShell>
-          }
-        />
-      </Routes>
-    </Suspense>
+    <SubscriptionProvider enabled={mode === "live"}>
+      <Suspense
+        fallback={
+          <div className="empty-session" role="status">
+            <LoaderCircle className="spin" size={30} />
+            <p>טוענים את המסך…</p>
+          </div>
+        }
+      >
+        <Routes>
+          <Route
+            path="/learn/session/:type"
+            element={
+              mode === "live" ? (
+                <LiveGameAccess>
+                  <LiveGameSessionPage
+                    key={location.pathname + location.search}
+                  />
+                </LiveGameAccess>
+              ) : (
+                <GameSessionPage />
+              )
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <AppShell onLogout={() => void logout()}>
+                <Routes>
+                  <Route
+                    path="/dashboard"
+                    element={
+                      mode === "live" ? (
+                        <LiveDashboardPage />
+                      ) : (
+                        <DashboardPage />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/learn"
+                    element={
+                      mode === "live" ? <LiveLearnPage /> : <LearnPage />
+                    }
+                  />
+                  <Route
+                    path="/vocabulary"
+                    element={
+                      mode === "live" ? (
+                        <LiveVocabularyPage />
+                      ) : (
+                        <VocabularyPage />
+                      )
+                    }
+                  />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route
+                    path="/reading"
+                    element={
+                      mode === "live" ? <LiveReadingPage /> : <ReadingPage />
+                    }
+                  />
+                  <Route path="/transfer" element={<TransferPage />} />
+                  <Route
+                    path="/billing"
+                    element={
+                      mode === "live" ? (
+                        <BillingPage />
+                      ) : (
+                        <Navigate to="/dashboard" replace />
+                      )
+                    }
+                  />
+                  <Route path="/help" element={<HelpPage />} />
+                  <Route
+                    path="*"
+                    element={<Navigate to="/dashboard" replace />}
+                  />
+                </Routes>
+              </AppShell>
+            }
+          />
+        </Routes>
+      </Suspense>
+    </SubscriptionProvider>
+  );
+}
+
+function LiveGameAccess({ children }: { children: React.ReactNode }) {
+  const { status, loading, hasEntitlement } = useSubscription();
+  if (loading)
+    return (
+      <div className="empty-session" role="status">
+        <LoaderCircle className="spin" size={30} />
+        <p>בודקים את הרשאות הלמידה…</p>
+      </div>
+    );
+  return !status || hasEntitlement("practice.play") ? (
+    children
+  ) : (
+    <Navigate to="/learn" replace />
   );
 }

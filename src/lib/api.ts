@@ -27,6 +27,8 @@ export class ApiError extends Error {
 
 const messages: Record<string, string> = {
   SUBSCRIPTION_REQUIRED: "היכולת הזו זמינה במנוי Pro. אפשר לשדרג מעמוד המנוי.",
+  AI_MONTHLY_LIMIT_REACHED:
+    "נוצלו 4 כתבות ה־AI החודשיות. המכסה תתחדש בתחילת החודש הבא.",
   BILLING_NOT_CONFIGURED: "שירות התשלומים עדיין אינו מוגדר.",
   INVALID_CREDENTIALS: "כתובת האימייל או הסיסמה אינן נכונות.",
   USER_ALREADY_EXISTS: "כבר קיים חשבון עם כתובת האימייל הזו.",
@@ -290,10 +292,13 @@ export const api = {
     if (response.status === 401) response = await send(await this.refresh());
     if (response.status === 402) {
       const payload = (await response.json().catch(() => undefined)) as
-        | { error?: { code?: string } }
-        | undefined;
+        { error?: { code?: string } } | undefined;
       if (payload?.error?.code === "SUBSCRIPTION_REQUIRED")
-        throw new ApiError(402, "SUBSCRIPTION_REQUIRED", messages.SUBSCRIPTION_REQUIRED!);
+        throw new ApiError(
+          402,
+          "SUBSCRIPTION_REQUIRED",
+          messages.SUBSCRIPTION_REQUIRED!,
+        );
     }
     if (!response.ok)
       throw new ApiError(

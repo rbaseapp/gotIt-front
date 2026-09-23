@@ -15,12 +15,14 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { isDue, levelFromXp } from "../lib/utils";
 import { AddWordModal } from "./AddWordModal";
 import { Logo } from "./Logo";
 import { LiveCaptureModal } from "./LiveCaptureModal";
+import { SubscriptionBanner } from "./SubscriptionBanner";
+import { useSubscription } from "../context/SubscriptionContext";
 
 const navItems = [
   { to: "/dashboard", label: "היום שלי", icon: BarChart3 },
@@ -39,9 +41,11 @@ export function AppShell({
   children: ReactNode;
   onLogout: () => void;
 }) {
-  const { profile, stats, items, mode, profileError, retryProfile } =
-    useApp();
+  const { profile, stats, items, mode, profileError, retryProfile } = useApp();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { hasEntitlement, status } = useSubscription();
+  const canWriteVocabulary = hasEntitlement("vocabulary.write");
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -64,28 +68,34 @@ export function AppShell({
         </div>
         <button
           className="button primary add-word-button"
-          onClick={() => setAddOpen(true)}
+          onClick={() =>
+            canWriteVocabulary ? setAddOpen(true) : navigate("/billing")
+          }
         >
           <Plus size={19} />
-          מילה חדשה
+          {mode === "live" && !canWriteVocabulary ? "שדרוג ל־PRO" : "מילה חדשה"}
         </button>
         <nav className="sidebar-nav" aria-label="ניווט ראשי">
-          {navItems.filter((item) => item.to !== "/billing" || mode === "live").map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                isActive ? "nav-link active" : "nav-link"
-              }
-            >
-              <Icon size={20} />
-              <span>{label}</span>
-              {to === "/learn" && mode === "demo" && (
-                <span className="nav-count">{items.filter(isDue).length}</span>
-              )}
-            </NavLink>
-          ))}
+          {navItems
+            .filter((item) => item.to !== "/billing" || mode === "live")
+            .map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+              >
+                <Icon size={20} />
+                <span>{label}</span>
+                {to === "/learn" && mode === "demo" && (
+                  <span className="nav-count">
+                    {items.filter(isDue).length}
+                  </span>
+                )}
+              </NavLink>
+            ))}
         </nav>
         <div className="sidebar-tip">
           <span className="tip-icon">
@@ -159,7 +169,11 @@ export function AppShell({
                   <small>
                     {mode === "demo"
                       ? "דמו · רמה " + levelFromXp(stats.xp)
-                      : "חשבון Core מחובר"}
+                      : status?.tier === "paid"
+                        ? "משתמש PRO"
+                        : status?.tier === "trial"
+                          ? "תקופת ניסיון"
+                          : "חשבון חינמי"}
                   </small>
                 </span>
                 <ChevronDown size={16} />
@@ -176,6 +190,7 @@ export function AppShell({
           </div>
         </header>
         <div className="page-content">
+          {mode === "live" && <SubscriptionBanner />}
           <div
             className={
               mode === "demo" ? "mode-banner demo" : "mode-banner live"
@@ -183,7 +198,9 @@ export function AppShell({
           >
             {mode === "demo"
               ? "סביבת הדגמה · מילים וציונים לדוגמה, היסטוריית תרגול מקומית בלבד"
-              : "חשבון אמיתי · מילים והתקדמות נשמרות בשרת GotIt"}
+              : status?.tier === "free"
+                ? "מצב צפייה בלבד · המילים והנתונים שכבר שמרת נשארים זמינים"
+                : "חשבון אמיתי · מילים והתקדמות נשמרות בשרת GotIt"}
           </div>
           {profileError && (
             <div className="form-error" role="alert">
@@ -200,7 +217,10 @@ export function AppShell({
         </div>
       </main>
       {mode === "live" ? (
-        <LiveCaptureModal open={addOpen} onClose={() => setAddOpen(false)} />
+        <LiveCaptureModal
+          open={addOpen && canWriteVocabulary}
+          onClose={() => setAddOpen(false)}
+        />
       ) : (
         <AddWordModal open={addOpen} onClose={() => setAddOpen(false)} />
       )}

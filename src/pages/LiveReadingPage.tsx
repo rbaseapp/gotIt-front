@@ -20,8 +20,11 @@ import {
 import { useResource } from "../lib/useResource";
 import { textSegments } from "../lib/reading";
 import { useFeedback } from "../components/Feedback";
+import { useSubscription } from "../context/SubscriptionContext";
 export function LiveReadingPage() {
   const { profile } = useApp();
+  const { hasEntitlement } = useSubscription();
+  const canGenerate = hasEntitlement("reading.ai");
   const { confirm, toast } = useFeedback();
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [language, setLanguage] = useState(
@@ -40,7 +43,30 @@ export function LiveReadingPage() {
   const history = useResource(
     useCallback(() => product(page(readingSummary), historyUrl), [historyUrl]),
   );
+  const quota = useResource(
+    useCallback(
+      () =>
+        product(
+          z.object({
+            quota: z
+              .object({
+                limit: z.number().int(),
+                used: z.number().int(),
+                remaining: z.number().int(),
+                resetsAt: z.string().datetime(),
+              })
+              .nullable(),
+          }),
+          "reading/quota",
+        ),
+      [],
+    ),
+  );
   const generate = async () => {
+    if (!canGenerate) {
+      setError("יצירת כתבות AI זמינה בתקופת הניסיון ובמנוי PRO.");
+      return;
+    }
     setBusy(true);
     setError("");
     setReading(undefined);
@@ -55,6 +81,7 @@ export function LiveReadingPage() {
         lengthPreset: length,
       });
       setPreview(result);
+      await quota.reload();
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
@@ -139,7 +166,12 @@ export function LiveReadingPage() {
         <section className="live-panel form-stack">
           <h2>מה נרצה לקרוא?</h2>
           <fieldset
-            disabled={busy || !!pending}
+            disabled={
+              busy ||
+              !!pending ||
+              !canGenerate ||
+              quota.data?.quota?.remaining === 0
+            }
             className="plain-fieldset form-stack"
           >
             <label className="field">
@@ -213,6 +245,13 @@ export function LiveReadingPage() {
               {busy ? "מכין…" : "יצירת תצוגה מקדימה"}
             </button>
           </fieldset>
+          <p className="muted-note">
+            {canGenerate && quota.data?.quota
+              ? `נותרו ${quota.data.quota.remaining} מתוך ${quota.data.quota.limit} כתבות AI החודש.`
+              : !canGenerate
+                ? "יצירת כתבות חדשות זמינה בתקופת ניסיון או במנוי PRO. ההיסטוריה שלך נשארת זמינה לצפייה."
+                : "מכסת ה־AI החודשית נטענת…"}
+          </p>
           <p className="muted-note">
             אם לא הוגדר ספק קריאה בשרת, יצירת תוכן לא תהיה זמינה. לא מוצגים
             טקסטים מדומים לחשבון אמיתי.
