@@ -86,11 +86,16 @@ export const itemSchema = z.object({
 });
 export type Item = z.infer<typeof itemSchema>;
 export function needsStrengthening(
-  item: Pick<Item, "overallMasteryScore" | "masteryRequirements">,
+  item: Pick<
+    Item,
+    "overallMasteryScore" | "masteryRequirements" | "learningStatus"
+  >,
 ) {
   return (
+    item.learningStatus !== "mastered" &&
+    (item.masteryRequirements?.totalScoredAttempts ?? 0) > 0 &&
     item.overallMasteryScore <
-    (item.masteryRequirements?.masteryThreshold ?? 80)
+      (item.masteryRequirements?.masteryThreshold ?? 80)
   );
 }
 export const skillSchema = z.object({
@@ -167,7 +172,13 @@ export const queueSchema = z.object({
   algorithmVersion: z.string(),
 });
 export const page = <T extends z.ZodType>(item: T) =>
-  z.object({ items: z.array(item), nextCursor: z.string().nullable() });
+  z.object({
+    items: z.array(item),
+    nextCursor: z.string().nullable(),
+    totalCount: count.optional(),
+    page: count.min(1).optional(),
+    pageCount: count.min(1).optional(),
+  });
 export const occurrenceSchema = z.object({
   id: uuid,
   sourceType: z.string(),
@@ -445,8 +456,16 @@ export const dashboardSchema = z.object({
       result: z.string(),
       score: score.nullable(),
       createdAt: date,
+      sourceText: z.string(),
+      primaryTranslation: z.string().nullable(),
     }),
   ),
+  recentActivityPagination: z.object({
+    page: count.min(1),
+    pageCount: count.min(1),
+    totalCount: count,
+    pageSize: count.min(1),
+  }),
   dailyGoal: z.object({
     type: z.enum(["items", "minutes", "attempts"]),
     value: count,

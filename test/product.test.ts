@@ -61,12 +61,14 @@ describe("production boundaries", () => {
     expect(
       needsStrengthening({
         overallMasteryScore: 100,
+        learningStatus: "mastered",
         masteryRequirements: undefined,
       }),
     ).toBe(false);
     expect(
       needsStrengthening({
         overallMasteryScore: 79,
+        learningStatus: "learning",
         masteryRequirements: {
           totalScoredAttempts: 1,
           minimumScoredAttempts: 3,
@@ -82,6 +84,25 @@ describe("production boundaries", () => {
         },
       }),
     ).toBe(true);
+    expect(
+      needsStrengthening({
+        overallMasteryScore: 0,
+        learningStatus: "new",
+        masteryRequirements: {
+          totalScoredAttempts: 0,
+          minimumScoredAttempts: 3,
+          activeRecallSuccesses: 0,
+          minimumActiveRecallSuccesses: 2,
+          activeRecallCalendarDays: 0,
+          minimumActiveRecallCalendarDays: 2,
+          activeRecallMasteryScore: 0,
+          masteryThreshold: 80,
+          reviewStage: 0,
+          learnedReviewStage: 2,
+          needsTypedRecall: true,
+        },
+      }),
+    ).toBe(false);
   });
   it("snapshots retry intent rather than retaining a mutable caller object", () => {
     const body = { answerText: "first" };

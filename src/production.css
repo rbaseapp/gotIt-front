@@ -67,6 +67,56 @@
 .live-toolbar {
   margin: 12px 0;
 }
+.live-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.live-pagination.compact {
+  justify-content: flex-end;
+}
+.live-pagination-summary {
+  margin-inline-end: auto;
+  color: #52685b;
+  font-size: 14px;
+}
+.pagination-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pagination-page {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.pagination-page:hover,
+.pagination-page.active {
+  border-color: #297a54;
+  background: #e9f4ed;
+  color: #18583b;
+}
+.pagination-arrow {
+  min-width: 42px;
+  padding-inline: 11px;
+}
+html[dir="ltr"] .pagination-arrow svg {
+  transform: rotate(180deg);
+}
+.pagination-ellipsis {
+  color: #718077;
+}
 .live-checkbox {
   display: inline-flex;
   gap: 9px;
@@ -232,6 +282,136 @@ progress::-webkit-progress-value {
 }
 .live-weak-word small {
   color: #556b5e;
+}
+.recent-practice-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.recent-practice-heading h2 {
+  margin-bottom: 4px;
+}
+.recent-practice-heading p {
+  margin: 0;
+  color: #52685b;
+}
+.recent-practice-list,
+.session-history-list {
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.recent-practice-row,
+.session-history-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) minmax(170px, 1fr) minmax(
+      170px,
+      auto
+    );
+  align-items: center;
+  gap: 20px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+.recent-practice-row:last-child,
+.session-history-row:last-child {
+  border-bottom: 0;
+}
+.recent-practice-word,
+.session-history-row > div:first-child,
+.session-history-meta,
+.recent-practice-score {
+  display: grid;
+  gap: 4px;
+}
+.recent-practice-word {
+  color: var(--ink);
+  text-decoration: none;
+}
+.recent-practice-word b {
+  font-size: 17px;
+}
+.recent-practice-word span,
+.session-history-row > div:first-child span,
+.recent-practice-score time,
+.session-history-meta time {
+  color: #52685b;
+  font-size: 13px;
+}
+.recent-practice-type {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.practice-result {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #eef2ef;
+  color: #40564a;
+  font-size: 13px;
+  font-weight: 700;
+}
+.practice-result.correct,
+.practice-result.completed,
+.practice-result.self_rated {
+  background: #e4f4e9;
+  color: #17613c;
+}
+.practice-result.incorrect,
+.practice-result.abandoned {
+  background: #fce9e7;
+  color: #943c33;
+}
+.practice-result.partially_correct,
+.practice-result.active {
+  background: #fff2d7;
+  color: #80570f;
+}
+.recent-practice-score {
+  justify-items: end;
+  text-align: end;
+}
+.session-history-row {
+  grid-template-columns: minmax(170px, 1fr) auto minmax(190px, auto) auto;
+}
+.session-history-meta {
+  text-align: end;
+}
+.learning-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.learning-path span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #ffffffb8;
+  font-size: 13px;
+  font-weight: 700;
+}
+.learning-path span b {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #277b55;
+  color: #fff;
+  font-size: 12px;
+}
+.learning-path-help {
+  display: block;
+  margin-top: 8px;
 }
 .live-activity {
   display: grid;
@@ -519,6 +699,27 @@ progress::-webkit-progress-value {
   }
   .live-word-row .pill {
     font-size: 12px;
+  }
+  .recent-practice-heading {
+    display: grid;
+  }
+  .recent-practice-row,
+  .session-history-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .recent-practice-score,
+  .session-history-meta {
+    justify-items: start;
+    text-align: start;
+  }
+  .live-pagination.compact {
+    justify-content: center;
+  }
+  .live-pagination-summary {
+    width: 100%;
+    margin: 0 0 6px;
+    text-align: center;
   }
   .live-word-progress {
     width: 100%;

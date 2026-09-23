@@ -7,7 +7,7 @@ import {
 } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
-import { Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
 import { Modal } from "../components/Modal";
@@ -46,6 +46,17 @@ const actions = [
   "clear_hard",
 ] as const;
 const bulkReceipt = z.object({ ids: z.array(uuid), action: z.string() });
+const PAGE_SIZE = 30;
+
+function visiblePages(current: number, total: number) {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
+  return Array.from(
+    new Set([1, 2, current - 1, current, current + 1, total - 1, total]),
+  )
+    .filter((value) => value >= 1 && value <= total)
+    .sort((left, right) => left - right);
+}
+
 export function LiveVocabularyPage() {
   const { t } = useTranslation();
   const { confirm, toast } = useFeedback();
@@ -56,9 +67,9 @@ export function LiveVocabularyPage() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({
     userStatus: "all",
-    sort: "recent",
+    sort: "alphabetical",
   });
-  const [cursor, setCursor] = useState<string>();
+  const [pageNumber, setPageNumber] = useState(1);
   const [tagCursor, setTagCursor] = useState<string>();
   const [tagHistory, setTagHistory] = useState<Array<string | undefined>>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -69,8 +80,8 @@ export function LiveVocabularyPage() {
   const [error, setError] = useState("");
   const url = `learning-items${query({
     ...filters,
-    limit: filters.packIds ? "100" : "30",
-    cursor,
+    limit: filters.packIds ? "100" : String(PAGE_SIZE),
+    page: String(pageNumber),
   })}`;
   const resource = useResource(
     useCallback(() => product(page(itemSchema), url), [url]),
@@ -94,8 +105,12 @@ export function LiveVocabularyPage() {
   const installedPacks = packs.data?.packs.filter((pack) => pack.installed);
   const reloadLibrary = resource.reload;
   useEffect(() => {
+    if (resource.data?.pageCount && pageNumber > resource.data.pageCount)
+      setPageNumber(resource.data.pageCount);
+  }, [pageNumber, resource.data?.pageCount]);
+  useEffect(() => {
     const changed = () => {
-      setCursor(undefined);
+      setPageNumber(1);
       void reloadLibrary();
     };
     window.addEventListener("gotit:library-changed", changed);
@@ -103,7 +118,7 @@ export function LiveVocabularyPage() {
   }, [reloadLibrary]);
   const change = (key: string, value: string) => {
     setFilters((current) => ({ ...current, [key]: value }));
-    setCursor(undefined);
+    setPageNumber(1);
     setSelected([]);
   };
   const togglePack = (id: string, checked: boolean) => {
@@ -266,8 +281,9 @@ export function LiveVocabularyPage() {
               onChange={(e) => change("sort", e.target.value)}
             >
               {[
-                "recent",
                 "alphabetical",
+                "learning_status",
+                "recent",
                 "weakest",
                 "strongest",
                 "due_next",
@@ -527,30 +543,62 @@ export function LiveVocabularyPage() {
               )}
             </div>
           )}
-          <div className="live-toolbar">
-            {cursor && (
-              <button
-                className="button ghost"
-                onClick={() => {
-                  setCursor(undefined);
-                  setSelected([]);
-                }}
-              >
-                {t("vocabulary.firstPage")}
-              </button>
+          <nav
+            className="live-pagination"
+            aria-label={t("vocabulary.paginationAria")}
+          >
+            <span className="live-pagination-summary">
+              {t("vocabulary.pageSummary", {
+                page: resource.data.page ?? pageNumber,
+                pages: resource.data.pageCount ?? 1,
+                count: resource.data.totalCount ?? resource.data.items.length,
+              })}
+            </span>
+            <button
+              className="button ghost pagination-arrow"
+              disabled={pageNumber <= 1}
+              aria-label={t("vocabulary.previousPage")}
+              onClick={() => {
+                setPageNumber((current) => Math.max(1, current - 1));
+                setSelected([]);
+              }}
+            >
+              <ChevronRight size={18} />
+            </button>
+            {visiblePages(pageNumber, resource.data.pageCount ?? 1).map(
+              (page, index, values) => (
+                <span className="pagination-slot" key={page}>
+                  {index > 0 && page - values[index - 1]! > 1 && (
+                    <span aria-hidden="true" className="pagination-ellipsis">
+                      …
+                    </span>
+                  )}
+                  <button
+                    className={`pagination-page${page === pageNumber ? " active" : ""}`}
+                    aria-current={page === pageNumber ? "page" : undefined}
+                    aria-label={t("vocabulary.goToPage", { page })}
+                    onClick={() => {
+                      setPageNumber(page);
+                      setSelected([]);
+                    }}
+                  >
+                    {page}
+                  </button>
+                </span>
+              ),
             )}
-            {resource.data.nextCursor && (
-              <button
-                className="button secondary"
-                onClick={() => {
-                  setCursor(resource.data!.nextCursor!);
-                  setSelected([]);
-                }}
-              >
-                {t("vocabulary.nextPage")}
-              </button>
-            )}
-          </div>
+            <button
+              className="button secondary pagination-arrow"
+              disabled={pageNumber >= (resource.data.pageCount ?? 1)}
+              aria-label={t("vocabulary.nextPage")}
+              onClick={() => {
+                setPageNumber((current) => current + 1);
+                setSelected([]);
+              }}
+            >
+              <ChevronLeft size={18} />
+            </button>
+          </nav>
         </>
       )}
       <LiveCaptureModal

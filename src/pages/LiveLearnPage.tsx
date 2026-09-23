@@ -2,6 +2,8 @@ import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Brain,
+  ChevronLeft,
+  ChevronRight,
   Headphones,
   Layers3,
   Mic2,
@@ -52,8 +54,8 @@ const gameOrder = [
   "matching",
   "flashcards",
   "pronunciation",
-  "listening",
   "recall",
+  "listening",
 ] as const;
 export function LiveLearnPage() {
   const { t, i18n } = useTranslation();
@@ -65,6 +67,9 @@ export function LiveLearnPage() {
     useCallback(() => product(capabilitiesSchema, "capabilities"), []),
   );
   const [cursor, setCursor] = useState<string>();
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>(
+    [],
+  );
   const sessionsUrl = `practice/sessions${query({ limit: "10", cursor })}`;
   const sessions = useResource(
     useCallback(() => product(page(sessionSchema), sessionsUrl), [sessionsUrl]),
@@ -113,9 +118,23 @@ export function LiveLearnPage() {
           />
           {queue.data && (
             <p>
-              {t("learn.queueSummary", { count: queue.data.items.length, algorithm: queue.data.algorithmVersion })}
+              {t("learn.queueSummary", {
+                count: queue.data.items.length,
+                algorithm: queue.data.algorithmVersion,
+              })}
             </p>
           )}
+          <div className="learning-path" aria-label={t("learn.learningPath")}>
+            {gameOrder.map((step, index) => (
+              <span key={step}>
+                <b>{index + 1}</b>
+                {t(`learn.games.${step}.name`)}
+              </span>
+            ))}
+          </div>
+          <small className="learning-path-help">
+            {t("learn.learningPathHelp")}
+          </small>
         </div>
         <Link className="button smart-start" to="/learn/session/smart">
           {t("learn.startSession")}
@@ -185,39 +204,78 @@ export function LiveLearnPage() {
           error={sessions.error}
           retry={() => void sessions.reload()}
         />
-        {sessions.data?.items.map((s) => (
-          <div className="live-toolbar" key={s.id}>
-            <b>
-              {t(`labels.${s.sessionType}`, { defaultValue: s.sessionType })}
-              {s.scope ? ` · ${s.scope.title}` : ""}
-            </b>
-            <span>
-              {s.status === "active"
-                ? t("learn.statusActive")
-                : s.status === "completed"
-                  ? t("learn.statusCompleted")
-                  : t("learn.statusStopped")}
-            </span>
-            <small>
-              {new Date(s.startedAt).toLocaleString(i18n.resolvedLanguage)} · {t("learn.attemptsXp", { count: s.attemptCount, xp: s.xpEarned })}
-            </small>
-            {s.status === "active" && (
-              <Link
-                className="button ghost"
-                to={`/learn/session/${s.sessionType === "smart_review" ? "smart" : s.sessionType === "listening_spelling" ? "listening" : s.sessionType}?resume=${s.id}`}
-              >
-                {t("learn.continue")}
-              </Link>
-            )}
-          </div>
-        ))}
-        {sessions.data?.nextCursor && (
-          <button
-            className="button secondary"
-            onClick={() => setCursor(sessions.data!.nextCursor!)}
+        <div className="session-history-list">
+          {sessions.data?.items.map((s) => (
+            <article className="session-history-row" key={s.id}>
+              <div>
+                <b>
+                  {t(`labels.${s.sessionType}`, {
+                    defaultValue: s.sessionType,
+                  })}
+                </b>
+                {s.scope && <span>{s.scope.title}</span>}
+              </div>
+              <span className={`practice-result ${s.status}`}>
+                {s.status === "active"
+                  ? t("learn.statusActive")
+                  : s.status === "completed"
+                    ? t("learn.statusCompleted")
+                    : t("learn.statusStopped")}
+              </span>
+              <div className="session-history-meta">
+                <time dateTime={s.startedAt}>
+                  {new Date(s.startedAt).toLocaleString(i18n.resolvedLanguage)}
+                </time>
+                <small>
+                  {t("learn.attemptsXp", {
+                    count: s.attemptCount,
+                    xp: s.xpEarned,
+                  })}
+                </small>
+              </div>
+              {s.status === "active" && (
+                <Link
+                  className="button ghost"
+                  to={`/learn/session/${s.sessionType === "smart_review" ? "smart" : s.sessionType === "listening_spelling" ? "listening" : s.sessionType}?resume=${s.id}`}
+                >
+                  {t("learn.continue")}
+                </Link>
+              )}
+            </article>
+          ))}
+        </div>
+        {(cursorHistory.length > 0 || sessions.data?.nextCursor) && (
+          <nav
+            className="live-pagination compact"
+            aria-label={t("learn.sessionPaginationAria")}
           >
-            {t("learn.moreSessions")}
-          </button>
+            <button
+              className="button ghost pagination-arrow"
+              disabled={!cursorHistory.length}
+              aria-label={t("learn.previousSessions")}
+              onClick={() => {
+                const previous = cursorHistory.at(-1);
+                setCursorHistory((history) => history.slice(0, -1));
+                setCursor(previous);
+              }}
+            >
+              <ChevronRight size={18} />
+            </button>
+            <span>
+              {t("learn.sessionPage", { page: cursorHistory.length + 1 })}
+            </span>
+            <button
+              className="button secondary pagination-arrow"
+              disabled={!sessions.data?.nextCursor}
+              aria-label={t("learn.moreSessions")}
+              onClick={() => {
+                setCursorHistory((history) => [...history, cursor]);
+                setCursor(sessions.data!.nextCursor!);
+              }}
+            >
+              <ChevronLeft size={18} />
+            </button>
+          </nav>
         )}
       </section>
     </div>

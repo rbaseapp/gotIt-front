@@ -1,7 +1,9 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Brain,
+  ChevronLeft,
+  ChevronRight,
   Flame,
   LibraryBig,
   Play,
@@ -24,15 +26,23 @@ import { useTranslation } from "react-i18next";
 export function LiveDashboardPage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
+  const [recentPage, setRecentPage] = useState(1);
   const resource = useResource(
-    useCallback(() => product(dashboardSchema, "dashboard"), []),
+    useCallback(
+      () =>
+        product(
+          dashboardSchema,
+          `dashboard?recentPage=${recentPage}&recentLimit=6`,
+        ),
+      [recentPage],
+    ),
   );
   const weakest = useResource(
     useCallback(
       () =>
         product(
           page(itemSchema),
-          "learning-items?userStatus=active&sort=weakest&limit=3",
+          "learning-items?userStatus=active&practiced=true&sort=weakest&limit=3",
         ),
       [],
     ),
@@ -49,7 +59,8 @@ export function LiveDashboardPage() {
         <div>
           <p className="eyebrow">{t("dashboard.eyebrow")}</p>
           <h1>
-            {t("dashboard.greeting", { name: profile.name })} <span aria-hidden="true">☀</span>
+            {t("dashboard.greeting", { name: profile.name })}{" "}
+            <span aria-hidden="true">☀</span>
           </h1>
           <p>{t("dashboard.tagline")}</p>
         </div>
@@ -73,12 +84,22 @@ export function LiveDashboardPage() {
               </span>
               <b>{d.gamification.totalXp.toLocaleString()}</b>
               <small>
-                {t("dashboard.level", { level: d.gamification.level, next: d.gamification.nextLevelXp })}
+                {t("dashboard.level", {
+                  level: d.gamification.level,
+                  next: d.gamification.nextLevelXp,
+                })}
               </small>
               <small>
                 {d.gamification.dailyXpCapReached
-                  ? t("dashboard.capReached", { cap: d.gamification.dailyXpCap, percent: d.gamification.postDailyCapPercent, timezone: d.weeklyActivity.timezone })
-                  : t("dashboard.todayXp", { current: d.gamification.todayXp, cap: d.gamification.dailyXpCap })}
+                  ? t("dashboard.capReached", {
+                      cap: d.gamification.dailyXpCap,
+                      percent: d.gamification.postDailyCapPercent,
+                      timezone: d.weeklyActivity.timezone,
+                    })
+                  : t("dashboard.todayXp", {
+                      current: d.gamification.todayXp,
+                      cap: d.gamification.dailyXpCap,
+                    })}
               </small>
             </div>
             <div>
@@ -87,7 +108,11 @@ export function LiveDashboardPage() {
                 {t("dashboard.streak")}
               </span>
               <b>{d.gamification.currentStreakDays}</b>
-              <small>{t("dashboard.streakRecord", { count: d.gamification.longestStreakDays })}</small>
+              <small>
+                {t("dashboard.streakRecord", {
+                  count: d.gamification.longestStreakDays,
+                })}
+              </small>
             </div>
             <div>
               <span>
@@ -134,7 +159,9 @@ export function LiveDashboardPage() {
               className="button smart-start"
               to={d.counts.total ? "/learn/session/smart" : "/vocabulary"}
             >
-              {d.counts.total ? t("dashboard.smartPractice") : t("dashboard.toVocabulary")}
+              {d.counts.total
+                ? t("dashboard.smartPractice")
+                : t("dashboard.toVocabulary")}
             </Link>
           </section>
           <section className="live-panel dashboard-packs-panel">
@@ -172,10 +199,15 @@ export function LiveDashboardPage() {
                       <progress
                         max={100}
                         value={percent}
-                        aria-label={t("dashboard.packProgress", { title: pack.title })}
+                        aria-label={t("dashboard.packProgress", {
+                          title: pack.title,
+                        })}
                       />
                       <p>
-                        {t("dashboard.packCompleted", { mastered: pack.progress.mastered, linked: pack.progress.linked })}
+                        {t("dashboard.packCompleted", {
+                          mastered: pack.progress.mastered,
+                          linked: pack.progress.linked,
+                        })}
                       </p>
                       <Link
                         className="button secondary"
@@ -201,7 +233,13 @@ export function LiveDashboardPage() {
             <section className="live-panel">
               <h2>{t("dashboard.dailyGoal")}</h2>
               <p>
-                {t("dashboard.goalProgress", { current: d.dailyGoal.current, value: d.dailyGoal.value, unit: t(`settings.${d.dailyGoal.type === "items" ? "uniqueWords" : d.dailyGoal.type}`) })}
+                {t("dashboard.goalProgress", {
+                  current: d.dailyGoal.current,
+                  value: d.dailyGoal.value,
+                  unit: t(
+                    `settings.${d.dailyGoal.type === "items" ? "uniqueWords" : d.dailyGoal.type}`,
+                  ),
+                })}
               </p>
               <progress
                 max={d.dailyGoal.value || 1}
@@ -213,7 +251,9 @@ export function LiveDashboardPage() {
                   ? t("dashboard.goalCompleted")
                   : t("dashboard.goalEncouragement")}
               </p>
-              <small>{t("dashboard.goalDate", { date: d.dailyGoal.date })}</small>
+              <small>
+                {t("dashboard.goalDate", { date: d.dailyGoal.date })}
+              </small>
             </section>
             <section className="live-panel">
               <h2>{t("dashboard.librarySnapshot")}</h2>
@@ -230,12 +270,11 @@ export function LiveDashboardPage() {
                   {t("dashboard.highPriority")} <b>{d.counts.highPriority}</b>
                 </span>
                 <span>
-                  {t("dashboard.awaitingRecall")} <b>{d.counts.awaitingRecall}</b>
+                  {t("dashboard.awaitingRecall")}{" "}
+                  <b>{d.counts.awaitingRecall}</b>
                 </span>
               </div>
-              <small>
-                {t("dashboard.libraryCountHelp")}
-              </small>
+              <small>{t("dashboard.libraryCountHelp")}</small>
             </section>
           </div>
           <section className="live-panel">
@@ -257,7 +296,9 @@ export function LiveDashboardPage() {
                         <progress value={value.masteryScore} max={100} />
                         <span>
                           {Math.round(value.masteryScore)}% ·{" "}
-                          {t("dashboard.skillAttempts", { count: value.evidenceAttempts })}
+                          {t("dashboard.skillAttempts", {
+                            count: value.evidenceAttempts,
+                          })}
                         </span>
                       </>
                     ) : (
@@ -272,15 +313,18 @@ export function LiveDashboardPage() {
             <section className="live-panel">
               <h2>{t("dashboard.yourWeek")}</h2>
               <p>
-                {t("dashboard.weekSummary", { minutes: Math.floor(
-                  d.weeklyActivity.days.reduce(
-                    (sum, day) => sum + day.practiceSeconds,
+                {t("dashboard.weekSummary", {
+                  minutes: Math.floor(
+                    d.weeklyActivity.days.reduce(
+                      (sum, day) => sum + day.practiceSeconds,
+                      0,
+                    ) / 60,
+                  ),
+                  mastered: d.weeklyActivity.days.reduce(
+                    (sum, day) => sum + day.itemsMastered,
                     0,
-                  ) / 60,
-                ), mastered: d.weeklyActivity.days.reduce(
-                  (sum, day) => sum + day.itemsMastered,
-                  0,
-                ) })}
+                  ),
+                })}
               </p>
               <div className="live-activity">
                 {d.weeklyActivity.days.length ? (
@@ -295,7 +339,10 @@ export function LiveDashboardPage() {
                         value={day.attempts}
                       />
                       <small>
-                        {t("dashboard.dayActivity", { count: day.attempts, xp: day.xpEarned })}
+                        {t("dashboard.dayActivity", {
+                          count: day.attempts,
+                          xp: day.xpEarned,
+                        })}
                       </small>
                     </div>
                   ))
@@ -328,25 +375,104 @@ export function LiveDashboardPage() {
               )}
             </section>
           </div>
-          <section className="live-panel">
-            <h2>{t("dashboard.recentPractice")}</h2>
+          <section className="live-panel recent-practice-panel">
+            <div className="recent-practice-heading">
+              <div>
+                <h2>{t("dashboard.recentPractice")}</h2>
+                <p>{t("dashboard.recentPracticeHelp")}</p>
+              </div>
+              <span className="pill">
+                {t("dashboard.practiceCount", {
+                  count: d.recentActivityPagination.totalCount,
+                })}
+              </span>
+            </div>
             <div className="live-count-list">
               {d.modes.map((m) => (
                 <span key={m.exerciseType}>
-                  {t(`labels.${m.exerciseType}`, { defaultValue: m.exerciseType })}: {t("dashboard.modeSummary", { count: m.attempts, score: m.averageScore === null ? "—" : Math.round(m.averageScore) })}
+                  {t(`labels.${m.exerciseType}`, {
+                    defaultValue: m.exerciseType,
+                  })}
+                  :{" "}
+                  {t("dashboard.modeSummary", {
+                    count: m.attempts,
+                    score:
+                      m.averageScore === null
+                        ? "—"
+                        : Math.round(m.averageScore),
+                  })}
                 </span>
               ))}
             </div>
-            {d.recentActivity.map((a) => (
-              <div className="live-toolbar" key={a.id}>
-                <Link to={`/vocabulary?item=${a.learningItemId}`}>
-                  {t("dashboard.wordDetails")}
-                </Link>
-                <span>{t(`labels.${a.exerciseType}`, { defaultValue: a.exerciseType })}</span>
-                <span>{t(`labels.${a.result}`, { defaultValue: a.result })}</span>
-                <small>{new Date(a.createdAt).toLocaleString(i18n.resolvedLanguage)}</small>
-              </div>
-            ))}
+            <div className="recent-practice-list">
+              {d.recentActivity.map((a) => (
+                <article className="recent-practice-row" key={a.id}>
+                  <Link
+                    className="recent-practice-word"
+                    to={`/vocabulary?item=${a.learningItemId}`}
+                  >
+                    <b dir="auto">{a.sourceText}</b>
+                    <span dir="auto">
+                      {a.primaryTranslation || t("vocabulary.noMeaning")}
+                    </span>
+                  </Link>
+                  <div className="recent-practice-type">
+                    <span className="pill">
+                      {t(`labels.${a.exerciseType}`, {
+                        defaultValue: a.exerciseType,
+                      })}
+                    </span>
+                    <span className={`practice-result ${a.result}`}>
+                      {t(`labels.${a.result}`, { defaultValue: a.result })}
+                    </span>
+                  </div>
+                  <div className="recent-practice-score">
+                    <b>
+                      {a.score === null
+                        ? t("game.noScore")
+                        : t("dashboard.score", { score: Math.round(a.score) })}
+                    </b>
+                    <time dateTime={a.createdAt}>
+                      {new Date(a.createdAt).toLocaleString(
+                        i18n.resolvedLanguage,
+                      )}
+                    </time>
+                  </div>
+                </article>
+              ))}
+              {!d.recentActivity.length && (
+                <p className="live-empty">{t("dashboard.noRecentPractice")}</p>
+              )}
+            </div>
+            {d.recentActivityPagination.pageCount > 1 && (
+              <nav
+                className="live-pagination compact"
+                aria-label={t("dashboard.recentPaginationAria")}
+              >
+                <button
+                  className="button ghost pagination-arrow"
+                  disabled={recentPage <= 1}
+                  aria-label={t("dashboard.previousPage")}
+                  onClick={() => setRecentPage((page) => Math.max(1, page - 1))}
+                >
+                  <ChevronRight size={18} />
+                </button>
+                <span>
+                  {t("dashboard.pageSummary", {
+                    page: d.recentActivityPagination.page,
+                    pages: d.recentActivityPagination.pageCount,
+                  })}
+                </span>
+                <button
+                  className="button secondary pagination-arrow"
+                  disabled={recentPage >= d.recentActivityPagination.pageCount}
+                  aria-label={t("dashboard.nextPage")}
+                  onClick={() => setRecentPage((page) => page + 1)}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+              </nav>
+            )}
           </section>
         </>
       )}
