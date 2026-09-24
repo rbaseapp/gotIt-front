@@ -70,6 +70,15 @@ async function request(
   eventId?: string,
 ): Promise<unknown> {
   let response: Response;
+  const timeoutMs =
+    path === "pronunciation/assessments"
+      ? 60000
+      : path.includes("/study/") && path.endsWith("/image")
+        ? 120000
+        : path.startsWith("reading") || path === "import"
+          ? 75000
+          : 20000;
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
   try {
     response = await fetch(`${base}/api/v1/${path}`, {
       method,
@@ -81,16 +90,12 @@ async function request(
         ...(eventId ? { "Idempotency-Key": eventId } : {}),
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(
-        path.includes("/study/") && path.endsWith("/image")
-          ? 120000
-          : path.startsWith("reading") || path === "import"
-            ? 75000
-            : 20000,
-      ),
+      signal: timeoutSignal,
       credentials: "omit",
     });
   } catch {
+    if (timeoutSignal.aborted)
+      throw new ApiError(0, "REQUEST_TIMEOUT", i18n.t("apiErrors.timeout"));
     throw new ApiError(0, "NETWORK_ERROR", i18n.t("apiErrors.network"));
   }
   if (response.status === 204) return undefined;

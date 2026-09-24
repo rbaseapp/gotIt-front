@@ -101,6 +101,26 @@ describe("API token lifecycle and safe failures", () => {
     await expect(api.logout()).rejects.toBeInstanceOf(ApiError);
     expect(sessionStorage.getItem("gotit.refresh")).toBeNull();
   });
+  it("allows pronunciation assessment latency and reports a timeout distinctly", async () => {
+    clearTokens();
+    setTokens(tokens);
+    const aborted = AbortSignal.abort(new DOMException("Timed out", "TimeoutError"));
+    const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValue(aborted);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new DOMException("Timed out", "TimeoutError");
+      }),
+    );
+
+    await expect(
+      api.product("pronunciation/assessments", "POST", { audioBase64: "audio" }),
+    ).rejects.toMatchObject({
+      status: 0,
+      code: "REQUEST_TIMEOUT",
+    });
+    expect(timeout).toHaveBeenCalledWith(60000);
+  });
   it("never exposes raw internal server messages and rejects malformed success responses", async () => {
     clearTokens();
     setTokens(tokens);
