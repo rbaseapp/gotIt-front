@@ -2212,6 +2212,28 @@ html[dir="ltr"] .pack-search input {
   }
 }
 @media (max-width: 650px) {
+  .modal-backdrop {
+    padding: max(12px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(12px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+  }
+  .pack-word-modal {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 16px;
+  }
+  .pack-word-modal .modal-header {
+    height: 58px;
+    padding-inline: 16px;
+  }
+  .pack-word-modal .pack-word-dialog {
+    padding: 16px;
+  }
+  .pack-word-modal .pack-word-list {
+    max-height: none;
+  }
   .pack-selection-summary,
   .pack-dashboard-heading {
     align-items: stretch;
