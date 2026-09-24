@@ -686,9 +686,8 @@
     "revealAnswer": "揭晓答案",
     "ratings": {
       "again": "没想起来",
-      "hard": "勉强想起来",
-      "good": "想起来了",
-      "easy": "马上想起来了"
+      "hard": "费了些力气",
+      "good": "想起来了"
     },
     "selfRatingHelp": "你对答案记得有多清楚？",
     "recordingHelp": "按住可讲话；发布以提交评估。录制时间限制为 6 秒，且网站不存储文件。",

@@ -723,11 +723,11 @@ export function LiveGameSessionPage() {
         exercise.kind === "self_rating" &&
         flipped &&
         optionIndex >= 0 &&
-        optionIndex < 4
+        optionIndex < 3
       ) {
         event.preventDefault();
         void submitRef.current({
-          selfRating: ["again", "hard", "good", "easy"][optionIndex],
+          selfRating: ["again", "hard", "good"][optionIndex],
         });
       } else if (event.key === " " && exercise.prompt.audioUrl) {
         event.preventDefault();
@@ -1156,7 +1156,7 @@ export function LiveGameSessionPage() {
                                 {exercise.prompt.answer}
                               </p>
                               <div className="live-options">
-                                {["again", "hard", "good", "easy"].map(
+                                {["again", "hard", "good"].map(
                                   (selfRating) => (
                                     <button
                                       className="button secondary"

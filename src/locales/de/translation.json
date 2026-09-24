@@ -695,9 +695,8 @@
     "revealAnswer": "Antwort anzeigen",
     "ratings": {
       "again": "Nicht erinnert",
-      "hard": "Mit Mühe erinnert",
-      "good": "Erinnert",
-      "easy": "Sofort erinnert"
+      "hard": "Mit Mühe",
+      "good": "Erinnert"
     },
     "selfRatingHelp": "Wie gut konntest du dich an die Antwort erinnern?",
     "recordingHelp": "Gedrückt halten zum Sprechen; loslassen zum Einreichen. Die Aufnahme ist auf 6 Sekunden begrenzt und die Website speichert die Datei nicht.",

@@ -690,9 +690,8 @@
     "revealAnswer": "Reveal answer",
     "ratings": {
       "again": "Didn't remember",
-      "hard": "Barely remembered",
-      "good": "Remembered",
-      "easy": "Remembered instantly"
+      "hard": "It took effort",
+      "good": "Remembered"
     },
     "selfRatingHelp": "How well did you remember the answer?",
     "recordingHelp": "Press and hold to speak; release to submit for evaluation. Recording is limited to 6 seconds and the site does not store the file.",

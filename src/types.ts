@@ -63,7 +63,7 @@ export interface Attempt {
   expectedAnswer?: string;
   responseTimeMs?: number;
   hintsUsed?: number;
-  selfRating?: "again" | "hard" | "good" | "easy";
+  selfRating?: "again" | "hard" | "good";
   xp?: number;
 }
 

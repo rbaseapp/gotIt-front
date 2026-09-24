@@ -1892,7 +1892,7 @@ select:focus-visible {
 }
 .rating-buttons {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 9px;
 }
 .rating-buttons button {
@@ -3611,7 +3611,7 @@ select:focus-visible {
     font-size: 11px;
   }
   .rating-buttons {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
   .choice-grid {
     grid-template-columns: 1fr;

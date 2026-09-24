@@ -695,9 +695,8 @@
     "revealAnswer": "Revelar respuesta",
     "ratings": {
       "again": "No lo recordé",
-      "hard": "Apenas lo recordé",
-      "good": "Lo recordé",
-      "easy": "Lo recordé al instante"
+      "hard": "Me costó",
+      "good": "Lo recordé"
     },
     "selfRatingHelp": "¿Qué tan bien lograste recordar la respuesta?",
     "recordingHelp": "Presiona y mantén para hablar; suelta para enviar a evaluación. La grabación se limita a 6 segundos y el sitio no almacena el archivo.",

@@ -695,9 +695,8 @@
     "revealAnswer": "Afficher la réponse",
     "ratings": {
       "again": "Pas de souvenir",
-      "hard": "Souvenir difficile",
-      "good": "Je m’en souvenais",
-      "easy": "Souvenir immédiat"
+      "hard": "Avec effort",
+      "good": "Je m’en souvenais"
     },
     "selfRatingHelp": "À quel point avez-vous réussi à vous souvenir de la réponse ?",
     "recordingHelp": "Appuyez et maintenez pour parler ; relâchez pour envoyer pour évaluation. L'enregistrement est limité à 6 secondes et le site ne stocke pas le fichier.",

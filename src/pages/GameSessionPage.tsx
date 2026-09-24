@@ -160,9 +160,8 @@ function Flashcard({
             {(
               [
                 ["again", 0],
-                ["hard", 40],
-                ["good", 80],
-                ["easy", 100],
+                ["hard", 60],
+                ["good", 100],
               ] as const
             ).map(([rating, score]) => (
               <button
