@@ -802,7 +802,9 @@ export function LiveGameSessionPage() {
           combo={celebration.combo}
         />
       )}
-      <main className="live-session-main">
+      <main
+        className={`live-session-main${exercise || studyCard ? " session-active" : ""}`}
+      >
         {error && (
           <div role="alert" className="form-error">
             {error}

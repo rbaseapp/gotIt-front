@@ -2250,3 +2250,295 @@ html[dir="ltr"] .pack-search input {
     grid-template-columns: 1fr;
   }
 }
+
+/* Mobile dashboard: keep the primary action prominent and make the odd
+   number of summary cards feel deliberate instead of leaving a visual hole. */
+@media (max-width: 560px) {
+  .dashboard-page .page-heading-row {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  .dashboard-page .page-heading-row > div {
+    width: 100%;
+  }
+  .dashboard-page .page-heading-row > .button {
+    width: min(100%, 280px);
+    min-height: 54px;
+    margin-inline: auto;
+    padding-inline: 24px;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 15px;
+    font-size: 15px;
+    box-shadow: 0 10px 24px rgba(35, 109, 80, 0.2);
+  }
+  .dashboard-page .page-heading-row > .button svg {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+  }
+  .dashboard-page > .live-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(168px, auto);
+  }
+  .dashboard-page > .live-stats-grid > div {
+    height: 100%;
+    align-content: start;
+    padding: 16px;
+  }
+  .dashboard-page > .live-stats-grid > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    width: calc(50% - 5px);
+    min-width: 145px;
+    justify-self: center;
+  }
+}
+
+/* Active practice is a viewport-sized experience on phones. The launch and
+   results screens may still scroll, but an exercise and its action controls do
+   not move below the fold. */
+@media (max-width: 700px) {
+  .live-session {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .live-session .session-topbar {
+    min-height: 54px;
+    padding: max(7px, env(safe-area-inset-top)) 10px 7px;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .live-session .session-topbar > .button.ghost {
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+  .live-session .session-topbar > .button.ghost svg {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+  }
+  .live-session .session-brand {
+    display: none;
+  }
+  .live-session .session-hud {
+    order: initial;
+    width: auto;
+    margin-inline-start: auto;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .live-session .hud-chip {
+    min-height: 36px;
+    padding: 5px 9px;
+    gap: 5px;
+    font-size: 0;
+  }
+  .live-session .hud-chip b {
+    font-size: 14px;
+  }
+  .live-session .hud-sound {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+  }
+  .live-session-main {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 10px;
+    overflow: auto;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-content: start;
+  }
+  .live-session-main.session-active {
+    overflow: hidden;
+  }
+  .live-session-main > .live-toolbar {
+    min-height: 28px;
+    flex-wrap: nowrap;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .live-session-main > .live-toolbar > span:last-of-type:not(:first-child) {
+    overflow: hidden;
+    max-width: 34%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .live-session-progress {
+    height: 7px;
+    margin: 5px 0 8px;
+  }
+  .live-exercise,
+  .matching-panel,
+  .memorization-card {
+    min-height: 0;
+    max-height: 100%;
+    padding: 16px;
+    gap: 12px;
+    overflow: hidden;
+  }
+  .live-exercise > h1 {
+    font-size: clamp(27px, 9vw, 38px);
+    line-height: 1.08;
+  }
+  .live-exercise blockquote {
+    padding: 9px 12px;
+    line-height: 1.45;
+  }
+  .live-choice-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .live-choice-grid .button {
+    min-height: 52px;
+    padding: 8px 10px;
+    gap: 7px;
+    font-size: 14px;
+  }
+  .live-choice-grid kbd {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+  }
+  .live-exercise .field input {
+    padding: 12px;
+    font-size: 18px;
+  }
+  .live-feedback {
+    padding: 14px;
+    gap: 9px 12px;
+  }
+  .feedback-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+  .feedback-copy h2 {
+    font-size: 19px;
+  }
+  .feedback-answer {
+    font-size: 15px;
+  }
+  .feedback-rewards {
+    gap: 5px;
+  }
+  .feedback-rewards span {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  .live-feedback > .button {
+    min-width: 140px;
+  }
+  .matching-intro {
+    grid-template-columns: auto 1fr auto;
+    gap: 9px;
+  }
+  .matching-intro > strong {
+    grid-column: auto;
+  }
+  .matching-symbol {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+  .matching-intro h1 {
+    font-size: 20px;
+  }
+  .matching-intro p {
+    display: none;
+  }
+  .live-matching {
+    height: 100%;
+    min-height: 0;
+    gap: 10px;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .live-matching-board {
+    height: 100%;
+    min-height: 0;
+    gap: 7px;
+  }
+  .matching-column {
+    min-height: 0;
+    gap: 7px;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+  .matching-tile {
+    min-height: 0;
+    height: 100%;
+    padding: 7px 9px;
+    border-radius: 11px;
+    font-size: 13px;
+  }
+  .memorization-visual {
+    min-height: 0;
+    height: min(30dvh, 190px);
+  }
+  .memorization-visual > img,
+  .memorization-image-loading {
+    height: 100%;
+  }
+  .memorization-copy {
+    gap: 5px;
+  }
+  .memorization-copy .eyebrow,
+  .memorization-copy blockquote {
+    display: none;
+  }
+  .memorization-copy h1 {
+    font-size: clamp(30px, 10vw, 44px);
+  }
+  .memorization-translation {
+    font-size: clamp(19px, 6vw, 25px);
+  }
+  .memorization-audio {
+    min-height: 40px;
+  }
+  .memorization-actions .button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 700px) and (max-height: 620px) {
+  .live-session .session-topbar {
+    min-height: 48px;
+    padding-block: 4px;
+  }
+  .live-session-main {
+    padding: 7px 9px;
+  }
+  .live-session-main > .live-toolbar {
+    min-height: 24px;
+  }
+  .round-label {
+    padding: 4px 8px;
+  }
+  .live-exercise,
+  .matching-panel,
+  .memorization-card {
+    padding: 12px;
+    gap: 9px;
+  }
+  .live-exercise .eyebrow,
+  .live-exercise .muted-note {
+    display: none;
+  }
+  .live-choice-grid .button {
+    min-height: 46px;
+  }
+  .memorization-visual {
+    height: min(27dvh, 150px);
+  }
+}
