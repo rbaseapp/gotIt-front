@@ -767,6 +767,193 @@ describe("live server-backed flows", () => {
     ]);
     expect(screen.getByText("3 מתוך 3 נכונות")).toBeInTheDocument();
   });
+  it("leaves the smart drag and drop round before rendering the remaining exercises", async () => {
+    const thirdItemId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const thirdExerciseId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const followupExerciseId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    const secondFollowupExerciseId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+    const choices = [
+      { id: "66666666-6666-4666-8666-666666666666", text: "לזכור" },
+      { id: "77777777-7777-4777-8777-777777777777", text: "תפוח" },
+      { id: "88888888-8888-4888-8888-888888888888", text: "ללמוד" },
+    ];
+    const dragExercises = [
+      {
+        ...exercise,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "remember",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices,
+        },
+      },
+      {
+        ...exercise,
+        id: remedialExerciseId,
+        learningItemId: secondItemId,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "apple",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices,
+        },
+      },
+      {
+        ...exercise,
+        id: thirdExerciseId,
+        learningItemId: thirdItemId,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "learn",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices,
+        },
+      },
+    ];
+    const followupChoices = [
+      { id: "99999999-9999-4999-8999-999999999999", text: "המשך א" },
+      { id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", text: "המשך ב" },
+    ];
+    const followupExercises = [
+      {
+        ...exercise,
+        id: followupExerciseId,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "continue-one",
+          languageCode: "en",
+          context: null,
+          groupId: followupExerciseId,
+          choices: followupChoices,
+        },
+      },
+      {
+        ...exercise,
+        id: secondFollowupExerciseId,
+        learningItemId: secondItemId,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "continue-two",
+          languageCode: "en",
+          context: null,
+          groupId: followupExerciseId,
+          choices: followupChoices,
+        },
+      },
+    ];
+    let exerciseRequests = 0;
+    let attemptSequence = 0;
+    mount("/learn/session/smart", async (url, init) => {
+      if (url.endsWith("/practice/sessions"))
+        return json({
+          session: {
+            ...session,
+            sessionType: "smart_review",
+            itemCount: 5,
+          },
+        });
+      if (url.endsWith(`/practice/sessions/${sessionId}/study`))
+        return json({
+          cards: [
+            {
+              learningItemId: itemId,
+              sourceText: "remember",
+              translationText: "לזכור",
+              sourceLanguageCode: "en",
+              translationLanguageCode: "he",
+              context: null,
+              audioUrl: null,
+            },
+          ],
+        });
+      if (url.endsWith(`/study/${itemId}/image`)) return json({ image: null });
+      if (url.endsWith("/exercises")) {
+        exerciseRequests += 1;
+        return json(
+          {
+            exercises:
+              exerciseRequests === 1 ? dragExercises : followupExercises,
+            algorithmVersion: "server-v1",
+          },
+          201,
+        );
+      }
+      if (url.endsWith("/practice/attempts")) {
+        const body = JSON.parse(String(init?.body));
+        const position = dragExercises.findIndex(
+          (candidate) => candidate.id === body.exerciseId,
+        );
+        const attemptIds = [
+          "12121212-1212-4121-8121-121212121212",
+          "13131313-1313-4131-8131-131313131313",
+          "14141414-1414-4141-8141-141414141414",
+        ];
+        return json(
+          {
+            ...receipt,
+            attempt: {
+              ...receipt.attempt,
+              id: attemptIds[attemptSequence++],
+              learningItemId: dragExercises[position]!.learningItemId,
+              result: "correct",
+              score: 100,
+              expectedAnswer: choices[position]!.text,
+              xpEarned: 10,
+            },
+            replayed: false,
+          },
+          201,
+        );
+      }
+      throw new Error("Unexpected route");
+    });
+
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /מתחילים/ }));
+    await screen.findByRole("heading", { name: "remember" });
+    await user.click(screen.getByRole("button", { name: "מתחילים את החזרה" }));
+    await screen.findByRole("heading", {
+      name: "התאימו כל פירוש למילה",
+    });
+
+    for (let position = 0; position < choices.length; position++) {
+      const card = [...document.querySelectorAll(".meaning-card")].find(
+        (candidate) => candidate.textContent?.includes(choices[position].text),
+      ) as HTMLButtonElement;
+      await user.click(card);
+      await user.click(
+        document.querySelectorAll<HTMLButtonElement>(".drag-drop-slot")[
+          position
+        ],
+      );
+    }
+    await user.click(screen.getByRole("button", { name: "סיימתי" }));
+    await screen.findByText("3 מתוך 3 נכונות");
+    await user.click(screen.getByRole("button", { name: "המשך" }));
+
+    await screen.findByRole("heading", { name: "continue-one" });
+    expect(document.querySelectorAll(".drag-drop-row")).toHaveLength(0);
+    expect(
+      screen.queryByRole("button", { name: "המשך לסיכום" }),
+    ).not.toBeInTheDocument();
+    expect(exerciseRequests).toBe(2);
+  });
   it("uses an in-app modal before abandoning an active study session", async () => {
     const fetchMock = mount(
       "/learn/session/recall?items=" + itemId,

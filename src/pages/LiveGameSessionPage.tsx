@@ -126,6 +126,7 @@ export function LiveGameSessionPage() {
   const [studyImage, setStudyImage] = useState<StudyImage | undefined>();
   const [studyImageFailed, setStudyImageFailed] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [smartDragDropActive, setSmartDragDropActive] = useState(false);
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [flipped, setFlipped] = useState(false);
@@ -178,15 +179,8 @@ export function LiveGameSessionPage() {
   );
   const exercise = exercises[index];
   const studyCard = studyCards[studyIndex];
-  const smartDragDropBoard =
-    type === "smart" &&
-    exercises.length >= 2 &&
-    exercises.every(
-      (candidate) =>
-        candidate.exerciseType === "matching" &&
-        candidate.prompt.groupId === exercises[0]?.prompt.groupId,
-    );
-  const dragDropBoard = type === "drag_drop" || smartDragDropBoard;
+  const dragDropBoard =
+    type === "drag_drop" || (type === "smart" && smartDragDropActive);
   const masteryRequirements = receipt?.progress.masteryRequirements;
   const playStudyCard = useCallback(
     async (card: StudyCard, reportError = true) => {
@@ -300,6 +294,7 @@ export function LiveGameSessionPage() {
     );
     if (mounted.current) {
       setExercises(result.exercises);
+      setSmartDragDropActive(smartDragDropRound);
       setIndex(0);
       setReceipt(undefined);
       setAnswer("");
@@ -646,6 +641,7 @@ export function LiveGameSessionPage() {
     setStudyIndex(0);
     setStudyImage(undefined);
     setExercises([]);
+    setSmartDragDropActive(false);
     setIndex(0);
     setAnswer("");
     setReceipt(undefined);
@@ -1174,12 +1170,18 @@ export function LiveGameSessionPage() {
               ) : dragDropBoard ? (
                 <section className="live-exercise live-panel drag-drop-panel practice-card">
                   <LiveDragDropBoard
+                    key={exercises.map((candidate) => candidate.id).join(":")}
                     exercises={exercises}
                     busy={busy}
                     onSubmit={(target, choiceId) =>
                       performSubmission(target, { choiceId })
                     }
                     onDone={() => void finishDragDropBoard()}
+                    doneLabel={
+                      type === "smart" && (session?.itemCount ?? 0) > 3
+                        ? t("learn.continue")
+                        : undefined
+                    }
                   />
                 </section>
               ) : (
