@@ -7,6 +7,7 @@ import {
   Layers3,
   MessageCircleQuestion,
   Mic2,
+  Move,
   MousePointer2,
   PenLine,
   Play,
@@ -48,6 +49,11 @@ const games: Array<{
     tone: "orange",
   },
   {
+    id: "drag_drop",
+    icon: Move,
+    tone: "violet",
+  },
+  {
     id: "pronunciation",
     icon: Mic2,
     tone: "rose",
@@ -56,6 +62,7 @@ const games: Array<{
 
 const gameOrder: GameType[] = [
   "matching",
+  "drag_drop",
   "flashcards",
   "pronunciation",
   "listening",
@@ -168,15 +175,29 @@ export function LearnPage() {
                 <Icon size={27} />
               </span>
               <span className="game-card-copy">
-                <b>{t(`demoLearn.games.${id}.title`)}</b>
-                <small>{t(`demoLearn.games.${id}.subtitle`)}</small>
+                <b>
+                  {id === "drag_drop"
+                    ? t("learn.games.drag_drop.name")
+                    : t(`demoLearn.games.${id}.title`)}
+                </b>
+                <small>
+                  {id === "drag_drop"
+                    ? t("learn.games.drag_drop.description")
+                    : t(`demoLearn.games.${id}.subtitle`)}
+                </small>
               </span>
               <span className="game-card-meta">
                 <span>
                   <Clock3 size={14} />
-                  {t(`demoLearn.games.${id}.time`)}
+                  {id === "drag_drop"
+                    ? t("demoLearn.aboutMinutes", { count: 3 })
+                    : t(`demoLearn.games.${id}.time`)}
                 </span>
-                <span>{t(`demoLearn.games.${id}.skills`)}</span>
+                <span>
+                  {id === "drag_drop"
+                    ? t("labels.recognition")
+                    : t(`demoLearn.games.${id}.skills`)}
+                </span>
               </span>
               <span className="game-arrow">
                 <ChevronLeft size={19} />

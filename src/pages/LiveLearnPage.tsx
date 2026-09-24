@@ -7,6 +7,7 @@ import {
   Headphones,
   Layers3,
   Mic2,
+  Move,
   MousePointer2,
   PenLine,
   LockKeyhole,
@@ -40,6 +41,11 @@ const games = [
     tone: "orange",
   },
   {
+    id: "drag_drop",
+    icon: Move,
+    tone: "violet",
+  },
+  {
     id: "listening",
     icon: Headphones,
     tone: "blue",
@@ -51,6 +57,14 @@ const games = [
   },
 ];
 const gameOrder = [
+  "matching",
+  "drag_drop",
+  "flashcards",
+  "pronunciation",
+  "recall",
+  "listening",
+] as const;
+const smartPath = [
   "matching",
   "flashcards",
   "pronunciation",
@@ -125,7 +139,7 @@ export function LiveLearnPage() {
             </p>
           )}
           <div className="learning-path" aria-label={t("learn.learningPath")}>
-            {gameOrder.map((step, index) => (
+            {smartPath.map((step, index) => (
               <span key={step}>
                 <b>{index + 1}</b>
                 {t(`learn.games.${step}.name`)}

@@ -284,6 +284,10 @@
         "name": "مطابقة",
         "description": "ربط كلمة بمعناها من عدة خيارات"
       },
+      "drag_drop": {
+        "name": "السحب والإفلات",
+        "description": "اسحب ثلاثة معانٍ إلى الخانات بجانب كلماتها"
+      },
       "listening": {
         "name": "الاستماع والإملاء",
         "description": "يتطلب مزود كلام مهيأ على الخادم"
@@ -670,6 +674,19 @@
     "matchTitle": "اربط الأزواج",
     "matchHelp": "اختر بطاقة من كل جانب. يتحقق الخادم من كل ارتباط.",
     "matchProgress": "{{current}} من {{total}} أزواج",
+    "dragDropLaunch": "ثلاث كلمات وثلاثة معانٍ وتحدٍ تفاعلي سريع.",
+    "dragDropTitle": "طابق كل معنى",
+    "dragDropHelp": "اسحب كل معنى إلى الخانة الفارغة بجانب كلمته. يمكنك أيضًا اختيار معنى ثم اختيار خانة.",
+    "dragDropProgress": "تم وضع {{current}} من {{total}}",
+    "placedMeaning": "المعنى الموضوع: {{meaning}}",
+    "dropForWord": "خانة معنى فارغة للكلمة {{word}}",
+    "dropHere": "أفلت المعنى هنا",
+    "meaningsBank": "المعاني المتاحة",
+    "meaningsBankHelp": "اسحب بطاقة أو اضغط عليها لاختيارها",
+    "dragMeaning": "اسحب المعنى: {{meaning}}",
+    "placedCorrect": "مطابقة رائعة!",
+    "placedIncorrect": "ليست تمامًا — ينتقل المعنى الصحيح إلى مكانه.",
+    "meaningSelected": "تم اختيار المعنى. اختر خانته الفارغة.",
     "playSlowly": "تشغيل ببطء",
     "masteryCompact": "الإتقان {{mastery}}%",
     "progressDetails": "تفاصيل التعلّم",

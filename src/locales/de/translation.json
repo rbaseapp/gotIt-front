@@ -284,6 +284,10 @@
         "name": "Zuordnung",
         "description": "Verbinde ein Wort mit seiner Bedeutung aus mehreren Optionen"
       },
+      "drag_drop": {
+        "name": "Drag & Drop",
+        "description": "Ziehe drei Bedeutungen in die Felder neben den Wörtern"
+      },
       "listening": {
         "name": "Hören und Schreiben",
         "description": "Erfordert einen auf dem Server konfigurierten Sprachanbieter"
@@ -634,6 +638,19 @@
     "matchTitle": "Paare verbinden",
     "matchHelp": "Wähle auf jeder Seite eine Karte. Der Server prüft jede Verbindung.",
     "matchProgress": "{{current}} von {{total}} Paaren",
+    "dragDropLaunch": "Drei Wörter, drei Bedeutungen und eine kurze interaktive Herausforderung.",
+    "dragDropTitle": "Ordne jede Bedeutung zu",
+    "dragDropHelp": "Ziehe jede Bedeutung in das leere Feld neben ihrem Wort. Du kannst auch eine Bedeutung und danach ein Feld auswählen.",
+    "dragDropProgress": "{{current}} von {{total}} platziert",
+    "placedMeaning": "Platzierte Bedeutung: {{meaning}}",
+    "dropForWord": "Leeres Bedeutungsfeld für {{word}}",
+    "dropHere": "Bedeutung hier ablegen",
+    "meaningsBank": "Bedeutungen",
+    "meaningsBankHelp": "Karte ziehen oder zum Auswählen antippen",
+    "dragMeaning": "Bedeutung ziehen: {{meaning}}",
+    "placedCorrect": "Perfekt zugeordnet!",
+    "placedIncorrect": "Noch nicht ganz — die richtige Bedeutung rückt an ihren Platz.",
+    "meaningSelected": "Bedeutung ausgewählt. Wähle jetzt das leere Feld.",
     "playSlowly": "Langsam abspielen",
     "masteryCompact": "Beherrschung {{mastery}} %",
     "progressDetails": "Lerndetails",

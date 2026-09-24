@@ -102,6 +102,46 @@ describe("complete frontend flows", () => {
       ),
     ).toEqual(ids);
   });
+  it("offers a three-word drag and drop round in demo mode", async () => {
+    mount("/learn/session/drag_drop");
+    const user = userEvent.setup();
+    await screen.findByRole("heading", {
+      name: "התאימו כל פירוש למילה",
+    });
+    expect(document.querySelectorAll(".drag-drop-row")).toHaveLength(3);
+    expect(document.querySelectorAll(".meaning-card")).toHaveLength(3);
+    const ids = JSON.parse(localStorage.getItem("gotit.demo.v2")!).sessions[0]
+      .itemIds;
+    expect(ids).toHaveLength(3);
+
+    for (const id of ids) {
+      const item = seedItems.find((value) => value.id === id)!;
+      await user.click(
+        screen.getByRole("button", {
+          name: `גרירת הפירוש: ${item.translation}`,
+        }),
+      );
+      await user.click(
+        screen.getByRole("button", {
+          name: `משבצת פירוש ריקה עבור ${item.source}`,
+        }),
+      );
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", {
+            name: `הפירוש ששובץ: ${item.translation}`,
+          }),
+        ).toBeDisabled(),
+      );
+    }
+
+    await screen.findByRole("heading", { name: "עבודה מעולה!" });
+    expect(
+      JSON.parse(localStorage.getItem("gotit.demo.v2")!).attempts.map(
+        (value: { itemId: string }) => value.itemId,
+      ),
+    ).toEqual(ids);
+  });
   it("handles microphone denial honestly and skips pronunciation without an invented score or XP", async () => {
     const getUserMedia = vi.fn(async () => {
       throw new DOMException("Denied", "NotAllowedError");

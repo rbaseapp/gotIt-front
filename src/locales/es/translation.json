@@ -284,6 +284,10 @@
         "name": "Emparejamiento",
         "description": "Conecta una palabra con su significado de varias opciones"
       },
+      "drag_drop": {
+        "name": "Arrastrar y soltar",
+        "description": "Arrastra tres significados a las casillas junto a sus palabras"
+      },
       "listening": {
         "name": "Escucha y deletreo",
         "description": "Requiere un proveedor de voz configurado en el servidor"
@@ -634,6 +638,19 @@
     "matchTitle": "Conecta las parejas",
     "matchHelp": "Elige una tarjeta de cada lado. El servidor comprueba cada conexión.",
     "matchProgress": "{{current}} de {{total}} parejas",
+    "dragDropLaunch": "Tres palabras, tres significados y un reto interactivo rápido.",
+    "dragDropTitle": "Empareja cada significado",
+    "dragDropHelp": "Arrastra cada significado a la casilla vacía junto a su palabra. También puedes elegir un significado y después una casilla.",
+    "dragDropProgress": "{{current}} de {{total}} colocados",
+    "placedMeaning": "Significado colocado: {{meaning}}",
+    "dropForWord": "Casilla de significado vacía para {{word}}",
+    "dropHere": "Suelta el significado aquí",
+    "meaningsBank": "Significados disponibles",
+    "meaningsBankHelp": "Arrastra una tarjeta o tócala para elegirla",
+    "dragMeaning": "Arrastrar significado: {{meaning}}",
+    "placedCorrect": "¡Pareja perfecta!",
+    "placedIncorrect": "No del todo: el significado correcto se colocará en su sitio.",
+    "meaningSelected": "Significado seleccionado. Elige su casilla vacía.",
     "playSlowly": "Reproducir despacio",
     "masteryCompact": "Dominio {{mastery}} %",
     "progressDetails": "Detalles del aprendizaje",

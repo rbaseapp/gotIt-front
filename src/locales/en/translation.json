@@ -283,6 +283,10 @@
         "name": "Matching",
         "description": "Connect a word to its meaning from several options"
       },
+      "drag_drop": {
+        "name": "Drag & Drop",
+        "description": "Drag three meanings into the slots beside their words"
+      },
       "listening": {
         "name": "Listening and spelling",
         "description": "Requires a speech provider configured on the server"
@@ -629,6 +633,19 @@
     "matchTitle": "Connect the pairs",
     "matchHelp": "Choose one card from each side. The server checks every connection.",
     "matchProgress": "{{current}} of {{total}} pairs",
+    "dragDropLaunch": "Three words, three meanings and one quick hands-on challenge.",
+    "dragDropTitle": "Match every meaning",
+    "dragDropHelp": "Drag each meaning into the empty slot beside its word. You can also select a meaning and then select a slot.",
+    "dragDropProgress": "{{current}} of {{total}} placed",
+    "placedMeaning": "Placed meaning: {{meaning}}",
+    "dropForWord": "Empty meaning slot for {{word}}",
+    "dropHere": "Drop the meaning here",
+    "meaningsBank": "Meanings to place",
+    "meaningsBankHelp": "Drag a card or tap it to select",
+    "dragMeaning": "Drag meaning: {{meaning}}",
+    "placedCorrect": "Perfect match!",
+    "placedIncorrect": "Not quite — the correct meaning is moving into place.",
+    "meaningSelected": "Meaning selected. Choose its empty slot.",
     "playSlowly": "Play slowly",
     "masteryCompact": "Mastery {{mastery}}%",
     "progressDetails": "Learning details",

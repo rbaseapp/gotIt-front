@@ -275,6 +275,10 @@
         "name": "配套",
         "description": "从多个选项中将一个单词与其含义联系起来"
       },
+      "drag_drop": {
+        "name": "拖放配对",
+        "description": "将三个释义拖到对应单词旁的空格中"
+      },
       "listening": {
         "name": "听力和拼写",
         "description": "需要在服务器上配置语音提供程序"
@@ -625,6 +629,19 @@
     "matchTitle": "连接配对",
     "matchHelp": "从两侧各选一张卡片，服务器会检查每次连接。",
     "matchProgress": "已配对 {{current}}/{{total}}",
+    "dragDropLaunch": "三个单词、三个释义，一场快速互动挑战。",
+    "dragDropTitle": "匹配每个释义",
+    "dragDropHelp": "将每个释义拖到对应单词旁的空格中。也可以先选择释义，再选择空格。",
+    "dragDropProgress": "已放置 {{current}}/{{total}}",
+    "placedMeaning": "已放置释义：{{meaning}}",
+    "dropForWord": "{{word}} 的空释义框",
+    "dropHere": "将释义拖到这里",
+    "meaningsBank": "待放置的释义",
+    "meaningsBankHelp": "拖动卡片或点击选择",
+    "dragMeaning": "拖动释义：{{meaning}}",
+    "placedCorrect": "匹配正确！",
+    "placedIncorrect": "还不对——正确释义正在移入位置。",
+    "meaningSelected": "已选择释义。请选择对应的空格。",
     "playSlowly": "慢速播放",
     "masteryCompact": "掌握度 {{mastery}}%",
     "progressDetails": "学习详情",

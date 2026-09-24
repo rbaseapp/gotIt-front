@@ -15,9 +15,10 @@ export function practiceQueue(
   const sorted = [...active].sort(
     (a, b) => +new Date(a.dueAt) - +new Date(b.dueAt),
   );
-  if (game !== "matching") return sorted.slice(0, 8);
+  if (!["matching", "drag_drop"].includes(game)) return sorted.slice(0, 8);
   // Avoid indistinguishable pairs and mixing unrelated language directions in a board.
   const first = sorted[0];
+  if (!first) return [];
   const sources = new Set<string>();
   const meanings = new Set<string>();
   return sorted
@@ -34,7 +35,7 @@ export function practiceQueue(
       meanings.add(meaning);
       return true;
     })
-    .slice(0, 4);
+    .slice(0, game === "drag_drop" ? 3 : 4);
 }
 export function normalizeAnswer(value: string) {
   return value
@@ -68,5 +69,6 @@ export const gameSkills: Record<GameType, SkillKey[]> = {
   recall: ["recall"],
   listening: ["listening", "spelling"],
   matching: ["recognition"],
+  drag_drop: ["recognition"],
   pronunciation: ["pronunciation"],
 };

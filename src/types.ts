@@ -6,6 +6,7 @@ export type GameType =
   | "recall"
   | "listening"
   | "matching"
+  | "drag_drop"
   | "pronunciation";
 export type SkillKey =
   "recognition" | "recall" | "listening" | "spelling" | "pronunciation";

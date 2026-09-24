@@ -581,6 +581,140 @@ describe("live server-backed flows", () => {
       }),
     ]);
   });
+  it("starts the three-item drag and drop game and submits a dropped meaning", async () => {
+    const thirdItemId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const thirdExerciseId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const choiceA = "66666666-6666-4666-8666-666666666666";
+    const choiceB = "77777777-7777-4777-8777-777777777777";
+    const choiceC = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    const choices = [
+      { id: choiceA, text: "לזכור" },
+      { id: choiceB, text: "תפוח" },
+      { id: choiceC, text: "ללמוד" },
+    ];
+    const dragExercises = [
+      {
+        ...exercise,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "remember",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices,
+        },
+      },
+      {
+        ...exercise,
+        id: remedialExerciseId,
+        learningItemId: secondItemId,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "apple",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices,
+        },
+      },
+      {
+        ...exercise,
+        id: thirdExerciseId,
+        learningItemId: thirdItemId,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "learn",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices,
+        },
+      },
+    ];
+    let creationBody: Record<string, unknown> | undefined;
+    let exerciseBody: Record<string, unknown> | undefined;
+    const submitted: Array<Record<string, unknown>> = [];
+    mount("/learn/session/drag_drop", async (url, init) => {
+      if (url.endsWith("/practice/sessions")) {
+        creationBody = JSON.parse(String(init?.body));
+        return json({
+          session: { ...session, sessionType: "matching", itemCount: 3 },
+        });
+      }
+      if (url.endsWith("/exercises")) {
+        exerciseBody = JSON.parse(String(init?.body));
+        return json(
+          { exercises: dragExercises, algorithmVersion: "server-v1" },
+          201,
+        );
+      }
+      if (url.endsWith("/practice/attempts")) {
+        const body = JSON.parse(String(init?.body));
+        submitted.push(body);
+        return json(
+          {
+            ...receipt,
+            attempt: {
+              ...receipt.attempt,
+              id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+              result: "correct",
+              score: 100,
+              expectedAnswer: "לזכור",
+              xpEarned: 10,
+            },
+            replayed: false,
+          },
+          201,
+        );
+      }
+      throw new Error("Unexpected route");
+    });
+
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /מתחילים/ }));
+    await screen.findByRole("heading", { name: "התאימו כל פירוש למילה" });
+    expect(document.querySelectorAll(".drag-drop-row")).toHaveLength(3);
+    expect(document.querySelectorAll(".meaning-card")).toHaveLength(3);
+    expect(creationBody).toEqual(
+      expect.objectContaining({ sessionType: "matching", count: 3 }),
+    );
+    expect(exerciseBody).toEqual(
+      expect.objectContaining({
+        count: 3,
+        direction: "source_to_translation",
+        kind: "multiple_choice",
+      }),
+    );
+
+    const card = document.querySelector(".meaning-card") as HTMLButtonElement;
+    const slot = document.querySelector(".drag-drop-slot") as HTMLButtonElement;
+    const transfer = {
+      effectAllowed: "none",
+      dropEffect: "none",
+      value: "",
+      setData(_format: string, value: string) {
+        this.value = value;
+      },
+      getData() {
+        return this.value;
+      },
+    };
+    fireEvent.dragStart(card, { dataTransfer: transfer });
+    fireEvent.drop(slot, { dataTransfer: transfer });
+
+    await waitFor(() =>
+      expect(submitted).toEqual([
+        expect.objectContaining({ exerciseId, choiceId: choiceA }),
+      ]),
+    );
+    await waitFor(() => expect(slot).toBeDisabled());
+  });
   it("uses an in-app modal before abandoning an active study session", async () => {
     const fetchMock = mount(
       "/learn/session/recall?items=" + itemId,

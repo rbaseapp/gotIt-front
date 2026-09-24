@@ -54,6 +54,7 @@ import { useFeedback } from "../components/Feedback";
 import { speak } from "../lib/utils";
 import { useTranslation } from "react-i18next";
 import { LiveMatchingBoard } from "../components/LiveMatchingBoard";
+import { LiveDragDropBoard } from "../components/LiveDragDropBoard";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -61,6 +62,7 @@ const modes: Record<string, string> = {
   recall: "recall",
   listening: "listening_spelling",
   matching: "matching",
+  drag_drop: "matching",
   pronunciation: "pronunciation",
   article_quiz: "article_quiz",
 };
@@ -148,7 +150,7 @@ export function LiveGameSessionPage() {
   });
   const [direction, setDirection] = useState("translation_to_source");
   const [kind, setKind] = useState("typed");
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(type === "drag_drop" ? 3 : 10);
   const [pending, setPending] = useState<Submission>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -261,7 +263,8 @@ export function LiveGameSessionPage() {
           ? {}
           : {
               kind: modes[type] === "matching" ? "multiple_choice" : kind,
-              direction,
+              direction:
+                type === "drag_drop" ? "source_to_translation" : direction,
             }),
       },
     );
@@ -581,7 +584,11 @@ export function LiveGameSessionPage() {
       return;
     }
     const retryIds = [...mistakeIds.current];
-    if (!remedialRound && retryIds.length && type !== "matching") {
+    if (
+      !remedialRound &&
+      retryIds.length &&
+      !["matching", "drag_drop"].includes(type)
+    ) {
       lock.current = true;
       setBusy(true);
       setError("");
@@ -759,7 +766,11 @@ export function LiveGameSessionPage() {
         </button>
         <div className="session-brand">
           <Logo />
-          <span>{t(`labels.${modes[type]}`)}</span>
+          <span>
+            {type === "drag_drop"
+              ? t("learn.games.drag_drop.name")
+              : t(`labels.${modes[type]}`)}
+          </span>
         </div>
         <div className="session-hud" aria-live="polite">
           <span className={`hud-chip combo${combo >= 3 ? " active" : ""}`}>
@@ -816,63 +827,73 @@ export function LiveGameSessionPage() {
               <Sparkles size={30} />
             </span>
             <p className="eyebrow">{t("game.readyEyebrow")}</p>
-            <h1>{t(`labels.${modes[type]}`)}</h1>
-            <p>{t("game.quickStartDescription", { count })}</p>
-            <details className="session-settings">
-              <summary>
-                <Settings2 size={17} />
-                {t("game.customize")}
-              </summary>
-              <fieldset
-                className="plain-fieldset form-stack"
-                disabled={busy || !!creation.current || !!session}
-              >
-                <label className="field">
-                  <span>{t("game.maxWords")}</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={count}
-                    onChange={(e) =>
-                      setCount(
-                        Math.max(1, Math.min(20, Number(e.target.value))),
-                      )
-                    }
-                  />
-                </label>
-                {!["listening", "pronunciation", "smart"].includes(type) && (
+            <h1>
+              {type === "drag_drop"
+                ? t("learn.games.drag_drop.name")
+                : t(`labels.${modes[type]}`)}
+            </h1>
+            <p>
+              {type === "drag_drop"
+                ? t("game.dragDropLaunch")
+                : t("game.quickStartDescription", { count })}
+            </p>
+            {type !== "drag_drop" && (
+              <details className="session-settings">
+                <summary>
+                  <Settings2 size={17} />
+                  {t("game.customize")}
+                </summary>
+                <fieldset
+                  className="plain-fieldset form-stack"
+                  disabled={busy || !!creation.current || !!session}
+                >
                   <label className="field">
-                    <span>{t("game.direction")}</span>
-                    <select
-                      value={direction}
-                      onChange={(e) => setDirection(e.target.value)}
-                    >
-                      <option value="translation_to_source">
-                        {t("game.meaningToSource")}
-                      </option>
-                      <option value="source_to_translation">
-                        {t("game.sourceToMeaning")}
-                      </option>
-                    </select>
+                    <span>{t("game.maxWords")}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={count}
+                      onChange={(e) =>
+                        setCount(
+                          Math.max(1, Math.min(20, Number(e.target.value))),
+                        )
+                      }
+                    />
                   </label>
-                )}
-                {["recall", "article_quiz"].includes(type) && (
-                  <label className="field">
-                    <span>{t("game.answerType")}</span>
-                    <select
-                      value={kind}
-                      onChange={(e) => setKind(e.target.value)}
-                    >
-                      <option value="typed">{t("game.typed")}</option>
-                      <option value="multiple_choice">
-                        {t("game.multipleChoice")}
-                      </option>
-                    </select>
-                  </label>
-                )}
-              </fieldset>
-            </details>
+                  {!["listening", "pronunciation", "smart"].includes(type) && (
+                    <label className="field">
+                      <span>{t("game.direction")}</span>
+                      <select
+                        value={direction}
+                        onChange={(e) => setDirection(e.target.value)}
+                      >
+                        <option value="translation_to_source">
+                          {t("game.meaningToSource")}
+                        </option>
+                        <option value="source_to_translation">
+                          {t("game.sourceToMeaning")}
+                        </option>
+                      </select>
+                    </label>
+                  )}
+                  {["recall", "article_quiz"].includes(type) && (
+                    <label className="field">
+                      <span>{t("game.answerType")}</span>
+                      <select
+                        value={kind}
+                        onChange={(e) => setKind(e.target.value)}
+                      >
+                        <option value="typed">{t("game.typed")}</option>
+                        <option value="multiple_choice">
+                          {t("game.multipleChoice")}
+                        </option>
+                      </select>
+                    </label>
+                  )}
+                </fieldset>
+              </details>
+            )}
             <button
               className="button primary launch-button"
               disabled={busy}
@@ -1077,17 +1098,36 @@ export function LiveGameSessionPage() {
                         ? t("game.challengeRound")
                         : t("game.masteryRound")}
                 </span>
-                <span>{t(`labels.${exercise.exerciseType}`)}</span>
+                <span>
+                  {type === "drag_drop"
+                    ? t("learn.games.drag_drop.name")
+                    : t(`labels.${exercise.exerciseType}`)}
+                </span>
               </div>
               <progress
                 className="live-session-progress"
-                value={type === "matching" ? outcomes.length : index}
+                value={
+                  ["matching", "drag_drop"].includes(type)
+                    ? outcomes.length
+                    : index
+                }
                 max={exercises.length}
                 aria-label={t("game.exerciseProgressAria")}
               />
               {type === "matching" ? (
                 <section className="live-exercise live-panel matching-panel practice-card">
                   <LiveMatchingBoard
+                    exercises={exercises}
+                    busy={busy}
+                    onSubmit={(target, choiceId) =>
+                      performSubmission(target, { choiceId })
+                    }
+                    onDone={() => void close("completed")}
+                  />
+                </section>
+              ) : type === "drag_drop" ? (
+                <section className="live-exercise live-panel drag-drop-panel practice-card">
+                  <LiveDragDropBoard
                     exercises={exercises}
                     busy={busy}
                     onSubmit={(target, choiceId) =>
@@ -1156,20 +1196,16 @@ export function LiveGameSessionPage() {
                                 {exercise.prompt.answer}
                               </p>
                               <div className="live-options">
-                                {["again", "hard", "good"].map(
-                                  (selfRating) => (
-                                    <button
-                                      className="button secondary"
-                                      key={selfRating}
-                                      disabled={busy || !!pending}
-                                      onClick={() =>
-                                        void submit({ selfRating })
-                                      }
-                                    >
-                                      {t(`game.ratings.${selfRating}`)}
-                                    </button>
-                                  ),
-                                )}
+                                {["again", "hard", "good"].map((selfRating) => (
+                                  <button
+                                    className="button secondary"
+                                    key={selfRating}
+                                    disabled={busy || !!pending}
+                                    onClick={() => void submit({ selfRating })}
+                                  >
+                                    {t(`game.ratings.${selfRating}`)}
+                                  </button>
+                                ))}
                               </div>
                               <p className="muted-note">
                                 {t("game.selfRatingHelp")}

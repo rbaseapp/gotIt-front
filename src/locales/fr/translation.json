@@ -284,6 +284,10 @@
         "name": "Appairage",
         "description": "Reliez un mot à sa définition parmi plusieurs options"
       },
+      "drag_drop": {
+        "name": "Glisser-déposer",
+        "description": "Glissez trois définitions dans les cases de leurs mots"
+      },
       "listening": {
         "name": "Écoute et orthographe",
         "description": "Nécessite un fournisseur de synthèse vocale configuré sur le serveur"
@@ -634,6 +638,19 @@
     "matchTitle": "Reliez les paires",
     "matchHelp": "Choisissez une carte de chaque côté. Le serveur vérifie chaque association.",
     "matchProgress": "{{current}} sur {{total}} paires",
+    "dragDropLaunch": "Trois mots, trois définitions et un petit défi interactif.",
+    "dragDropTitle": "Associez chaque définition",
+    "dragDropHelp": "Glissez chaque définition dans la case vide près de son mot. Vous pouvez aussi choisir une définition puis une case.",
+    "dragDropProgress": "{{current}} sur {{total}} placées",
+    "placedMeaning": "Définition placée : {{meaning}}",
+    "dropForWord": "Case de définition vide pour {{word}}",
+    "dropHere": "Déposez la définition ici",
+    "meaningsBank": "Définitions à placer",
+    "meaningsBankHelp": "Glissez une carte ou touchez-la pour la choisir",
+    "dragMeaning": "Glisser la définition : {{meaning}}",
+    "placedCorrect": "Association parfaite !",
+    "placedIncorrect": "Pas tout à fait — la bonne définition se met en place.",
+    "meaningSelected": "Définition choisie. Sélectionnez maintenant sa case vide.",
     "playSlowly": "Écouter lentement",
     "masteryCompact": "Maîtrise {{mastery}} %",
     "progressDetails": "Détails d’apprentissage",

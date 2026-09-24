@@ -1218,6 +1218,317 @@ progress::-webkit-progress-value {
   transform: scale(0.98);
   box-shadow: none;
 }
+.drag-drop-panel {
+  width: min(960px, 100%);
+  max-width: 960px;
+  padding: 30px;
+  overflow: visible;
+  background:
+    radial-gradient(circle at 8% 5%, rgba(117, 94, 214, 0.09), transparent 27%),
+    radial-gradient(
+      circle at 94% 92%,
+      rgba(39, 123, 85, 0.08),
+      transparent 25%
+    ),
+    #fff;
+}
+.live-drag-drop {
+  display: grid;
+  gap: 20px;
+}
+.drag-drop-intro {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  text-align: start;
+}
+.drag-drop-intro h1,
+.drag-drop-intro p {
+  margin: 0;
+}
+.drag-drop-intro h1 {
+  font-size: 25px;
+}
+.drag-drop-intro p {
+  margin-top: 4px;
+  color: #6c6c7f;
+  font-size: 13px;
+}
+.drag-drop-intro strong {
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: #5947a5;
+  background: #f0edff;
+  font-size: 13px;
+}
+.drag-drop-symbol {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #6651bd;
+  background: linear-gradient(145deg, #eeeaff, #f7f4ff);
+  box-shadow: 0 8px 20px rgba(87, 65, 164, 0.12);
+}
+.drag-drop-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(220px, 0.7fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.drag-drop-rows {
+  display: grid;
+  gap: 11px;
+}
+.drag-drop-row {
+  min-height: 76px;
+  padding: 10px 11px 10px 14px;
+  border: 1px solid #e1dfeb;
+  border-radius: 17px;
+  display: grid;
+  grid-template-columns: 30px minmax(100px, 0.72fr) minmax(150px, 1fr);
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 7px 22px rgba(41, 35, 72, 0.055);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+.drag-drop-row.is-complete,
+.drag-drop-row.correct {
+  border-color: #a9d7bb;
+  background: #fbfffc;
+  animation: drag-row-success 430ms ease-out;
+}
+.drag-drop-row.incorrect {
+  border-color: #e4a48a;
+  animation: matching-shake 280ms ease;
+}
+.drag-drop-number {
+  width: 27px;
+  height: 27px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: #7766b4;
+  background: #f1eefb;
+  font-size: 12px;
+  font-weight: 850;
+}
+.is-complete .drag-drop-number {
+  color: #fff;
+  background: #4b9a70;
+}
+.drag-drop-word {
+  color: #27352e;
+  font-size: clamp(16px, 2vw, 20px);
+  overflow-wrap: anywhere;
+}
+.drag-drop-slot {
+  min-height: 54px;
+  padding: 9px 13px;
+  border: 1.5px dashed #c9c3df;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  color: #786e91;
+  background: #f8f6fd;
+  font: inherit;
+  font-weight: 720;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+.drag-drop-slot.is-ready {
+  border-color: #9d8de0;
+  background: #f4f0ff;
+}
+.drag-drop-slot.is-over {
+  border-style: solid;
+  border-color: #745bda;
+  background: #eee9ff;
+  box-shadow: 0 0 0 4px rgba(116, 91, 218, 0.13);
+  transform: scale(1.025);
+}
+.drag-drop-slot.correct,
+.drag-drop-slot:disabled:not(.incorrect) {
+  border-style: solid;
+  border-color: #8ac7a3;
+  color: #276c49;
+  background: #eaf7ef;
+  opacity: 1;
+}
+.drag-drop-slot.incorrect {
+  border-style: solid;
+  border-color: #d77b58;
+  color: #9b492b;
+  background: #fff0e9;
+  opacity: 1;
+}
+.drop-placeholder {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.drop-placeholder > span {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: #ece8f8;
+  font-size: 17px;
+}
+.drop-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: drag-spin 650ms linear infinite;
+}
+.meaning-bank {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #e4e1ef;
+  border-radius: 17px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
+  background: rgba(247, 245, 252, 0.82);
+}
+.meaning-bank-heading {
+  display: grid;
+  gap: 2px;
+  color: #493d72;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: start;
+}
+.meaning-bank-heading small {
+  color: #7a718d;
+  font-size: 11px;
+  font-weight: 550;
+}
+.meaning-cards {
+  display: grid;
+  align-content: stretch;
+  gap: 9px;
+}
+.meaning-card {
+  min-height: 55px;
+  padding: 10px 12px;
+  border: 1px solid #d7d1ea;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3d345b;
+  background: #fff;
+  box-shadow: 0 7px 16px rgba(56, 43, 102, 0.08);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 740;
+  text-align: start;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+}
+.meaning-card svg {
+  flex: 0 0 auto;
+  color: #9b91bb;
+}
+.meaning-card:hover:not(:disabled),
+.meaning-card.is-selected {
+  border-color: #8f7bdb;
+  transform: translateY(-2px);
+  box-shadow: 0 11px 22px rgba(77, 58, 145, 0.14);
+}
+.meaning-card.is-selected {
+  color: #5642a4;
+  background: #f4f0ff;
+  box-shadow: 0 0 0 3px rgba(118, 92, 218, 0.13);
+}
+.meaning-card.is-dragging,
+.meaning-card.is-trying {
+  opacity: 0.34;
+  transform: scale(0.96);
+}
+.meaning-card.is-resolved {
+  min-height: 0;
+  height: 0;
+  padding-block: 0;
+  border-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.meaning-drag-ghost {
+  position: fixed;
+  z-index: 1000;
+  min-width: 170px;
+  max-width: min(280px, 70vw);
+  padding: 12px 14px;
+  border: 1px solid #8f7bdb;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #49388e;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 38px rgba(58, 42, 120, 0.25);
+  font-weight: 760;
+  pointer-events: none;
+  transform: translate(-50%, -115%) rotate(-1.5deg);
+  animation: drag-ghost-enter 140ms ease-out;
+}
+.drag-drop-status {
+  min-height: 20px;
+  margin: -7px 0 0;
+  color: #6b6084;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.demo-drag-drop {
+  width: min(960px, 100%);
+  margin-inline: auto;
+}
+@keyframes drag-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes drag-row-success {
+  45% {
+    transform: scale(1.018);
+    box-shadow: 0 10px 28px rgba(55, 137, 91, 0.16);
+  }
+}
+@keyframes drag-ghost-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) scale(0.92);
+  }
+}
 .session-results {
   max-width: 720px;
   margin: 32px auto;
@@ -1449,7 +1760,8 @@ progress::-webkit-progress-value {
     padding: 38px 20px 28px;
   }
   .live-exercise,
-  .matching-panel {
+  .matching-panel,
+  .drag-drop-panel {
     padding: 26px 18px;
   }
   .live-toolbar {
@@ -1469,6 +1781,53 @@ progress::-webkit-progress-value {
   }
   .matching-intro > strong {
     grid-column: 1 / -1;
+  }
+  .drag-drop-layout {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+  .meaning-bank {
+    order: -1;
+  }
+  .meaning-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .meaning-card {
+    min-height: 52px;
+    padding: 8px;
+    font-size: 12px;
+  }
+  .meaning-card svg {
+    display: none;
+  }
+  .drag-drop-row {
+    min-height: 66px;
+    grid-template-columns: 25px minmax(82px, 0.7fr) minmax(120px, 1fr);
+    gap: 7px;
+    padding: 7px 8px;
+  }
+  .drag-drop-number {
+    width: 24px;
+    height: 24px;
+  }
+  .drag-drop-slot {
+    min-height: 49px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+  .drag-drop-intro {
+    grid-template-columns: auto 1fr;
+    gap: 9px;
+  }
+  .drag-drop-intro > strong {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .drag-drop-intro h1 {
+    font-size: 20px;
+  }
+  .drag-drop-intro p {
+    display: none;
   }
   .session-results .live-stats-grid {
     grid-template-columns: 1fr 1fr;
@@ -2301,6 +2660,101 @@ html[dir="ltr"] .pack-search input {
   }
 }
 
+/* Short laptop viewports need the same one-screen guarantee as phones. Keep
+   the study controls in dedicated rows and use the available horizontal space
+   so the primary action never falls below the fold. */
+@media (min-width: 701px) and (max-height: 780px) {
+  .live-session {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .live-session .session-topbar {
+    min-height: 62px;
+    padding: 7px 5%;
+  }
+  .live-session .session-topbar .brand-logo {
+    width: 150px;
+  }
+  .live-session .session-brand {
+    gap: 12px;
+  }
+  .live-session .session-brand > span {
+    padding-inline-start: 12px;
+  }
+  .live-session-main {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 10px 24px;
+    overflow: auto;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-content: start;
+  }
+  .live-session-main.session-active {
+    overflow: hidden;
+  }
+  .live-session-main > .live-toolbar {
+    min-height: 30px;
+    flex-wrap: nowrap;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .live-session-progress {
+    height: 7px;
+    margin: 5px 0 9px;
+  }
+  .memorization-card {
+    min-height: 0;
+    max-height: 100%;
+    padding: 14px 18px;
+    overflow: hidden;
+    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 10px;
+  }
+  .memorization-visual {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  .memorization-copy {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 0;
+    align-self: center;
+    overflow: hidden;
+    gap: 6px;
+  }
+  .memorization-copy .eyebrow,
+  .memorization-copy blockquote {
+    display: none;
+  }
+  .memorization-copy h1 {
+    font-size: clamp(32px, 6vh, 48px);
+    line-height: 1.08;
+  }
+  .memorization-translation {
+    font-size: clamp(20px, 4vh, 27px);
+  }
+  .memorization-audio {
+    min-height: 40px;
+    margin-top: 0;
+  }
+  .memorization-actions {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
 /* Active practice is a viewport-sized experience on phones. The launch and
    results screens may still scroll, but an exercise and its action controls do
    not move below the fold. */
@@ -2388,6 +2842,7 @@ html[dir="ltr"] .pack-search input {
   }
   .live-exercise,
   .matching-panel,
+  .drag-drop-panel,
   .memorization-card {
     min-height: 0;
     max-height: 100%;
@@ -2516,6 +2971,39 @@ html[dir="ltr"] .pack-search input {
     padding: 7px 9px;
     border-radius: 11px;
     font-size: 13px;
+  }
+  .live-drag-drop {
+    height: 100%;
+    min-height: 0;
+    gap: 8px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .drag-drop-layout {
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .meaning-bank {
+    padding: 8px;
+    gap: 6px;
+  }
+  .meaning-bank-heading small {
+    display: none;
+  }
+  .meaning-card {
+    min-height: 42px;
+  }
+  .drag-drop-rows {
+    min-height: 0;
+    gap: 6px;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+  .drag-drop-row {
+    min-height: 0;
+    height: 100%;
+  }
+  .drag-drop-status {
+    display: none;
   }
   .memorization-copy {
     gap: 5px;

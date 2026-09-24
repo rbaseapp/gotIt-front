@@ -43,6 +43,7 @@ const gameTypes = new Set<GameType>([
   "recall",
   "listening",
   "matching",
+  "drag_drop",
   "pronunciation",
 ]);
 type Outcome = {
@@ -667,6 +668,250 @@ function Matching({
   );
 }
 
+function playDragDropCue(success: boolean) {
+  navigator.vibrate?.(success ? 18 : [16, 28, 16]);
+  if (!window.AudioContext) return;
+  try {
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const now = context.currentTime;
+    oscillator.type = success ? "sine" : "triangle";
+    oscillator.frequency.setValueAtTime(success ? 540 : 230, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      success ? 760 : 170,
+      now + 0.16,
+    );
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.045, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.19);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.2);
+    window.setTimeout(() => void context.close(), 300);
+  } catch {
+    // Sound is decorative and must never block the game.
+  }
+}
+
+function DemoDragDrop({
+  items,
+  onAttempt,
+  onDone,
+}: {
+  items: LearningItem[];
+  onAttempt: (item: LearningItem, outcome: Outcome) => void;
+  onDone: () => void;
+}) {
+  const { t } = useTranslation();
+  const pool = items.slice(0, 3);
+  const [meanings] = useState(() => shuffle(pool));
+  const [matched, setMatched] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string>();
+  const [dragging, setDragging] = useState<string>();
+  const [over, setOver] = useState<string>();
+  const [attempt, setAttempt] = useState<{
+    wordId: string;
+    meaningId: string;
+    correct: boolean;
+  }>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const place = (wordId: string, meaningId: string) => {
+    if (attempt || matched.includes(wordId) || matched.includes(meaningId))
+      return;
+    const word = pool.find((item) => item.id === wordId);
+    const meaning = pool.find((item) => item.id === meaningId);
+    if (!word || !meaning) return;
+    const correct = wordId === meaningId;
+    setSelected(undefined);
+    setDragging(undefined);
+    setOver(undefined);
+    setAttempt({ wordId, meaningId, correct });
+    playDragDropCue(correct);
+    onAttempt(word, {
+      score: correct ? 100 : 0,
+      userAnswer: meaning.translation,
+    });
+    timer.current = setTimeout(
+      () => {
+        setAttempt(undefined);
+        if (!correct) return;
+        const next = [...matched, wordId];
+        setMatched(next);
+        if (next.length === pool.length)
+          timer.current = setTimeout(onDone, 450);
+      },
+      correct ? 420 : 620,
+    );
+  };
+
+  return (
+    <div className="exercise-area demo-drag-drop">
+      <div className="live-drag-drop">
+        <div className="drag-drop-intro">
+          <span className="drag-drop-symbol" aria-hidden="true">
+            <Sparkles size={22} />
+          </span>
+          <div>
+            <h1>{t("game.dragDropTitle")}</h1>
+            <p>{t("game.dragDropHelp")}</p>
+          </div>
+          <strong>
+            {t("game.dragDropProgress", {
+              current: matched.length,
+              total: pool.length,
+            })}
+          </strong>
+        </div>
+        <div className="drag-drop-layout">
+          <div className="drag-drop-rows">
+            {pool.map((item, index) => {
+              const isMatched = matched.includes(item.id);
+              const activeAttempt = attempt?.wordId === item.id;
+              const attemptedMeaning = meanings.find(
+                (meaning) => meaning.id === attempt?.meaningId,
+              );
+              return (
+                <article
+                  className={cn(
+                    "drag-drop-row",
+                    isMatched && "is-complete",
+                    activeAttempt &&
+                      (attempt.correct ? "correct" : "incorrect"),
+                  )}
+                  key={item.id}
+                >
+                  <span className="drag-drop-number" aria-hidden="true">
+                    {isMatched ? <Check size={16} /> : index + 1}
+                  </span>
+                  <b className="drag-drop-word" dir="auto">
+                    {item.source}
+                  </b>
+                  <button
+                    type="button"
+                    className={cn(
+                      "drag-drop-slot",
+                      over === item.id && "is-over",
+                      selected && !isMatched && "is-ready",
+                      activeAttempt &&
+                        (attempt.correct ? "correct" : "incorrect"),
+                    )}
+                    data-drop-target={item.id}
+                    disabled={isMatched || Boolean(attempt)}
+                    aria-label={
+                      isMatched
+                        ? t("game.placedMeaning", { meaning: item.translation })
+                        : t("game.dropForWord", { word: item.source })
+                    }
+                    onClick={() => selected && place(item.id, selected)}
+                    onDragEnter={(event) => {
+                      event.preventDefault();
+                      setOver(item.id);
+                    }}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDragLeave={() => setOver(undefined)}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      const meaningId =
+                        event.dataTransfer.getData(
+                          "application/x-gotit-choice",
+                        ) || dragging;
+                      if (meaningId) place(item.id, meaningId);
+                    }}
+                  >
+                    {isMatched || (activeAttempt && attemptedMeaning) ? (
+                      <>
+                        <span dir="auto">
+                          {isMatched
+                            ? item.translation
+                            : attemptedMeaning?.translation}
+                        </span>
+                        {isMatched || attempt?.correct ? (
+                          <Check size={18} />
+                        ) : (
+                          <X size={18} />
+                        )}
+                      </>
+                    ) : (
+                      <span className="drop-placeholder">
+                        <span aria-hidden="true">+</span>
+                        {t("game.dropHere")}
+                      </span>
+                    )}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+          <section className="meaning-bank" aria-label={t("game.meaningsBank")}>
+            <div className="meaning-bank-heading">
+              <span>{t("game.meaningsBank")}</span>
+              <small>{t("game.meaningsBankHelp")}</small>
+            </div>
+            <div className="meaning-cards">
+              {meanings.map((item) => {
+                const resolved = matched.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    dir="auto"
+                    draggable={!resolved && !attempt}
+                    disabled={resolved || Boolean(attempt)}
+                    aria-pressed={selected === item.id}
+                    aria-label={t("game.dragMeaning", {
+                      meaning: item.translation,
+                    })}
+                    className={cn(
+                      "meaning-card",
+                      selected === item.id && "is-selected",
+                      dragging === item.id && "is-dragging",
+                      resolved && "is-resolved",
+                      attempt?.meaningId === item.id && "is-trying",
+                    )}
+                    onClick={() =>
+                      setSelected((current) =>
+                        current === item.id ? undefined : item.id,
+                      )
+                    }
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData(
+                        "application/x-gotit-choice",
+                        item.id,
+                      );
+                      setDragging(item.id);
+                      setSelected(undefined);
+                    }}
+                    onDragEnd={() => {
+                      setDragging(undefined);
+                      setOver(undefined);
+                    }}
+                  >
+                    <span aria-hidden="true">⋮⋮</span>
+                    <span>{item.translation}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+        <p className="drag-drop-status" aria-live="polite">
+          {attempt
+            ? attempt.correct
+              ? t("game.placedCorrect")
+              : t("demoGame.feedback.tryAgain")
+            : selected
+              ? t("game.meaningSelected")
+              : ""}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function Session({
   game,
   ids,
@@ -756,7 +1001,7 @@ function Session({
       expectedAnswer:
         outcome.direction === "meaning_to_source"
           ? item.source
-          : effectiveGame === "matching" || effectiveGame === "flashcards"
+          : ["matching", "drag_drop", "flashcards"].includes(effectiveGame)
             ? item.translation
             : item.source,
       hintsUsed: outcome.hintsUsed || 0,
@@ -767,7 +1012,8 @@ function Session({
       ...sessionRef.current,
       xp: sessionRef.current.xp + xp,
     };
-    if (effectiveGame === "matching") responseStarted.current = Date.now();
+    if (["matching", "drag_drop"].includes(effectiveGame))
+      responseStarted.current = Date.now();
     setOutcomes((current) => [
       ...current,
       { score: outcome.score, xp, result },
@@ -877,7 +1123,11 @@ function Session({
         </button>
         <div className="session-progress">
           <div>
-            <b>{t(`demoGame.titles.${game}`)}</b>
+            <b>
+              {game === "drag_drop"
+                ? t("learn.games.drag_drop.name")
+                : t(`demoGame.titles.${game}`)}
+            </b>
             <span>
               {t("demoGame.progress", {
                 current: index + 1,
@@ -915,7 +1165,14 @@ function Session({
           {effectiveGame === "matching" && (
             <Matching items={queue} onAttempt={addAttempt} onDone={finish} />
           )}
-          {effectiveGame !== "matching" && (
+          {effectiveGame === "drag_drop" && (
+            <DemoDragDrop
+              items={queue}
+              onAttempt={addAttempt}
+              onDone={finish}
+            />
+          )}
+          {!["matching", "drag_drop"].includes(effectiveGame) && (
             <button
               className="button ghost skip-button"
               onClick={() => next({ score: 0, result: "skipped" })}
