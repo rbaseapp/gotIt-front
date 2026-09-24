@@ -152,6 +152,16 @@ describe("complete frontend flows", () => {
       ),
     ).toEqual(ids);
   });
+  it("includes drag and drop in the smart learning flow", async () => {
+    mount("/learn/session/smart");
+    await screen.findByRole("heading", {
+      name: "התאימו כל פירוש למילה",
+    });
+    expect(document.querySelectorAll(".drag-drop-row")).toHaveLength(3);
+    expect(
+      JSON.parse(localStorage.getItem("gotit.demo.v2")!).attempts,
+    ).toHaveLength(0);
+  });
   it("handles microphone denial honestly and skips pronunciation without an invented score or XP", async () => {
     const getUserMedia = vi.fn(async () => {
       throw new DOMException("Denied", "NotAllowedError");

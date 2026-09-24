@@ -387,12 +387,7 @@ export function LiveDragDropBoard({
       <div className="drag-drop-actions" aria-live="polite">
         {results ? (
           <>
-            <strong>
-              {t("game.dragDropScore", {
-                correct: correctCount,
-                total: exercises.length,
-              })}
-            </strong>
+            <span>{t("game.boardChecked")}</span>
             <button className="button primary" type="button" onClick={onDone}>
               {t("game.continueToSummary")}
             </button>
