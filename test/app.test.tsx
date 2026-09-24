@@ -143,9 +143,7 @@ describe("complete frontend flows", () => {
       ).toHaveLength(3),
     );
     expect(screen.getByText("3 מתוך 3 נכונות")).toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: "המשך לסיכום" }),
-    );
+    await user.click(screen.getByRole("button", { name: "המשך לסיכום" }));
 
     await screen.findByRole("heading", { name: "עבודה מעולה!" });
     expect(

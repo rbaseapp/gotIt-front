@@ -723,9 +723,12 @@ describe("live server-backed flows", () => {
         ...transfer,
         value: "",
       };
-      fireEvent.dragStart(document.querySelectorAll(".meaning-card")[position], {
-        dataTransfer: nextTransfer,
-      });
+      fireEvent.dragStart(
+        document.querySelectorAll(".meaning-card")[position],
+        {
+          dataTransfer: nextTransfer,
+        },
+      );
       fireEvent.drop(document.querySelectorAll(".drag-drop-slot")[position], {
         dataTransfer: nextTransfer,
       });
