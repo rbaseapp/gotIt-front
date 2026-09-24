@@ -1,13 +1,22 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
 } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Filter,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
 import { Modal } from "../components/Modal";
@@ -76,6 +85,11 @@ export function LiveVocabularyPage() {
   const [action, setAction] = useState("pause");
   const [add, setAdd] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(() =>
+    typeof window === "undefined" || typeof window.matchMedia !== "function"
+      ? true
+      : window.matchMedia("(min-width: 860px)").matches,
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const url = `learning-items${query({
@@ -102,7 +116,27 @@ export function LiveVocabularyPage() {
   const packs = useResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
   );
-  const installedPacks = packs.data?.packs.filter((pack) => pack.installed);
+  const installedTopics = useMemo(() => {
+    const topics = new Map<
+      string,
+      { id: string; title: string; packIds: string[]; wordCount: number }
+    >();
+    for (const pack of packs.data?.packs || []) {
+      if (!pack.installed) continue;
+      const current = topics.get(pack.topic.id) || {
+        id: pack.topic.id,
+        title: pack.topic.title,
+        packIds: [],
+        wordCount: 0,
+      };
+      current.packIds.push(pack.id);
+      current.wordCount += pack.progress.linked;
+      topics.set(pack.topic.id, current);
+    }
+    return [...topics.values()].sort((left, right) =>
+      left.title.localeCompare(right.title),
+    );
+  }, [packs.data]);
   const reloadLibrary = resource.reload;
   useEffect(() => {
     if (resource.data?.pageCount && pageNumber > resource.data.pageCount)
@@ -121,15 +155,31 @@ export function LiveVocabularyPage() {
     setPageNumber(1);
     setSelected([]);
   };
-  const togglePack = (id: string, checked: boolean) => {
-    const current = (filters.packIds || "").split(",").filter(Boolean);
-    change(
-      "packIds",
-      (checked
-        ? [...current, id]
-        : current.filter((packId) => packId !== id)
-      ).join(","),
-    );
+  const toggleTopic = (packIds: string[]) => {
+    const current = new Set((filters.packIds || "").split(",").filter(Boolean));
+    const selected = packIds.every((id) => current.has(id));
+    for (const id of packIds) {
+      if (selected) current.delete(id);
+      else current.add(id);
+    }
+    change("packIds", [...current].join(","));
+  };
+  const activeFilterCount = [
+    filters.userStatus !== "all" ? filters.userStatus : "",
+    filters.learningStatus,
+    filters.tagId,
+    filters.sourceLanguageCode,
+    filters.translationLanguageCode,
+    filters.difficult,
+    filters.highPriority,
+    filters.due,
+    filters.sort !== "alphabetical" ? filters.sort : "",
+  ].filter(Boolean).length;
+  const clearFilters = () => {
+    setSearch("");
+    setFilters({ userStatus: "all", sort: "alphabetical" });
+    setPageNumber(1);
+    setSelected([]);
   };
   const apply = async (ids = selected, operation = action) => {
     if (!canWrite) {
@@ -214,165 +264,226 @@ export function LiveVocabularyPage() {
             {t("vocabulary.search")}
           </button>
         </form>
-        <div className="live-filter-grid">
-          <label className="field">
-            <span>{t("vocabulary.userStatus")}</span>
-            <select
-              value={filters.userStatus}
-              onChange={(e) => change("userStatus", e.target.value)}
+        <div className="vocabulary-topic-picker">
+          <div className="vocabulary-topic-heading">
+            <div>
+              <Compass size={19} aria-hidden="true" />
+              <span>{t("vocabulary.topicsInLibrary")}</span>
+            </div>
+            <Link className="text-link" to="/word-packs">
+              {t("vocabulary.discoverTopics")}
+            </Link>
+          </div>
+          {installedTopics.length > 0 ? (
+            <div
+              className="vocabulary-topic-list"
+              role="group"
+              aria-label={t("vocabulary.filterByTopic")}
             >
-              <option value="all">{t("vocabulary.allExceptDeleted")}</option>
-              {["active", "paused", "archived", "deleted"].map((s) => (
-                <option key={s} value={s}>
-                  {labels[s]}
-                </option>
-              ))}
-            </select>
-            {(tagHistory.length > 0 || tags.data?.nextCursor) && (
-              <span className="live-options">
-                {tagHistory.length > 0 && (
+              <button
+                type="button"
+                className={`vocabulary-topic-chip ${filters.packIds ? "" : "active"}`}
+                aria-pressed={!filters.packIds}
+                onClick={() => change("packIds", "")}
+              >
+                {t("vocabulary.allWords")}
+              </button>
+              {installedTopics.map((topic) => {
+                const selectedPackIds = new Set(
+                  (filters.packIds || "").split(",").filter(Boolean),
+                );
+                const active = topic.packIds.every((id) =>
+                  selectedPackIds.has(id),
+                );
+                return (
                   <button
                     type="button"
-                    className="button ghost"
-                    onClick={() => {
-                      const previous = tagHistory.at(-1);
-                      setTagHistory((values) => values.slice(0, -1));
-                      setTagCursor(previous);
-                      change("tagId", "");
-                    }}
+                    className={`vocabulary-topic-chip ${active ? "active" : ""}`}
+                    aria-pressed={active}
+                    key={topic.id}
+                    onClick={() => toggleTopic(topic.packIds)}
                   >
-                    {t("vocabulary.previousTags")}
+                    <span>{topic.title}</span>
+                    <small>{topic.wordCount}</small>
                   </button>
-                )}
-                {tags.data?.nextCursor && (
-                  <button
-                    type="button"
-                    className="button ghost"
-                    onClick={() => {
-                      setTagHistory((values) => [...values, tagCursor]);
-                      setTagCursor(tags.data!.nextCursor || undefined);
-                      change("tagId", "");
-                    }}
-                  >
-                    {t("vocabulary.moreTags")}
-                  </button>
-                )}
-              </span>
-            )}
-          </label>
-          <label className="field">
-            <span>{t("vocabulary.learningStatus")}</span>
-            <select
-              value={filters.learningStatus || ""}
-              onChange={(e) => change("learningStatus", e.target.value)}
-            >
-              <option value="">{t("vocabulary.allStatuses")}</option>
-              {["new", "learning", "reviewing", "mastered"].map((s) => (
-                <option key={s} value={s}>
-                  {labels[s]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>{t("vocabulary.sort")}</span>
-            <select
-              value={filters.sort}
-              onChange={(e) => change("sort", e.target.value)}
-            >
-              {[
-                "alphabetical",
-                "learning_status",
-                "recent",
-                "weakest",
-                "strongest",
-                "due_next",
-                "most_practiced",
-              ].map((k) => (
-                <option key={k} value={k}>
-                  {t(`vocabulary.sortOptions.${k}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>{t("vocabulary.tag")}</span>
-            <select
-              value={filters.tagId || ""}
-              onChange={(e) => change("tagId", e.target.value)}
-            >
-              <option value="">{t("vocabulary.allTags")}</option>
-              {tags.data?.tags.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>{t("vocabulary.sourceLanguage")}</span>
-            <input
-              dir="ltr"
-              maxLength={64}
-              value={filters.sourceLanguageCode || ""}
-              onChange={(e) => change("sourceLanguageCode", e.target.value)}
-              placeholder="en / fr"
-            />
-          </label>
-          <label className="field">
-            <span>{t("vocabulary.translationLanguage")}</span>
-            <input
-              dir="ltr"
-              maxLength={64}
-              value={filters.translationLanguageCode || ""}
-              onChange={(e) =>
-                change("translationLanguageCode", e.target.value)
-              }
-              placeholder="he / en"
-            />
-          </label>
-          <fieldset className="field pack-filter-field">
-            <legend>{t("vocabulary.filterPacks")}</legend>
-            <span className="pack-filter-options">
-              {installedPacks?.map((pack) => (
-                <label className="live-checkbox" key={pack.id}>
-                  <input
-                    type="checkbox"
-                    checked={(filters.packIds || "")
-                      .split(",")
-                      .includes(pack.id)}
-                    onChange={(event) =>
-                      togglePack(pack.id, event.target.checked)
-                    }
-                  />
-                  {pack.title}
-                </label>
-              ))}
-              {installedPacks && !installedPacks.length && (
-                <small>{t("vocabulary.noActivePacks")}</small>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="vocabulary-no-topics">
+              {t("vocabulary.noActivePacks")}
+            </p>
+          )}
+        </div>
+        <details
+          className="vocabulary-advanced-filters"
+          open={filtersOpen}
+          onToggle={(event) => setFiltersOpen(event.currentTarget.open)}
+        >
+          <summary>
+            <span>
+              <Filter size={18} aria-hidden="true" />
+              {t("vocabulary.advancedFilters")}
+              {activeFilterCount > 0 && (
+                <b
+                  aria-label={t("vocabulary.activeFilterCount", {
+                    count: activeFilterCount,
+                  })}
+                >
+                  {activeFilterCount}
+                </b>
               )}
             </span>
-          </fieldset>
-        </div>
-        <div className="live-options">
-          {["difficult", "highPriority", "due"].map((key) => (
-            <label className="live-checkbox" key={key}>
-              <input
-                type="checkbox"
-                checked={filters[key] === "true"}
-                onChange={(e) => change(key, e.target.checked ? "true" : "")}
-              />
-              {t(`vocabulary.filters.${key}`)}
+            <small>{t("vocabulary.advancedFiltersHint")}</small>
+          </summary>
+          <div className="live-filter-grid">
+            <label className="field">
+              <span>{t("vocabulary.userStatus")}</span>
+              <select
+                value={filters.userStatus}
+                onChange={(e) => change("userStatus", e.target.value)}
+              >
+                <option value="all">{t("vocabulary.allExceptDeleted")}</option>
+                {["active", "paused", "archived", "deleted"].map((s) => (
+                  <option key={s} value={s}>
+                    {labels[s]}
+                  </option>
+                ))}
+              </select>
+              {(tagHistory.length > 0 || tags.data?.nextCursor) && (
+                <span className="live-options">
+                  {tagHistory.length > 0 && (
+                    <button
+                      type="button"
+                      className="button ghost"
+                      onClick={() => {
+                        const previous = tagHistory.at(-1);
+                        setTagHistory((values) => values.slice(0, -1));
+                        setTagCursor(previous);
+                        change("tagId", "");
+                      }}
+                    >
+                      {t("vocabulary.previousTags")}
+                    </button>
+                  )}
+                  {tags.data?.nextCursor && (
+                    <button
+                      type="button"
+                      className="button ghost"
+                      onClick={() => {
+                        setTagHistory((values) => [...values, tagCursor]);
+                        setTagCursor(tags.data!.nextCursor || undefined);
+                        change("tagId", "");
+                      }}
+                    >
+                      {t("vocabulary.moreTags")}
+                    </button>
+                  )}
+                </span>
+              )}
             </label>
-          ))}
-          <button
-            className="button ghost"
-            disabled={!canWrite}
-            onClick={() => setTagsOpen(true)}
-          >
-            {t("vocabulary.manageTags")}
-          </button>
-        </div>
+            <label className="field">
+              <span>{t("vocabulary.learningStatus")}</span>
+              <select
+                value={filters.learningStatus || ""}
+                onChange={(e) => change("learningStatus", e.target.value)}
+              >
+                <option value="">{t("vocabulary.allStatuses")}</option>
+                {["new", "learning", "reviewing", "mastered"].map((s) => (
+                  <option key={s} value={s}>
+                    {labels[s]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>{t("vocabulary.sort")}</span>
+              <select
+                value={filters.sort}
+                onChange={(e) => change("sort", e.target.value)}
+              >
+                {[
+                  "alphabetical",
+                  "learning_status",
+                  "recent",
+                  "weakest",
+                  "strongest",
+                  "due_next",
+                  "most_practiced",
+                ].map((k) => (
+                  <option key={k} value={k}>
+                    {t(`vocabulary.sortOptions.${k}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>{t("vocabulary.tag")}</span>
+              <select
+                value={filters.tagId || ""}
+                onChange={(e) => change("tagId", e.target.value)}
+              >
+                <option value="">{t("vocabulary.allTags")}</option>
+                {tags.data?.tags.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>{t("vocabulary.sourceLanguage")}</span>
+              <input
+                dir="ltr"
+                maxLength={64}
+                value={filters.sourceLanguageCode || ""}
+                onChange={(e) => change("sourceLanguageCode", e.target.value)}
+                placeholder="en / fr"
+              />
+            </label>
+            <label className="field">
+              <span>{t("vocabulary.translationLanguage")}</span>
+              <input
+                dir="ltr"
+                maxLength={64}
+                value={filters.translationLanguageCode || ""}
+                onChange={(e) =>
+                  change("translationLanguageCode", e.target.value)
+                }
+                placeholder="he / en"
+              />
+            </label>
+          </div>
+          <div className="live-options vocabulary-filter-actions">
+            {["difficult", "highPriority", "due"].map((key) => (
+              <label className="live-checkbox" key={key}>
+                <input
+                  type="checkbox"
+                  checked={filters[key] === "true"}
+                  onChange={(e) => change(key, e.target.checked ? "true" : "")}
+                />
+                {t(`vocabulary.filters.${key}`)}
+              </label>
+            ))}
+            <button
+              type="button"
+              className="button ghost"
+              disabled={!canWrite}
+              onClick={() => setTagsOpen(true)}
+            >
+              {t("vocabulary.manageTags")}
+            </button>
+            {(activeFilterCount > 0 || filters.packIds || filters.search) && (
+              <button
+                type="button"
+                className="button ghost"
+                onClick={clearFilters}
+              >
+                <X size={16} /> {t("vocabulary.clearFilters")}
+              </button>
+            )}
+          </div>
+        </details>
       </section>
       <RemoteState
         loading={resource.loading}
@@ -486,12 +597,14 @@ export function LiveVocabularyPage() {
                     {item.sourceLanguageCode} ← {item.translationLanguageCode}
                   </small>
                 </button>
-                <span className="pill">
-                  {filters.userStatus === "deleted"
-                    ? t("labels.deleted")
-                    : labels[item.userStatus]}
-                </span>
-                <span className="pill">{labels[item.learningStatus]}</span>
+                <div className="live-word-statuses">
+                  <span className="pill">
+                    {filters.userStatus === "deleted"
+                      ? t("labels.deleted")
+                      : labels[item.userStatus]}
+                  </span>
+                  <span className="pill">{labels[item.learningStatus]}</span>
+                </div>
                 <div className="live-word-progress">
                   <b>{Math.round(item.overallMasteryScore)}%</b>
                   <progress

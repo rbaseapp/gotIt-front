@@ -61,6 +61,130 @@
 .live-search .button {
   align-self: end;
 }
+.vocabulary-topic-picker {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.vocabulary-topic-heading,
+.vocabulary-topic-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vocabulary-topic-heading {
+  justify-content: space-between;
+}
+.vocabulary-topic-heading > div {
+  color: var(--green-dark);
+  font-weight: 700;
+}
+.vocabulary-topic-heading .text-link {
+  font-size: 13px;
+}
+.vocabulary-topic-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 7px;
+  scrollbar-width: thin;
+}
+.vocabulary-topic-chip {
+  min-height: 43px;
+  padding: 8px 13px;
+  border: 1px solid #dce5df;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  color: #40564a;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.vocabulary-topic-chip small {
+  min-width: 24px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #52685b;
+  background: #eef3ef;
+  text-align: center;
+  line-height: 1.5;
+}
+.vocabulary-topic-chip:hover,
+.vocabulary-topic-chip.active {
+  border-color: #6aa37b;
+  color: #164f35;
+  background: #edf7f0;
+}
+.vocabulary-topic-chip.active small {
+  color: #fff;
+  background: #347a54;
+}
+.vocabulary-no-topics {
+  margin: 0;
+  color: #5d6f65;
+  font-size: 13px;
+}
+.vocabulary-advanced-filters {
+  margin-top: 15px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcfa;
+  overflow: hidden;
+}
+.live-page .vocabulary-advanced-filters > summary {
+  min-height: 54px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #344c3f;
+  list-style: none;
+}
+.vocabulary-advanced-filters > summary::-webkit-details-marker {
+  display: none;
+}
+.vocabulary-advanced-filters > summary > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.vocabulary-advanced-filters > summary b {
+  display: grid;
+  min-width: 23px;
+  height: 23px;
+  padding: 0 6px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--green);
+  font-size: 11px;
+}
+.vocabulary-advanced-filters > summary small {
+  color: #66796e;
+  font-weight: 400;
+}
+.vocabulary-advanced-filters[open] > summary {
+  border-bottom: 1px solid var(--line);
+  background: #f5f8f4;
+}
+.vocabulary-advanced-filters .live-filter-grid {
+  margin: 0;
+  padding: 18px 16px 0;
+}
+.vocabulary-filter-actions {
+  padding: 0 16px 16px;
+}
+.vocabulary-filter-actions .button:last-child {
+  margin-inline-start: auto;
+}
 .live-options {
   margin-top: 18px;
 }
@@ -155,6 +279,11 @@ html[dir="ltr"] .pagination-arrow svg {
 }
 .live-word-row:last-child {
   border: 0;
+}
+.live-word-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .live-word-button {
   display: grid;
@@ -771,6 +900,159 @@ progress::-webkit-progress-value {
   display: grid;
   gap: 28px;
 }
+.pack-explorer {
+  display: grid;
+  gap: 20px;
+  background: linear-gradient(145deg, #fff 0%, #f7fbf7 100%);
+}
+.pack-explorer-heading,
+.pack-explorer-title,
+.pack-overview,
+.pack-explorer-filters {
+  display: flex;
+  align-items: center;
+}
+.pack-explorer-heading {
+  justify-content: space-between;
+  gap: 24px;
+}
+.pack-explorer-title {
+  gap: 12px;
+}
+.pack-explorer-title h2,
+.pack-explorer-title p {
+  margin: 0;
+}
+.pack-explorer-title p {
+  margin-top: 4px;
+  color: #5d6f65;
+  font-size: 13px;
+}
+.pack-overview {
+  gap: 8px;
+}
+.pack-overview > span {
+  min-width: 84px;
+  padding: 9px 12px;
+  border: 1px solid #e1e9e3;
+  border-radius: 12px;
+  display: grid;
+  gap: 2px;
+  color: #607167;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  text-align: center;
+}
+.pack-overview b {
+  color: var(--green-dark);
+  font-size: 19px;
+}
+.pack-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pack-search svg {
+  position: absolute;
+  inset-inline-start: 15px;
+  color: #688074;
+  pointer-events: none;
+}
+.pack-search input {
+  width: 100%;
+  min-height: 49px;
+  padding: 10px 44px 10px 15px;
+  border: 1px solid #d8e2dc;
+  border-radius: 13px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+html[dir="ltr"] .pack-search input {
+  padding: 10px 15px 10px 44px;
+}
+.pack-topic-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 10px;
+}
+.pack-topic-card {
+  position: relative;
+  min-height: 94px;
+  padding: 15px;
+  border: 1px solid #dce6df;
+  border-radius: 14px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  color: var(--ink);
+  background: #fff;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+.pack-topic-card:hover {
+  border-color: #8ab99a;
+  transform: translateY(-1px);
+}
+.pack-topic-card.active {
+  border-color: #57936b;
+  background: #edf7f0;
+  box-shadow: 0 0 0 2px rgba(60, 130, 84, 0.1);
+}
+.pack-topic-card strong {
+  padding-inline-end: 24px;
+  font-size: 14px;
+}
+.pack-topic-card small {
+  color: #627269;
+  font-size: 11px;
+}
+.pack-topic-card em {
+  color: var(--green-dark);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+.pack-topic-check {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  width: 23px;
+  height: 23px;
+  border: 1px solid #d7e1da;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  background: #fff;
+}
+.pack-topic-card.active .pack-topic-check {
+  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
+}
+.pack-explorer-filters {
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid #e2e9e3;
+}
+.pack-explorer-filters .field {
+  width: min(210px, 100%);
+}
+.pack-results-summary {
+  margin: 20px 0 0;
+  margin-inline-start: auto;
+  color: #53675c;
+  font-size: 13px;
+}
+.pack-explorer-filters > .button {
+  margin-top: 20px;
+}
 .pack-track {
   display: grid;
   gap: 16px;
@@ -816,6 +1098,20 @@ progress::-webkit-progress-value {
 }
 .pack-card.installed {
   border-color: #a8cfb3;
+}
+.pack-card-context {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pack-card-context span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #4f685a;
+  background: #f0f4f1;
+  font-size: 10px;
+  font-weight: 650;
 }
 .pack-card h3,
 .pack-card p {
@@ -886,17 +1182,178 @@ progress::-webkit-progress-value {
   width: 100%;
   margin-top: 7px;
 }
+.pack-empty-results {
+  min-height: 230px;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+}
+.pack-empty-results svg {
+  color: var(--green);
+}
+.pack-empty-results h2,
+.pack-empty-results p {
+  margin: 0;
+}
+.pack-empty-results p {
+  color: #5d6e64;
+}
 @media (max-width: 1000px) {
   .pack-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 650px) {
+  .pack-explorer {
+    gap: 16px;
+  }
+  .pack-explorer-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pack-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pack-overview > span {
+    min-width: 0;
+    padding: 8px 5px;
+  }
+  .pack-topic-list {
+    margin-inline: -20px;
+    padding: 2px 20px 9px;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: inline mandatory;
+  }
+  .pack-topic-card {
+    flex: 0 0 min(72vw, 220px);
+    scroll-snap-align: start;
+  }
+  .pack-explorer-filters {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .pack-explorer-filters .field {
+    width: auto;
+  }
+  .pack-results-summary {
+    margin: 4px 0 0;
+    align-self: center;
+  }
+  .pack-explorer-filters > .button {
+    margin: 0;
+    justify-content: center;
+  }
   .pack-grid {
     grid-template-columns: 1fr;
   }
   .pack-card {
     min-height: 0;
+    padding: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .vocabulary-page.live-page {
+    gap: 16px;
+  }
+  .vocabulary-page > .live-panel {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .vocabulary-page .live-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 46px;
+    gap: 8px;
+  }
+  .vocabulary-page .live-search .button {
+    width: 46px;
+    min-width: 46px;
+    padding: 0;
+    font-size: 0;
+  }
+  .vocabulary-topic-picker {
+    margin-top: 17px;
+    padding-top: 16px;
+  }
+  .vocabulary-topic-heading {
+    align-items: flex-start;
+  }
+  .vocabulary-topic-list {
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+  .live-page .vocabulary-advanced-filters > summary {
+    padding: 11px 13px;
+  }
+  .vocabulary-advanced-filters > summary small {
+    display: none;
+  }
+  .vocabulary-advanced-filters .live-filter-grid {
+    padding: 15px 13px 0;
+  }
+  .vocabulary-filter-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 13px 13px;
+  }
+  .vocabulary-filter-actions .live-checkbox {
+    min-height: 38px;
+  }
+  .vocabulary-filter-actions .button {
+    justify-content: center;
+  }
+  .vocabulary-filter-actions .button:last-child {
+    margin: 0;
+  }
+  .vocabulary-page .live-toolbar {
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    background: #fff;
+  }
+  .vocabulary-page .live-toolbar .button,
+  .vocabulary-page .live-toolbar select {
+    width: 100%;
+    justify-content: center;
+  }
+  .vocabulary-page .live-word-row {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: start;
+    padding: 16px 14px;
+  }
+  .vocabulary-page .live-word-row > input {
+    margin-top: 4px;
+  }
+  .vocabulary-page .live-word-button,
+  .vocabulary-page .live-word-statuses,
+  .vocabulary-page .live-word-progress,
+  .vocabulary-page .live-word-row > .button {
+    grid-column: 2;
+    width: 100%;
+  }
+  .vocabulary-page .live-word-button strong {
+    font-size: 18px;
+  }
+  .vocabulary-page .live-word-statuses {
+    margin-top: 2px;
+  }
+  .vocabulary-page .live-word-progress {
+    margin-top: 4px;
+  }
+  .vocabulary-page .live-pagination {
+    gap: 6px;
+  }
+  .vocabulary-page .pagination-page {
+    min-width: 38px;
+    height: 38px;
   }
 }
 

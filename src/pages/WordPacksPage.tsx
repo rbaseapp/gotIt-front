@@ -2,10 +2,14 @@ import { useCallback, useMemo, useState } from "react";
 import {
   BookOpenCheck,
   BriefcaseBusiness,
+  Check,
+  Compass,
   Eye,
   Layers3,
   Play,
+  Search,
   Trash2,
+  X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "../components/Modal";
@@ -43,9 +47,57 @@ export function WordPacksPage() {
   const [busy, setBusy] = useState<string>();
   const [detailLoading, setDetailLoading] = useState(false);
   const [dialog, setDialog] = useState<PackDialog>();
+  const [search, setSearch] = useState("");
+  const [topicId, setTopicId] = useState("");
+  const [level, setLevel] = useState("");
+  const [availability, setAvailability] = useState("");
+  const topics = useMemo(() => {
+    const available = new Map<
+      string,
+      {
+        id: string;
+        title: string;
+        packCount: number;
+        wordCount: number;
+        installedCount: number;
+      }
+    >();
+    for (const pack of packs.data?.packs || []) {
+      const current = available.get(pack.topic.id) || {
+        id: pack.topic.id,
+        title: pack.topic.title,
+        packCount: 0,
+        wordCount: 0,
+        installedCount: 0,
+      };
+      current.packCount += 1;
+      current.wordCount += pack.wordCount;
+      current.installedCount += pack.installed ? 1 : 0;
+      available.set(pack.topic.id, current);
+    }
+    return [...available.values()].sort((left, right) =>
+      left.title.localeCompare(right.title),
+    );
+  }, [packs.data]);
+  const filteredPacks = useMemo(() => {
+    const needle = search.trim().toLocaleLowerCase();
+    return (packs.data?.packs || []).filter((pack) => {
+      if (topicId && pack.topic.id !== topicId) return false;
+      if (level && pack.track.levelCode !== level) return false;
+      if (availability === "installed" && !pack.installed) return false;
+      if (availability === "available" && pack.installed) return false;
+      if (!needle) return true;
+      return [
+        pack.title,
+        pack.description,
+        pack.topic.title,
+        pack.track.title,
+      ].some((value) => value.toLocaleLowerCase().includes(needle));
+    });
+  }, [availability, level, packs.data, search, topicId]);
   const grouped = useMemo(() => {
     const groups = new Map<string, { title: string; packs: WordPack[] }>();
-    for (const pack of packs.data?.packs || []) {
+    for (const pack of filteredPacks) {
       const current = groups.get(pack.track.id) || {
         title: pack.track.title,
         packs: [],
@@ -54,7 +106,16 @@ export function WordPacksPage() {
       groups.set(pack.track.id, current);
     }
     return [...groups.values()];
-  }, [packs.data]);
+  }, [filteredPacks]);
+  const installedCount =
+    packs.data?.packs.filter((pack) => pack.installed).length || 0;
+  const hasFilters = Boolean(search || topicId || level || availability);
+  const clearFilters = () => {
+    setSearch("");
+    setTopicId("");
+    setLevel("");
+    setAvailability("");
+  };
 
   const openWords = async (pack: WordPack, selectable: boolean) => {
     if (selectable && !hasEntitlement("vocabulary.write")) {
@@ -97,7 +158,11 @@ export function WordPacksPage() {
         { entryIds: dialog.selected },
       );
       toast(
-        t("packs.added", { selected: dialog.selected.length, added: receipt.added, existing: receipt.linkedExisting }),
+        t("packs.added", {
+          selected: dialog.selected.length,
+          added: receipt.added,
+          existing: receipt.linkedExisting,
+        }),
         { tone: "success" },
       );
       setDialog(undefined);
@@ -115,7 +180,9 @@ export function WordPacksPage() {
       message: keepWords
         ? t("packs.unlinkDescription")
         : t("packs.removeDescription"),
-      confirmLabel: keepWords ? t("packs.unlinkConfirm") : t("packs.removeConfirm"),
+      confirmLabel: keepWords
+        ? t("packs.unlinkConfirm")
+        : t("packs.removeConfirm"),
       tone: keepWords ? "warning" : "danger",
     });
     if (!approved) return;
@@ -129,7 +196,10 @@ export function WordPacksPage() {
       toast(
         keepWords
           ? t("packs.retained", { count: receipt.retained })
-          : t("packs.archived", { archived: receipt.archived, retained: receipt.retained }),
+          : t("packs.archived", {
+              archived: receipt.archived,
+              retained: receipt.retained,
+            }),
         { tone: "success" },
       );
       await packs.reload();
@@ -166,6 +236,137 @@ export function WordPacksPage() {
         error={packs.error}
         retry={() => void packs.reload()}
       />
+      {packs.data && packs.data.packs.length > 0 && (
+        <section
+          className="pack-explorer live-panel"
+          aria-labelledby="pack-explorer-title"
+        >
+          <div className="pack-explorer-heading">
+            <div className="pack-explorer-title">
+              <span className="pack-track-icon">
+                <Compass size={22} />
+              </span>
+              <div>
+                <h2 id="pack-explorer-title">{t("packs.availableTopics")}</h2>
+                <p>{t("packs.availableTopicsDescription")}</p>
+              </div>
+            </div>
+            <div
+              className="pack-overview"
+              aria-label={t("packs.overviewLabel")}
+            >
+              <span>
+                <b>{topics.length}</b>
+                {t("packs.topicCount", { count: topics.length })}
+              </span>
+              <span>
+                <b>{packs.data.packs.length}</b>
+                {t("packs.title")}
+              </span>
+              <span>
+                <b>{installedCount}</b>
+                {t("packs.installed")}
+              </span>
+            </div>
+          </div>
+          <label className="pack-search">
+            <Search size={19} aria-hidden="true" />
+            <span className="sr-only">{t("packs.searchLabel")}</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t("packs.searchPlaceholder")}
+            />
+          </label>
+          <div
+            className="pack-topic-list"
+            role="group"
+            aria-label={t("packs.chooseTopic")}
+          >
+            <button
+              type="button"
+              className={`pack-topic-card ${topicId ? "" : "active"}`}
+              aria-pressed={!topicId}
+              onClick={() => setTopicId("")}
+            >
+              <span className="pack-topic-check">
+                <Check size={15} />
+              </span>
+              <strong>{t("packs.allTopics")}</strong>
+              <small>
+                {t("packs.packCount", { count: packs.data.packs.length })}
+              </small>
+            </button>
+            {topics.map((topic) => (
+              <button
+                type="button"
+                className={`pack-topic-card ${topicId === topic.id ? "active" : ""}`}
+                aria-pressed={topicId === topic.id}
+                key={topic.id}
+                onClick={() => setTopicId(topic.id === topicId ? "" : topic.id)}
+              >
+                <span className="pack-topic-check">
+                  <Check size={15} />
+                </span>
+                <strong>{topic.title}</strong>
+                <small>
+                  {t("packs.topicSummary", {
+                    packs: topic.packCount,
+                    words: topic.wordCount,
+                  })}
+                </small>
+                {topic.installedCount > 0 && (
+                  <em>
+                    {t("packs.topicAdded", { count: topic.installedCount })}
+                  </em>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="pack-explorer-filters">
+            <label className="field">
+              <span>{t("packs.levelFilter")}</span>
+              <select
+                value={level}
+                onChange={(event) => setLevel(event.target.value)}
+              >
+                <option value="">{t("packs.allLevels")}</option>
+                {(["beginner", "intermediate", "advanced"] as const).map(
+                  (value) => (
+                    <option value={value} key={value}>
+                      {t(`packs.levels.${value}`)}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+            <label className="field">
+              <span>{t("packs.availabilityFilter")}</span>
+              <select
+                value={availability}
+                onChange={(event) => setAvailability(event.target.value)}
+              >
+                <option value="">{t("packs.allPacks")}</option>
+                <option value="installed">{t("packs.addedPacks")}</option>
+                <option value="available">{t("packs.notAddedPacks")}</option>
+              </select>
+            </label>
+            <p className="pack-results-summary" role="status">
+              {t("packs.resultsSummary", { count: filteredPacks.length })}
+            </p>
+            {hasFilters && (
+              <button
+                type="button"
+                className="button ghost"
+                onClick={clearFilters}
+              >
+                <X size={16} /> {t("packs.clearFilters")}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
       {grouped.map((group) => (
         <section className="pack-track" key={group.packs[0]!.track.id}>
           <div className="pack-track-heading">
@@ -188,7 +389,8 @@ export function WordPacksPage() {
               >
                 <div className="pack-card-top">
                   <span className="pack-module">
-                    <Layers3 size={16} /> {t("packs.module", { number: pack.moduleNumber })}
+                    <Layers3 size={16} />{" "}
+                    {t("packs.module", { number: pack.moduleNumber })}
                   </span>
                   {pack.installed && (
                     <span className="pack-installed">
@@ -199,19 +401,28 @@ export function WordPacksPage() {
                     </span>
                   )}
                 </div>
+                <div className="pack-card-context">
+                  <span>{pack.topic.title}</span>
+                  <span>
+                    {t(`packs.levels.${pack.track.levelCode}`)} ·{" "}
+                    {pack.track.cefrFrom}–{pack.track.cefrTo}
+                  </span>
+                </div>
                 <h3>{pack.title}</h3>
                 <p>{pack.description}</p>
                 <div className="pack-counts">
-                  <span>
-                    {t("packs.wordCount", { count: pack.wordCount })}
-                  </span>
+                  <span>{t("packs.wordCount", { count: pack.wordCount })}</span>
                   {pack.installed && (
                     <>
                       <span>
-                        {t("packs.selectedCount", { count: pack.progress.linked })}
+                        {t("packs.selectedCount", {
+                          count: pack.progress.linked,
+                        })}
                       </span>
                       <span>
-                        {t("packs.masteredCount", { count: pack.progress.mastered })}
+                        {t("packs.masteredCount", {
+                          count: pack.progress.mastered,
+                        })}
                       </span>
                     </>
                   )}
@@ -272,7 +483,25 @@ export function WordPacksPage() {
           </div>
         </section>
       ))}
-      {!packs.loading && !packs.error && !grouped.length && (
+      {!packs.loading &&
+        !packs.error &&
+        packs.data &&
+        packs.data.packs.length > 0 &&
+        !grouped.length && (
+          <section className="pack-empty-results live-panel">
+            <Compass size={30} />
+            <h2>{t("packs.noResultsTitle")}</h2>
+            <p>{t("packs.noResultsDescription")}</p>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={clearFilters}
+            >
+              {t("packs.clearFilters")}
+            </button>
+          </section>
+        )}
+      {!packs.loading && !packs.error && !packs.data?.packs.length && (
         <section className="live-panel">
           <p>{t("packs.empty")}</p>
         </section>
@@ -290,7 +519,10 @@ export function WordPacksPage() {
               <div className="pack-selection-summary">
                 <p>
                   {dialog.selectable
-                    ? t("packs.selectionSummary", { selected: dialog.selected.length, total: dialog.entries.length })
+                    ? t("packs.selectionSummary", {
+                        selected: dialog.selected.length,
+                        total: dialog.entries.length,
+                      })
                     : t("packs.dialogCount", { count: dialog.entries.length })}
                 </p>
                 {dialog.selectable && (
@@ -339,7 +571,9 @@ export function WordPacksPage() {
                     {dialog.pack.installed &&
                       entry.learningItemId &&
                       !entry.excludedAt && (
-                        <em className="pack-included">{t("packs.inLibrary")}</em>
+                        <em className="pack-included">
+                          {t("packs.inLibrary")}
+                        </em>
                       )}
                   </label>
                 ))}

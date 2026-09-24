@@ -752,6 +752,13 @@ describe("live server-backed flows", () => {
     expect(
       await screen.findByRole("heading", { name: "מאגרי מילים" }),
     ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "כל הנושאים במקום אחד" }),
+    ).toBeInTheDocument();
+    const topicButton = screen.getByRole("button", { name: /עסקים/ });
+    expect(topicButton).toHaveAttribute("aria-pressed", "false");
+    await user.click(topicButton);
+    expect(topicButton).toHaveAttribute("aria-pressed", "true");
     expect(await screen.findByText("עסקים — מתחילים")).toBeInTheDocument();
     await user.click(await screen.findByRole("button", { name: "בחר והוסף מילים" }));
     expect(await screen.findByText("2 מתוך 2 מילים מסומנות להוספה.")).toBeInTheDocument();
