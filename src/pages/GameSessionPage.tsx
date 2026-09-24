@@ -706,46 +706,56 @@ function DemoDragDrop({
   const { t } = useTranslation();
   const pool = items.slice(0, 3);
   const [meanings] = useState(() => shuffle(pool));
-  const [matched, setMatched] = useState<string[]>([]);
+  const [placements, setPlacements] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<string>();
   const [dragging, setDragging] = useState<string>();
   const [over, setOver] = useState<string>();
-  const [attempt, setAttempt] = useState<{
-    wordId: string;
-    meaningId: string;
-    correct: boolean;
-  }>();
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => () => clearTimeout(timer.current), []);
+  const [results, setResults] = useState<Record<string, boolean>>();
+  const placedMeaningIds = Object.values(placements);
+  const complete = placedMeaningIds.length === pool.length;
 
   const place = (wordId: string, meaningId: string) => {
-    if (attempt || matched.includes(wordId) || matched.includes(meaningId))
-      return;
-    const word = pool.find((item) => item.id === wordId);
-    const meaning = pool.find((item) => item.id === meaningId);
-    if (!word || !meaning) return;
-    const correct = wordId === meaningId;
+    if (results) return;
+    setPlacements((current) => {
+      const next = { ...current };
+      const previousWord = Object.entries(current).find(
+        ([, placedMeaningId]) => placedMeaningId === meaningId,
+      )?.[0];
+      const displacedMeaning = current[wordId];
+      if (previousWord && previousWord !== wordId) {
+        if (displacedMeaning) next[previousWord] = displacedMeaning;
+        else delete next[previousWord];
+      }
+      next[wordId] = meaningId;
+      return next;
+    });
     setSelected(undefined);
     setDragging(undefined);
     setOver(undefined);
-    setAttempt({ wordId, meaningId, correct });
-    playDragDropCue(correct);
-    onAttempt(word, {
-      score: correct ? 100 : 0,
-      userAnswer: meaning.translation,
-    });
-    timer.current = setTimeout(
-      () => {
-        setAttempt(undefined);
-        if (!correct) return;
-        const next = [...matched, wordId];
-        setMatched(next);
-        if (next.length === pool.length)
-          timer.current = setTimeout(onDone, 450);
-      },
-      correct ? 420 : 620,
-    );
   };
+
+  const checkBoard = () => {
+    if (!complete || results) return;
+    const checked: Record<string, boolean> = {};
+    let correctCount = 0;
+    for (const word of pool) {
+      const meaning = pool.find((item) => item.id === placements[word.id]);
+      if (!meaning) continue;
+      const correct = word.id === meaning.id;
+      checked[word.id] = correct;
+      if (correct) correctCount++;
+      onAttempt(word, {
+        score: correct ? 100 : 0,
+        userAnswer: meaning.translation,
+      });
+    }
+    setResults(checked);
+    playDragDropCue(correctCount === pool.length);
+  };
+
+  const correctCount = results
+    ? Object.values(results).filter(Boolean).length
+    : 0;
 
   return (
     <div className="exercise-area demo-drag-drop">
@@ -756,35 +766,46 @@ function DemoDragDrop({
           </span>
           <div>
             <h1>{t("game.dragDropTitle")}</h1>
-            <p>{t("game.dragDropHelp")}</p>
+            <p>{t("game.dragDropDraftHelp")}</p>
           </div>
           <strong>
-            {t("game.dragDropProgress", {
-              current: matched.length,
-              total: pool.length,
-            })}
+            {results
+              ? t("game.dragDropScore", {
+                  correct: correctCount,
+                  total: pool.length,
+                })
+              : t("game.dragDropProgress", {
+                  current: placedMeaningIds.length,
+                  total: pool.length,
+                })}
           </strong>
         </div>
         <div className="drag-drop-layout">
           <div className="drag-drop-rows">
             {pool.map((item, index) => {
-              const isMatched = matched.includes(item.id);
-              const activeAttempt = attempt?.wordId === item.id;
-              const attemptedMeaning = meanings.find(
-                (meaning) => meaning.id === attempt?.meaningId,
+              const placedMeaning = meanings.find(
+                (meaning) => meaning.id === placements[item.id],
               );
+              const correct = results?.[item.id];
               return (
                 <article
                   className={cn(
                     "drag-drop-row",
-                    isMatched && "is-complete",
-                    activeAttempt &&
-                      (attempt.correct ? "correct" : "incorrect"),
+                    placedMeaning && results === undefined && "is-filled",
+                    results && (correct ? "correct" : "incorrect"),
                   )}
                   key={item.id}
                 >
                   <span className="drag-drop-number" aria-hidden="true">
-                    {isMatched ? <Check size={16} /> : index + 1}
+                    {results ? (
+                      correct ? (
+                        <Check size={16} />
+                      ) : (
+                        <X size={16} />
+                      )
+                    ) : (
+                      index + 1
+                    )}
                   </span>
                   <b className="drag-drop-word" dir="auto">
                     {item.source}
@@ -793,19 +814,39 @@ function DemoDragDrop({
                     type="button"
                     className={cn(
                       "drag-drop-slot",
+                      placedMeaning && "has-card",
                       over === item.id && "is-over",
-                      selected && !isMatched && "is-ready",
-                      activeAttempt &&
-                        (attempt.correct ? "correct" : "incorrect"),
+                      selected && !results && "is-ready",
+                      results && (correct ? "correct" : "incorrect"),
                     )}
                     data-drop-target={item.id}
-                    disabled={isMatched || Boolean(attempt)}
+                    draggable={Boolean(placedMeaning) && !results}
+                    disabled={Boolean(results)}
                     aria-label={
-                      isMatched
-                        ? t("game.placedMeaning", { meaning: item.translation })
+                      placedMeaning
+                        ? t("game.placedMeaning", {
+                            meaning: placedMeaning.translation,
+                          })
                         : t("game.dropForWord", { word: item.source })
                     }
-                    onClick={() => selected && place(item.id, selected)}
+                    onClick={() => {
+                      if (selected) place(item.id, selected);
+                      else if (placedMeaning) setSelected(placedMeaning.id);
+                    }}
+                    onDragStart={(event) => {
+                      if (!placedMeaning) return;
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData(
+                        "application/x-gotit-choice",
+                        placedMeaning.id,
+                      );
+                      setDragging(placedMeaning.id);
+                      setSelected(undefined);
+                    }}
+                    onDragEnd={() => {
+                      setDragging(undefined);
+                      setOver(undefined);
+                    }}
                     onDragEnter={(event) => {
                       event.preventDefault();
                       setOver(item.id);
@@ -821,17 +862,18 @@ function DemoDragDrop({
                       if (meaningId) place(item.id, meaningId);
                     }}
                   >
-                    {isMatched || (activeAttempt && attemptedMeaning) ? (
+                    {placedMeaning ? (
                       <>
-                        <span dir="auto">
-                          {isMatched
-                            ? item.translation
-                            : attemptedMeaning?.translation}
-                        </span>
-                        {isMatched || attempt?.correct ? (
-                          <Check size={18} />
-                        ) : (
-                          <X size={18} />
+                        {!results && <span aria-hidden="true">⋮⋮</span>}
+                        <span dir="auto">{placedMeaning.translation}</span>
+                        {results &&
+                          (correct ? <Check size={18} /> : <X size={18} />)}
+                        {results && !correct && (
+                          <small className="slot-correction" dir="auto">
+                            {t("game.correctMeaning", {
+                              meaning: item.translation,
+                            })}
+                          </small>
                         )}
                       </>
                     ) : (
@@ -848,18 +890,22 @@ function DemoDragDrop({
           <section className="meaning-bank" aria-label={t("game.meaningsBank")}>
             <div className="meaning-bank-heading">
               <span>{t("game.meaningsBank")}</span>
-              <small>{t("game.meaningsBankHelp")}</small>
+              <small>
+                {results
+                  ? t("game.boardChecked")
+                  : t("game.meaningsBankDraftHelp")}
+              </small>
             </div>
             <div className="meaning-cards">
               {meanings.map((item) => {
-                const resolved = matched.includes(item.id);
+                const placed = placedMeaningIds.includes(item.id);
                 return (
                   <button
                     key={item.id}
                     type="button"
                     dir="auto"
-                    draggable={!resolved && !attempt}
-                    disabled={resolved || Boolean(attempt)}
+                    draggable={!placed && !results}
+                    disabled={placed || Boolean(results)}
                     aria-pressed={selected === item.id}
                     aria-label={t("game.dragMeaning", {
                       meaning: item.translation,
@@ -868,8 +914,7 @@ function DemoDragDrop({
                       "meaning-card",
                       selected === item.id && "is-selected",
                       dragging === item.id && "is-dragging",
-                      resolved && "is-resolved",
-                      attempt?.meaningId === item.id && "is-trying",
+                      placed && "is-resolved",
                     )}
                     onClick={() =>
                       setSelected((current) =>
@@ -898,15 +943,39 @@ function DemoDragDrop({
             </div>
           </section>
         </div>
-        <p className="drag-drop-status" aria-live="polite">
-          {attempt
-            ? attempt.correct
-              ? t("game.placedCorrect")
-              : t("demoGame.feedback.tryAgain")
-            : selected
-              ? t("game.meaningSelected")
-              : ""}
-        </p>
+        <div className="drag-drop-actions" aria-live="polite">
+          {results ? (
+            <>
+              <strong>
+                {t("game.dragDropScore", {
+                  correct: correctCount,
+                  total: pool.length,
+                })}
+              </strong>
+              <button className="button primary" type="button" onClick={onDone}>
+                {t("game.continueToSummary")}
+              </button>
+            </>
+          ) : (
+            <>
+              <span>
+                {selected
+                  ? t("game.meaningSelected")
+                  : complete
+                    ? t("game.readyToCheck")
+                    : t("game.arrangeBeforeCheck")}
+              </span>
+              <button
+                className="button primary"
+                type="button"
+                disabled={!complete}
+                onClick={checkBoard}
+              >
+                {t("game.finishedArranging")}
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -941,6 +1010,7 @@ function Session({
   const [outcomes, setOutcomes] = useState<
     Array<{ score: number; xp: number; result?: Attempt["result"] }>
   >([]);
+  const [smartDragDropCompleted, setSmartDragDropCompleted] = useState(false);
   const [finished, setFinished] = useState(false);
   const sessionRef = useRef(session);
   const saveRef = useRef(saveSession);
@@ -969,7 +1039,9 @@ function Session({
   }, [index]);
   const effectiveGame: GameType =
     game === "smart"
-      ? (["flashcards", "recall", "listening"][index % 3] as GameType)
+      ? !smartDragDropCompleted && queue.length >= 3
+        ? "drag_drop"
+        : (["flashcards", "recall", "listening"][index % 3] as GameType)
       : game;
   const addAttempt = (item: LearningItem, outcome: Outcome) => {
     const attemptSequence = ++sequence.current;
@@ -1169,7 +1241,10 @@ function Session({
             <DemoDragDrop
               items={queue}
               onAttempt={addAttempt}
-              onDone={finish}
+              onDone={() => {
+                if (game === "smart") setSmartDragDropCompleted(true);
+                else finish();
+              }}
             />
           )}
           {!["matching", "drag_drop"].includes(effectiveGame) && (

@@ -178,6 +178,15 @@ export function LiveGameSessionPage() {
   );
   const exercise = exercises[index];
   const studyCard = studyCards[studyIndex];
+  const smartDragDropBoard =
+    type === "smart" &&
+    exercises.length >= 2 &&
+    exercises.every(
+      (candidate) =>
+        candidate.exerciseType === "matching" &&
+        candidate.prompt.groupId === exercises[0]?.prompt.groupId,
+    );
+  const dragDropBoard = type === "drag_drop" || smartDragDropBoard;
   const masteryRequirements = receipt?.progress.masteryRequirements;
   const playStudyCard = useCallback(
     async (card: StudyCard, reportError = true) => {
@@ -245,10 +254,25 @@ export function LiveGameSessionPage() {
       window.clearTimeout(playback);
     };
   }, [playStudyCard, session, studyCard]);
-  const issue = async (value: Session, learningItemIds?: string[]) => {
-    const requestedCount =
+  const issue = async (
+    value: Session,
+    learningItemIds?: string[],
+    standardSmartRound = false,
+  ) => {
+    const baseRequestedCount =
       learningItemIds?.length ??
       (value.scope?.type === "pack" ? value.itemCount : count);
+    const smartDragDropRound =
+      type === "smart" &&
+      !standardSmartRound &&
+      !learningItemIds &&
+      value.attemptCount === 0 &&
+      value.itemCount >= 3;
+    const requestedCount = smartDragDropRound
+      ? 3
+      : standardSmartRound && type === "smart"
+        ? Math.max(1, Math.min(baseRequestedCount, value.itemCount) - 3)
+        : baseRequestedCount;
     const result = await product(
       z.object({
         exercises: z.array(exerciseSchema).min(1),
@@ -260,7 +284,13 @@ export function LiveGameSessionPage() {
         count: Math.max(1, Math.min(requestedCount, value.itemCount, 100)),
         ...(learningItemIds ? { learningItemIds } : {}),
         ...(type === "smart"
-          ? {}
+          ? smartDragDropRound
+            ? {
+                exerciseType: "matching",
+                kind: "multiple_choice",
+                direction: "source_to_translation",
+              }
+            : {}
           : {
               kind: modes[type] === "matching" ? "multiple_choice" : kind,
               direction:
@@ -628,6 +658,24 @@ export function LiveGameSessionPage() {
     setMoment(undefined);
     setCelebration(undefined);
     setCardLeaving(false);
+  };
+  const finishDragDropBoard = async () => {
+    if (type !== "smart" || (session?.itemCount ?? 0) <= 3) {
+      await close("completed");
+      return;
+    }
+    if (!session || lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      await issue(session, undefined, true);
+    } catch (reason) {
+      if (mounted.current) setError(errorMessage(reason));
+    } finally {
+      lock.current = false;
+      if (mounted.current) setBusy(false);
+    }
   };
   const advanceStudy = () => {
     if (busy || cardLeaving) return;
@@ -1099,7 +1147,7 @@ export function LiveGameSessionPage() {
                         : t("game.masteryRound")}
                 </span>
                 <span>
-                  {type === "drag_drop"
+                  {dragDropBoard
                     ? t("learn.games.drag_drop.name")
                     : t(`labels.${exercise.exerciseType}`)}
                 </span>
@@ -1107,9 +1155,7 @@ export function LiveGameSessionPage() {
               <progress
                 className="live-session-progress"
                 value={
-                  ["matching", "drag_drop"].includes(type)
-                    ? outcomes.length
-                    : index
+                  type === "matching" || dragDropBoard ? outcomes.length : index
                 }
                 max={exercises.length}
                 aria-label={t("game.exerciseProgressAria")}
@@ -1125,7 +1171,7 @@ export function LiveGameSessionPage() {
                     onDone={() => void close("completed")}
                   />
                 </section>
-              ) : type === "drag_drop" ? (
+              ) : dragDropBoard ? (
                 <section className="live-exercise live-panel drag-drop-panel practice-card">
                   <LiveDragDropBoard
                     exercises={exercises}
@@ -1133,7 +1179,7 @@ export function LiveGameSessionPage() {
                     onSubmit={(target, choiceId) =>
                       performSubmission(target, { choiceId })
                     }
-                    onDone={() => void close("completed")}
+                    onDone={() => void finishDragDropBoard()}
                   />
                 </section>
               ) : (

@@ -66,6 +66,7 @@ const gameOrder = [
 ] as const;
 const smartPath = [
   "matching",
+  "drag_drop",
   "flashcards",
   "pronunciation",
   "recall",

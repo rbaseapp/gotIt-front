@@ -126,14 +126,26 @@ describe("complete frontend flows", () => {
           name: `משבצת פירוש ריקה עבור ${item.source}`,
         }),
       );
-      await waitFor(() =>
-        expect(
-          screen.getByRole("button", {
-            name: `הפירוש ששובץ: ${item.translation}`,
-          }),
-        ).toBeDisabled(),
-      );
+      expect(
+        screen.getByRole("button", {
+          name: `הפירוש ששובץ: ${item.translation}`,
+        }),
+      ).toBeEnabled();
+      expect(
+        JSON.parse(localStorage.getItem("gotit.demo.v2")!).attempts,
+      ).toHaveLength(0);
     }
+
+    await user.click(screen.getByRole("button", { name: "סיימתי" }));
+    await waitFor(() =>
+      expect(
+        JSON.parse(localStorage.getItem("gotit.demo.v2")!).attempts,
+      ).toHaveLength(3),
+    );
+    expect(screen.getByText("3 מתוך 3 נכונות")).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "המשך לסיכום" }),
+    );
 
     await screen.findByRole("heading", { name: "עבודה מעולה!" });
     expect(

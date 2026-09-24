@@ -1,8 +1,8 @@
 import {
-  useEffect,
   useMemo,
   useRef,
   useState,
+  type DragEvent as ReactDragEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { Check, GripVertical, Sparkles, X } from "lucide-react";
@@ -20,12 +20,6 @@ type Props = {
   onDone: () => void;
 };
 
-type ActiveAttempt = {
-  exerciseId: string;
-  choiceId: string;
-  result?: "correct" | "incorrect";
-};
-
 type TouchDrag = {
   pointerId: number;
   choiceId: string;
@@ -33,6 +27,11 @@ type TouchDrag = {
   startX: number;
   startY: number;
   active: boolean;
+};
+
+type BoardResult = {
+  correct: boolean;
+  expectedChoiceId: string;
 };
 
 const comparable = (value: string) =>
@@ -46,82 +45,70 @@ export function LiveDragDropBoard({
 }: Props) {
   const { t } = useTranslation();
   const [placements, setPlacements] = useState<Record<string, string>>({});
-  const [resolvedChoices, setResolvedChoices] = useState<string[]>([]);
   const [selectedChoice, setSelectedChoice] = useState<string>();
   const [draggingChoice, setDraggingChoice] = useState<string>();
   const [overTarget, setOverTarget] = useState<string>();
-  const [attempt, setAttempt] = useState<ActiveAttempt>();
+  const [checking, setChecking] = useState(false);
+  const [results, setResults] = useState<Record<string, BoardResult>>();
   const [touchGhost, setTouchGhost] = useState<{
     text: string;
     x: number;
     y: number;
   }>();
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const resolving = useRef(false);
   const touchDrag = useRef<TouchDrag | undefined>(undefined);
   const suppressClick = useRef<string | undefined>(undefined);
   const choices = useMemo(
     () => exercises[0]?.prompt.choices ?? [],
     [exercises],
   );
+  const placedChoiceIds = Object.values(placements);
+  const complete = placedChoiceIds.length === exercises.length;
 
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-
-  const resolve = async (exerciseId: string, choiceId: string) => {
-    if (
-      resolving.current ||
-      busy ||
-      placements[exerciseId] ||
-      resolvedChoices.includes(choiceId)
-    )
-      return;
-    const exercise = exercises.find((candidate) => candidate.id === exerciseId);
-    if (!exercise) return;
-
-    resolving.current = true;
+  const place = (exerciseId: string, choiceId: string) => {
+    if (checking || results || busy) return;
+    setPlacements((current) => {
+      const next = { ...current };
+      const previousExercise = Object.entries(current).find(
+        ([, placedChoiceId]) => placedChoiceId === choiceId,
+      )?.[0];
+      const displacedChoice = current[exerciseId];
+      if (previousExercise && previousExercise !== exerciseId) {
+        if (displacedChoice) next[previousExercise] = displacedChoice;
+        else delete next[previousExercise];
+      }
+      next[exerciseId] = choiceId;
+      return next;
+    });
     setSelectedChoice(undefined);
     setDraggingChoice(undefined);
     setOverTarget(undefined);
-    setAttempt({ exerciseId, choiceId });
-    const receipt = await onSubmit(exercise, choiceId);
-    if (!receipt) {
-      setAttempt(undefined);
-      resolving.current = false;
-      return;
+  };
+
+  const checkBoard = async () => {
+    if (!complete || checking || results || busy) return;
+    setChecking(true);
+    const checked: Record<string, BoardResult> = {};
+    for (const exercise of exercises) {
+      const choiceId = placements[exercise.id];
+      if (!choiceId) continue;
+      const receipt = await onSubmit(exercise, choiceId);
+      if (!receipt) {
+        setChecking(false);
+        return;
+      }
+      const expected = receipt.attempt.expectedAnswer;
+      const expectedChoiceId =
+        choices.find(
+          (choice) =>
+            expected && comparable(choice.text) === comparable(expected),
+        )?.id ?? choiceId;
+      checked[exercise.id] = {
+        correct: receipt.attempt.result === "correct",
+        expectedChoiceId,
+      };
     }
-
-    const correct = receipt.attempt.result === "correct";
-    const expected = receipt.attempt.expectedAnswer;
-    const correctChoiceId =
-      choices.find(
-        (choice) =>
-          expected && comparable(choice.text) === comparable(expected),
-      )?.id ?? choiceId;
-    setAttempt({
-      exerciseId,
-      choiceId,
-      result: correct ? "correct" : "incorrect",
-    });
-
-    timer.current = setTimeout(
-      () => {
-        const nextPlacements = {
-          ...placements,
-          [exerciseId]: correctChoiceId,
-        };
-        setPlacements(nextPlacements);
-        setResolvedChoices((current) => [...current, correctChoiceId]);
-        setAttempt(undefined);
-        resolving.current = false;
-        if (Object.keys(nextPlacements).length === exercises.length) onDone();
-      },
-      correct ? 540 : 760,
-    );
+    setResults(checked);
+    setChecking(false);
   };
 
   const targetAt = (x: number, y: number) =>
@@ -133,7 +120,7 @@ export function LiveDragDropBoard({
     choiceId: string,
     text: string,
   ) => {
-    if (event.pointerType === "mouse" || busy || resolving.current) return;
+    if (event.pointerType === "mouse" || busy || checking || results) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     touchDrag.current = {
       pointerId: event.pointerId,
@@ -171,7 +158,7 @@ export function LiveDragDropBoard({
       event.preventDefault();
       suppressClick.current = current.choiceId;
       const target = targetAt(event.clientX, event.clientY) ?? overTarget;
-      if (target) void resolve(target, current.choiceId);
+      if (target) place(target, current.choiceId);
     }
     touchDrag.current = undefined;
     setTouchGhost(undefined);
@@ -179,23 +166,40 @@ export function LiveDragDropBoard({
     setOverTarget(undefined);
   };
 
-  const completed = Object.keys(placements).length;
+  const startNativeDrag = (
+    event: ReactDragEvent<HTMLButtonElement>,
+    choiceId: string,
+  ) => {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("application/x-gotit-choice", choiceId);
+    setDraggingChoice(choiceId);
+    setSelectedChoice(undefined);
+  };
+
+  const correctCount = results
+    ? Object.values(results).filter((result) => result.correct).length
+    : 0;
 
   return (
-    <div className="live-drag-drop" aria-busy={busy || resolving.current}>
+    <div className="live-drag-drop" aria-busy={busy || checking}>
       <div className="drag-drop-intro">
         <span className="drag-drop-symbol" aria-hidden="true">
           <Sparkles size={22} />
         </span>
         <div>
           <h1>{t("game.dragDropTitle")}</h1>
-          <p>{t("game.dragDropHelp")}</p>
+          <p>{t("game.dragDropDraftHelp")}</p>
         </div>
         <strong>
-          {t("game.dragDropProgress", {
-            current: completed,
-            total: exercises.length,
-          })}
+          {results
+            ? t("game.dragDropScore", {
+                correct: correctCount,
+                total: exercises.length,
+              })
+            : t("game.dragDropProgress", {
+                current: placedChoiceIds.length,
+                total: exercises.length,
+              })}
         </strong>
       </div>
 
@@ -206,21 +210,29 @@ export function LiveDragDropBoard({
             const placedChoice = choices.find(
               (choice) => choice.id === placedChoiceId,
             );
-            const isAttempt = attempt?.exerciseId === exercise.id;
-            const attemptedChoice = choices.find(
-              (choice) => choice.id === attempt?.choiceId,
+            const result = results?.[exercise.id];
+            const expectedChoice = choices.find(
+              (choice) => choice.id === result?.expectedChoiceId,
             );
             return (
               <article
                 className={cn(
                   "drag-drop-row",
-                  placedChoice && "is-complete",
-                  isAttempt && attempt.result,
+                  placedChoice && !result && "is-filled",
+                  result && (result.correct ? "correct" : "incorrect"),
                 )}
                 key={exercise.id}
               >
                 <span className="drag-drop-number" aria-hidden="true">
-                  {placedChoice ? <Check size={16} /> : rowIndex + 1}
+                  {result ? (
+                    result.correct ? (
+                      <Check size={16} />
+                    ) : (
+                      <X size={16} />
+                    )
+                  ) : (
+                    rowIndex + 1
+                  )}
                 </span>
                 <b className="drag-drop-word" dir="auto">
                   {exercise.prompt.text}
@@ -229,21 +241,37 @@ export function LiveDragDropBoard({
                   type="button"
                   className={cn(
                     "drag-drop-slot",
+                    placedChoice && "has-card",
                     overTarget === exercise.id && "is-over",
-                    selectedChoice && !placedChoice && "is-ready",
-                    isAttempt && attempt.result,
+                    selectedChoice && !results && "is-ready",
+                    result && (result.correct ? "correct" : "incorrect"),
                   )}
                   data-drop-target={exercise.id}
-                  disabled={Boolean(placedChoice) || busy || resolving.current}
+                  draggable={Boolean(placedChoice) && !checking && !results}
+                  disabled={busy || checking || Boolean(results)}
                   aria-label={
                     placedChoice
                       ? t("game.placedMeaning", { meaning: placedChoice.text })
                       : t("game.dropForWord", { word: exercise.prompt.text })
                   }
                   onClick={() => {
-                    if (selectedChoice)
-                      void resolve(exercise.id, selectedChoice);
+                    if (selectedChoice) place(exercise.id, selectedChoice);
+                    else if (placedChoice) setSelectedChoice(placedChoice.id);
                   }}
+                  onDragStart={(event) => {
+                    if (placedChoice) startNativeDrag(event, placedChoice.id);
+                  }}
+                  onDragEnd={() => {
+                    setDraggingChoice(undefined);
+                    setOverTarget(undefined);
+                  }}
+                  onPointerDown={(event) => {
+                    if (placedChoice)
+                      startTouchDrag(event, placedChoice.id, placedChoice.text);
+                  }}
+                  onPointerMove={moveTouchDrag}
+                  onPointerUp={finishTouchDrag}
+                  onPointerCancel={finishTouchDrag}
                   onDragEnter={(event) => {
                     event.preventDefault();
                     setOverTarget(exercise.id);
@@ -264,21 +292,27 @@ export function LiveDragDropBoard({
                       event.dataTransfer.getData(
                         "application/x-gotit-choice",
                       ) || draggingChoice;
-                    setOverTarget(undefined);
-                    if (choiceId) void resolve(exercise.id, choiceId);
+                    if (choiceId) place(exercise.id, choiceId);
                   }}
                 >
-                  {placedChoice || (isAttempt && attemptedChoice) ? (
+                  {placedChoice ? (
                     <>
-                      <span dir="auto">
-                        {(placedChoice ?? attemptedChoice)?.text}
-                      </span>
-                      {placedChoice || attempt?.result === "correct" ? (
-                        <Check size={18} />
-                      ) : attempt?.result === "incorrect" ? (
-                        <X size={18} />
-                      ) : (
-                        <span className="drop-spinner" aria-hidden="true" />
+                      {!results && (
+                        <GripVertical size={17} aria-hidden="true" />
+                      )}
+                      <span dir="auto">{placedChoice.text}</span>
+                      {result &&
+                        (result.correct ? (
+                          <Check size={18} />
+                        ) : (
+                          <X size={18} />
+                        ))}
+                      {result && !result.correct && expectedChoice && (
+                        <small className="slot-correction" dir="auto">
+                          {t("game.correctMeaning", {
+                            meaning: expectedChoice.text,
+                          })}
+                        </small>
                       )}
                     </>
                   ) : (
@@ -296,27 +330,29 @@ export function LiveDragDropBoard({
         <section className="meaning-bank" aria-labelledby="meaning-bank-title">
           <div className="meaning-bank-heading">
             <span id="meaning-bank-title">{t("game.meaningsBank")}</span>
-            <small>{t("game.meaningsBankHelp")}</small>
+            <small>
+              {results
+                ? t("game.boardChecked")
+                : t("game.meaningsBankDraftHelp")}
+            </small>
           </div>
           <div className="meaning-cards">
             {choices.map((choice) => {
-              const resolved = resolvedChoices.includes(choice.id);
-              const trying = attempt?.choiceId === choice.id;
+              const placed = placedChoiceIds.includes(choice.id);
               return (
                 <button
                   key={choice.id}
                   type="button"
                   dir="auto"
-                  draggable={!resolved && !busy && !resolving.current}
-                  disabled={resolved || busy || resolving.current}
+                  draggable={!placed && !busy && !checking && !results}
+                  disabled={placed || busy || checking || Boolean(results)}
                   aria-pressed={selectedChoice === choice.id}
                   aria-label={t("game.dragMeaning", { meaning: choice.text })}
                   className={cn(
                     "meaning-card",
                     selectedChoice === choice.id && "is-selected",
                     draggingChoice === choice.id && "is-dragging",
-                    resolved && "is-resolved",
-                    trying && "is-trying",
+                    placed && "is-resolved",
                   )}
                   onClick={() => {
                     if (suppressClick.current === choice.id) {
@@ -327,15 +363,7 @@ export function LiveDragDropBoard({
                       current === choice.id ? undefined : choice.id,
                     );
                   }}
-                  onDragStart={(event) => {
-                    event.dataTransfer.effectAllowed = "move";
-                    event.dataTransfer.setData(
-                      "application/x-gotit-choice",
-                      choice.id,
-                    );
-                    setDraggingChoice(choice.id);
-                    setSelectedChoice(undefined);
-                  }}
+                  onDragStart={(event) => startNativeDrag(event, choice.id)}
                   onDragEnd={() => {
                     setDraggingChoice(undefined);
                     setOverTarget(undefined);
@@ -356,15 +384,40 @@ export function LiveDragDropBoard({
         </section>
       </div>
 
-      <p className="drag-drop-status" aria-live="polite">
-        {attempt?.result === "correct"
-          ? t("game.placedCorrect")
-          : attempt?.result === "incorrect"
-            ? t("game.placedIncorrect")
-            : selectedChoice
-              ? t("game.meaningSelected")
-              : ""}
-      </p>
+      <div className="drag-drop-actions" aria-live="polite">
+        {results ? (
+          <>
+            <strong>
+              {t("game.dragDropScore", {
+                correct: correctCount,
+                total: exercises.length,
+              })}
+            </strong>
+            <button className="button primary" type="button" onClick={onDone}>
+              {t("game.continueToSummary")}
+            </button>
+          </>
+        ) : (
+          <>
+            <span>
+              {selectedChoice
+                ? t("game.meaningSelected")
+                : complete
+                  ? t("game.readyToCheck")
+                  : t("game.arrangeBeforeCheck")}
+            </span>
+            <button
+              className="button primary"
+              type="button"
+              disabled={!complete || busy || checking}
+              onClick={() => void checkBoard()}
+            >
+              {checking ? t("game.checkingBoard") : t("game.finishedArranging")}
+            </button>
+          </>
+        )}
+      </div>
+
       {touchGhost && (
         <div
           className="meaning-drag-ghost"

@@ -1298,11 +1298,14 @@ progress::-webkit-progress-value {
     box-shadow 180ms ease,
     transform 180ms ease;
 }
-.drag-drop-row.is-complete,
 .drag-drop-row.correct {
   border-color: #a9d7bb;
   background: #fbfffc;
   animation: drag-row-success 430ms ease-out;
+}
+.drag-drop-row.is-filled {
+  border-color: #c9bee9;
+  background: #fdfcff;
 }
 .drag-drop-row.incorrect {
   border-color: #e4a48a;
@@ -1319,9 +1322,13 @@ progress::-webkit-progress-value {
   font-size: 12px;
   font-weight: 850;
 }
-.is-complete .drag-drop-number {
+.drag-drop-row.correct .drag-drop-number {
   color: #fff;
   background: #4b9a70;
+}
+.drag-drop-row.incorrect .drag-drop-number {
+  color: #fff;
+  background: #c66c49;
 }
 .drag-drop-word {
   color: #27352e;
@@ -1360,13 +1367,23 @@ progress::-webkit-progress-value {
   box-shadow: 0 0 0 4px rgba(116, 91, 218, 0.13);
   transform: scale(1.025);
 }
-.drag-drop-slot.correct,
-.drag-drop-slot:disabled:not(.incorrect) {
+.drag-drop-slot.has-card:not(.correct):not(.incorrect) {
+  border-style: solid;
+  border-color: #a897df;
+  color: #4e4178;
+  background: #f4f0ff;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-drop-slot.correct {
   border-style: solid;
   border-color: #8ac7a3;
   color: #276c49;
   background: #eaf7ef;
   opacity: 1;
+}
+.drag-drop-slot:disabled {
+  cursor: default;
 }
 .drag-drop-slot.incorrect {
   border-style: solid;
@@ -1374,6 +1391,13 @@ progress::-webkit-progress-value {
   color: #9b492b;
   background: #fff0e9;
   opacity: 1;
+}
+.slot-correction {
+  flex: 1 0 100%;
+  color: #934426;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.35;
 }
 .drop-placeholder {
   width: 100%;
@@ -1507,6 +1531,25 @@ progress::-webkit-progress-value {
   font-size: 12px;
   font-weight: 700;
   text-align: center;
+}
+.drag-drop-actions {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  color: #6b6084;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: start;
+}
+.drag-drop-actions > span,
+.drag-drop-actions > strong {
+  margin-inline-end: auto;
+}
+.drag-drop-actions .button {
+  min-width: 150px;
+  justify-content: center;
 }
 .demo-drag-drop {
   width: min(960px, 100%);
@@ -1828,6 +1871,12 @@ progress::-webkit-progress-value {
   }
   .drag-drop-intro p {
     display: none;
+  }
+  .drag-drop-actions {
+    gap: 7px;
+  }
+  .drag-drop-actions .button {
+    min-width: 120px;
   }
   .session-results .live-stats-grid {
     grid-template-columns: 1fr 1fr;
@@ -3007,8 +3056,13 @@ html[dir="ltr"] .pack-search input {
     min-height: 0;
     height: 100%;
   }
-  .drag-drop-status {
-    display: none;
+  .drag-drop-actions {
+    min-height: 40px;
+    font-size: 11px;
+  }
+  .drag-drop-actions .button {
+    min-height: 40px;
+    padding: 8px 14px;
   }
   .memorization-copy {
     gap: 5px;

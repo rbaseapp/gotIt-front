@@ -657,15 +657,23 @@ describe("live server-backed flows", () => {
       if (url.endsWith("/practice/attempts")) {
         const body = JSON.parse(String(init?.body));
         submitted.push(body);
+        const position = dragExercises.findIndex(
+          (candidate) => candidate.id === body.exerciseId,
+        );
         return json(
           {
             ...receipt,
             attempt: {
               ...receipt.attempt,
-              id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+              id: [
+                "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+                "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+                "ffffffff-ffff-4fff-8fff-ffffffffffff",
+              ][position],
+              learningItemId: dragExercises[position]!.learningItemId,
               result: "correct",
               score: 100,
-              expectedAnswer: "לזכור",
+              expectedAnswer: choices[position]!.text,
               xpEarned: 10,
             },
             replayed: false,
@@ -707,13 +715,54 @@ describe("live server-backed flows", () => {
     };
     fireEvent.dragStart(card, { dataTransfer: transfer });
     fireEvent.drop(slot, { dataTransfer: transfer });
+    expect(submitted).toEqual([]);
+    expect(slot).toBeEnabled();
 
-    await waitFor(() =>
-      expect(submitted).toEqual([
-        expect.objectContaining({ exerciseId, choiceId: choiceA }),
-      ]),
+    for (let position = 1; position < 3; position++) {
+      const nextTransfer = {
+        ...transfer,
+        value: "",
+      };
+      fireEvent.dragStart(document.querySelectorAll(".meaning-card")[position], {
+        dataTransfer: nextTransfer,
+      });
+      fireEvent.drop(document.querySelectorAll(".drag-drop-slot")[position], {
+        dataTransfer: nextTransfer,
+      });
+    }
+    expect(submitted).toEqual([]);
+
+    const swapTransfer = { ...transfer, value: "" };
+    fireEvent.dragStart(document.querySelectorAll(".drag-drop-slot")[0], {
+      dataTransfer: swapTransfer,
+    });
+    fireEvent.drop(document.querySelectorAll(".drag-drop-slot")[1], {
+      dataTransfer: swapTransfer,
+    });
+    expect(document.querySelectorAll(".drag-drop-slot")[0]).toHaveTextContent(
+      choices[1].text,
     );
-    await waitFor(() => expect(slot).toBeDisabled());
+    fireEvent.dragStart(document.querySelectorAll(".drag-drop-slot")[0], {
+      dataTransfer: swapTransfer,
+    });
+    fireEvent.drop(document.querySelectorAll(".drag-drop-slot")[1], {
+      dataTransfer: swapTransfer,
+    });
+
+    await user.click(screen.getByRole("button", { name: "סיימתי" }));
+    await waitFor(() => expect(submitted).toHaveLength(3));
+    expect(submitted).toEqual([
+      expect.objectContaining({ exerciseId, choiceId: choiceA }),
+      expect.objectContaining({
+        exerciseId: remedialExerciseId,
+        choiceId: choiceB,
+      }),
+      expect.objectContaining({
+        exerciseId: thirdExerciseId,
+        choiceId: choiceC,
+      }),
+    ]);
+    expect(screen.getByText("3 מתוך 3 נכונות")).toBeInTheDocument();
   });
   it("uses an in-app modal before abandoning an active study session", async () => {
     const fetchMock = mount(
