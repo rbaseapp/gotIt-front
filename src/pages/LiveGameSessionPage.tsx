@@ -1099,7 +1099,7 @@ export function LiveGameSessionPage() {
               ) : (
                 <section
                   key={exercise.id}
-                  className={`live-exercise live-panel practice-card${cardLeaving ? " card-leaving" : ""}`}
+                  className={`live-exercise live-panel practice-card${exercise.kind === "provider" ? " provider-exercise" : ""}${cardLeaving ? " card-leaving" : ""}`}
                 >
                   <p className="eyebrow">
                     {exercise.direction === "translation_to_source"
@@ -1144,7 +1144,7 @@ export function LiveGameSessionPage() {
                         <>
                           {!flipped ? (
                             <button
-                              className="button primary"
+                              className="button primary exercise-primary-action"
                               disabled={busy || !!pending}
                               onClick={() => setFlipped(true)}
                             >
@@ -1198,7 +1198,6 @@ export function LiveGameSessionPage() {
                         </div>
                       ) : exercise.kind === "provider" ? (
                         <>
-                          <p>{t("game.recordingHelp")}</p>
                           <button
                             className={`button primary hold-to-talk${recording ? " recording" : ""}`}
                             disabled={busy || !!pending}
@@ -1302,7 +1301,7 @@ export function LiveGameSessionPage() {
                         </>
                       ) : (
                         <button
-                          className="button ghost"
+                          className="button ghost exercise-skip-action"
                           disabled={busy || recording}
                           onClick={() => void submit({ skipped: true })}
                         >
@@ -1385,7 +1384,7 @@ export function LiveGameSessionPage() {
                         )}
                       </details>
                       <button
-                        className="button primary"
+                        className="button primary feedback-next-action"
                         disabled={busy || cardLeaving}
                         onClick={() => void advance()}
                       >

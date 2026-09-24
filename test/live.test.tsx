@@ -717,6 +717,9 @@ describe("live server-backed flows", () => {
     expect(
       await screen.findByRole("heading", { name: "remember" }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/ההקלטה מוגבלת ל־6 שניות/u),
+    ).not.toBeInTheDocument();
     expect(requestOrder).toEqual(["profile", "session", "exercises"]);
     expect(
       fetchMock.mock.calls.filter(
@@ -734,6 +737,10 @@ describe("live server-backed flows", () => {
     const holdButton = screen.getByRole("button", {
       name: /לחצו והחזיקו כדי לדבר/u,
     });
+    expect(holdButton.closest("section")).toHaveClass("provider-exercise");
+    expect(screen.getByRole("button", { name: "דילוג" })).toHaveClass(
+      "exercise-skip-action",
+    );
     Object.assign(holdButton, { setPointerCapture: vi.fn() });
     fireEvent.pointerDown(holdButton, { button: 0, pointerId: 7 });
     await waitFor(() => expect(recordVoice).toHaveBeenCalledOnce());
