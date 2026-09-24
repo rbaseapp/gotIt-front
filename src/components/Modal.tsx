@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
 export function Modal({
@@ -64,7 +65,7 @@ export function Modal({
     };
   }, [open]);
   if (!open) return null;
-  return (
+  return createPortal(
     <div className="modal-backdrop" onMouseDown={onClose} role="presentation">
       <section
         ref={ref}
@@ -87,6 +88,7 @@ export function Modal({
         </header>
         {children}
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
