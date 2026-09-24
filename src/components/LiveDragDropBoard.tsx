@@ -18,6 +18,7 @@ type Props = {
     choiceId: string,
   ) => Promise<AttemptReceipt | undefined>;
   onDone: () => void;
+  doneLabel?: string;
 };
 
 type TouchDrag = {
@@ -42,6 +43,7 @@ export function LiveDragDropBoard({
   busy,
   onSubmit,
   onDone,
+  doneLabel,
 }: Props) {
   const { t } = useTranslation();
   const [placements, setPlacements] = useState<Record<string, string>>({});
@@ -389,7 +391,7 @@ export function LiveDragDropBoard({
           <>
             <span>{t("game.boardChecked")}</span>
             <button className="button primary" type="button" onClick={onDone}>
-              {t("game.continueToSummary")}
+              {doneLabel ?? t("game.continueToSummary")}
             </button>
           </>
         ) : (

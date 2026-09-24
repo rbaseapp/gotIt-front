@@ -698,10 +698,12 @@ function DemoDragDrop({
   items,
   onAttempt,
   onDone,
+  doneLabel,
 }: {
   items: LearningItem[];
   onAttempt: (item: LearningItem, outcome: Outcome) => void;
   onDone: () => void;
+  doneLabel?: string;
 }) {
   const { t } = useTranslation();
   const pool = items.slice(0, 3);
@@ -948,7 +950,7 @@ function DemoDragDrop({
             <>
               <span>{t("game.boardChecked")}</span>
               <button className="button primary" type="button" onClick={onDone}>
-                {t("game.continueToSummary")}
+                {doneLabel ?? t("game.continueToSummary")}
               </button>
             </>
           ) : (
@@ -1236,6 +1238,7 @@ function Session({
             <DemoDragDrop
               items={queue}
               onAttempt={addAttempt}
+              doneLabel={game === "smart" ? t("learn.continue") : undefined}
               onDone={() => {
                 if (game === "smart") setSmartDragDropCompleted(true);
                 else finish();
