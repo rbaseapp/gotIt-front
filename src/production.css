@@ -683,8 +683,15 @@ progress::-webkit-progress-value {
 }
 .memorization-visual {
   position: relative;
-  width: min(100%, 560px);
-  min-height: 280px;
+  /* Keep large source images and browser/OS zoom from taking over the session.
+     The 7:4 frame scales down with the usable viewport height and never grows
+     past the intended 560 x 320 desktop size. */
+  width: min(100%, 560px, 50vh);
+  width: min(100%, 560px, 50dvh);
+  min-width: 0;
+  min-height: 0;
+  max-height: 320px;
+  aspect-ratio: 7 / 4;
   margin: 0 auto;
   overflow: hidden;
   border-radius: 22px;
@@ -692,8 +699,14 @@ progress::-webkit-progress-value {
 }
 .memorization-visual > img,
 .memorization-image-loading {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 320px;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
 }
 .memorization-visual > img {
   display: block;
@@ -1602,13 +1615,6 @@ progress::-webkit-progress-value {
   .memorization-card {
     padding: 18px;
   }
-  .memorization-visual {
-    min-height: 210px;
-  }
-  .memorization-visual > img,
-  .memorization-image-loading {
-    height: 230px;
-  }
   .memorization-actions {
     flex-direction: column-reverse;
   }
@@ -2511,14 +2517,6 @@ html[dir="ltr"] .pack-search input {
     border-radius: 11px;
     font-size: 13px;
   }
-  .memorization-visual {
-    min-height: 0;
-    height: min(30dvh, 190px);
-  }
-  .memorization-visual > img,
-  .memorization-image-loading {
-    height: 100%;
-  }
   .memorization-copy {
     gap: 5px;
   }
@@ -2563,8 +2561,5 @@ html[dir="ltr"] .pack-search input {
   }
   .live-choice-grid .button {
     min-height: 46px;
-  }
-  .memorization-visual {
-    height: min(27dvh, 150px);
   }
 }
