@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   Link,
   useNavigate,
@@ -67,6 +73,44 @@ type SessionOutcome = {
   xp: number;
   expectedAnswer: string | null;
 };
+
+const confettiPieces = Array.from({ length: 34 }, (_, index) => ({
+  x: ((index * 47) % 340) - 170,
+  drift: ((index * 71) % 150) - 75,
+  delay: (index % 7) * 22,
+  duration: 850 + ((index * 37) % 420),
+  rotation: 280 + ((index * 53) % 520),
+}));
+
+function StreakCelebration({ combo }: { combo: number }) {
+  return (
+    <div
+      className="streak-celebration"
+      data-testid="streak-celebration"
+      aria-hidden="true"
+    >
+      {confettiPieces.map((piece, index) => (
+        <i
+          key={index}
+          className={`confetti-piece confetti-${index % 6}`}
+          style={
+            {
+              "--confetti-x": `${piece.x}px`,
+              "--confetti-drift": `${piece.drift}px`,
+              "--confetti-delay": `${piece.delay}ms`,
+              "--confetti-duration": `${piece.duration}ms`,
+              "--confetti-rotation": `${piece.rotation}deg`,
+            } as CSSProperties
+          }
+        />
+      ))}
+      <span className="streak-burst">
+        <Flame size={22} />×{combo}
+      </span>
+    </div>
+  );
+}
+
 export function LiveGameSessionPage() {
   const { t, i18n } = useTranslation();
   const { type = "" } = useParams();
@@ -90,6 +134,11 @@ export function LiveGameSessionPage() {
   const [sessionXp, setSessionXp] = useState(0);
   const [remedialRound, setRemedialRound] = useState(false);
   const [moment, setMoment] = useState<"success" | "miss" | undefined>();
+  const [celebration, setCelebration] = useState<{
+    attemptId: string;
+    combo: number;
+  }>();
+  const [cardLeaving, setCardLeaving] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(() => {
     try {
       return localStorage.getItem("gotit.practiceEffects.v1") !== "off";
@@ -115,7 +164,14 @@ export function LiveGameSessionPage() {
   const countedAttempts = useRef(new Set<string>());
   const mistakeIds = useRef(new Set<string>());
   const frozenSubmissions = useRef(new Map<string, Submission>());
+  const comboRef = useRef(0);
   const momentTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const celebrationTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const cardTransitionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
   const exercise = exercises[index];
@@ -153,6 +209,9 @@ export function LiveGameSessionPage() {
       mounted.current = false;
       recordingController.current?.abort();
       if (momentTimer.current) clearTimeout(momentTimer.current);
+      if (celebrationTimer.current) clearTimeout(celebrationTimer.current);
+      if (cardTransitionTimer.current)
+        clearTimeout(cardTransitionTimer.current);
       audio.current?.pause();
       if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
     };
@@ -323,27 +382,51 @@ export function LiveGameSessionPage() {
       if (mounted.current) setBusy(false);
     }
   };
-  const playFeedbackCue = (success: boolean) => {
+  const playFeedbackCue = (success: boolean, milestone = false) => {
     if (!effectsEnabled) return;
-    navigator.vibrate?.(success ? 18 : [18, 30, 18]);
+    navigator.vibrate?.(
+      success ? (milestone ? [20, 30, 28] : 20) : [18, 30, 18],
+    );
     const AudioContextConstructor = window.AudioContext;
     if (!AudioContextConstructor) return;
     try {
       const context = new AudioContextConstructor();
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
       const now = context.currentTime;
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(success ? 620 : 230, now);
-      if (success)
-        oscillator.frequency.exponentialRampToValueAtTime(840, now + 0.11);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
-      oscillator.connect(gain).connect(context.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.15);
-      oscillator.addEventListener("ended", () => void context.close());
+      const master = context.createGain();
+      master.gain.setValueAtTime(0.72, now);
+      master.connect(context.destination);
+      const tone = (
+        frequency: number,
+        offset: number,
+        duration: number,
+        volume: number,
+        wave: OscillatorType,
+      ) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const start = now + offset;
+        oscillator.type = wave;
+        oscillator.frequency.setValueAtTime(frequency, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(volume, start + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        oscillator.connect(gain).connect(master);
+        oscillator.start(start);
+        oscillator.stop(start + duration + 0.02);
+      };
+      if (success) {
+        tone(523.25, 0, 0.24, 0.052, "triangle");
+        tone(659.25, 0.065, 0.27, 0.044, "sine");
+        tone(783.99, 0.13, 0.32, 0.04, "triangle");
+        if (milestone) {
+          tone(1046.5, 0.21, 0.42, 0.036, "sine");
+          tone(1318.51, 0.3, 0.38, 0.02, "sine");
+        }
+      } else {
+        tone(261.63, 0, 0.2, 0.038, "triangle");
+        tone(196, 0.09, 0.26, 0.03, "sine");
+      }
+      window.setTimeout(() => void context.close(), milestone ? 850 : 620);
     } catch {
       // Feedback audio is decorative; practice must continue without it.
     }
@@ -355,7 +438,24 @@ export function LiveGameSessionPage() {
       result.attempt.result === "correct" ||
       (result.attempt.result === "self_rated" &&
         (result.attempt.score ?? 0) >= 60);
-    playFeedbackCue(success);
+    const nextCombo = success ? comboRef.current + 1 : 0;
+    const milestone = success && nextCombo > 0 && nextCombo % 3 === 0;
+    comboRef.current = nextCombo;
+    playFeedbackCue(success, milestone);
+    if (milestone) {
+      setCelebration({
+        attemptId: result.attempt.id,
+        combo: nextCombo,
+      });
+      if (celebrationTimer.current) clearTimeout(celebrationTimer.current);
+      celebrationTimer.current = setTimeout(
+        () => setCelebration(undefined),
+        1500,
+      );
+    } else if (!success) {
+      if (celebrationTimer.current) clearTimeout(celebrationTimer.current);
+      setCelebration(undefined);
+    }
     if (success && remedialRound)
       mistakeIds.current.delete(result.attempt.learningItemId);
     else if (!success) mistakeIds.current.add(result.attempt.learningItemId);
@@ -371,11 +471,8 @@ export function LiveGameSessionPage() {
       },
     ]);
     setSessionXp((current) => current + result.attempt.xpEarned);
-    setCombo((current) => {
-      const next = success ? current + 1 : 0;
-      setBestCombo((best) => Math.max(best, next));
-      return next;
-    });
+    setCombo(nextCombo);
+    setBestCombo((best) => Math.max(best, nextCombo));
     setMoment(success ? "success" : "miss");
     if (momentTimer.current) clearTimeout(momentTimer.current);
     momentTimer.current = setTimeout(() => setMoment(undefined), 900);
@@ -467,12 +564,20 @@ export function LiveGameSessionPage() {
     }
   };
   const advance = async () => {
-    if (!session || busy) return;
+    if (!session || busy || cardLeaving) return;
     if (index + 1 < exercises.length) {
-      setIndex((current) => current + 1);
-      setAnswer("");
-      setFlipped(false);
-      setReceipt(undefined);
+      setCardLeaving(true);
+      if (cardTransitionTimer.current)
+        clearTimeout(cardTransitionTimer.current);
+      cardTransitionTimer.current = setTimeout(() => {
+        if (!mounted.current) return;
+        setIndex((current) => current + 1);
+        setAnswer("");
+        setFlipped(false);
+        setReceipt(undefined);
+        setMoment(undefined);
+        setCardLeaving(false);
+      }, 170);
       return;
     }
     const retryIds = [...mistakeIds.current];
@@ -498,6 +603,7 @@ export function LiveGameSessionPage() {
     countedAttempts.current.clear();
     mistakeIds.current.clear();
     frozenSubmissions.current.clear();
+    comboRef.current = 0;
     setSession(undefined);
     setStudyCards([]);
     setStudyIndex(0);
@@ -513,6 +619,22 @@ export function LiveGameSessionPage() {
     setSessionXp(0);
     setRemedialRound(false);
     setMoment(undefined);
+    setCelebration(undefined);
+    setCardLeaving(false);
+  };
+  const advanceStudy = () => {
+    if (busy || cardLeaving) return;
+    if (studyIndex + 1 === studyCards.length) {
+      void beginReview();
+      return;
+    }
+    setCardLeaving(true);
+    if (cardTransitionTimer.current) clearTimeout(cardTransitionTimer.current);
+    cardTransitionTimer.current = setTimeout(() => {
+      if (!mounted.current) return;
+      setStudyIndex((current) => current + 1);
+      setCardLeaving(false);
+    }, 170);
   };
   const requestExit = async () => {
     if (!session || session.status !== "active") {
@@ -674,6 +796,12 @@ export function LiveGameSessionPage() {
           </button>
         </div>
       </header>
+      {celebration && (
+        <StreakCelebration
+          key={celebration.attemptId}
+          combo={celebration.combo}
+        />
+      )}
       <main className="live-session-main">
         {error && (
           <div role="alert" className="form-error">
@@ -843,7 +971,10 @@ export function LiveGameSessionPage() {
               max={studyCards.length}
               aria-label={t("game.studyProgressAria")}
             />
-            <section className="memorization-card live-panel">
+            <section
+              key={studyCard.learningItemId}
+              className={`memorization-card live-panel practice-card${cardLeaving ? " card-leaving" : ""}`}
+            >
               {(studyImage === undefined ||
                 (studyImage && !studyImageFailed)) && (
                 <div className="memorization-visual">
@@ -912,12 +1043,8 @@ export function LiveGameSessionPage() {
               <div className="memorization-actions">
                 <button
                   className="button primary"
-                  disabled={busy}
-                  onClick={() => {
-                    if (studyIndex + 1 === studyCards.length)
-                      void beginReview();
-                    else setStudyIndex((current) => current + 1);
-                  }}
+                  disabled={busy || cardLeaving}
+                  onClick={advanceStudy}
                 >
                   {busy
                     ? t("game.preparingReview")
@@ -957,7 +1084,7 @@ export function LiveGameSessionPage() {
                 aria-label={t("game.exerciseProgressAria")}
               />
               {type === "matching" ? (
-                <section className="live-exercise live-panel matching-panel">
+                <section className="live-exercise live-panel matching-panel practice-card">
                   <LiveMatchingBoard
                     exercises={exercises}
                     busy={busy}
@@ -968,7 +1095,10 @@ export function LiveGameSessionPage() {
                   />
                 </section>
               ) : (
-                <section className="live-exercise live-panel">
+                <section
+                  key={exercise.id}
+                  className={`live-exercise live-panel practice-card${cardLeaving ? " card-leaving" : ""}`}
+                >
                   <p className="eyebrow">
                     {exercise.direction === "translation_to_source"
                       ? t("game.sayInSource")
@@ -1131,6 +1261,7 @@ export function LiveGameSessionPage() {
                                 label={t("game.yourAnswer")}
                                 value={answer}
                                 length={exercise.prompt.letterCount}
+                                wordLengths={exercise.prompt.wordLengths}
                                 disabled={busy || !!pending}
                                 onChange={setAnswer}
                               />
@@ -1253,7 +1384,7 @@ export function LiveGameSessionPage() {
                       </details>
                       <button
                         className="button primary"
-                        disabled={busy}
+                        disabled={busy || cardLeaving}
                         onClick={() => void advance()}
                       >
                         {index + 1 === exercises.length

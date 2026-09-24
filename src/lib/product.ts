@@ -383,6 +383,7 @@ export const exerciseSchema = z.object({
     choices: z.array(z.object({ id: uuid, text: z.string() })).optional(),
     audioUrl: z.string().optional(),
     letterCount: count.optional(),
+    wordLengths: z.array(count.positive()).min(1).optional(),
   }),
   expiresAt: date,
 });

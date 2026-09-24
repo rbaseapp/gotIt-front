@@ -199,6 +199,12 @@ function TypedExercise({
   onScore: ScoreHandler;
 }) {
   const { t } = useTranslation();
+  const sourceWords = item.source.trim().split(/\s+/u);
+  const wordLengths = sourceWords.map((word) => Array.from(word).length);
+  const visibleLetterCount = wordLengths.reduce(
+    (total, wordLength) => total + wordLength,
+    0,
+  );
   const [value, setValue] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [hints, setHints] = useState(0);
@@ -251,16 +257,15 @@ function TypedExercise({
           disabled={submitted !== null}
           value={value}
           length={Array.from(item.source).length}
-          revealedValue={Array.from(item.source)
-            .map((letter, index) => (index < hints ? letter : ""))
+          wordLengths={wordLengths}
+          revealedValue={Array.from(sourceWords.join(""))
+            .slice(0, hints)
             .join("")}
           onChange={setValue}
         />
         <button
           type="button"
-          disabled={
-            submitted !== null || hints >= Array.from(item.source).length
-          }
+          disabled={submitted !== null || hints >= visibleLetterCount}
           className="hint-button"
           onClick={() => setHints((count) => count + 1)}
         >
@@ -283,6 +288,7 @@ function TypedExercise({
             label={t("demoGame.typeCorrectWord")}
             value={correction}
             length={Array.from(item.source).length}
+            wordLengths={wordLengths}
             onChange={setCorrection}
           />
         </div>

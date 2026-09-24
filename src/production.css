@@ -952,7 +952,28 @@ progress::-webkit-progress-value {
 .live-exercise {
   position: relative;
   overflow: hidden;
-  animation: exercise-enter 260ms ease-out;
+}
+.practice-card {
+  position: relative;
+  overflow: hidden;
+  transform-origin: 50% 70%;
+  will-change: transform, opacity;
+  animation: practice-card-enter 420ms cubic-bezier(0.2, 0.85, 0.28, 1);
+}
+.practice-card::after {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(
+    112deg,
+    transparent 28%,
+    rgba(255, 255, 255, 0.5) 47%,
+    transparent 64%
+  );
+  transform: translateX(-115%);
+  animation: practice-card-sheen 620ms ease-out 40ms both;
 }
 .live-exercise blockquote {
   margin: 0;
@@ -1235,10 +1256,127 @@ progress::-webkit-progress-value {
 .moment-miss .live-exercise {
   animation: soft-nudge 280ms ease;
 }
-@keyframes exercise-enter {
+.practice-card.card-leaving {
+  pointer-events: none;
+  animation: practice-card-leave 170ms ease-in forwards;
+}
+.streak-celebration {
+  position: fixed;
+  inset: 72px 0 0;
+  z-index: 80;
+  overflow: hidden;
+  pointer-events: none;
+}
+.confetti-piece {
+  position: absolute;
+  top: 31%;
+  left: 50%;
+  width: 9px;
+  height: 15px;
+  border-radius: 3px;
+  opacity: 0;
+  animation: confetti-burst var(--confetti-duration)
+    cubic-bezier(0.12, 0.7, 0.25, 1) var(--confetti-delay) both;
+}
+.confetti-0 {
+  background: #f2b84b;
+}
+.confetti-1 {
+  background: #3f9f71;
+}
+.confetti-2 {
+  background: #e76868;
+}
+.confetti-3 {
+  background: #5c8ed8;
+}
+.confetti-4 {
+  background: #9d70cf;
+}
+.confetti-5 {
+  background: #f28f4b;
+}
+.streak-burst {
+  position: absolute;
+  top: 27%;
+  left: 50%;
+  min-width: 84px;
+  padding: 11px 18px;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #fff;
+  background: linear-gradient(145deg, #ef9b3d, #d96531);
+  box-shadow: 0 16px 38px rgba(150, 78, 34, 0.3);
+  font-size: 22px;
+  font-weight: 900;
+  transform: translate(-50%, -50%);
+  animation: streak-burst 760ms cubic-bezier(0.2, 1.2, 0.35, 1) both;
+}
+@keyframes practice-card-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translate3d(34px, 10px, 0) scale(0.975);
+  }
+  68% {
+    transform: translate3d(-3px, 0, 0) scale(1.004);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes practice-card-leave {
+  to {
+    opacity: 0;
+    transform: translate3d(-26px, -3px, 0) scale(0.985);
+  }
+}
+@keyframes practice-card-sheen {
+  to {
+    transform: translateX(115%);
+  }
+}
+@keyframes confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0) scale(0.4);
+  }
+  12% {
+    opacity: 1;
+    transform: translate3d(var(--confetti-x), -88px, 0) rotate(80deg) scale(1);
+  }
+  76% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(
+        calc(var(--confetti-x) + var(--confetti-drift)),
+        48vh,
+        0
+      )
+      rotate(var(--confetti-rotation)) scale(0.82);
+  }
+}
+@keyframes streak-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35) rotate(-8deg);
+  }
+  38% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.16) rotate(3deg);
+  }
+  68% {
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(1.04);
   }
 }
 @keyframes feedback-enter {
@@ -1328,6 +1466,9 @@ progress::-webkit-progress-value {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .streak-celebration {
+    display: none;
+  }
   .live-session *,
   .live-session *::before,
   .live-session *::after {

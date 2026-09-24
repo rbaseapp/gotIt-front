@@ -2056,7 +2056,15 @@ select:focus-visible {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  column-gap: 22px;
+  row-gap: 12px;
+}
+.letter-box-word {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
+  max-width: 100%;
 }
 .letter-box {
   width: 46px;
@@ -3440,6 +3448,10 @@ select:focus-visible {
 
 @media (max-width: 560px) {
   .letter-boxes {
+    column-gap: 16px;
+    row-gap: 10px;
+  }
+  .letter-box-word {
     gap: 6px;
   }
   .letter-box {

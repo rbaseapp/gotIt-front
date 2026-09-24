@@ -368,6 +368,103 @@ describe("live server-backed flows", () => {
     expect(screen.getAllByText("13").length).toBeGreaterThan(0);
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
   });
+  it("animates card changes and celebrates every third consecutive success", async () => {
+    localStorage.removeItem("gotit.practiceEffects.v1");
+    const thirdItemId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const thirdExerciseId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const attemptIds = [
+      "88888888-8888-4888-8888-888888888888",
+      "99999999-9999-4999-8999-999999999999",
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    ];
+    const milestoneExercises = [
+      { ...exercise, prompt: { ...exercise.prompt, text: "meaning one" } },
+      {
+        ...exercise,
+        id: remedialExerciseId,
+        learningItemId: secondItemId,
+        prompt: { ...exercise.prompt, text: "meaning two" },
+      },
+      {
+        ...exercise,
+        id: thirdExerciseId,
+        learningItemId: thirdItemId,
+        prompt: { ...exercise.prompt, text: "meaning three" },
+      },
+    ];
+    let attemptIndex = 0;
+    mount(
+      `/learn/session/recall?items=${itemId},${secondItemId},${thirdItemId}`,
+      async (url) => {
+        if (url.endsWith("/practice/sessions"))
+          return json({ session: { ...session, itemCount: 3 } });
+        if (url.endsWith("/exercises"))
+          return json(
+            {
+              exercises: milestoneExercises,
+              algorithmVersion: "server-v1",
+            },
+            201,
+          );
+        if (url.endsWith("/practice/attempts")) {
+          const current = attemptIndex++;
+          const target = milestoneExercises[current]!;
+          return json(
+            {
+              ...receipt,
+              attempt: {
+                ...receipt.attempt,
+                id: attemptIds[current]!,
+                learningItemId: target.learningItemId,
+                sequence: current + 1,
+                result: "correct",
+                score: 100,
+                xpEarned: 10,
+              },
+              replayed: false,
+            },
+            201,
+          );
+        }
+        throw new Error("Unexpected route");
+      },
+    );
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(document.querySelector(".launch-button")).toBeInTheDocument(),
+    );
+    await user.click(
+      document.querySelector(".launch-button") as HTMLButtonElement,
+    );
+
+    for (let current = 0; current < milestoneExercises.length; current++) {
+      await screen.findByRole("heading", {
+        name: `meaning ${["one", "two", "three"][current]}`,
+      });
+      await user.type(await screen.findByRole("textbox"), "answer");
+      await user.click(
+        document.querySelector(
+          ".live-exercise form button",
+        ) as HTMLButtonElement,
+      );
+      await waitFor(() =>
+        expect(document.querySelector(".live-feedback")).toBeInTheDocument(),
+      );
+      if (current < milestoneExercises.length - 1) {
+        await user.click(
+          document.querySelector(
+            ".live-feedback > .button",
+          ) as HTMLButtonElement,
+        );
+        expect(document.querySelector(".card-leaving")).toBeInTheDocument();
+      }
+    }
+
+    expect(await screen.findByTestId("streak-celebration")).toBeInTheDocument();
+    expect(
+      screen.getByText("3", { selector: ".hud-chip.combo b" }),
+    ).toBeInTheDocument();
+  });
   it("plays matching as one interactive board and saves every resolved pair", async () => {
     const choiceA = "66666666-6666-4666-8666-666666666666";
     const choiceB = "77777777-7777-4777-8777-777777777777";
