@@ -694,12 +694,12 @@
     "playSource": "Reproducir idioma de origen",
     "revealAnswer": "Revelar respuesta",
     "ratings": {
-      "again": "Otra vez",
-      "hard": "Difícil",
-      "good": "Bien",
-      "easy": "Fácil"
+      "again": "No lo recordé",
+      "hard": "Apenas lo recordé",
+      "good": "Lo recordé",
+      "easy": "Lo recordé al instante"
     },
-    "selfRatingHelp": "Esta es una autoevaluación, no una prueba objetiva de ortografía o recuerdo.",
+    "selfRatingHelp": "¿Qué tan bien lograste recordar la respuesta?",
     "recordingHelp": "Presiona y mantén para hablar; suelta para enviar a evaluación. La grabación se limita a 6 segundos y el sitio no almacena el archivo.",
     "releaseToSend": "Suelta para enviar",
     "holdToTalk": "Presiona y mantén para hablar",
@@ -740,7 +740,7 @@
     "whichWord": "¿Qué palabra encaja?",
     "playWord": "Reproducir palabra",
     "answer": "Respuesta",
-    "ratingHelp": "¿Qué tan fácil fue recordar? Esta es una autoevaluación, no una puntuación objetiva.",
+    "ratingHelp": "¿Qué tan bien lograste recordar la respuesta?",
     "audioUnsupported": "La reproducción de audio no es compatible con este navegador. Puedes elegir un juego de recuerdo.",
     "whatDidYouHear": "¿Qué escuchaste?",
     "play": "Reproducir",

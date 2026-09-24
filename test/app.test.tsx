@@ -39,7 +39,7 @@ describe("complete frontend flows", () => {
       expect(seen.has(source)).toBe(false);
       seen.add(source);
       await user.click(screen.getByRole("button", { name: "גילוי התשובה" }));
-      await user.click(screen.getByRole("button", { name: "טוב" }));
+      await user.click(screen.getByRole("button", { name: "זכרתי" }));
     }
     await screen.findByRole("heading", { name: "עבודה מעולה!" });
     expect(
@@ -148,12 +148,12 @@ describe("complete frontend flows", () => {
     const user = userEvent.setup();
     await screen.findByRole("heading", { name: "wander" });
     await user.click(screen.getByRole("button", { name: "גילוי התשובה" }));
-    await user.click(screen.getByRole("button", { name: "קל" }));
+    await user.click(screen.getByRole("button", { name: "זכרתי מיד" }));
     await screen.findByRole("heading", { name: "עבודה מעולה!" });
     await user.click(screen.getByRole("button", { name: "עוד סיבוב" }));
     await screen.findByRole("heading", { name: "wander" });
     await user.click(screen.getByRole("button", { name: "גילוי התשובה" }));
-    await user.click(screen.getByRole("button", { name: "קל" }));
+    await user.click(screen.getByRole("button", { name: "זכרתי מיד" }));
     await screen.findByRole("heading", { name: "עבודה מעולה!" });
     const persisted = JSON.parse(localStorage.getItem("gotit.demo.v2")!);
     expect(persisted.attempts).toHaveLength(2);

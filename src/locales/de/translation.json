@@ -694,12 +694,12 @@
     "playSource": "Ausgangssprache abspielen",
     "revealAnswer": "Antwort anzeigen",
     "ratings": {
-      "again": "Nochmal",
-      "hard": "Schwer",
-      "good": "Gut",
-      "easy": "Einfach"
+      "again": "Nicht erinnert",
+      "hard": "Mit Mühe erinnert",
+      "good": "Erinnert",
+      "easy": "Sofort erinnert"
     },
-    "selfRatingHelp": "Dies ist eine Selbstbewertung, keine objektive Rechtschreib- oder Erinnerungsprüfung.",
+    "selfRatingHelp": "Wie gut konntest du dich an die Antwort erinnern?",
     "recordingHelp": "Gedrückt halten zum Sprechen; loslassen zum Einreichen. Die Aufnahme ist auf 6 Sekunden begrenzt und die Website speichert die Datei nicht.",
     "releaseToSend": "Loslassen zum Senden",
     "holdToTalk": "Gedrückt halten zum Sprechen",
@@ -740,7 +740,7 @@
     "whichWord": "Welches Wort passt?",
     "playWord": "Wort abspielen",
     "answer": "Antwort",
-    "ratingHelp": "Wie leicht war es zu merken? Dies ist eine Selbsteinschätzung, keine objektive Bewertung.",
+    "ratingHelp": "Wie gut konntest du dich an die Antwort erinnern?",
     "audioUnsupported": "Audiowiedergabe wird in diesem Browser nicht unterstützt. Du kannst ein Abrufspiel wählen.",
     "whatDidYouHear": "Was hast du gehört?",
     "play": "Abspielen",

@@ -685,12 +685,12 @@
     "playSource": "播放源",
     "revealAnswer": "揭晓答案",
     "ratings": {
-      "again": "再次",
-      "hard": "硬",
-      "good": "好",
-      "easy": "简单"
+      "again": "没想起来",
+      "hard": "勉强想起来",
+      "good": "想起来了",
+      "easy": "马上想起来了"
     },
-    "selfRatingHelp": "这是自我评分，而不是客观的拼写或回忆测试。",
+    "selfRatingHelp": "你对答案记得有多清楚？",
     "recordingHelp": "按住可讲话；发布以提交评估。录制时间限制为 6 秒，且网站不存储文件。",
     "releaseToSend": "释放发送",
     "holdToTalk": "按住即可通话",
@@ -731,7 +731,7 @@
     "whichWord": "哪个词合适？",
     "playWord": "玩文字",
     "answer": "回答",
-    "ratingHelp": "记住有多容易？这是一份自我报告，而不是客观分数。",
+    "ratingHelp": "你对答案记得有多清楚？",
     "audioUnsupported": "此浏览器不支持音频播放。您可以选择回忆游戏。",
     "whatDidYouHear": "你听到了什么？",
     "play": "玩",

@@ -694,12 +694,12 @@
     "playSource": "Lire la source",
     "revealAnswer": "Afficher la réponse",
     "ratings": {
-      "again": "Recommencer",
-      "hard": "Difficile",
-      "good": "Bien",
-      "easy": "Facile"
+      "again": "Pas de souvenir",
+      "hard": "Souvenir difficile",
+      "good": "Je m’en souvenais",
+      "easy": "Souvenir immédiat"
     },
-    "selfRatingHelp": "C'est une auto-évaluation, et non un test objectif d'orthographe ou de rappel.",
+    "selfRatingHelp": "À quel point avez-vous réussi à vous souvenir de la réponse ?",
     "recordingHelp": "Appuyez et maintenez pour parler ; relâchez pour envoyer pour évaluation. L'enregistrement est limité à 6 secondes et le site ne stocke pas le fichier.",
     "releaseToSend": "Relâchez pour envoyer",
     "holdToTalk": "Appuyez et maintenez pour parler",
@@ -740,7 +740,7 @@
     "whichWord": "Quel mot convient ?",
     "playWord": "Jouer le mot",
     "answer": "Réponse",
-    "ratingHelp": "Quelle était la facilité à mémoriser ? C'est une auto-évaluation, pas un score objectif.",
+    "ratingHelp": "À quel point avez-vous réussi à vous souvenir de la réponse ?",
     "audioUnsupported": "La lecture audio n'est pas supportée par ce navigateur. Vous pouvez choisir un jeu de rappel.",
     "whatDidYouHear": "Qu'avez-vous entendu ?",
     "play": "Jouer",

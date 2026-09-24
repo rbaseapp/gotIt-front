@@ -689,12 +689,12 @@
     "playSource": "Play source",
     "revealAnswer": "Reveal answer",
     "ratings": {
-      "again": "Again",
-      "hard": "Hard",
-      "good": "Good",
-      "easy": "Easy"
+      "again": "Didn't remember",
+      "hard": "Barely remembered",
+      "good": "Remembered",
+      "easy": "Remembered instantly"
     },
-    "selfRatingHelp": "This is a self-rating, not an objective spelling or recall test.",
+    "selfRatingHelp": "How well did you remember the answer?",
     "recordingHelp": "Press and hold to speak; release to submit for evaluation. Recording is limited to 6 seconds and the site does not store the file.",
     "releaseToSend": "Release to send",
     "holdToTalk": "Press and hold to talk",
@@ -735,7 +735,7 @@
     "whichWord": "Which word fits?",
     "playWord": "Play word",
     "answer": "Answer",
-    "ratingHelp": "How easy was it to remember? This is a self-report, not an objective score.",
+    "ratingHelp": "How well did you remember the answer?",
     "audioUnsupported": "Audio playback is not supported in this browser. You can choose a recall game.",
     "whatDidYouHear": "What did you hear?",
     "play": "Play",
