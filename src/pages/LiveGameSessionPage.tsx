@@ -6,7 +6,21 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { z } from "zod";
-import { ArrowLeft, ArrowRight, Mic, Volume2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Flame,
+  Gauge,
+  Mic,
+  RotateCcw,
+  Settings2,
+  Sparkles,
+  Trophy,
+  Volume2,
+  VolumeX,
+  Zap,
+} from "lucide-react";
 import { Logo } from "../components/Logo";
 import { LetterBoxesInput } from "../components/LetterBoxesInput";
 import { api } from "../lib/api";
@@ -33,6 +47,7 @@ import { useApp } from "../context/AppContext";
 import { useFeedback } from "../components/Feedback";
 import { speak } from "../lib/utils";
 import { useTranslation } from "react-i18next";
+import { LiveMatchingBoard } from "../components/LiveMatchingBoard";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -44,6 +59,14 @@ const modes: Record<string, string> = {
   article_quiz: "article_quiz",
 };
 type Submission = Intent & { path: string };
+type SessionOutcome = {
+  attemptId: string;
+  itemId: string;
+  result: AttemptReceipt["attempt"]["result"];
+  score: number | null;
+  xp: number;
+  expectedAnswer: string | null;
+};
 export function LiveGameSessionPage() {
   const { t, i18n } = useTranslation();
   const { type = "" } = useParams();
@@ -61,6 +84,19 @@ export function LiveGameSessionPage() {
   const [answer, setAnswer] = useState("");
   const [flipped, setFlipped] = useState(false);
   const [receipt, setReceipt] = useState<AttemptReceipt>();
+  const [outcomes, setOutcomes] = useState<SessionOutcome[]>([]);
+  const [combo, setCombo] = useState(0);
+  const [bestCombo, setBestCombo] = useState(0);
+  const [sessionXp, setSessionXp] = useState(0);
+  const [remedialRound, setRemedialRound] = useState(false);
+  const [moment, setMoment] = useState<"success" | "miss" | undefined>();
+  const [effectsEnabled, setEffectsEnabled] = useState(() => {
+    try {
+      return localStorage.getItem("gotit.practiceEffects.v1") !== "off";
+    } catch {
+      return true;
+    }
+  });
   const [direction, setDirection] = useState("translation_to_source");
   const [kind, setKind] = useState("typed");
   const [count, setCount] = useState(10);
@@ -76,6 +112,12 @@ export function LiveGameSessionPage() {
   const audio = useRef<HTMLAudioElement | undefined>(undefined);
   const audioUrl = useRef<string | undefined>(undefined);
   const shownAt = useRef(performance.now());
+  const countedAttempts = useRef(new Set<string>());
+  const mistakeIds = useRef(new Set<string>());
+  const frozenSubmissions = useRef(new Map<string, Submission>());
+  const momentTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const exercise = exercises[index];
   const studyCard = studyCards[studyIndex];
   const masteryRequirements = receipt?.progress.masteryRequirements;
@@ -110,6 +152,7 @@ export function LiveGameSessionPage() {
     return () => {
       mounted.current = false;
       recordingController.current?.abort();
+      if (momentTimer.current) clearTimeout(momentTimer.current);
       audio.current?.pause();
       if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
     };
@@ -141,9 +184,10 @@ export function LiveGameSessionPage() {
       window.clearTimeout(playback);
     };
   }, [playStudyCard, session, studyCard]);
-  const issue = async (value: Session) => {
+  const issue = async (value: Session, learningItemIds?: string[]) => {
     const requestedCount =
-      value.scope?.type === "pack" ? value.itemCount : count;
+      learningItemIds?.length ??
+      (value.scope?.type === "pack" ? value.itemCount : count);
     const result = await product(
       z.object({
         exercises: z.array(exerciseSchema).min(1),
@@ -153,6 +197,7 @@ export function LiveGameSessionPage() {
       "POST",
       {
         count: Math.max(1, Math.min(requestedCount, value.itemCount, 100)),
+        ...(learningItemIds ? { learningItemIds } : {}),
         ...(type === "smart"
           ? {}
           : {
@@ -164,6 +209,9 @@ export function LiveGameSessionPage() {
     if (mounted.current) {
       setExercises(result.exercises);
       setIndex(0);
+      setReceipt(undefined);
+      setAnswer("");
+      setFlipped(false);
     }
   };
   const loadStudy = async (value: Session) => {
@@ -275,17 +323,77 @@ export function LiveGameSessionPage() {
       if (mounted.current) setBusy(false);
     }
   };
-  const submit = async (
+  const playFeedbackCue = (success: boolean) => {
+    if (!effectsEnabled) return;
+    navigator.vibrate?.(success ? 18 : [18, 30, 18]);
+    const AudioContextConstructor = window.AudioContext;
+    if (!AudioContextConstructor) return;
+    try {
+      const context = new AudioContextConstructor();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const now = context.currentTime;
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(success ? 620 : 230, now);
+      if (success)
+        oscillator.frequency.exponentialRampToValueAtTime(840, now + 0.11);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + 0.15);
+      oscillator.addEventListener("ended", () => void context.close());
+    } catch {
+      // Feedback audio is decorative; practice must continue without it.
+    }
+  };
+  const registerOutcome = (result: AttemptReceipt) => {
+    if (countedAttempts.current.has(result.attempt.id)) return;
+    countedAttempts.current.add(result.attempt.id);
+    const success =
+      result.attempt.result === "correct" ||
+      (result.attempt.result === "self_rated" &&
+        (result.attempt.score ?? 0) >= 60);
+    playFeedbackCue(success);
+    if (success && remedialRound)
+      mistakeIds.current.delete(result.attempt.learningItemId);
+    else if (!success) mistakeIds.current.add(result.attempt.learningItemId);
+    setOutcomes((current) => [
+      ...current,
+      {
+        attemptId: result.attempt.id,
+        itemId: result.attempt.learningItemId,
+        result: result.attempt.result,
+        score: result.attempt.score,
+        xp: result.attempt.xpEarned,
+        expectedAnswer: result.attempt.expectedAnswer,
+      },
+    ]);
+    setSessionXp((current) => current + result.attempt.xpEarned);
+    setCombo((current) => {
+      const next = success ? current + 1 : 0;
+      setBestCombo((best) => Math.max(best, next));
+      return next;
+    });
+    setMoment(success ? "success" : "miss");
+    if (momentTimer.current) clearTimeout(momentTimer.current);
+    momentTimer.current = setTimeout(() => setMoment(undefined), 900);
+  };
+  const performSubmission = async (
+    target: Exercise,
     fields: Record<string, unknown>,
     path = "practice/attempts",
+    exposePending = false,
   ) => {
-    if (!exercise || receipt || lock.current) return;
+    if (lock.current) return undefined;
     lock.current = true;
     setBusy(true);
     setError("");
-    const submission = pending || {
+    const submissionKey = `${path}:${target.id}`;
+    const submission = frozenSubmissions.current.get(submissionKey) ?? {
       ...intent({
-        exerciseId: exercise.id,
+        exerciseId: target.id,
         ...fields,
         ...(path === "practice/attempts"
           ? {
@@ -299,7 +407,8 @@ export function LiveGameSessionPage() {
       }),
       path,
     };
-    setPending(submission);
+    frozenSubmissions.current.set(submissionKey, submission);
+    if (exposePending) setPending(submission);
     try {
       const result = await product(
         attemptReceipt,
@@ -309,15 +418,26 @@ export function LiveGameSessionPage() {
         submission.eventId,
       );
       if (mounted.current) {
-        setReceipt(result);
-        setPending(undefined);
+        frozenSubmissions.current.delete(submissionKey);
+        registerOutcome(result);
+        if (exposePending) setPending(undefined);
       }
+      return result;
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
+      return undefined;
     } finally {
       lock.current = false;
       if (mounted.current) setBusy(false);
     }
+  };
+  const submit = async (
+    fields: Record<string, unknown>,
+    path = "practice/attempts",
+  ) => {
+    if (!exercise || receipt) return;
+    const result = await performSubmission(exercise, fields, path, true);
+    if (result && mounted.current) setReceipt(result);
   };
   const close = async (status: "completed" | "abandoned") => {
     if (!session || lock.current) return;
@@ -346,6 +466,54 @@ export function LiveGameSessionPage() {
       if (mounted.current) setBusy(false);
     }
   };
+  const advance = async () => {
+    if (!session || busy) return;
+    if (index + 1 < exercises.length) {
+      setIndex((current) => current + 1);
+      setAnswer("");
+      setFlipped(false);
+      setReceipt(undefined);
+      return;
+    }
+    const retryIds = [...mistakeIds.current];
+    if (!remedialRound && retryIds.length && type !== "matching") {
+      lock.current = true;
+      setBusy(true);
+      setError("");
+      try {
+        await issue(session, retryIds);
+        if (mounted.current) setRemedialRound(true);
+      } catch (reason) {
+        if (mounted.current) setError(errorMessage(reason));
+      } finally {
+        lock.current = false;
+        if (mounted.current) setBusy(false);
+      }
+      return;
+    }
+    await close("completed");
+  };
+  const restart = () => {
+    creation.current = undefined;
+    countedAttempts.current.clear();
+    mistakeIds.current.clear();
+    frozenSubmissions.current.clear();
+    setSession(undefined);
+    setStudyCards([]);
+    setStudyIndex(0);
+    setStudyImage(undefined);
+    setExercises([]);
+    setIndex(0);
+    setAnswer("");
+    setReceipt(undefined);
+    setPending(undefined);
+    setOutcomes([]);
+    setCombo(0);
+    setBestCombo(0);
+    setSessionXp(0);
+    setRemedialRound(false);
+    setMoment(undefined);
+  };
   const requestExit = async () => {
     if (!session || session.status !== "active") {
       navigate("/learn");
@@ -360,7 +528,7 @@ export function LiveGameSessionPage() {
     });
     if (approved) void close("abandoned");
   };
-  const play = async () => {
+  const play = async (playbackRate = 1) => {
     if (!exercise || busy) return;
     setError("");
     try {
@@ -370,6 +538,7 @@ export function LiveGameSessionPage() {
       if (!mounted.current) return;
       audioUrl.current = URL.createObjectURL(blob);
       audio.current = new Audio(audioUrl.current);
+      audio.current.playbackRate = playbackRate;
       await audio.current.play();
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
@@ -402,6 +571,50 @@ export function LiveGameSessionPage() {
   };
   const releaseRecording = () => recordingRelease.current?.abort();
   const cancelRecording = () => recordingController.current?.abort();
+  const submitRef = useRef(submit);
+  const playRef = useRef(play);
+  submitRef.current = submit;
+  playRef.current = play;
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (
+        target.matches("input, textarea, select, button") ||
+        target.isContentEditable ||
+        !exercise ||
+        receipt ||
+        busy ||
+        pending
+      )
+        return;
+      const optionIndex = Number(event.key) - 1;
+      if (
+        exercise.kind === "multiple_choice" &&
+        optionIndex >= 0 &&
+        optionIndex < (exercise.prompt.choices?.length ?? 0)
+      ) {
+        event.preventDefault();
+        void submitRef.current({
+          choiceId: exercise.prompt.choices![optionIndex]!.id,
+        });
+      } else if (
+        exercise.kind === "self_rating" &&
+        flipped &&
+        optionIndex >= 0 &&
+        optionIndex < 4
+      ) {
+        event.preventDefault();
+        void submitRef.current({
+          selfRating: ["again", "hard", "good", "easy"][optionIndex],
+        });
+      } else if (event.key === " " && exercise.prompt.audioUrl) {
+        event.preventDefault();
+        void playRef.current();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [busy, exercise, flipped, pending, receipt]);
   if (!modes[type])
     return (
       <div className="empty-session">
@@ -410,7 +623,9 @@ export function LiveGameSessionPage() {
       </div>
     );
   return (
-    <div className="session-page live-session">
+    <div
+      className={`session-page live-session${moment ? ` moment-${moment}` : ""}`}
+    >
       <header className="session-topbar">
         <button
           className="button ghost"
@@ -420,8 +635,44 @@ export function LiveGameSessionPage() {
           <ArrowRight size={18} />
           {t("game.exit")}
         </button>
-        <Logo />
-        <span>{t(`labels.${modes[type]}`)}</span>
+        <div className="session-brand">
+          <Logo />
+          <span>{t(`labels.${modes[type]}`)}</span>
+        </div>
+        <div className="session-hud" aria-live="polite">
+          <span className={`hud-chip combo${combo >= 3 ? " active" : ""}`}>
+            <Flame size={17} />
+            <b>{combo}</b>
+            {t("game.combo")}
+          </span>
+          <span className="hud-chip xp">
+            <Zap size={17} />
+            <b>{sessionXp}</b>
+            XP
+          </span>
+          <button
+            type="button"
+            className="hud-sound"
+            aria-label={
+              effectsEnabled ? t("game.effectsOff") : t("game.effectsOn")
+            }
+            aria-pressed={effectsEnabled}
+            onClick={() => {
+              const next = !effectsEnabled;
+              setEffectsEnabled(next);
+              try {
+                localStorage.setItem(
+                  "gotit.practiceEffects.v1",
+                  next ? "on" : "off",
+                );
+              } catch {
+                // The setting remains active for this tab when storage is blocked.
+              }
+            }}
+          >
+            {effectsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
+          </button>
+        </div>
       </header>
       <main className="live-session-main">
         {error && (
@@ -430,55 +681,70 @@ export function LiveGameSessionPage() {
           </div>
         )}
         {!exercise && !studyCard && session?.status !== "completed" && (
-          <section className="live-panel form-stack">
-            <p className="eyebrow">{t("game.serverPractice")}</p>
+          <section className="live-panel session-launch">
+            <span className="launch-icon" aria-hidden="true">
+              <Sparkles size={30} />
+            </span>
+            <p className="eyebrow">{t("game.readyEyebrow")}</p>
             <h1>{t(`labels.${modes[type]}`)}</h1>
-            <p>{t("game.serverPracticeDescription")}</p>
-            <fieldset
-              className="plain-fieldset form-stack"
-              disabled={busy || !!creation.current || !!session}
-            >
-              <label className="field">
-                <span>{t("game.maxWords")}</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={count}
-                  onChange={(e) =>
-                    setCount(Math.max(1, Math.min(20, Number(e.target.value))))
-                  }
-                />
-              </label>
-              {!["listening", "pronunciation", "smart"].includes(type) && (
+            <p>{t("game.quickStartDescription", { count })}</p>
+            <details className="session-settings">
+              <summary>
+                <Settings2 size={17} />
+                {t("game.customize")}
+              </summary>
+              <fieldset
+                className="plain-fieldset form-stack"
+                disabled={busy || !!creation.current || !!session}
+              >
                 <label className="field">
-                  <span>{t("game.direction")}</span>
-                  <select
-                    value={direction}
-                    onChange={(e) => setDirection(e.target.value)}
-                  >
-                    <option value="translation_to_source">{t("game.meaningToSource")}</option>
-                    <option value="source_to_translation">{t("game.sourceToMeaning")}</option>
-                  </select>
+                  <span>{t("game.maxWords")}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={count}
+                    onChange={(e) =>
+                      setCount(
+                        Math.max(1, Math.min(20, Number(e.target.value))),
+                      )
+                    }
+                  />
                 </label>
-              )}
-              {["recall", "article_quiz"].includes(type) && (
-                <label className="field">
-                  <span>{t("game.answerType")}</span>
-                  <select
-                    value={kind}
-                    onChange={(e) => setKind(e.target.value)}
-                  >
-                    <option value="typed">{t("game.typed")}</option>
-                    <option value="multiple_choice">
-                      {t("game.multipleChoice")}
-                    </option>
-                  </select>
-                </label>
-              )}
-            </fieldset>
+                {!["listening", "pronunciation", "smart"].includes(type) && (
+                  <label className="field">
+                    <span>{t("game.direction")}</span>
+                    <select
+                      value={direction}
+                      onChange={(e) => setDirection(e.target.value)}
+                    >
+                      <option value="translation_to_source">
+                        {t("game.meaningToSource")}
+                      </option>
+                      <option value="source_to_translation">
+                        {t("game.sourceToMeaning")}
+                      </option>
+                    </select>
+                  </label>
+                )}
+                {["recall", "article_quiz"].includes(type) && (
+                  <label className="field">
+                    <span>{t("game.answerType")}</span>
+                    <select
+                      value={kind}
+                      onChange={(e) => setKind(e.target.value)}
+                    >
+                      <option value="typed">{t("game.typed")}</option>
+                      <option value="multiple_choice">
+                        {t("game.multipleChoice")}
+                      </option>
+                    </select>
+                  </label>
+                )}
+              </fieldset>
+            </details>
             <button
-              className="button primary"
+              className="button primary launch-button"
               disabled={busy}
               onClick={() => void start()}
             >
@@ -489,6 +755,7 @@ export function LiveGameSessionPage() {
                   : creation.current
                     ? t("game.retryCreation")
                     : t("game.start")}
+              {!busy && <ArrowLeft size={19} />}
             </button>
             {creation.current && !session && (
               <p>{t("game.retryCreationHelp")}</p>
@@ -496,9 +763,13 @@ export function LiveGameSessionPage() {
           </section>
         )}
         {session?.status === "completed" ? (
-          <section className="live-panel live-empty">
+          <section className="live-panel live-empty session-results">
+            <span className="result-trophy" aria-hidden="true">
+              <Trophy size={42} />
+            </span>
             <p className="eyebrow">{t("game.resultsSaved")}</p>
             <h1>{t("game.completed")}</h1>
+            <p>{t("game.finishMessage", { combo: bestCombo })}</p>
             <div className="live-stats-grid">
               <div>
                 <b>{session.attemptCount}</b>
@@ -512,16 +783,49 @@ export function LiveGameSessionPage() {
                 <b>{session.xpEarned}</b>
                 <span>{t("game.totalXp")}</span>
               </div>
+              <div>
+                <b>{bestCombo}</b>
+                <span>{t("game.bestCombo")}</span>
+              </div>
             </div>
-            <Link className="button primary" to="/dashboard">
-              {t("game.myProgress")}
-            </Link>
+            {outcomes.some((outcome) => outcome.expectedAnswer) && (
+              <div className="session-learnings">
+                <b>{t("game.wordsStrengthened")}</b>
+                <div>
+                  {[
+                    ...new Set(
+                      outcomes
+                        .map((outcome) => outcome.expectedAnswer)
+                        .filter((answer): answer is string => Boolean(answer)),
+                    ),
+                  ]
+                    .slice(0, 5)
+                    .map((answer) => (
+                      <span key={answer} dir="auto">
+                        {answer}
+                      </span>
+                    ))}
+                </div>
+              </div>
+            )}
+            <div className="finish-actions">
+              <button className="button primary" onClick={restart}>
+                <RotateCcw size={17} />
+                {t("game.anotherRound")}
+              </button>
+              <Link className="button secondary" to="/dashboard">
+                {t("game.myProgress")}
+              </Link>
+            </div>
           </section>
         ) : studyCard ? (
           <>
             <div className="live-toolbar study-toolbar">
               <span>
-                {t("game.studyProgress", { current: studyIndex + 1, total: studyCards.length })}
+                {t("game.studyProgress", {
+                  current: studyIndex + 1,
+                  total: studyCards.length,
+                })}
               </span>
               <span>{t("game.familiarize")}</span>
               <button
@@ -547,7 +851,8 @@ export function LiveGameSessionPage() {
                     <img
                       src={studyImage.url}
                       alt={
-                        studyImage.alt || t("game.imageFor", { word: studyCard.sourceText })
+                        studyImage.alt ||
+                        t("game.imageFor", { word: studyCard.sourceText })
                       }
                       onError={() => setStudyImageFailed(true)}
                     />
@@ -568,11 +873,19 @@ export function LiveGameSessionPage() {
                           rel="noreferrer"
                         >
                           {studyImage.creator
-                            ? t("game.imageBy", { creator: studyImage.creator, provider: studyImage.provider || "Pixabay" })
-                            : t("game.imageVia", { provider: studyImage.provider || "Pixabay" })}
+                            ? t("game.imageBy", {
+                                creator: studyImage.creator,
+                                provider: studyImage.provider || "Pixabay",
+                              })
+                            : t("game.imageVia", {
+                                provider: studyImage.provider || "Pixabay",
+                              })}
                         </a>
                       ) : (
-                        t("game.imageVia", { provider: studyImage.provider || t("game.externalSource") })
+                        t("game.imageVia", {
+                          provider:
+                            studyImage.provider || t("game.externalSource"),
+                        })
                       )}
                     </small>
                   )}
@@ -621,248 +934,341 @@ export function LiveGameSessionPage() {
             <>
               <div className="live-toolbar">
                 <span>
-                  {t("game.exerciseProgress", { current: index + 1, total: exercises.length })}
+                  {t("game.exerciseProgress", {
+                    current: index + 1,
+                    total: exercises.length,
+                  })}
+                </span>
+                <span className="round-label">
+                  {remedialRound
+                    ? t("game.repairRound")
+                    : index / exercises.length < 0.34
+                      ? t("game.warmupRound")
+                      : index / exercises.length < 0.75
+                        ? t("game.challengeRound")
+                        : t("game.masteryRound")}
                 </span>
                 <span>{t(`labels.${exercise.exerciseType}`)}</span>
               </div>
               <progress
                 className="live-session-progress"
-                value={index}
+                value={type === "matching" ? outcomes.length : index}
                 max={exercises.length}
                 aria-label={t("game.exerciseProgressAria")}
               />
-              <section className="live-exercise live-panel">
-                <p className="eyebrow">
-                  {exercise.direction === "translation_to_source"
-                    ? t("game.sayInSource")
-                    : t("game.whatMeaning")}
-                </p>
-                <h1 dir="auto">
-                  {exercise.prompt.text || t("game.listenAndType")}
-                </h1>
-                {exercise.prompt.context && (
-                  <blockquote dir="auto">{exercise.prompt.context}</blockquote>
-                )}
-                {exercise.prompt.audioUrl && (
-                  <button
-                    className="button secondary"
-                    disabled={busy}
-                    onClick={() => void play()}
-                  >
-                    <Volume2 size={19} />
-                    {t("game.playSource")}
-                  </button>
-                )}
-                {!receipt && (
-                  <>
-                    {exercise.kind === "self_rating" ? (
-                      <>
-                        {!flipped ? (
-                          <button
-                            className="button primary"
-                            disabled={busy || !!pending}
-                            onClick={() => setFlipped(true)}
-                          >
-                            {t("game.revealAnswer")}
-                          </button>
-                        ) : (
-                          <>
-                            <p className="live-revealed" dir="auto">
-                              {exercise.prompt.answer}
-                            </p>
-                            <div className="live-options">
-                              {["again", "hard", "good", "easy"].map((selfRating) => (
-                                <button
-                                  className="button secondary"
-                                  key={selfRating}
-                                  disabled={busy || !!pending}
-                                  onClick={() => void submit({ selfRating })}
-                                >
-                                  {t(`game.ratings.${selfRating}`)}
-                                </button>
-                              ))}
-                            </div>
-                            <p className="muted-note">
-                              {t("game.selfRatingHelp")}
-                            </p>
-                          </>
-                        )}
-                      </>
-                    ) : exercise.kind === "multiple_choice" ? (
-                      <div className="live-choice-grid">
-                        {exercise.prompt.choices?.map((choice) => (
-                          <button
-                            className="button secondary"
-                            dir="auto"
-                            key={choice.id}
-                            disabled={busy || !!pending}
-                            onClick={() => void submit({ choiceId: choice.id })}
-                          >
-                            {choice.text}
-                          </button>
-                        ))}
-                      </div>
-                    ) : exercise.kind === "provider" ? (
-                      <>
-                        <p>{t("game.recordingHelp")}</p>
-                        <button
-                          className={`button primary hold-to-talk${recording ? " recording" : ""}`}
-                          disabled={busy || !!pending}
-                          aria-pressed={recording}
-                          onPointerDown={(event) => {
-                            if (event.button !== 0) return;
-                            event.preventDefault();
-                            event.currentTarget.setPointerCapture(
-                              event.pointerId,
-                            );
-                            void record();
-                          }}
-                          onPointerUp={(event) => {
-                            event.preventDefault();
-                            releaseRecording();
-                          }}
-                          onPointerCancel={cancelRecording}
-                          onKeyDown={(event) => {
-                            if (
-                              (event.key === " " || event.key === "Enter") &&
-                              !event.repeat
-                            ) {
-                              event.preventDefault();
-                              void record();
-                            }
-                          }}
-                          onKeyUp={(event) => {
-                            if (event.key === " " || event.key === "Enter") {
-                              event.preventDefault();
-                              releaseRecording();
-                            }
-                          }}
-                          onContextMenu={(event) => event.preventDefault()}
-                        >
-                          <Mic size={19} />
-                          {recording
-                            ? t("game.releaseToSend")
-                            : t("game.holdToTalk")}
-                        </button>
-                        {recording && (
-                          <button
-                            className="button ghost"
-                            onClick={cancelRecording}
-                          >
-                            {t("game.cancelRecording")}
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      <form
-                        className="form-stack"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          void submit({ answerText: answer });
-                        }}
+              {type === "matching" ? (
+                <section className="live-exercise live-panel matching-panel">
+                  <LiveMatchingBoard
+                    exercises={exercises}
+                    busy={busy}
+                    onSubmit={(target, choiceId) =>
+                      performSubmission(target, { choiceId })
+                    }
+                    onDone={() => void close("completed")}
+                  />
+                </section>
+              ) : (
+                <section className="live-exercise live-panel">
+                  <p className="eyebrow">
+                    {exercise.direction === "translation_to_source"
+                      ? t("game.sayInSource")
+                      : t("game.whatMeaning")}
+                  </p>
+                  <h1 dir="auto">
+                    {exercise.prompt.text || t("game.listenAndType")}
+                  </h1>
+                  {exercise.prompt.context && (
+                    <blockquote dir="auto">
+                      {exercise.prompt.context}
+                    </blockquote>
+                  )}
+                  {exercise.prompt.audioUrl && (
+                    <div className="audio-actions">
+                      <button
+                        className="listen-button"
+                        disabled={busy}
+                        onClick={() => void play()}
                       >
-                        <div className="field">
-                          <span>{t("game.yourAnswer")}</span>
-                          {exercise.prompt.letterCount ? (
-                            <LetterBoxesInput
-                              autoFocus
-                              label={t("game.yourAnswer")}
-                              value={answer}
-                              length={exercise.prompt.letterCount}
+                        <span className="listen-button-icon">
+                          <Volume2 size={24} />
+                        </span>
+                        {t("game.playSource")}
+                      </button>
+                      {exercise.exerciseType === "listening_spelling" && (
+                        <button
+                          className="button ghost slow-audio"
+                          disabled={busy}
+                          onClick={() => void play(0.75)}
+                        >
+                          <Gauge size={17} />
+                          {t("game.playSlowly")}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {!receipt && (
+                    <>
+                      {exercise.kind === "self_rating" ? (
+                        <>
+                          {!flipped ? (
+                            <button
+                              className="button primary"
                               disabled={busy || !!pending}
-                              onChange={setAnswer}
-                            />
+                              onClick={() => setFlipped(true)}
+                            >
+                              {t("game.revealAnswer")}
+                            </button>
                           ) : (
-                            <input
-                              autoFocus
-                              aria-label={t("game.yourAnswer")}
-                              dir="auto"
-                              maxLength={2000}
-                              autoComplete="off"
-                              spellCheck={false}
-                              value={answer}
-                              disabled={busy || !!pending}
-                              onChange={(e) => setAnswer(e.target.value)}
-                            />
+                            <>
+                              <p className="live-revealed" dir="auto">
+                                {exercise.prompt.answer}
+                              </p>
+                              <div className="live-options">
+                                {["again", "hard", "good", "easy"].map(
+                                  (selfRating) => (
+                                    <button
+                                      className="button secondary"
+                                      key={selfRating}
+                                      disabled={busy || !!pending}
+                                      onClick={() =>
+                                        void submit({ selfRating })
+                                      }
+                                    >
+                                      {t(`game.ratings.${selfRating}`)}
+                                    </button>
+                                  ),
+                                )}
+                              </div>
+                              <p className="muted-note">
+                                {t("game.selfRatingHelp")}
+                              </p>
+                            </>
+                          )}
+                        </>
+                      ) : exercise.kind === "multiple_choice" ? (
+                        <div className="live-choice-grid">
+                          {exercise.prompt.choices?.map(
+                            (choice, choiceIndex) => (
+                              <button
+                                className="button secondary"
+                                dir="auto"
+                                key={choice.id}
+                                disabled={busy || !!pending}
+                                onClick={() =>
+                                  void submit({ choiceId: choice.id })
+                                }
+                              >
+                                <kbd>{choiceIndex + 1}</kbd>
+                                <span>{choice.text}</span>
+                              </button>
+                            ),
                           )}
                         </div>
-                        <button
-                          className="button primary"
-                          disabled={!answer.trim() || busy || !!pending}
+                      ) : exercise.kind === "provider" ? (
+                        <>
+                          <p>{t("game.recordingHelp")}</p>
+                          <button
+                            className={`button primary hold-to-talk${recording ? " recording" : ""}`}
+                            disabled={busy || !!pending}
+                            aria-pressed={recording}
+                            onPointerDown={(event) => {
+                              if (event.button !== 0) return;
+                              event.preventDefault();
+                              event.currentTarget.setPointerCapture(
+                                event.pointerId,
+                              );
+                              void record();
+                            }}
+                            onPointerUp={(event) => {
+                              event.preventDefault();
+                              releaseRecording();
+                            }}
+                            onPointerCancel={cancelRecording}
+                            onKeyDown={(event) => {
+                              if (
+                                (event.key === " " || event.key === "Enter") &&
+                                !event.repeat
+                              ) {
+                                event.preventDefault();
+                                void record();
+                              }
+                            }}
+                            onKeyUp={(event) => {
+                              if (event.key === " " || event.key === "Enter") {
+                                event.preventDefault();
+                                releaseRecording();
+                              }
+                            }}
+                            onContextMenu={(event) => event.preventDefault()}
+                          >
+                            <Mic size={19} />
+                            {recording
+                              ? t("game.releaseToSend")
+                              : t("game.holdToTalk")}
+                          </button>
+                          {recording && (
+                            <button
+                              className="button ghost"
+                              onClick={cancelRecording}
+                            >
+                              {t("game.cancelRecording")}
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <form
+                          className="form-stack"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            void submit({ answerText: answer });
+                          }}
                         >
-                          {t("game.checkAnswer")}
-                        </button>
-                      </form>
-                    )}
-                    {pending ? (
-                      <>
-                        <p>{t("game.answerLocked")}</p>
+                          <div className="field">
+                            <span>{t("game.yourAnswer")}</span>
+                            {exercise.prompt.letterCount ? (
+                              <LetterBoxesInput
+                                autoFocus
+                                label={t("game.yourAnswer")}
+                                value={answer}
+                                length={exercise.prompt.letterCount}
+                                disabled={busy || !!pending}
+                                onChange={setAnswer}
+                              />
+                            ) : (
+                              <input
+                                autoFocus
+                                aria-label={t("game.yourAnswer")}
+                                dir="auto"
+                                maxLength={2000}
+                                autoComplete="off"
+                                spellCheck={false}
+                                value={answer}
+                                disabled={busy || !!pending}
+                                onChange={(e) => setAnswer(e.target.value)}
+                              />
+                            )}
+                          </div>
+                          <button
+                            className="button primary"
+                            disabled={!answer.trim() || busy || !!pending}
+                          >
+                            {t("game.checkAnswer")}
+                          </button>
+                        </form>
+                      )}
+                      {pending ? (
+                        <>
+                          <p>{t("game.answerLocked")}</p>
+                          <button
+                            className="button primary"
+                            disabled={busy}
+                            onClick={() => void submit({})}
+                          >
+                            {t("game.retryAnswer")}
+                          </button>
+                        </>
+                      ) : (
                         <button
-                          className="button primary"
-                          disabled={busy}
-                          onClick={() => void submit({})}
+                          className="button ghost"
+                          disabled={busy || recording}
+                          onClick={() => void submit({ skipped: true })}
                         >
-                          {t("game.retryAnswer")}
+                          {t("game.skip")}
                         </button>
-                      </>
-                    ) : (
-                      <button
-                        className="button ghost"
-                        disabled={busy || recording}
-                        onClick={() => void submit({ skipped: true })}
-                      >
-                        {t("game.skip")}
-                      </button>
-                    )}
-                  </>
-                )}
-                {receipt && (
-                  <div
-                    className={`live-feedback ${receipt.attempt.result}`}
-                    role="status"
-                  >
-                    <h2>{t(`labels.${receipt.attempt.result}`)}</h2>
-                    {receipt.attempt.expectedAnswer && (
-                      <p dir="auto">{t("game.expectedAnswer", { answer: receipt.attempt.expectedAnswer })}</p>
-                    )}
-                    {receipt.attempt.pronunciationFeedback && (
-                      <p>{receipt.attempt.pronunciationFeedback}</p>
-                    )}
-                    <p>
-                      {t("game.serverScore", { score: receipt.attempt.score ?? t("game.noScore"), xp: receipt.attempt.xpEarned, status: t(`labels.${receipt.progress.status}`) })}
-                    </p>
-                    {receipt.attempt.xpStatus?.dailyXpCapReached && (
-                      <p>{t("game.xpCap", { cap: receipt.attempt.xpStatus.dailyXpCap, percent: receipt.attempt.xpStatus.postDailyCapPercent ?? 25 })}</p>
-                    )}
-                    <p>
-                      {t("game.masteryNext", { mastery: Math.round(receipt.progress.masteryScore), next: receipt.progress.nextReviewAt ? new Date(receipt.progress.nextReviewAt).toLocaleDateString(i18n.resolvedLanguage) : t("game.notScheduled") })}
-                    </p>
-                    {masteryRequirements?.needsTypedRecall && (
-                      <p>
-                        {t("game.toMastered", { requirement: masteryRequirementText(masteryRequirements) })}
-                      </p>
-                    )}
-                    <button
-                      className="button primary"
-                      disabled={busy}
-                      onClick={() => {
-                        if (index + 1 === exercises.length)
-                          void close("completed");
-                        else {
-                          setIndex(index + 1);
-                          setAnswer("");
-                          setFlipped(false);
-                          setReceipt(undefined);
-                        }
-                      }}
+                      )}
+                    </>
+                  )}
+                  {receipt && (
+                    <div
+                      className={`live-feedback ${receipt.attempt.result}`}
+                      role="status"
                     >
-                      {index + 1 === exercises.length
-                        ? t("game.finish")
-                        : t("game.nextWord")}
-                    </button>
-                  </div>
-                )}
-              </section>
+                      <span className="feedback-mark" aria-hidden="true">
+                        {receipt.attempt.result === "correct" ||
+                        (receipt.attempt.result === "self_rated" &&
+                          (receipt.attempt.score ?? 0) >= 60) ? (
+                          <CheckCircle2 size={30} />
+                        ) : (
+                          <Sparkles size={28} />
+                        )}
+                      </span>
+                      <div className="feedback-copy">
+                        <h2>{t(`labels.${receipt.attempt.result}`)}</h2>
+                        {receipt.attempt.expectedAnswer && (
+                          <p className="feedback-answer" dir="auto">
+                            {t("game.expectedAnswer", {
+                              answer: receipt.attempt.expectedAnswer,
+                            })}
+                          </p>
+                        )}
+                      </div>
+                      <div className="feedback-rewards">
+                        <span>
+                          <Zap size={16} />+{receipt.attempt.xpEarned} XP
+                        </span>
+                        {receipt.attempt.score !== null && (
+                          <span>{Math.round(receipt.attempt.score)}%</span>
+                        )}
+                        <span>
+                          {t("game.masteryCompact", {
+                            mastery: Math.round(receipt.progress.masteryScore),
+                          })}
+                        </span>
+                      </div>
+                      {receipt.attempt.pronunciationFeedback && (
+                        <p className="pronunciation-coach">
+                          {receipt.attempt.pronunciationFeedback}
+                        </p>
+                      )}
+                      <details className="feedback-details">
+                        <summary>{t("game.progressDetails")}</summary>
+                        <p>
+                          {t("game.masteryNext", {
+                            mastery: Math.round(receipt.progress.masteryScore),
+                            next: receipt.progress.nextReviewAt
+                              ? new Date(
+                                  receipt.progress.nextReviewAt,
+                                ).toLocaleDateString(i18n.resolvedLanguage)
+                              : t("game.notScheduled"),
+                          })}
+                        </p>
+                        {masteryRequirements?.needsTypedRecall && (
+                          <p>
+                            {t("game.toMastered", {
+                              requirement:
+                                masteryRequirementText(masteryRequirements),
+                            })}
+                          </p>
+                        )}
+                        {receipt.attempt.xpStatus?.dailyXpCapReached && (
+                          <p>
+                            {t("game.xpCap", {
+                              cap: receipt.attempt.xpStatus.dailyXpCap,
+                              percent:
+                                receipt.attempt.xpStatus.postDailyCapPercent ??
+                                25,
+                            })}
+                          </p>
+                        )}
+                      </details>
+                      <button
+                        className="button primary"
+                        disabled={busy}
+                        onClick={() => void advance()}
+                      >
+                        {index + 1 === exercises.length
+                          ? !remedialRound && mistakeIds.current.size
+                            ? t("game.reviewMistakes", {
+                                count: mistakeIds.current.size,
+                              })
+                            : t("game.finish")
+                          : t("game.nextWord")}
+                        <ArrowLeft size={18} />
+                      </button>
+                    </div>
+                  )}
+                </section>
+              )}
             </>
           )
         )}

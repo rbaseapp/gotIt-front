@@ -15,6 +15,7 @@ const itemId = "11111111-1111-4111-8111-111111111111";
 const secondItemId = "44444444-4444-4444-8444-444444444444";
 const sessionId = "22222222-2222-4222-8222-222222222222";
 const exerciseId = "33333333-3333-4333-8333-333333333333";
+const remedialExerciseId = "55555555-5555-4555-8555-555555555555";
 const date = "2026-09-15T10:00:00.000Z";
 const identity = {
   id: itemId,
@@ -106,55 +107,52 @@ afterEach(clearTokens);
 describe("live server-backed flows", () => {
   it("moves through memorization cards and offers one prominent review skip", async () => {
     const smartSession = { ...session, sessionType: "smart_review" };
-    const fetchMock = mount(
-      "/learn/session/smart",
-      async (url) => {
-        if (url.endsWith("/practice/sessions"))
-          return json({ session: smartSession });
-        if (url.endsWith(`/practice/sessions/${sessionId}/study`))
-          return json({
-            cards: [
-              {
-                learningItemId: itemId,
-                sourceText: "remember",
-                translationText: "לזכור",
-                sourceLanguageCode: "en",
-                translationLanguageCode: "he",
-                context: "Remember this moment.",
-                audioUrl: null,
-              },
-              {
-                learningItemId: secondItemId,
-                sourceText: "apple",
-                translationText: "תפוח",
-                sourceLanguageCode: "en",
-                translationLanguageCode: "he",
-                context: "A red apple on the table.",
-                audioUrl: null,
-              },
-            ],
-          });
-        if (url.endsWith(`/study/${itemId}/image`))
-          return json({
-            image: {
-              url: "data:image/jpeg;base64,/9j/4AECAwQ=",
-              alt: "A memory aid",
-              generated: false,
-              provider: "Pixabay",
-              sourceUrl: "https://pixabay.com/photos/remember-1/",
-              creator: "Example photographer",
+    const fetchMock = mount("/learn/session/smart", async (url) => {
+      if (url.endsWith("/practice/sessions"))
+        return json({ session: smartSession });
+      if (url.endsWith(`/practice/sessions/${sessionId}/study`))
+        return json({
+          cards: [
+            {
+              learningItemId: itemId,
+              sourceText: "remember",
+              translationText: "לזכור",
+              sourceLanguageCode: "en",
+              translationLanguageCode: "he",
+              context: "Remember this moment.",
+              audioUrl: null,
             },
-          });
-        if (url.endsWith(`/study/${secondItemId}/image`))
-          return json({ image: null });
-        if (url.endsWith("/exercises"))
-          return json(
-            { exercises: [exercise], algorithmVersion: "server-v1" },
-            201,
-          );
-        throw new Error("Unexpected route");
-      },
-    );
+            {
+              learningItemId: secondItemId,
+              sourceText: "apple",
+              translationText: "תפוח",
+              sourceLanguageCode: "en",
+              translationLanguageCode: "he",
+              context: "A red apple on the table.",
+              audioUrl: null,
+            },
+          ],
+        });
+      if (url.endsWith(`/study/${itemId}/image`))
+        return json({
+          image: {
+            url: "data:image/jpeg;base64,/9j/4AECAwQ=",
+            alt: "A memory aid",
+            generated: false,
+            provider: "Pixabay",
+            sourceUrl: "https://pixabay.com/photos/remember-1/",
+            creator: "Example photographer",
+          },
+        });
+      if (url.endsWith(`/study/${secondItemId}/image`))
+        return json({ image: null });
+      if (url.endsWith("/exercises"))
+        return json(
+          { exercises: [exercise], algorithmVersion: "server-v1" },
+          201,
+        );
+      throw new Error("Unexpected route");
+    });
     const user = userEvent.setup();
 
     await user.click(await screen.findByRole("button", { name: "מתחילים" }));
@@ -251,19 +249,48 @@ describe("live server-backed flows", () => {
   });
   it("uses server-issued exercises, freezes attempt retries, and trusts only the server projection", async () => {
     let attempts = 0;
+    let exerciseBatches = 0;
     const fetchMock = mount(
       "/learn/session/recall?items=" + itemId,
       async (url, init) => {
         if (url.endsWith("/practice/sessions")) return json({ session });
-        if (url.endsWith("/exercises"))
+        if (url.endsWith("/exercises")) {
+          exerciseBatches++;
           return json(
-            { exercises: [exercise], algorithmVersion: "server-v1" },
+            {
+              exercises: [
+                exerciseBatches === 1
+                  ? exercise
+                  : { ...exercise, id: remedialExerciseId },
+              ],
+              algorithmVersion: "server-v1",
+            },
             201,
           );
+        }
         if (url.endsWith("/practice/attempts")) {
           attempts++;
           if (attempts === 1) throw new Error("lost response");
-          return json(receipt, 201);
+          return json(
+            attempts === 2
+              ? receipt
+              : {
+                  ...receipt,
+                  attempt: {
+                    ...receipt.attempt,
+                    id: secondItemId,
+                    result: "correct",
+                    score: 100,
+                    xpEarned: 10,
+                  },
+                  progress: {
+                    ...receipt.progress,
+                    masteryScore: 58,
+                  },
+                  replayed: false,
+                },
+            201,
+          );
         }
         if (init?.method === "PATCH")
           return json({
@@ -327,12 +354,135 @@ describe("live server-backed flows", () => {
         url.endsWith("/practice/sessions"),
       ),
     ).toHaveLength(1);
+    await user.click(screen.getByRole("button", { name: "תיקון 1 מילים" }));
+    expect(await screen.findByText("תיקון מהיר")).toBeInTheDocument();
+    await user.type(await screen.findByLabelText("התשובה שלך"), "remember");
+    await user.click(screen.getByRole("button", { name: "בדיקת תשובה" }));
+    expect(
+      await screen.findByRole("heading", { name: "נכון" }),
+    ).toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "סיום ושמירת הסיכום" }),
     );
     await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
-    expect(screen.getByText("13")).toBeInTheDocument();
+    expect(screen.getAllByText("13").length).toBeGreaterThan(0);
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
+  });
+  it("plays matching as one interactive board and saves every resolved pair", async () => {
+    const choiceA = "66666666-6666-4666-8666-666666666666";
+    const choiceB = "77777777-7777-4777-8777-777777777777";
+    const matchingExercises = [
+      {
+        ...exercise,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "remember",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices: [
+            { id: choiceA, text: "לזכור" },
+            { id: choiceB, text: "תפוח" },
+          ],
+        },
+      },
+      {
+        ...exercise,
+        id: remedialExerciseId,
+        learningItemId: secondItemId,
+        exerciseType: "matching",
+        kind: "multiple_choice",
+        direction: "source_to_translation",
+        prompt: {
+          text: "apple",
+          languageCode: "en",
+          context: null,
+          groupId: sessionId,
+          choices: [
+            { id: choiceA, text: "לזכור" },
+            { id: choiceB, text: "תפוח" },
+          ],
+        },
+      },
+    ];
+    const submitted: Array<Record<string, unknown>> = [];
+    mount("/learn/session/matching", async (url, init) => {
+      if (url.endsWith("/practice/sessions"))
+        return json({
+          session: {
+            ...session,
+            sessionType: "matching",
+            itemCount: 2,
+          },
+        });
+      if (url.endsWith("/exercises"))
+        return json(
+          { exercises: matchingExercises, algorithmVersion: "server-v1" },
+          201,
+        );
+      if (url.endsWith("/practice/attempts")) {
+        const body = JSON.parse(String(init?.body));
+        submitted.push(body);
+        const first = body.exerciseId === exerciseId;
+        return json(
+          {
+            ...receipt,
+            attempt: {
+              ...receipt.attempt,
+              id: first
+                ? "88888888-8888-4888-8888-888888888888"
+                : "99999999-9999-4999-8999-999999999999",
+              learningItemId: first ? itemId : secondItemId,
+              result: "correct",
+              score: 100,
+              expectedAnswer: first ? "לזכור" : "תפוח",
+              xpEarned: 10,
+            },
+            replayed: false,
+          },
+          201,
+        );
+      }
+      if (init?.method === "PATCH")
+        return json({
+          session: {
+            ...session,
+            status: "completed",
+            itemCount: 2,
+            attemptCount: 2,
+            correctCount: 2,
+            xpEarned: 30,
+            endedAt: date,
+            durationSeconds: 9,
+          },
+        });
+      throw new Error("Unexpected route");
+    });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "מתחילים" }));
+    expect(
+      await screen.findByRole("heading", { name: "חברו את הזוגות" }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "remember" }));
+    await user.click(screen.getByRole("button", { name: "לזכור" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /remember/ })).toBeDisabled(),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "apple" })).toBeEnabled(),
+    );
+    await user.click(screen.getByRole("button", { name: "apple" }));
+    await user.click(screen.getByRole("button", { name: "תפוח" }));
+    await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
+    expect(submitted).toEqual([
+      expect.objectContaining({ exerciseId, choiceId: choiceA }),
+      expect.objectContaining({
+        exerciseId: remedialExerciseId,
+        choiceId: choiceB,
+      }),
+    ]);
   });
   it("uses an in-app modal before abandoning an active study session", async () => {
     const fetchMock = mount(
@@ -760,8 +910,12 @@ describe("live server-backed flows", () => {
     await user.click(topicButton);
     expect(topicButton).toHaveAttribute("aria-pressed", "true");
     expect(await screen.findByText("עסקים — מתחילים")).toBeInTheDocument();
-    await user.click(await screen.findByRole("button", { name: "בחר והוסף מילים" }));
-    expect(await screen.findByText("2 מתוך 2 מילים מסומנות להוספה.")).toBeInTheDocument();
+    await user.click(
+      await screen.findByRole("button", { name: "בחר והוסף מילים" }),
+    );
+    expect(
+      await screen.findByText("2 מתוך 2 מילים מסומנות להוספה."),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("checkbox", { name: /meeting/ }));
     await user.click(screen.getByRole("button", { name: "הוסף 1 מילים" }));
     await waitFor(() =>

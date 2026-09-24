@@ -378,6 +378,7 @@ export const exerciseSchema = z.object({
     text: z.string().nullable(),
     languageCode: z.string(),
     context: z.string().nullable(),
+    groupId: uuid.optional(),
     answer: z.string().optional(),
     choices: z.array(z.object({ id: uuid, text: z.string() })).optional(),
     audioUrl: z.string().optional(),
