@@ -45,7 +45,8 @@ export function AppShell({
   onLogout: () => void;
 }) {
   const { t } = useTranslation();
-  const { profile, stats, items, mode, profileError, retryProfile } = useApp();
+  const { profile, stats, items, mode, user, profileError, retryProfile } =
+    useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
@@ -172,7 +173,9 @@ export function AppShell({
                 <span className="user-copy">
                   <b>{profile.name}</b>
                   <small>
-                    {mode === "demo"
+                    {user?.role === "admin"
+                      ? "Admin"
+                      : mode === "demo"
                       ? t("shell.demoLevel", { level: levelFromXp(stats.xp) })
                       : status?.tier === "paid"
                         ? t("shell.proUser")
@@ -195,7 +198,7 @@ export function AppShell({
           </div>
         </header>
         <div className="page-content">
-          {mode === "live" && <SubscriptionBanner />}
+          {mode === "live" && user?.role !== "admin" && <SubscriptionBanner />}
           <div
             className={
               mode === "demo" ? "mode-banner demo" : "mode-banner live"
@@ -203,7 +206,9 @@ export function AppShell({
           >
             {mode === "demo"
               ? t("shell.demoBanner")
-              : status?.tier === "free"
+              : user?.role === "admin"
+                ? t("shell.liveBanner")
+                : status?.tier === "free"
                 ? t("shell.readOnlyBanner")
                 : t("shell.liveBanner")}
           </div>

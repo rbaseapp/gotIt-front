@@ -55,6 +55,7 @@ import { speak } from "../lib/utils";
 import { useTranslation } from "react-i18next";
 import { LiveMatchingBoard } from "../components/LiveMatchingBoard";
 import { LiveDragDropBoard } from "../components/LiveDragDropBoard";
+import { useGameViewport } from "../hooks/useGameViewport";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -114,6 +115,7 @@ function StreakCelebration({ combo }: { combo: number }) {
 }
 
 export function LiveGameSessionPage() {
+  useGameViewport();
   const { t, i18n } = useTranslation();
   const { type = "" } = useParams();
   const [params] = useSearchParams();
@@ -1187,7 +1189,7 @@ export function LiveGameSessionPage() {
               ) : (
                 <section
                   key={exercise.id}
-                  className={`live-exercise live-panel practice-card${exercise.kind === "provider" ? " provider-exercise" : ""}${cardLeaving ? " card-leaving" : ""}`}
+                  className={`live-exercise live-panel practice-card${exercise.kind === "provider" ? " provider-exercise" : ""}${receipt ? " has-feedback" : ""}${cardLeaving ? " card-leaving" : ""}`}
                 >
                   <p className="eyebrow">
                     {exercise.direction === "translation_to_source"

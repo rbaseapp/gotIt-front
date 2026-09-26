@@ -74,7 +74,7 @@ const BillingCheckoutPage = lazy(() =>
 
 export default function App() {
   const { t } = useTranslation();
-  const { mode, logout, notice } = useApp();
+  const { mode, user, logout, notice } = useApp();
   const { toast } = useFeedback();
   const location = useLocation();
   useEffect(() => {
@@ -113,7 +113,10 @@ export default function App() {
     );
   if (mode === "signed-out") return <AuthPage />;
   return (
-    <SubscriptionProvider enabled={mode === "live"}>
+    <SubscriptionProvider
+      enabled={mode === "live"}
+      isAdmin={user?.role === "admin"}
+    >
       <Suspense
         fallback={
           <div className="empty-session" role="status">

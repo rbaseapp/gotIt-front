@@ -3110,3 +3110,115 @@ html[dir="ltr"] .pack-search input {
     min-height: 46px;
   }
 }
+
+/* Samsung Internet and mobile Chrome can report a layout viewport that is
+   taller than the actually visible area while their address bar is open.
+   useGameViewport exposes the visual viewport as a pixel value and marks short
+   screens so every active game keeps its action controls above the fold. */
+.live-session {
+  height: 100vh;
+  height: 100dvh;
+  height: var(--game-viewport-height, 100dvh);
+}
+
+@media (max-width: 700px) {
+  .live-session .session-topbar {
+    padding-bottom: max(7px, env(safe-area-inset-bottom));
+  }
+  .live-session-main {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .live-exercise:not(.matching-panel):not(.drag-drop-panel) {
+    overflow: hidden;
+    align-content: center;
+    touch-action: manipulation;
+  }
+  .live-exercise.has-feedback > .eyebrow,
+  .live-exercise.has-feedback > blockquote,
+  .live-exercise.has-feedback > .audio-actions {
+    display: none;
+  }
+  .live-exercise.has-feedback > h1 {
+    font-size: clamp(25px, 8vw, 34px);
+  }
+  .live-exercise.has-feedback > .live-feedback {
+    width: 100%;
+    max-height: 100%;
+    align-self: center;
+    overflow: hidden;
+  }
+}
+
+body.game-viewport-short .live-session .session-topbar {
+  min-height: 48px;
+  padding-top: max(4px, env(safe-area-inset-top));
+  padding-bottom: 4px;
+}
+body.game-viewport-short .live-session-main {
+  padding: 6px 9px max(7px, env(safe-area-inset-bottom));
+}
+body.game-viewport-short .live-session-main > .live-toolbar {
+  min-height: 23px;
+}
+body.game-viewport-short .live-session-progress {
+  height: 6px;
+  margin: 3px 0 6px;
+}
+body.game-viewport-short .live-exercise,
+body.game-viewport-short .matching-panel,
+body.game-viewport-short .drag-drop-panel,
+body.game-viewport-short .memorization-card {
+  padding: 11px;
+  gap: 8px;
+}
+body.game-viewport-short .live-exercise > h1 {
+  font-size: clamp(24px, 8vw, 34px);
+}
+body.game-viewport-short .live-exercise .eyebrow,
+body.game-viewport-short .live-exercise .muted-note {
+  display: none;
+}
+body.game-viewport-short .live-choice-grid .button {
+  min-height: 44px;
+  padding-block: 6px;
+}
+body.game-viewport-short .live-choice-grid .button span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+body.game-viewport-short .live-feedback {
+  padding: 10px;
+  gap: 7px 10px;
+}
+body.game-viewport-short .feedback-mark {
+  width: 38px;
+  height: 38px;
+}
+body.game-viewport-short .feedback-details {
+  display: none;
+}
+body.game-viewport-short .live-feedback > .feedback-next-action,
+body.game-viewport-short .live-exercise > .exercise-primary-action,
+body.game-viewport-short .live-exercise > .exercise-skip-action,
+body.game-viewport-short .memorization-actions .button {
+  min-height: 44px;
+  padding-block: 9px;
+}
+
+body.game-viewport-compact .live-session .session-hud .hud-chip.combo,
+body.game-viewport-compact .live-session-main > .live-toolbar > span:last-child,
+body.game-viewport-compact .pronunciation-coach {
+  display: none;
+}
+body.game-viewport-compact .live-session-main > .live-toolbar {
+  justify-content: space-between;
+}
+body.game-viewport-compact .live-exercise,
+body.game-viewport-compact .matching-panel,
+body.game-viewport-compact .drag-drop-panel,
+body.game-viewport-compact .memorization-card {
+  padding: 8px;
+  gap: 6px;
+}

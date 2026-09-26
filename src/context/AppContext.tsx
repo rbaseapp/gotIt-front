@@ -68,6 +68,7 @@ function initialDemo(): DemoState {
 export type AuthMode = "loading" | "signed-out" | "demo" | "live";
 interface AppContextValue {
   mode: AuthMode;
+  user: AuthUser | null;
   profileError: string;
   notice: string;
   profile: UserProfile;
@@ -254,6 +255,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     mode,
+    user,
     profile,
     stats,
     profileError,

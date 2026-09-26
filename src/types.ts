@@ -85,6 +85,7 @@ export interface AuthUser {
   email: string;
   emailVerified: boolean;
   status: string;
+  role: "user" | "admin";
 }
 
 export interface AuthTokens {

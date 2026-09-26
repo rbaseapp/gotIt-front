@@ -197,6 +197,7 @@ describe("production boundaries", () => {
       email: "u@example.com",
       emailVerified: true,
       status: "active",
+      role: "user",
     };
     const fetchMock = vi.fn(
       async (url: string) =>

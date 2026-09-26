@@ -24,9 +24,11 @@ const SubscriptionContext = createContext<SubscriptionContextValue | null>(
 
 export function SubscriptionProvider({
   enabled,
+  isAdmin = false,
   children,
 }: {
   enabled: boolean;
+  isAdmin?: boolean;
   children: ReactNode;
 }) {
   const [status, setStatus] = useState<BillingStatus>();
@@ -65,10 +67,13 @@ export function SubscriptionProvider({
       loading,
       error,
       hasEntitlement: (entitlement) =>
-        !enabled || !status || status.entitlements.includes(entitlement),
+        isAdmin ||
+        !enabled ||
+        !status ||
+        status.entitlements.includes(entitlement),
       reload,
     }),
-    [enabled, error, loading, reload, status],
+    [enabled, error, isAdmin, loading, reload, status],
   );
 
   return (

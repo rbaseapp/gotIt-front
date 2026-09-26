@@ -36,6 +36,7 @@ import type {
   PracticeSession,
 } from "../types";
 import { useTranslation } from "react-i18next";
+import { useGameViewport } from "../hooks/useGameViewport";
 
 const gameTypes = new Set<GameType>([
   "smart",
@@ -987,6 +988,7 @@ function Session({
   ids?: string[];
   onRestart: () => void;
 }) {
+  useGameViewport();
   const { t } = useTranslation();
   const { items, recordAttempt, saveSession } = useApp();
   const navigate = useNavigate();

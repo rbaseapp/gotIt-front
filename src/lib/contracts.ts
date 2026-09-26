@@ -30,12 +30,16 @@ export function parseUser(payload: unknown): AuthUser {
     throw new Error("Invalid API response");
   const status = text(user.status);
   if (status !== "active") throw new Error("Inactive user");
+  const role = user.role === undefined ? "user" : text(user.role);
+  if (role !== "user" && role !== "admin")
+    throw new Error("Invalid API response");
   return {
     id,
     applicationId,
     email: text(user.email),
     emailVerified: user.emailVerified,
     status,
+    role,
   };
 }
 export function parseTokens(payload: unknown): AuthTokens {

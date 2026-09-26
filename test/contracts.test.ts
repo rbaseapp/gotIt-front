@@ -17,8 +17,10 @@ describe("documented Core and Profile contracts", () => {
       email: "test@example.com",
       emailVerified: false,
       status: "active",
+      role: "user",
     };
     expect(parseUser({ user })).toEqual(user);
+    expect(() => parseUser({ user: { ...user, role: "owner" } })).toThrow();
     expect(() =>
       parseUser({ user: { ...user, status: "disabled" } }),
     ).toThrow();
