@@ -44,6 +44,8 @@ import {
   type PrivateLessonDurationMinutes,
   privateLessonCorrectionModes,
   type PrivateLessonCorrectionMode,
+  privateLessonVocabularyModes,
+  type PrivateLessonVocabularyMode,
   privateLessonFocusAreas,
   type PrivateLessonFocusArea,
   type SavedPrivateLesson,
@@ -82,6 +84,8 @@ export function PrivateLessonPage() {
   const [customFocus, setCustomFocus] = useState("");
   const [correctionMode, setCorrectionMode] =
     useState<PrivateLessonCorrectionMode>("recast");
+  const [vocabularyMode, setVocabularyMode] =
+    useState<PrivateLessonVocabularyMode>("learned");
   const [phase, setPhase] = useState<Phase>("setup");
   const phaseRef = useRef<Phase>(phase);
   phaseRef.current = phase;
@@ -395,6 +399,7 @@ export function PrivateLessonPage() {
     );
     setCustomFocus(previousLesson.customFocus ?? "");
     setCorrectionMode(previousLesson.correctionMode);
+    setVocabularyMode(previousLesson.vocabularyMode);
     setTopic(previousLesson.topic);
     setGrammarFocus(previousLesson.grammarFocus ?? "");
   }, [history, targetLanguage]);
@@ -441,6 +446,7 @@ export function PrivateLessonPage() {
         focusAreas,
         customFocus: customFocus.trim() || null,
         correctionMode,
+        vocabularyMode,
       });
       if (controller.signal.aborted) return;
       setSession(created);
@@ -810,6 +816,41 @@ export function PrivateLessonPage() {
                   </div>
                 </div>
                 <fieldset className="private-lesson-correction-field">
+                  <legend>{t("privateLesson.vocabularyMode.title")}</legend>
+                  <small>{t("privateLesson.vocabularyMode.description")}</small>
+                  <div className="private-lesson-correction-options private-lesson-vocabulary-options">
+                    {privateLessonVocabularyModes.map((mode) => (
+                      <label
+                        key={mode}
+                        className={vocabularyMode === mode ? "selected" : ""}
+                      >
+                        <input
+                          type="radio"
+                          name="vocabulary-mode"
+                          value={mode}
+                          checked={vocabularyMode === mode}
+                          onChange={() => {
+                            personalizationTouched.current = true;
+                            setVocabularyMode(mode);
+                          }}
+                        />
+                        <span>
+                          <strong>
+                            {t(
+                              `privateLesson.vocabularyMode.options.${mode}.title`,
+                            )}
+                          </strong>
+                          <small>
+                            {t(
+                              `privateLesson.vocabularyMode.options.${mode}.description`,
+                            )}
+                          </small>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="private-lesson-correction-field">
                   <legend>{t("privateLesson.correctionMode.title")}</legend>
                   <small>{t("privateLesson.correctionMode.description")}</small>
                   <div className="private-lesson-correction-options">
@@ -1034,6 +1075,13 @@ export function PrivateLessonPage() {
                 {session &&
                   t(
                     `privateLesson.correctionMode.options.${session.lesson.correctionMode}.title`,
+                  )}
+              </span>
+              <span>
+                <BookOpen size={16} />
+                {session &&
+                  t(
+                    `privateLesson.vocabularyMode.options.${session.lesson.vocabularyMode}.title`,
                   )}
               </span>
               {session?.lesson.grammarFocus && (

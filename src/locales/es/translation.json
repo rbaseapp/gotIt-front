@@ -77,6 +77,20 @@
         "listening": "Comprensión auditiva"
       }
     },
+    "vocabularyMode": {
+      "title": "¿Usar tu vocabulario guardado?",
+      "description": "La conversación es una etapa avanzada, por lo que solo se incluyen palabras que ya están aprendidas.",
+      "options": {
+        "learned": {
+          "title": "Usar palabras aprendidas",
+          "description": "El profesor incluirá de forma natural palabras ya aprendidas. Se excluyen las que siguen en proceso."
+        },
+        "none": {
+          "title": "Clase libre",
+          "description": "La clase seguirá el tema y tus objetivos sin utilizar el vocabulario guardado."
+        }
+      }
+    },
     "correctionMode": {
       "title": "¿Cómo quieres que te corrija?",
       "description": "Elige cuánto debe pausar el profesor la conversación para corregir y explicar.",

@@ -77,6 +77,20 @@
         "listening": "Listening"
       }
     },
+    "vocabularyMode": {
+      "title": "Use your saved vocabulary?",
+      "description": "Voice conversation is an advanced practice stage, so only words you have already learned can be included.",
+      "options": {
+        "learned": {
+          "title": "Use learned words",
+          "description": "Naturally include words that have already reached Learned status. Words still being acquired are excluded."
+        },
+        "none": {
+          "title": "Free lesson",
+          "description": "Run the lesson around the topic and your goals without using saved vocabulary."
+        }
+      }
+    },
     "correctionMode": {
       "title": "How should I correct you?",
       "description": "Choose how much the teacher should pause the conversation to correct and explain.",

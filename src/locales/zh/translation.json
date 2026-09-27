@@ -77,6 +77,20 @@
         "listening": "听力"
       }
     },
+    "vocabularyMode": {
+      "title": "使用已保存的词汇吗？",
+      "description": "口语对话属于进阶练习，因此只会使用已经达到“已学会”状态的词。",
+      "options": {
+        "learned": {
+          "title": "使用已学会的词",
+          "description": "老师会自然融入已经学会的词，仍在学习中的词不会加入。"
+        },
+        "none": {
+          "title": "自由课程",
+          "description": "围绕主题和你的目标上课，不使用已保存的词汇。"
+        }
+      }
+    },
     "correctionMode": {
       "title": "老师应该怎样纠正你？",
       "description": "选择老师在对话中暂停并进行纠正与讲解的程度。",

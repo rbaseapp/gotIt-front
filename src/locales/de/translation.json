@@ -77,6 +77,20 @@
         "listening": "Hörverstehen"
       }
     },
+    "vocabularyMode": {
+      "title": "Gespeicherten Wortschatz verwenden?",
+      "description": "Gespräche sind eine fortgeschrittene Übungsstufe. Daher werden nur bereits gelernte Wörter verwendet.",
+      "options": {
+        "learned": {
+          "title": "Gelernte Wörter verwenden",
+          "description": "Der Lehrer baut bereits gelernte Wörter natürlich ein. Wörter im Lernprozess bleiben außen vor."
+        },
+        "none": {
+          "title": "Freie Unterrichtsstunde",
+          "description": "Die Stunde folgt dem Thema und deinen Zielen, ohne gespeicherten Wortschatz zu verwenden."
+        }
+      }
+    },
     "correctionMode": {
       "title": "Wie soll ich dich korrigieren?",
       "description": "Wähle, wie stark der Lehrer das Gespräch für Korrekturen und Erklärungen unterbrechen soll.",

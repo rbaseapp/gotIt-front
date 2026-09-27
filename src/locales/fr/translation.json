@@ -77,6 +77,20 @@
         "listening": "Compréhension orale"
       }
     },
+    "vocabularyMode": {
+      "title": "Utiliser votre vocabulaire enregistré ?",
+      "description": "La conversation est une étape avancée : seuls les mots déjà appris peuvent être intégrés.",
+      "options": {
+        "learned": {
+          "title": "Utiliser les mots appris",
+          "description": "Le professeur intègre naturellement les mots déjà appris. Les mots en cours d'acquisition sont exclus."
+        },
+        "none": {
+          "title": "Cours libre",
+          "description": "Le cours suit le sujet et vos objectifs sans utiliser le vocabulaire enregistré."
+        }
+      }
+    },
     "correctionMode": {
       "title": "Comment souhaitez-vous être corrigé ?",
       "description": "Choisissez dans quelle mesure le professeur doit interrompre la conversation pour corriger et expliquer.",

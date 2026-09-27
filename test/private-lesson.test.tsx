@@ -68,6 +68,7 @@ const session = {
     focusAreas: ["speaking", "vocabulary"],
     customFocus: null,
     correctionMode: "recast",
+    vocabularyMode: "learned",
     continuesFromLessonId: null,
     teacherVoice: "female",
     speechRate: "normal",
@@ -109,6 +110,7 @@ const savedLesson = {
   focusAreas: ["speaking", "vocabulary"],
   customFocus: null,
   correctionMode: "recast",
+  vocabularyMode: "learned",
   continuesFromLessonId: null,
   teacherVoice: "female",
   speechRate: "normal",
@@ -238,6 +240,7 @@ describe("private voice lesson", () => {
         focusAreas: ["speaking", "vocabulary"],
         customFocus: null,
         correctionMode: "recast",
+        vocabularyMode: "learned",
       }),
     );
     expect(await screen.findByText("achieve · להשיג")).toBeInTheDocument();
@@ -288,6 +291,22 @@ describe("private voice lesson", () => {
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith(
         expect.objectContaining({ correctionMode: "deep_explanation" }),
+      ),
+    );
+  });
+
+  it("lets the learner choose a free lesson without saved vocabulary", async () => {
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(screen.getByDisplayValue("learned")).toBeChecked();
+    await user.click(screen.getByDisplayValue("none"));
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({ vocabularyMode: "none" }),
       ),
     );
   });
