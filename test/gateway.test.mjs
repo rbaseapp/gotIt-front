@@ -13,6 +13,7 @@ let gatewayOrigin;
 let directory;
 let renderFailuresRemaining = 0;
 let renderRetryRequests = 0;
+let renderStartingResponsesRemaining = 0;
 let googleAuthRequests = 0;
 const listen = (server) =>
   new Promise((resolve) =>
@@ -48,6 +49,14 @@ before(async () => {
         res.end("<!doctype html><title>502</title><h1>Bad Gateway</h1>");
         return;
       }
+      if (renderStartingResponsesRemaining-- > 0) {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        res.end("<!doctype html><title>Starting service</title>");
+        return;
+      }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "ready" }));
+      return;
     }
     if (req.url === "/api/v1/auth/google") googleAuthRequests++;
     res.writeHead(
@@ -212,6 +221,7 @@ describe("production frontend gateway", () => {
   });
   it("waits for a sleeping Core before sending a Google credential once", async () => {
     renderFailuresRemaining = 2;
+    renderStartingResponsesRemaining = 1;
     renderRetryRequests = 0;
     googleAuthRequests = 0;
     const response = await fetch(
@@ -225,7 +235,7 @@ describe("production frontend gateway", () => {
     const body = await response.json();
     assert.equal(response.status, 200);
     assert.equal(body.path, "/api/v1/auth/google");
-    assert.equal(renderRetryRequests, 3);
+    assert.equal(renderRetryRequests, 4);
     assert.equal(googleAuthRequests, 1);
   });
   it("does not send a Google credential while Core remains unavailable", async () => {
