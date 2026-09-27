@@ -2,6 +2,7 @@ import http from "node:http";
 import { readFile, realpath, stat } from "node:fs/promises";
 import { resolve, sep, extname } from "node:path";
 import { isIP } from "node:net";
+import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 export const DEFAULT_CORE = "https://rbase-core-api.onrender.com";
@@ -19,6 +20,8 @@ const mime = {
 };
 const applePayAssociationPath =
   "/.well-known/apple-developer-merchantid-domain-association";
+const upstreamRetryDelays = [250, 750, 1500];
+const renderUnavailableStatuses = new Set([502, 503, 504]);
 const csp =
   "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://connect.facebook.net https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.paddle.com; connect-src 'self' https://api.openai.com https://accounts.google.com/gsi/ https://*.facebook.com https://*.facebook.net https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.facebook.com https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.facebook.com https://*.paddle.com; frame-ancestors 'none'";
 function upstream(value, development) {
@@ -70,7 +73,9 @@ export function configuration(env = process.env) {
     );
   const paddleEnvironment = env.PADDLE_ENVIRONMENT;
   if (!["sandbox", "production"].includes(paddleEnvironment))
-    throw new Error("PADDLE_ENVIRONMENT is required and must be sandbox or production.");
+    throw new Error(
+      "PADDLE_ENVIRONMENT is required and must be sandbox or production.",
+    );
   return {
     origin,
     core: upstream(env.CORE_API_PROXY_TARGET || DEFAULT_CORE, development),
@@ -159,15 +164,22 @@ export function createGateway(config) {
         return;
       }
       if (pathname === "/runtime-config") {
-        if (req.method !== "GET") { fail(405, "METHOD_NOT_ALLOWED"); return; }
+        if (req.method !== "GET") {
+          fail(405, "METHOD_NOT_ALLOWED");
+          return;
+        }
         const countryCode = detectedCountryCode(req.headers);
-        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-        res.end(JSON.stringify({
-          paddleClientToken: config.paddleClientToken,
-          paddleEnvironment: config.paddleEnvironment,
-          paddlePriceIds: config.paddlePriceIds,
-          ...(countryCode ? { countryCode } : {}),
-        }));
+        res.writeHead(200, {
+          "Content-Type": "application/json; charset=utf-8",
+        });
+        res.end(
+          JSON.stringify({
+            paddleClientToken: config.paddleClientToken,
+            paddleEnvironment: config.paddleEnvironment,
+            paddlePriceIds: config.paddlePriceIds,
+            ...(countryCode ? { countryCode } : {}),
+          }),
+        );
         return;
       }
       const prefix = pathname.startsWith("/core-api/")
@@ -180,7 +192,9 @@ export function createGateway(config) {
         if (
           !apiPath.startsWith("/api/v1/") ||
           (prefix === "/core-api" &&
-            !/^\/api\/v1\/(?:auth\/(?:login|register|google|facebook|refresh|logout|me)|billing\/(?:plans|status|checkout|portal))$/.test(apiPath))
+            !/^\/api\/v1\/(?:auth\/(?:login|register|google|facebook|refresh|logout|me)|billing\/(?:plans|status|checkout|portal))$/.test(
+              apiPath,
+            ))
         ) {
           fail(404, "NOT_FOUND");
           return;
@@ -261,32 +275,48 @@ export function createGateway(config) {
         };
         res.on("close", cancel);
         try {
-          const response = await fetch(
-            `${prefix === "/core-api" ? config.core : config.gotit}${apiPath}${url.search}`,
-            {
+          const upstreamUrl = `${prefix === "/core-api" ? config.core : config.gotit}${apiPath}${url.search}`;
+          let response;
+          let content;
+          for (let attempt = 0; ; attempt++) {
+            response = await fetch(upstreamUrl, {
               method: req.method,
               headers,
               body,
               redirect: "manual",
               signal: controller.signal,
-            },
-          );
-          if (response.status >= 300 && response.status < 400) {
-            fail(502, "UPSTREAM_REDIRECT_REJECTED");
-            return;
-          }
-          const content = [];
-          let received = 0;
-          if (response.body)
-            for await (const chunk of response.body) {
-              received += chunk.length;
-              if (received > 4 * 1024 * 1024) {
-                controller.abort();
-                fail(502, "UPSTREAM_RESPONSE_TOO_LARGE");
-                return;
-              }
-              content.push(Buffer.from(chunk));
+            });
+            if (response.status >= 300 && response.status < 400) {
+              fail(502, "UPSTREAM_REDIRECT_REJECTED");
+              return;
             }
+            const chunks = [];
+            let received = 0;
+            if (response.body)
+              for await (const chunk of response.body) {
+                received += chunk.length;
+                if (received > 4 * 1024 * 1024) {
+                  controller.abort();
+                  fail(502, "UPSTREAM_RESPONSE_TOO_LARGE");
+                  return;
+                }
+                chunks.push(Buffer.from(chunk));
+              }
+            content = Buffer.concat(chunks);
+            const renderUnavailable =
+              renderUnavailableStatuses.has(response.status) &&
+              response.headers.get("x-render-origin-server") === "Render" &&
+              response.headers.get("content-type")?.startsWith("text/html");
+            if (!renderUnavailable) break;
+            if (attempt === upstreamRetryDelays.length) {
+              res.setHeader("Retry-After", "2");
+              fail(503, "UPSTREAM_UNAVAILABLE");
+              return;
+            }
+            await delay(upstreamRetryDelays[attempt], undefined, {
+              signal: controller.signal,
+            });
+          }
           for (const header of [
             "content-type",
             "retry-after",
@@ -296,7 +326,7 @@ export function createGateway(config) {
             if (value) res.setHeader(header, value);
           }
           res.writeHead(response.status);
-          res.end(Buffer.concat(content));
+          res.end(content);
         } finally {
           clearTimeout(timer);
           res.off("close", cancel);
@@ -358,8 +388,14 @@ export function createGateway(config) {
 }
 
 function detectedCountryCode(headers) {
-  for (const name of ["cf-ipcountry", "x-vercel-ip-country", "cloudfront-viewer-country"]) {
-    const value = Array.isArray(headers[name]) ? headers[name][0] : headers[name];
+  for (const name of [
+    "cf-ipcountry",
+    "x-vercel-ip-country",
+    "cloudfront-viewer-country",
+  ]) {
+    const value = Array.isArray(headers[name])
+      ? headers[name][0]
+      : headers[name];
     const code = typeof value === "string" ? value.trim().toUpperCase() : "";
     if (/^[A-Z]{2}$/u.test(code) && code !== "XX") return code;
   }

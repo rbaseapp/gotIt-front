@@ -11,6 +11,8 @@ let gateway;
 let upstreamOrigin;
 let gatewayOrigin;
 let directory;
+let renderFailuresRemaining = 0;
+let renderRetryRequests = 0;
 const listen = (server) =>
   new Promise((resolve) =>
     server.listen(0, "127.0.0.1", () => resolve(server.address().port)),
@@ -35,6 +37,21 @@ before(async () => {
   upstream = http.createServer(async (req, res) => {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
+    const receivedBody = Buffer.concat(chunks).toString();
+    if (
+      req.url === "/api/v1/auth/google" &&
+      receivedBody.includes('"idToken":"render-outage"')
+    ) {
+      renderRetryRequests++;
+      if (renderFailuresRemaining-- > 0) {
+        res.writeHead(502, {
+          "Content-Type": "text/html; charset=utf-8",
+          "X-Render-Origin-Server": "Render",
+        });
+        res.end("<!doctype html><title>502</title><h1>Bad Gateway</h1>");
+        return;
+      }
+    }
     res.writeHead(
       req.url === "/api/v1/redirect" ? 302 : 200,
       req.url === "/api/v1/redirect"
@@ -56,7 +73,7 @@ before(async () => {
             applicationKey: req.headers["x-application-key"] || null,
             eventId: req.headers["idempotency-key"] || null,
             origin: req.headers.origin || null,
-            body: Buffer.concat(chunks).toString(),
+            body: receivedBody,
           }),
     );
   });
@@ -191,6 +208,42 @@ describe("production frontend gateway", () => {
       accessToken: "opaque-facebook-token",
     });
   });
+  it("retries a transient Render gateway outage without replaying provider HTML", async () => {
+    renderFailuresRemaining = 2;
+    renderRetryRequests = 0;
+    const response = await fetch(
+      `${gatewayOrigin}/core-api/api/v1/auth/google`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: "render-outage" }),
+      },
+    );
+    const body = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(body.path, "/api/v1/auth/google");
+    assert.equal(renderRetryRequests, 3);
+  });
+  it("returns a stable API error when a Render outage outlasts retries", async () => {
+    renderFailuresRemaining = 10;
+    renderRetryRequests = 0;
+    const response = await fetch(
+      `${gatewayOrigin}/core-api/api/v1/auth/google`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: "render-outage" }),
+      },
+    );
+    assert.equal(response.status, 503);
+    assert.equal(
+      response.headers.get("content-type"),
+      "application/json; charset=utf-8",
+    );
+    assert.equal(response.headers.get("retry-after"), "2");
+    assert.equal((await response.json()).error.code, "UPSTREAM_UNAVAILABLE");
+    assert.equal(renderRetryRequests, 4);
+  });
   it("forwards product idempotency and strips arbitrary client headers", async () => {
     const response = await fetch(
       `${gatewayOrigin}/gotit-api/api/v1/practice/attempts`,
@@ -212,11 +265,18 @@ describe("production frontend gateway", () => {
     assert.equal(response.headers.get("idempotency-replayed"), "true");
   });
   it("allowlists authenticated billing routes and forwards checkout idempotency", async () => {
-    const response = await fetch(`${gatewayOrigin}/core-api/api/v1/billing/checkout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer access", "Idempotency-Key": "checkout-event" },
-      body: JSON.stringify({ planKey: "pro-monthly" }),
-    });
+    const response = await fetch(
+      `${gatewayOrigin}/core-api/api/v1/billing/checkout`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer access",
+          "Idempotency-Key": "checkout-event",
+        },
+        body: JSON.stringify({ planKey: "pro-monthly" }),
+      },
+    );
     const body = await response.json();
     assert.equal(body.path, "/api/v1/billing/checkout");
     assert.equal(body.applicationKey, "gotit");
