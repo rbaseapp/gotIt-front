@@ -391,9 +391,7 @@ export function PrivateLessonPage() {
     try {
       const created = await createPrivateLessonSession({
         targetLanguageCode: targetLanguage.trim(),
-        ...(supportLanguage.trim()
-          ? { supportLanguageCode: supportLanguage.trim() }
-          : {}),
+        supportLanguageCode: supportLanguage.trim() || null,
         ...(level ? { requestedLevel: level } : {}),
         requestedDurationMinutes: lessonDurationMinutes,
         teacherVoice,

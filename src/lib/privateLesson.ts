@@ -51,7 +51,7 @@ export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
 export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15;
 export type PrivateLessonInput = {
   targetLanguageCode: string;
-  supportLanguageCode?: string;
+  supportLanguageCode?: string | null;
   requestedLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   requestedDurationMinutes?: PrivateLessonDurationMinutes;
   teacherVoice?: "female" | "male";

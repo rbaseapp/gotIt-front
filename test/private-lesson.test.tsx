@@ -206,6 +206,21 @@ describe("private voice lesson", () => {
     ).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("explicitly disables the help language when none is selected", async () => {
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.selectOptions(screen.getByLabelText("שפת עזרה"), "");
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({ supportLanguageCode: null }),
+      ),
+    );
+  });
+
   it("lets the learner request a translation and ends through the recap event", async () => {
     mocks.create.mockResolvedValue(session);
     mocks.send.mockClear();
