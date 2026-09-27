@@ -11,6 +11,14 @@ export const privateLessonFocusAreas = [
 ] as const;
 export type PrivateLessonFocusArea = (typeof privateLessonFocusAreas)[number];
 
+export const privateLessonCorrectionModes = [
+  "critical_only",
+  "recast",
+  "deep_explanation",
+] as const;
+export type PrivateLessonCorrectionMode =
+  (typeof privateLessonCorrectionModes)[number];
+
 const instructionEventSchema = z
   .object({
     type: z.literal("response.create"),
@@ -38,6 +46,7 @@ export const privateLessonSessionSchema = z.object({
     grammarFocus: z.string().min(1).max(160).nullable(),
     focusAreas: z.array(z.enum(privateLessonFocusAreas)).min(1).max(6),
     customFocus: z.string().min(1).max(300).nullable(),
+    correctionMode: z.enum(privateLessonCorrectionModes),
     continuesFromLessonId: uuid.nullable(),
     teacherVoice: z.enum(["female", "male"]),
     speechRate: z.enum(["slow", "normal", "fast"]),
@@ -73,6 +82,7 @@ export type PrivateLessonInput = {
   grammarFocus?: string;
   focusAreas?: PrivateLessonFocusArea[];
   customFocus?: string | null;
+  correctionMode?: PrivateLessonCorrectionMode;
 };
 
 const legacyAssessment = {
@@ -174,6 +184,7 @@ export const savedPrivateLessonSchema = z.object({
     .array(z.enum(privateLessonFocusAreas))
     .default(["speaking", "vocabulary"]),
   customFocus: z.string().nullable().default(null),
+  correctionMode: z.enum(privateLessonCorrectionModes).default("recast"),
   continuesFromLessonId: uuid.nullable().default(null),
   teacherVoice: z.enum(["female", "male"]),
   speechRate: z.enum(["slow", "normal", "fast"]),

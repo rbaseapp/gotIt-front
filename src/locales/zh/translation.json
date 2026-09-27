@@ -77,6 +77,24 @@
         "listening": "听力"
       }
     },
+    "correctionMode": {
+      "title": "老师应该怎样纠正你？",
+      "description": "选择老师在对话中暂停并进行纠正与讲解的程度。",
+      "options": {
+        "critical_only": {
+          "title": "自由对话",
+          "description": "保持对话流畅，只纠正严重影响意思的关键错误。"
+        },
+        "recast": {
+          "title": "纠正我的句子",
+          "description": "给出更自然、正确的表达，并让我再说一遍。"
+        },
+        "deep_explanation": {
+          "title": "深入纠正与讲解",
+          "description": "纠正句子，解释语法规则以及原表达错误的原因。"
+        }
+      }
+    },
     "customFocus": "我的个人目标",
     "customFocusPlaceholder": "例如：在客户会议中自信表达",
     "duration": "课程时长",

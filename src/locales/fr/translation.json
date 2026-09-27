@@ -77,6 +77,24 @@
         "listening": "Compréhension orale"
       }
     },
+    "correctionMode": {
+      "title": "Comment souhaitez-vous être corrigé ?",
+      "description": "Choisissez dans quelle mesure le professeur doit interrompre la conversation pour corriger et expliquer.",
+      "options": {
+        "critical_only": {
+          "title": "Conversation libre",
+          "description": "Garder une conversation fluide et corriger uniquement les erreurs critiques qui affectent le sens."
+        },
+        "recast": {
+          "title": "Corriger ma phrase",
+          "description": "Proposer une formulation naturelle et correcte, puis me laisser la répéter."
+        },
+        "deep_explanation": {
+          "title": "Expliquer en profondeur",
+          "description": "Corriger la phrase et expliquer la règle grammaticale et la raison de l'erreur."
+        }
+      }
+    },
     "customFocus": "Mon objectif personnel",
     "customFocusPlaceholder": "Par exemple : parler avec assurance lors de réunions clients",
     "duration": "Durée du cours",

@@ -67,6 +67,7 @@ const session = {
     grammarFocus: null,
     focusAreas: ["speaking", "vocabulary"],
     customFocus: null,
+    correctionMode: "recast",
     continuesFromLessonId: null,
     teacherVoice: "female",
     speechRate: "normal",
@@ -105,6 +106,10 @@ const savedLesson = {
   level: "B1",
   topic: "technology",
   grammarFocus: null,
+  focusAreas: ["speaking", "vocabulary"],
+  customFocus: null,
+  correctionMode: "recast",
+  continuesFromLessonId: null,
   teacherVoice: "female",
   speechRate: "normal",
   plannedDurationSeconds: 300,
@@ -232,6 +237,7 @@ describe("private voice lesson", () => {
         topic: "technology",
         focusAreas: ["speaking", "vocabulary"],
         customFocus: null,
+        correctionMode: "recast",
       }),
     );
     expect(await screen.findByText("achieve · להשיג")).toBeInTheDocument();
@@ -266,6 +272,22 @@ describe("private voice lesson", () => {
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith(
         expect.objectContaining({ supportLanguageCode: null }),
+      ),
+    );
+  });
+
+  it("lets the learner choose deep grammatical correction", async () => {
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(screen.getByDisplayValue("recast")).toBeChecked();
+    await user.click(screen.getByDisplayValue("deep_explanation"));
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({ correctionMode: "deep_explanation" }),
       ),
     );
   });

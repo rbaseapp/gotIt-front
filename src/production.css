@@ -142,6 +142,76 @@
   background: var(--green);
   box-shadow: 0 6px 14px rgba(31, 101, 75, 0.17);
 }
+.private-lesson-correction-field {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.private-lesson-correction-field > legend {
+  padding: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.private-lesson-correction-field > small {
+  color: var(--muted);
+}
+.private-lesson-correction-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 5px;
+}
+.private-lesson-correction-options label {
+  position: relative;
+  min-width: 0;
+  cursor: pointer;
+}
+.private-lesson-correction-options input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.private-lesson-correction-options label > span {
+  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 15px;
+  border: 1px solid #d6e3dc;
+  border-radius: 16px;
+  color: #52685b;
+  background: #fff;
+  transition: 150ms ease;
+}
+.private-lesson-correction-options strong {
+  color: var(--green-dark);
+  font-size: 14px;
+}
+.private-lesson-correction-options small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+.private-lesson-correction-options label:hover > span,
+.private-lesson-correction-options input:focus-visible + span {
+  border-color: #65a788;
+  box-shadow: 0 6px 16px rgba(31, 101, 75, 0.1);
+}
+.private-lesson-correction-options label.selected > span {
+  border-color: var(--green);
+  background: #f0faf5;
+  box-shadow: inset 0 0 0 1px var(--green);
+}
+@media (max-width: 760px) {
+  .private-lesson-correction-options {
+    grid-template-columns: 1fr;
+  }
+  .private-lesson-correction-options label > span {
+    min-height: 0;
+  }
+}
 .private-lesson-start {
   min-height: 52px;
   justify-content: center;

@@ -77,6 +77,24 @@
         "listening": "Comprensión auditiva"
       }
     },
+    "correctionMode": {
+      "title": "¿Cómo quieres que te corrija?",
+      "description": "Elige cuánto debe pausar el profesor la conversación para corregir y explicar.",
+      "options": {
+        "critical_only": {
+          "title": "Conversación libre",
+          "description": "Mantener la conversación fluida y corregir solo errores críticos que afecten al significado."
+        },
+        "recast": {
+          "title": "Corregir mi frase",
+          "description": "Dar una versión natural y correcta de lo que dije y dejarme intentarlo de nuevo."
+        },
+        "deep_explanation": {
+          "title": "Explicación profunda",
+          "description": "Corregir la frase y explicar la regla gramatical y por qué la forma original era incorrecta."
+        }
+      }
+    },
     "customFocus": "Mi objetivo personal",
     "customFocusPlaceholder": "Por ejemplo: hablar con confianza en reuniones con clientes",
     "duration": "Duración de la clase",

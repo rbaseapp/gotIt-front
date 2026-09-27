@@ -77,6 +77,24 @@
         "listening": "Listening"
       }
     },
+    "correctionMode": {
+      "title": "How should I correct you?",
+      "description": "Choose how much the teacher should pause the conversation to correct and explain.",
+      "options": {
+        "critical_only": {
+          "title": "Free conversation",
+          "description": "Keep the conversation flowing and correct only errors that seriously affect meaning."
+        },
+        "recast": {
+          "title": "Correct my sentence",
+          "description": "Give me a natural, correct version of what I said and let me try it again."
+        },
+        "deep_explanation": {
+          "title": "Explain it deeply",
+          "description": "Correct the sentence and explain the grammar rule and why my original was wrong."
+        }
+      }
+    },
     "customFocus": "My personal goal",
     "customFocusPlaceholder": "For example: I want to speak confidently in client meetings",
     "duration": "Lesson duration",

@@ -77,6 +77,24 @@
         "listening": "Hörverstehen"
       }
     },
+    "correctionMode": {
+      "title": "Wie soll ich dich korrigieren?",
+      "description": "Wähle, wie stark der Lehrer das Gespräch für Korrekturen und Erklärungen unterbrechen soll.",
+      "options": {
+        "critical_only": {
+          "title": "Freies Gespräch",
+          "description": "Das Gespräch fließen lassen und nur bedeutungsverändernde kritische Fehler korrigieren."
+        },
+        "recast": {
+          "title": "Meinen Satz korrigieren",
+          "description": "Eine natürliche, korrekte Formulierung geben und mich noch einmal versuchen lassen."
+        },
+        "deep_explanation": {
+          "title": "Ausführlich erklären",
+          "description": "Den Satz korrigieren und die Grammatikregel sowie den Grund für den Fehler erklären."
+        }
+      }
+    },
     "customFocus": "Mein persönliches Ziel",
     "customFocusPlaceholder": "Zum Beispiel: sicher in Kundenterminen sprechen",
     "duration": "Unterrichtsdauer",
