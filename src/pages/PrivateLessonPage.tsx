@@ -1471,7 +1471,7 @@ function RoadmapPanel({
             <Target size={17} />
             {t("privateLesson.roadmap.currentHint", {
               defaultValue:
-                "This lesson will revisit the current milestone and advance only after consistent evidence.",
+                "This lesson will revisit the current milestone and advance only after the target task is completed consistently.",
             })}
           </p>
         )}

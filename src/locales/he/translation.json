@@ -46,9 +46,9 @@
       "change": "שינוי מטרה",
       "communicationTitle": "בחירת מטרת תקשורת",
       "grammarTitle": "גילוי מיומנויות באנגלית",
-      "currentHint": "השיעור יחזור על אבן הדרך הנוכחית ויתקדם רק לאחר הצטברות ראיות עקביות.",
-      "evidence_one": "שיעור {{count}} מתוך 2 · ציון {{score}} מתוך 75",
-      "evidence_other": "{{count}} שיעורים מתוך 2 · ציון {{score}} מתוך 75",
+      "currentHint": "השיעור יחזור על אבן הדרך הנוכחית ויתקדם רק לאחר עמידה עקבית במשימת היעד.",
+      "evidence_one": "משימה {{count}} מתוך 2 · ציון משימה {{score}} מתוך 75",
+      "evidence_other": "{{count}} משימות מתוך 2 · ציון משימה {{score}} מתוך 75",
       "goals": {
         "everyday-conversation": "שיחה יומיומית",
         "workplace-communication": "תקשורת במקום העבודה",
@@ -57,6 +57,7 @@
         "presentations": "מצגות"
       },
       "topics": {
+        "articles": "תוויות יידוע (a, an, the)",
         "present-simple-continuous": "הווה פשוט ומתמשך",
         "past-simple-continuous": "עבר פשוט ומתמשך",
         "verb-forms-v1-v2-v3": "צורות הפועל V1 / V2 / V3",

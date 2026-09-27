@@ -46,9 +46,9 @@
       "change": "Change goal",
       "communicationTitle": "Choose a communication goal",
       "grammarTitle": "Explore English skills",
-      "currentHint": "This lesson revisits the current milestone and advances only after consistent evidence.",
-      "evidence_one": "{{count}}/2 lesson · {{score}}/75 score",
-      "evidence_other": "{{count}}/2 lessons · {{score}}/75 score",
+      "currentHint": "This lesson revisits the current milestone and advances only after the target task is completed consistently.",
+      "evidence_one": "{{count}}/2 completed task · {{score}}/75 task score",
+      "evidence_other": "{{count}}/2 completed tasks · {{score}}/75 task score",
       "goals": {
         "everyday-conversation": "Everyday conversation",
         "workplace-communication": "Workplace communication",
@@ -57,6 +57,7 @@
         "presentations": "Presentations"
       },
       "topics": {
+        "articles": "Artikel (a, an, the)",
         "present-simple-continuous": "Present Simple / Continuous",
         "past-simple-continuous": "Past Simple / Continuous",
         "verb-forms-v1-v2-v3": "Verb forms V1 / V2 / V3",

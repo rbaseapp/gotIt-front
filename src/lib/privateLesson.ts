@@ -47,6 +47,7 @@ const roadmapMilestoneSchema = z.object({
   status: z.enum(["locked", "current", "completed"]),
   progressScore: z.number().int().min(0).max(100),
   evidenceLessonCount: z.number().int().nonnegative(),
+  lessonSessionCount: z.number().int().nonnegative().optional().default(0),
 });
 
 export const privateLessonRoadmapSchema = z.object({
@@ -73,6 +74,8 @@ const lessonRoadmapContextSchema = z
       minimumLessons: z.number().int(),
       targetScore: z.number().int(),
     }),
+    evidenceLessonCount: z.number().int().nonnegative().optional().default(0),
+    isFirstMilestoneLesson: z.boolean().optional().default(false),
   })
   .nullable();
 
@@ -237,6 +240,18 @@ export const privateLessonReportSchema = z.object({
       }),
     })
     .default(legacyAssessment),
+  roadmapProgress: z
+    .object({
+      objectiveCompletionScore: z.number().int().min(0).max(100),
+      targetFormControlScore: z.number().int().min(0).max(100),
+      score: z.number().int().min(0).max(100),
+      taskCompleted: z.boolean(),
+      confidence: z.enum(["low", "medium", "high"]),
+      evidence: z.string(),
+    })
+    .nullable()
+    .optional()
+    .default(null),
   strengths: z.array(z.string()),
   corrections: z.array(
     z.object({
