@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   list: vi.fn(async () => []),
   complete: vi.fn(),
   remove: vi.fn(),
+  capture: vi.fn(),
 }));
 
 vi.mock("../src/context/AppContext", () => ({
@@ -38,6 +39,11 @@ vi.mock("../src/lib/privateLesson", async (importOriginal) => {
     completePrivateLessonSession: mocks.complete,
     deletePrivateLesson: mocks.remove,
   };
+});
+
+vi.mock("../src/lib/product", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/lib/product")>();
+  return { ...original, product: mocks.capture };
 });
 
 function renderPage() {
@@ -123,11 +129,33 @@ const savedLesson = {
   },
 } as const;
 
+const lessonWithSuggestion = {
+  ...savedLesson,
+  report: {
+    ...savedLesson.report,
+    newWordSuggestions: [
+      {
+        sourceText: "confident",
+        translationText: "בטוח בעצמו",
+        example: "I feel confident speaking today.",
+      },
+    ],
+  },
+} as const;
+
 describe("private voice lesson", () => {
   beforeEach(() => {
     mocks.list.mockResolvedValue([]);
     mocks.complete.mockReset();
     mocks.remove.mockReset();
+    mocks.capture.mockReset();
+    mocks.capture.mockResolvedValue({
+      capture: {
+        outcome: "created",
+        learningItemId: "55555555-5555-4555-8555-555555555555",
+        occurrenceId: "66666666-6666-4666-8666-666666666666",
+      },
+    });
     mocks.setMicrophoneMuted.mockClear();
   });
   it("uses the authenticated app API without asking the learner for a token", async () => {
@@ -296,6 +324,55 @@ describe("private voice lesson", () => {
     expect(
       screen.getByRole("button", { name: "תרגול המילים המומלצות עכשיו" }),
     ).toBeInTheDocument();
+  });
+
+  it("saves a suggested word from the lesson report", async () => {
+    mocks.list.mockResolvedValue([lessonWithSuggestion]);
+    const libraryChanged = vi.fn();
+    window.addEventListener("gotit:library-changed", libraryChanged, {
+      once: true,
+    });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: /technology/u }),
+    );
+    await user.click(screen.getByRole("button", { name: "שמירת מילה" }));
+
+    await waitFor(() =>
+      expect(mocks.capture).toHaveBeenCalledWith(
+        expect.anything(),
+        "captures",
+        "POST",
+        expect.objectContaining({
+          item: expect.objectContaining({
+            sourceText: "confident",
+            sourceLanguageCode: "en",
+            translationLanguageCode: "he",
+          }),
+          translation: { text: "בטוח בעצמו", variants: [] },
+        }),
+        expect.any(String),
+      ),
+    );
+    expect(await screen.findByRole("button", { name: "נשמרה" })).toBeDisabled();
+    expect(libraryChanged).toHaveBeenCalledOnce();
+  });
+
+  it("shows an actionable error when saving a suggestion fails", async () => {
+    mocks.list.mockResolvedValue([lessonWithSuggestion]);
+    mocks.capture.mockRejectedValueOnce(new Error("Saving failed"));
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: /technology/u }),
+    );
+    await user.click(screen.getByRole("button", { name: "שמירת מילה" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Saving failed");
+    expect(screen.getByRole("button", { name: "שמירת מילה" })).toBeEnabled();
   });
 
   it("finalizes and saves a report when the voice connection closes", async () => {

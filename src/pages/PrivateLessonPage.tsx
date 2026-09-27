@@ -88,6 +88,10 @@ export function PrivateLessonPage() {
   const [savedSuggestions, setSavedSuggestions] = useState<Set<string>>(
     new Set(),
   );
+  const [savingSuggestions, setSavingSuggestions] = useState<Set<string>>(
+    new Set(),
+  );
+  const [suggestionSaveError, setSuggestionSaveError] = useState("");
   const [responding, setResponding] = useState(false);
   const [microphoneMuted, setMicrophoneMuted] = useState(false);
   const [microphoneReady, setMicrophoneReady] = useState(false);
@@ -481,37 +485,50 @@ export function PrivateLessonPage() {
   ) => {
     if (!lesson.supportLanguageCode) return;
     const key = `${lesson.id}:${suggestion.sourceText}:${suggestion.translationText}`;
+    if (savedSuggestions.has(key) || savingSuggestions.has(key)) return;
+    setSuggestionSaveError("");
+    setSavingSuggestions((current) => new Set(current).add(key));
     const eventId = crypto.randomUUID();
-    await product(
-      captureReceipt,
-      "capture",
-      "POST",
-      {
-        item: {
-          sourceText: suggestion.sourceText,
-          sourceLanguageCode: lesson.targetLanguageCode,
-          translationLanguageCode: lesson.supportLanguageCode,
-          itemType: suggestion.sourceText.includes(" ") ? "phrase" : "word",
-          partOfSpeech: null,
-          phoneticText: null,
-          phoneticScheme: null,
+    try {
+      await product(
+        captureReceipt,
+        "captures",
+        "POST",
+        {
+          item: {
+            sourceText: suggestion.sourceText,
+            sourceLanguageCode: lesson.targetLanguageCode,
+            translationLanguageCode: lesson.supportLanguageCode,
+            itemType: suggestion.sourceText.includes(" ") ? "phrase" : "word",
+            partOfSpeech: null,
+            phoneticText: null,
+            phoneticScheme: null,
+          },
+          translation: { text: suggestion.translationText, variants: [] },
+          context: {
+            sentenceText: suggestion.example,
+            paragraphText: null,
+            pageTitle: null,
+            pageUrl: null,
+            selectedText: suggestion.sourceText,
+            sourceType: "web_manual",
+            capturedAt: new Date().toISOString(),
+          },
+          senseDecision: { mode: "auto" },
         },
-        translation: { text: suggestion.translationText, variants: [] },
-        context: {
-          sentenceText: suggestion.example,
-          paragraphText: null,
-          pageTitle: null,
-          pageUrl: null,
-          selectedText: suggestion.sourceText,
-          sourceType: "web_manual",
-          capturedAt: new Date().toISOString(),
-        },
-        senseDecision: { mode: "auto" },
-        clientEventId: eventId,
-      },
-      eventId,
-    );
-    setSavedSuggestions((current) => new Set(current).add(key));
+        eventId,
+      );
+      setSavedSuggestions((current) => new Set(current).add(key));
+      window.dispatchEvent(new Event("gotit:library-changed"));
+    } catch (reason) {
+      setSuggestionSaveError(errorMessage(reason));
+    } finally {
+      setSavingSuggestions((current) => {
+        const next = new Set(current);
+        next.delete(key);
+        return next;
+      });
+    }
   };
   const removeHistoryLesson = async (lesson: SavedPrivateLesson) => {
     await deletePrivateLesson(lesson.id);
@@ -766,11 +783,11 @@ export function PrivateLessonPage() {
               <LessonReportView
                 lesson={selectedHistory}
                 savedSuggestions={savedSuggestions}
+                savingSuggestions={savingSuggestions}
+                saveError={suggestionSaveError}
                 onReview={() => reviewLesson(selectedHistory)}
                 onSaveSuggestion={(suggestion) =>
-                  void saveSuggestion(selectedHistory, suggestion).catch(
-                    (reason) => setHistoryError(errorMessage(reason)),
-                  )
+                  void saveSuggestion(selectedHistory, suggestion)
                 }
                 t={t}
               />
@@ -865,11 +882,11 @@ export function PrivateLessonPage() {
                   <LessonReportView
                     lesson={completedLesson}
                     savedSuggestions={savedSuggestions}
+                    savingSuggestions={savingSuggestions}
+                    saveError={suggestionSaveError}
                     onReview={() => reviewLesson(completedLesson)}
                     onSaveSuggestion={(suggestion) =>
-                      void saveSuggestion(completedLesson, suggestion).catch(
-                        (reason) => setReportError(errorMessage(reason)),
-                      )
+                      void saveSuggestion(completedLesson, suggestion)
                     }
                     t={t}
                   />
@@ -1021,12 +1038,16 @@ export function PrivateLessonPage() {
 function LessonReportView({
   lesson,
   savedSuggestions,
+  savingSuggestions,
+  saveError,
   onReview,
   onSaveSuggestion,
   t,
 }: {
   lesson: SavedPrivateLesson;
   savedSuggestions: Set<string>;
+  savingSuggestions: Set<string>;
+  saveError: string;
   onReview: () => void;
   onSaveSuggestion: (
     suggestion: NonNullable<
@@ -1110,6 +1131,7 @@ function LessonReportView({
             {report.newWordSuggestions.map((suggestion) => {
               const key = `${lesson.id}:${suggestion.sourceText}:${suggestion.translationText}`;
               const saved = savedSuggestions.has(key);
+              const saving = savingSuggestions.has(key);
               return (
                 <article key={key}>
                   <span>
@@ -1120,21 +1142,34 @@ function LessonReportView({
                     <button
                       className="button secondary"
                       type="button"
-                      disabled={saved}
+                      disabled={saved || saving}
                       onClick={() => onSaveSuggestion(suggestion)}
                     >
-                      {saved ? <Check size={15} /> : <Plus size={15} />}
-                      {t(
-                        saved
-                          ? "privateLesson.report.saved"
-                          : "privateLesson.report.saveWord",
+                      {saving ? (
+                        <LoaderCircle className="spin" size={15} />
+                      ) : saved ? (
+                        <Check size={15} />
+                      ) : (
+                        <Plus size={15} />
                       )}
+                      {saving
+                        ? t("capture.saving")
+                        : t(
+                            saved
+                              ? "privateLesson.report.saved"
+                              : "privateLesson.report.saveWord",
+                          )}
                     </button>
                   )}
                 </article>
               );
             })}
           </div>
+          {saveError && (
+            <p className="form-error" role="alert">
+              {saveError}
+            </p>
+          )}
         </section>
       )}
       {report.recommendedReviewItemIds.length > 0 && (
