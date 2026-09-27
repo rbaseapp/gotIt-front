@@ -71,13 +71,15 @@ async function request(
 ): Promise<unknown> {
   let response: Response;
   const timeoutMs =
-    path === "pronunciation/assessments"
-      ? 60000
-      : path.includes("/study/") && path.endsWith("/image")
-        ? 120000
-        : path.startsWith("reading") || path === "import"
-          ? 75000
-          : 20000;
+    base === coreUrl
+      ? 75000
+      : path === "pronunciation/assessments"
+        ? 60000
+        : path.includes("/study/") && path.endsWith("/image")
+          ? 120000
+          : path.startsWith("reading") || path === "import"
+            ? 75000
+            : 20000;
   const timeoutSignal = AbortSignal.timeout(timeoutMs);
   try {
     response = await fetch(`${base}/api/v1/${path}`, {

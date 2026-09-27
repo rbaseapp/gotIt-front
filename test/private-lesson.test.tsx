@@ -104,6 +104,10 @@ describe("private voice lesson", () => {
       }),
     );
     expect(await screen.findByText("achieve · להשיג")).toBeInTheDocument();
+    expect(
+      screen.getByRole("dialog", { name: "השיעור הפרטי שלך" }),
+    ).toBeInTheDocument();
+    expect(document.body).toHaveClass("private-lesson-session-open");
     expect(mocks.connect).toHaveBeenCalledOnce();
   });
 

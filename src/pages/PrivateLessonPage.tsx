@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   Headphones,
   Gauge,
@@ -58,6 +64,7 @@ export function PrivateLessonPage() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [responding, setResponding] = useState(false);
   const turnId = useRef(0);
+  const transcriptRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const connectionRef = useRef<PrivateLessonConnection | undefined>(undefined);
   const abortRef = useRef<AbortController | undefined>(undefined);
@@ -242,6 +249,13 @@ export function PrivateLessonPage() {
     [],
   );
 
+  const sessionFullscreen = phase !== "setup" && phase !== "preparing";
+  usePrivateLessonViewport(sessionFullscreen);
+  useEffect(() => {
+    const transcript = transcriptRef.current;
+    if (transcript) transcript.scrollTop = transcript.scrollHeight;
+  }, [phase, status, turns]);
+
   const startLesson = async (event: FormEvent) => {
     event.preventDefault();
     dispose();
@@ -332,7 +346,9 @@ export function PrivateLessonPage() {
   const seconds = String(remaining % 60).padStart(2, "0");
 
   return (
-    <div className="private-lesson-page live-page page-enter">
+    <div
+      className={`private-lesson-page live-page page-enter${sessionFullscreen ? " session-fullscreen" : ""}`}
+    >
       <section className="page-heading-row private-lesson-heading">
         <div>
           <p className="eyebrow">{t("privateLesson.eyebrow")}</p>
@@ -502,7 +518,12 @@ export function PrivateLessonPage() {
           )}
         </section>
       ) : (
-        <section className="private-lesson-session live-panel">
+        <section
+          className="private-lesson-session live-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("privateLesson.title")}
+        >
           <header className="private-lesson-session-header">
             <div>
               <p className="eyebrow">{t("privateLesson.active")}</p>
@@ -542,6 +563,13 @@ export function PrivateLessonPage() {
 
           <div className="private-lesson-tutor-stage">
             <TeacherAvatar
+              activity={
+                phase === "connecting" || phase === "wrapping" || responding
+                  ? "thinking"
+                  : phase === "active"
+                    ? "listening"
+                    : "idle"
+              }
               audioLevel={tutorAudioLevel}
               active={phase === "active" || phase === "wrapping"}
               label={status}
@@ -568,7 +596,11 @@ export function PrivateLessonPage() {
             </div>
           </div>
 
-          <div className="private-lesson-transcript" aria-live="polite">
+          <div
+            className="private-lesson-transcript"
+            aria-live="polite"
+            ref={transcriptRef}
+          >
             <div className="private-lesson-transcript-title">
               <MessageCircleMore size={18} />
               <strong>{t("privateLesson.transcriptTitle")}</strong>
@@ -635,4 +667,46 @@ export function PrivateLessonPage() {
       <audio ref={audioRef} autoPlay />
     </div>
   );
+}
+
+function usePrivateLessonViewport(enabled: boolean) {
+  useLayoutEffect(() => {
+    if (!enabled) return;
+    const root = document.documentElement;
+    const body = document.body;
+    const viewport = window.visualViewport;
+    let animationFrame = 0;
+
+    const update = () => {
+      const height = Math.round(viewport?.height ?? window.innerHeight);
+      root.style.setProperty("--private-lesson-viewport-height", `${height}px`);
+      body.classList.toggle("private-lesson-viewport-short", height < 760);
+      body.classList.toggle("private-lesson-viewport-compact", height < 640);
+    };
+    const scheduleUpdate = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(update);
+    };
+
+    body.classList.add("private-lesson-session-open");
+    update();
+    window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("orientationchange", scheduleUpdate);
+    viewport?.addEventListener("resize", scheduleUpdate);
+    viewport?.addEventListener("scroll", scheduleUpdate);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("orientationchange", scheduleUpdate);
+      viewport?.removeEventListener("resize", scheduleUpdate);
+      viewport?.removeEventListener("scroll", scheduleUpdate);
+      body.classList.remove(
+        "private-lesson-session-open",
+        "private-lesson-viewport-short",
+        "private-lesson-viewport-compact",
+      );
+      root.style.removeProperty("--private-lesson-viewport-height");
+    };
+  }, [enabled]);
 }

@@ -46,7 +46,6 @@ before(async () => {
       if (renderFailuresRemaining-- > 0) {
         res.writeHead(502, {
           "Content-Type": "text/html; charset=utf-8",
-          "X-Render-Origin-Server": "Render",
         });
         res.end("<!doctype html><title>502</title><h1>Bad Gateway</h1>");
         return;
@@ -91,6 +90,7 @@ before(async () => {
     PADDLE_PRO_MONTHLY_PRICE_ID: "pri_00000000000000000000000000",
     PADDLE_PRO_YEARLY_PRICE_ID: "pri_11111111111111111111111111",
   });
+  config.upstreamRetryDelays = [5, 10, 20];
   gateway = createGateway(config);
   const port = await listen(gateway);
   gatewayOrigin = `http://127.0.0.1:${port}`;

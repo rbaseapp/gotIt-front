@@ -20,7 +20,7 @@ const mime = {
 };
 const applePayAssociationPath =
   "/.well-known/apple-developer-merchantid-domain-association";
-const upstreamRetryDelays = [250, 750, 1500];
+const defaultUpstreamRetryDelays = [500, 1500, 3000, 5000, 8000, 13000, 20000];
 const renderUnavailableStatuses = new Set([502, 503, 504]);
 const csp =
   "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://connect.facebook.net https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.paddle.com; connect-src 'self' https://api.openai.com https://accounts.google.com/gsi/ https://*.facebook.com https://*.facebook.net https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.facebook.com https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.facebook.com https://*.paddle.com; frame-ancestors 'none'";
@@ -90,6 +90,7 @@ export function configuration(env = process.env) {
         ? { year: env.PADDLE_PRO_YEARLY_PRICE_ID }
         : {}),
     },
+    upstreamRetryDelays: defaultUpstreamRetryDelays,
   };
 }
 export function createGateway(config) {
@@ -303,17 +304,16 @@ export function createGateway(config) {
                 chunks.push(Buffer.from(chunk));
               }
             content = Buffer.concat(chunks);
-            const renderUnavailable =
+            const infrastructureUnavailable =
               renderUnavailableStatuses.has(response.status) &&
-              response.headers.get("x-render-origin-server") === "Render" &&
               response.headers.get("content-type")?.startsWith("text/html");
-            if (!renderUnavailable) break;
-            if (attempt === upstreamRetryDelays.length) {
+            if (!infrastructureUnavailable) break;
+            if (attempt === config.upstreamRetryDelays.length) {
               res.setHeader("Retry-After", "2");
               fail(503, "UPSTREAM_UNAVAILABLE");
               return;
             }
-            await delay(upstreamRetryDelays[attempt], undefined, {
+            await delay(config.upstreamRetryDelays[attempt], undefined, {
               signal: controller.signal,
             });
           }

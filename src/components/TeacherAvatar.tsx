@@ -5,6 +5,7 @@ import tutorMaleListening from "../assets/private-lesson/tutor-listening.png";
 import tutorMaleSpeaking from "../assets/private-lesson/tutor-speaking.png";
 
 type TeacherAvatarProps = {
+  activity: "idle" | "listening" | "thinking";
   audioLevel: number;
   active: boolean;
   label: string;
@@ -12,13 +13,16 @@ type TeacherAvatarProps = {
 };
 
 export function TeacherAvatar({
+  activity,
   audioLevel,
   active,
   label,
   variant,
 }: TeacherAvatarProps) {
   const level = active ? Math.max(0, Math.min(1, audioLevel)) : 0;
-  const mouthOpen = level > 0.16;
+  const speechFrame =
+    level > 0.48 ? "speaking-strong" : level > 0.12 ? "speaking-soft" : "";
+  const visualActivity = speechFrame ? "speaking" : activity;
   const listeningImage =
     variant === "female" ? tutorFemaleListening : tutorMaleListening;
   const speakingImage =
@@ -26,7 +30,7 @@ export function TeacherAvatar({
 
   return (
     <div
-      className={`teacher-avatar${active ? " active" : ""}${mouthOpen ? " speaking" : ""}`}
+      className={`teacher-avatar ${variant} ${visualActivity}${active ? " active" : ""}${speechFrame ? ` ${speechFrame}` : ""}`}
       style={
         {
           "--tutor-ring-size": `${5 + level * 13}px`,
@@ -35,6 +39,7 @@ export function TeacherAvatar({
           "--tutor-bar-small": `${7 + level * 15}px`,
           "--tutor-bar-medium": `${11 + level * 10}px`,
           "--tutor-bar-large": `${15 + level * 8}px`,
+          "--tutor-speech-lift": `${-Math.max(0.5, level * 2.2)}px`,
         } as CSSProperties
       }
       role="img"
@@ -44,6 +49,10 @@ export function TeacherAvatar({
       <span className="teacher-avatar-portrait" aria-hidden="true">
         <img src={listeningImage} alt="" />
         <img className="teacher-avatar-speaking" src={speakingImage} alt="" />
+        <span className="teacher-avatar-blink" />
+      </span>
+      <span className="teacher-avatar-thinking" aria-hidden="true">
+        <i /> <i /> <i />
       </span>
       <span className="teacher-avatar-level" aria-hidden="true">
         <i /> <i /> <i /> <i /> <i />

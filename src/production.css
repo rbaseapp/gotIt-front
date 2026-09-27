@@ -184,6 +184,12 @@
     box-shadow 90ms linear,
     transform 90ms linear;
 }
+.teacher-avatar.listening .teacher-avatar-ring {
+  animation: teacher-avatar-listen-pulse 3s ease-in-out infinite;
+}
+.teacher-avatar.thinking .teacher-avatar-ring {
+  animation: teacher-avatar-think-pulse 1.8s ease-in-out infinite;
+}
 .teacher-avatar-portrait {
   position: absolute;
   inset: 0;
@@ -202,12 +208,94 @@
 }
 .teacher-avatar-speaking {
   opacity: 0;
+  transition: opacity 55ms linear;
 }
-.teacher-avatar.speaking .teacher-avatar-speaking {
+.teacher-avatar.speaking-soft .teacher-avatar-speaking {
+  opacity: 0.58;
+}
+.teacher-avatar.speaking-strong .teacher-avatar-speaking {
   opacity: 1;
 }
 .teacher-avatar.speaking .teacher-avatar-portrait {
-  animation-duration: 1.7s;
+  animation: teacher-avatar-talk 420ms ease-in-out infinite alternate;
+}
+.teacher-avatar-blink {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.teacher-avatar-blink::before,
+.teacher-avatar-blink::after {
+  content: "";
+  position: absolute;
+  top: 30.8%;
+  width: 6.2%;
+  height: 2.5%;
+  border-bottom: 1.5px solid var(--tutor-eyelid-line);
+  border-radius: 52% 52% 42% 42% / 88% 88% 28% 28%;
+  background: var(--tutor-eyelid);
+  box-shadow: 0 -1px 2px color-mix(in srgb, var(--tutor-eyelid) 80%, transparent);
+  opacity: 0;
+  transform: scaleY(0.35);
+  transform-origin: center bottom;
+  animation: teacher-avatar-blink 7.2s linear infinite;
+}
+.teacher-avatar-blink::before {
+  left: 39.6%;
+}
+.teacher-avatar-blink::after {
+  left: 54.2%;
+}
+.teacher-avatar.female {
+  --tutor-eyelid: #e0a477;
+  --tutor-eyelid-line: #4d2a21;
+}
+.teacher-avatar.male {
+  --tutor-eyelid: #dda376;
+  --tutor-eyelid-line: #4a2921;
+}
+.teacher-avatar.female .teacher-avatar-blink::before,
+.teacher-avatar.female .teacher-avatar-blink::after {
+  animation-delay: -2.9s;
+}
+.teacher-avatar.speaking .teacher-avatar-blink {
+  display: none;
+}
+.teacher-avatar-thinking {
+  position: absolute;
+  inset-inline-start: 6%;
+  inset-block-start: 18%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 11px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 20px rgba(31, 101, 75, 0.16);
+  opacity: 0;
+  transform: translateY(4px) scale(0.92);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+.teacher-avatar.thinking .teacher-avatar-thinking {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.teacher-avatar-thinking i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: teacher-avatar-thinking-dot 1.2s ease-in-out infinite;
+}
+.teacher-avatar-thinking i:nth-child(2) {
+  animation-delay: 140ms;
+}
+.teacher-avatar-thinking i:nth-child(3) {
+  animation-delay: 280ms;
 }
 .teacher-avatar-level {
   position: absolute;
@@ -263,9 +351,62 @@
 @keyframes teacher-avatar-breathe {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(-0.12deg);
   }
   50% {
+    transform: translateY(-3px) rotate(0.12deg);
+  }
+}
+@keyframes teacher-avatar-talk {
+  from {
+    transform: translateY(0) rotate(-0.1deg);
+  }
+  to {
+    transform: translateY(var(--tutor-speech-lift)) rotate(0.1deg);
+  }
+}
+@keyframes teacher-avatar-blink {
+  0%,
+  42%,
+  44%,
+  46%,
+  100% {
+    opacity: 0;
+    transform: scaleY(0.35);
+  }
+  43%,
+  45% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+@keyframes teacher-avatar-listen-pulse {
+  0%,
+  100% {
+    opacity: 0.88;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes teacher-avatar-think-pulse {
+  0%,
+  100% {
+    filter: saturate(0.92);
+  }
+  50% {
+    filter: saturate(1.12);
+  }
+}
+@keyframes teacher-avatar-thinking-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.38;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
     transform: translateY(-3px);
   }
 }
@@ -380,6 +521,288 @@
   display: none;
 }
 
+body.private-lesson-session-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body.private-lesson-session-open .private-lesson-session.live-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  width: 100vw;
+  height: 100vh;
+  height: var(--private-lesson-viewport-height, 100dvh);
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  grid-template-columns: minmax(260px, 0.78fr) minmax(420px, 1.35fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "header header"
+    "meta words"
+    "tutor transcript"
+    "tutor actions";
+  gap: clamp(8px, 1.5vh, 14px) clamp(12px, 1.5vw, 22px);
+  padding: clamp(10px, 2vh, 20px) clamp(12px, 2.2vw, 30px);
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(145deg, #f9fcfa 0%, #eef6f2 100%);
+  box-shadow: none;
+}
+body.private-lesson-session-open .private-lesson-session-header {
+  grid-area: header;
+  min-width: 0;
+  align-items: center;
+  padding-bottom: clamp(6px, 1vh, 10px);
+  border-bottom: 1px solid #dce8e2;
+}
+body.private-lesson-session-open .private-lesson-session-header .eyebrow,
+body.private-lesson-session-open .private-lesson-session-header h2 {
+  margin: 0;
+}
+body.private-lesson-session-open .private-lesson-session-header h2 {
+  overflow: hidden;
+  margin-block: 2px 3px;
+  font-size: clamp(18px, 2.2vw, 26px);
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.private-lesson-session-open .private-lesson-status {
+  max-width: min(68vw, 720px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.private-lesson-session-open .private-lesson-timer {
+  min-width: 102px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-size: clamp(22px, 3vw, 30px);
+}
+body.private-lesson-session-open .private-lesson-meta {
+  grid-area: meta;
+  min-width: 0;
+  align-content: center;
+}
+body.private-lesson-session-open .private-lesson-meta span,
+body.private-lesson-session-open .private-lesson-words span {
+  padding: 5px 9px;
+  font-size: 12px;
+}
+body.private-lesson-session-open .private-lesson-tutor-stage {
+  grid-area: tutor;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  align-content: center;
+  padding: clamp(8px, 1.5vh, 16px);
+}
+body.private-lesson-session-open .teacher-avatar {
+  width: min(270px, 31vw, 39vh);
+  max-height: 82%;
+}
+body.private-lesson-session-open .private-lesson-tutor-caption {
+  min-width: 0;
+  max-width: 96%;
+  padding: 6px 12px;
+}
+body.private-lesson-session-open .private-lesson-tutor-caption span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.private-lesson-session-open .private-lesson-words {
+  grid-area: words;
+  min-width: 0;
+  align-content: center;
+  gap: 5px;
+}
+body.private-lesson-session-open .private-lesson-words > div {
+  gap: 5px;
+}
+body.private-lesson-session-open .private-lesson-transcript {
+  grid-area: transcript;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  overscroll-behavior: contain;
+  padding: clamp(10px, 1.5vh, 16px);
+  scrollbar-width: thin;
+}
+body.private-lesson-session-open .private-lesson-listening {
+  min-height: 0;
+  height: 100%;
+}
+body.private-lesson-session-open .private-lesson-actions,
+body.private-lesson-session-open .private-lesson-session > .button {
+  grid-area: actions;
+}
+body.private-lesson-session-open .private-lesson-actions {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+body.private-lesson-session-open .private-lesson-actions .button,
+body.private-lesson-session-open .private-lesson-session > .button {
+  width: 100%;
+  min-height: 42px;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  body.private-lesson-session-open .private-lesson-session.live-panel {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(115px, 0.6fr) auto minmax(
+        140px,
+        1fr
+      ) auto;
+    grid-template-areas:
+      "header"
+      "meta"
+      "tutor"
+      "words"
+      "transcript"
+      "actions";
+    gap: 7px;
+    padding: max(7px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right)) max(7px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+  body.private-lesson-session-open .private-lesson-session-header {
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    padding-bottom: 5px;
+  }
+  body.private-lesson-session-open .private-lesson-session-header .eyebrow {
+    display: none;
+  }
+  body.private-lesson-session-open .private-lesson-session-header h2 {
+    font-size: 18px;
+  }
+  body.private-lesson-session-open .private-lesson-status {
+    max-width: calc(100vw - 118px);
+    font-size: 11px;
+  }
+  body.private-lesson-session-open .private-lesson-timer {
+    width: auto;
+    min-width: 88px;
+    padding: 6px 9px;
+    font-size: 21px;
+  }
+  body.private-lesson-session-open .private-lesson-meta {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  body.private-lesson-session-open .private-lesson-meta span,
+  body.private-lesson-session-open .private-lesson-words span {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+  body.private-lesson-session-open .private-lesson-tutor-stage {
+    min-height: 0;
+    padding: 4px 8px;
+    border-radius: 15px;
+    gap: 2px;
+  }
+  body.private-lesson-session-open .teacher-avatar {
+    width: min(150px, 20vh, 44vw);
+  }
+  body.private-lesson-session-open .private-lesson-tutor-caption {
+    max-width: 98%;
+    padding: 3px 9px;
+    font-size: 10px;
+  }
+  body.private-lesson-session-open .private-lesson-words {
+    gap: 3px;
+  }
+  body.private-lesson-session-open .private-lesson-words > strong {
+    font-size: 10px;
+  }
+  body.private-lesson-session-open .private-lesson-words > div {
+    gap: 3px;
+  }
+  body.private-lesson-session-open .private-lesson-transcript {
+    gap: 7px;
+    padding: 8px;
+    border-radius: 14px;
+  }
+  body.private-lesson-session-open .private-lesson-transcript-title {
+    margin: 0;
+    font-size: 11px;
+  }
+  body.private-lesson-session-open .private-lesson-turn {
+    width: 92%;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+  body.private-lesson-session-open .private-lesson-turn small {
+    margin-bottom: 1px;
+    font-size: 8px;
+  }
+  body.private-lesson-session-open .private-lesson-turn p {
+    line-height: 1.4;
+  }
+  body.private-lesson-session-open .private-lesson-actions {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  body.private-lesson-session-open .private-lesson-actions .button,
+  body.private-lesson-session-open .private-lesson-session > .button {
+    width: 100%;
+    min-height: 38px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+}
+
+body.private-lesson-viewport-compact .private-lesson-session.live-panel {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "header words"
+    "tutor transcript"
+    "tutor actions";
+}
+body.private-lesson-viewport-compact .private-lesson-meta {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  body.private-lesson-viewport-short .private-lesson-session.live-panel {
+    grid-template-rows: auto auto minmax(90px, 0.52fr) auto minmax(
+        110px,
+        1fr
+      ) auto;
+  }
+  body.private-lesson-viewport-compact .private-lesson-session.live-panel {
+    grid-template-rows: auto minmax(82px, 0.48fr) auto minmax(100px, 1fr) auto;
+    grid-template-areas:
+      "header"
+      "tutor"
+      "words"
+      "transcript"
+      "actions";
+  }
+  body.private-lesson-viewport-compact .teacher-avatar {
+    width: min(112px, 18vh, 35vw);
+  }
+  body.private-lesson-viewport-compact .private-lesson-tutor-caption {
+    display: none;
+  }
+  body.private-lesson-viewport-compact .private-lesson-words > strong {
+    display: none;
+  }
+}
+
 @media (max-width: 680px) {
   .private-lesson-heading-icon {
     display: none;
@@ -407,8 +830,16 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .teacher-avatar-portrait {
+  .teacher-avatar-portrait,
+  .teacher-avatar-ring,
+  .teacher-avatar-blink::before,
+  .teacher-avatar-blink::after,
+  .teacher-avatar-thinking i {
     animation: none;
+  }
+  .teacher-avatar-blink,
+  .teacher-avatar-thinking {
+    display: none;
   }
 }
 .live-panel {
