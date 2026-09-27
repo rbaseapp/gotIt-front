@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -155,8 +155,22 @@ describe("private voice lesson", () => {
       "English — English",
     );
     expect(
-      screen.getByRole("option", { name: "Hebrew — עברית" }),
+      within(screen.getByLabelText("השפה לתרגול")).getByRole("option", {
+        name: "Hebrew — עברית",
+      }),
     ).toHaveValue("he");
+    expect(screen.getByLabelText("שפת עזרה")).toHaveDisplayValue(
+      "Hebrew — עברית",
+    );
+    expect(screen.getByLabelText("רמה")).toHaveDisplayValue(
+      "לפי הרמה בפרופיל שלי",
+    );
+    expect(screen.getByRole("option", { name: "מתחילים" })).toHaveValue("A1");
+    expect(
+      within(screen.getByLabelText("רמה")).queryByRole("option", {
+        name: "A1",
+      }),
+    ).not.toBeInTheDocument();
     expect(screen.getByLabelText("משך השיעור")).toHaveDisplayValue("5 דקות");
     await user.selectOptions(screen.getByLabelText("משך השיעור"), "10");
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));

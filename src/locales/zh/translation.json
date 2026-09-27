@@ -42,6 +42,14 @@
     "noSupport": "不使用辅助语言",
     "level": "水平",
     "automaticLevel": "使用个人资料中的水平",
+    "levelOptions": {
+      "A1": "初学者",
+      "A2": "基础",
+      "B1": "中级",
+      "B2": "中高级",
+      "C1": "高级",
+      "C2": "精通"
+    },
     "teacherVoice": "教师声音",
     "voiceOptions": {
       "female": "女声",

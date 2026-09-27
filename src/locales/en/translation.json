@@ -42,6 +42,14 @@
     "noSupport": "No help language",
     "level": "Level",
     "automaticLevel": "Use my profile level",
+    "levelOptions": {
+      "A1": "Beginner",
+      "A2": "Elementary",
+      "B1": "Intermediate",
+      "B2": "Upper intermediate",
+      "C1": "Advanced",
+      "C2": "Proficient"
+    },
     "teacherVoice": "Tutor voice",
     "voiceOptions": {
       "female": "Female voice",

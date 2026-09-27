@@ -42,6 +42,14 @@
     "noSupport": "Keine Hilfssprache",
     "level": "Niveau",
     "automaticLevel": "Niveau aus meinem Profil",
+    "levelOptions": {
+      "A1": "Anfänger",
+      "A2": "Grundkenntnisse",
+      "B1": "Mittelstufe",
+      "B2": "Gute Mittelstufe",
+      "C1": "Fortgeschritten",
+      "C2": "Nahezu muttersprachlich"
+    },
     "teacherVoice": "Stimme der Lehrkraft",
     "voiceOptions": {
       "female": "Weibliche Stimme",

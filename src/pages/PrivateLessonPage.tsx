@@ -57,9 +57,7 @@ export function PrivateLessonPage() {
   const { profile } = useApp();
   const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
-    profile.languages[0]?.languageCode ||
-      profile.defaultSourceLanguage ||
-      "en",
+    profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
   );
   const [supportLanguage, setSupportLanguage] = useState(
     profile.defaultTranslationLanguage || "",
@@ -585,15 +583,20 @@ export function PrivateLessonPage() {
                   </label>
                   <label className="field">
                     <span>{t("privateLesson.supportLanguage")}</span>
-                    <input
+                    <select
                       value={supportLanguage}
                       onChange={(event) =>
                         setSupportLanguage(event.target.value)
                       }
-                      maxLength={64}
-                      dir="ltr"
-                      placeholder={t("privateLesson.noSupport")}
-                    />
+                      dir="auto"
+                    >
+                      <option value="">{t("privateLesson.noSupport")}</option>
+                      {languageOptions.map(([code, label]) => (
+                        <option key={code} value={code}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label className="field">
                     <span>{t("privateLesson.duration")}</span>
@@ -663,7 +666,7 @@ export function PrivateLessonPage() {
                       {(["A1", "A2", "B1", "B2", "C1", "C2"] as const).map(
                         (value) => (
                           <option key={value} value={value}>
-                            {value}
+                            {t(`privateLesson.levelOptions.${value}`)}
                           </option>
                         ),
                       )}
