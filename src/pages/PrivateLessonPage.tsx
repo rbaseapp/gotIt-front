@@ -1516,7 +1516,12 @@ function RoadmapPanel({
             })}
           </small>
           <strong>{label("topics", recommended.goalKey)}</strong>
-          <em>{recommended.reason}</em>
+          <em>
+            {t("privateLesson.roadmap.recommendedReason", {
+              defaultValue:
+                "Based on your current level and the most useful next skill",
+            })}
+          </em>
         </span>
         {creating.startsWith("recommended:") && (
           <LoaderCircle className="spin" size={19} />
