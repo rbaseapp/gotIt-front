@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import { PrivateLessonPage } from "../src/pages/PrivateLessonPage";
 import { privateLessonSessionSchema } from "../src/lib/privateLesson";
 
@@ -9,6 +10,9 @@ const mocks = vi.hoisted(() => ({
   connect: vi.fn(),
   close: vi.fn(),
   send: vi.fn(() => true),
+  list: vi.fn(async () => []),
+  complete: vi.fn(),
+  remove: vi.fn(),
 }));
 
 vi.mock("../src/context/AppContext", () => ({
@@ -29,8 +33,19 @@ vi.mock("../src/lib/privateLesson", async (importOriginal) => {
     ...original,
     createPrivateLessonSession: mocks.create,
     connectPrivateLesson: mocks.connect,
+    listPrivateLessons: mocks.list,
+    completePrivateLessonSession: mocks.complete,
+    deletePrivateLesson: mocks.remove,
   };
 });
+
+function renderPage() {
+  return render(
+    <MemoryRouter>
+      <PrivateLessonPage />
+    </MemoryRouter>,
+  );
+}
 
 const session = {
   lesson: {
@@ -72,7 +87,47 @@ const session = {
   },
 } as const;
 
+const savedLesson = {
+  id: session.lesson.id,
+  targetLanguageCode: "en",
+  supportLanguageCode: "he",
+  level: "B1",
+  topic: "technology",
+  grammarFocus: null,
+  teacherVoice: "female",
+  speechRate: "normal",
+  plannedDurationSeconds: 300,
+  actualDurationSeconds: 140,
+  targetWords: session.lesson.targetWords,
+  status: "completed",
+  startedAt: "2026-09-27T10:00:00.000Z",
+  endedAt: "2026-09-27T10:02:20.000Z",
+  report: {
+    summary: "You spoke clearly about technology.",
+    strengths: ["Clear answers"],
+    corrections: [],
+    grammarPoints: [],
+    vocabulary: [
+      {
+        learningItemId: session.lesson.targetWords[0].learningItemId,
+        sourceText: "achieve",
+        translationText: "להשיג",
+        outcome: "needs_review",
+        note: "Use it once more.",
+      },
+    ],
+    newWordSuggestions: [],
+    nextLessonPlan: "Practice a longer answer.",
+    recommendedReviewItemIds: [session.lesson.targetWords[0].learningItemId],
+  },
+} as const;
+
 describe("private voice lesson", () => {
+  beforeEach(() => {
+    mocks.list.mockResolvedValue([]);
+    mocks.complete.mockReset();
+    mocks.remove.mockReset();
+  });
   it("uses the authenticated app API without asking the learner for a token", async () => {
     mocks.create.mockResolvedValue(session);
     mocks.connect.mockImplementation(
@@ -86,7 +141,7 @@ describe("private voice lesson", () => {
       },
     );
     const user = userEvent.setup();
-    render(<PrivateLessonPage />);
+    renderPage();
 
     expect(screen.queryByLabelText(/אסימון/u)).not.toBeInTheDocument();
     expect(screen.getByLabelText("השפה לתרגול")).toHaveValue("en");
@@ -104,9 +159,11 @@ describe("private voice lesson", () => {
       }),
     );
     expect(await screen.findByText("achieve · להשיג")).toBeInTheDocument();
-    expect(
-      screen.getByRole("dialog", { name: "השיעור הפרטי שלך" }),
-    ).toBeInTheDocument();
+    const fullscreenLesson = screen.getByRole("dialog", {
+      name: "השיעור הפרטי שלך",
+    });
+    expect(fullscreenLesson).toBeInTheDocument();
+    expect(fullscreenLesson.parentElement).toBe(document.body);
     expect(document.body).toHaveClass("private-lesson-session-open");
     expect(mocks.connect).toHaveBeenCalledOnce();
   });
@@ -130,7 +187,7 @@ describe("private voice lesson", () => {
       },
     );
     const user = userEvent.setup();
-    render(<PrivateLessonPage />);
+    renderPage();
 
     await user.selectOptions(screen.getByLabelText("קול המורה"), "male");
     await user.selectOptions(screen.getByLabelText("מהירות דיבור"), "fast");
@@ -165,5 +222,61 @@ describe("private voice lesson", () => {
         },
       }).success,
     ).toBe(false);
+  });
+
+  it("shows saved lesson reports in the journal", async () => {
+    mocks.list.mockResolvedValue([savedLesson]);
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: /technology/u }),
+    );
+    expect(
+      screen.getByRole("heading", {
+        name: "You spoke clearly about technology.",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Clear answers")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "תרגול המילים המומלצות עכשיו" }),
+    ).toBeInTheDocument();
+  });
+
+  it("finalizes and saves a report when the voice connection closes", async () => {
+    mocks.create.mockResolvedValue(session);
+    mocks.complete.mockResolvedValue(savedLesson);
+    let closeSession: (() => void) | undefined;
+    mocks.connect.mockImplementation(
+      async (
+        _session: unknown,
+        _audio: unknown,
+        handlers: { onOpen: () => void; onClose: () => void },
+      ) => {
+        closeSession = handlers.onClose;
+        handlers.onOpen();
+        return { close: mocks.close, send: mocks.send };
+      },
+    );
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(
+      screen.getByRole("button", { name: "התחלת שיעור של חמש דקות" }),
+    );
+    await screen.findByRole("button", { name: "סיום השיעור" });
+    closeSession?.();
+
+    await waitFor(() =>
+      expect(mocks.complete).toHaveBeenCalledWith(
+        session.lesson.id,
+        expect.objectContaining({
+          completionReason: "disconnected",
+          turns: [],
+        }),
+      ),
+    );
+    expect(
+      await screen.findByText("You spoke clearly about technology."),
+    ).toBeInTheDocument();
   });
 });

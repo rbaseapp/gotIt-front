@@ -81,6 +81,37 @@
     "finishing": "Resumiendo y despidiéndose…",
     "translateLast": "Traducir la última frase",
     "restart": "Comenzar otra clase",
+    "history": {
+      "eyebrow": "Diario de clases",
+      "title": "Clases privadas anteriores",
+      "empty": "Los resúmenes de tus clases aparecerán aquí.",
+      "delete": "Eliminar resumen",
+      "status": {
+        "active": "Clase no completada",
+        "summarizing": "Preparando el resumen",
+        "completed": "Clase completada",
+        "report_failed": "El resumen necesita otro intento"
+      }
+    },
+    "report": {
+      "title": "Resumen de tu clase",
+      "preparing": "Preparando tu repaso personal…",
+      "failed": "La clase terminó, pero el resumen aún no está listo.",
+      "retry": "Intentar crear el resumen de nuevo",
+      "strengths": "Lo que salió bien",
+      "corrections": "Correcciones útiles",
+      "grammar": "Gramática para recordar",
+      "vocabulary": "Vocabulario de la clase",
+      "suggestions": "Palabras nuevas para guardar",
+      "next": "Próxima clase:",
+      "noEvidence": "No hubo suficiente conversación para identificar una fortaleza.",
+      "noCorrections": "No fue necesaria ninguna corrección importante.",
+      "noGrammar": "No fue necesario un punto gramatical aparte.",
+      "noVocabulary": "No se evaluó vocabulario guardado.",
+      "reviewNow": "Practicar ahora las palabras recomendadas",
+      "saveWord": "Guardar palabra",
+      "saved": "Guardada"
+    },
     "roles": { "learner": "Tú", "tutor": "Tutor", "system": "Clase" },
     "errors": {
       "BROWSER_UNSUPPORTED": "Este navegador no admite una clase de voz en directo. Usa una versión reciente de Chrome, Edge o Safari mediante HTTPS.",

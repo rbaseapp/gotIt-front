@@ -59,7 +59,7 @@
     "grammarPlaceholder": "For example: past simple",
     "start": "Start five-minute lesson",
     "preparing": "Preparing your lesson…",
-    "privacy": "Microphone audio is used live and is not stored by GotIt in this POC.",
+    "privacy": "Audio is used live and is not stored. The transcript creates your summary and is not retained.",
     "ready": "Ready when you are.",
     "active": "Lesson in progress",
     "timerLabel": "Time remaining",
@@ -81,6 +81,37 @@
     "finishing": "Recapping and saying goodbye…",
     "translateLast": "Translate last sentence",
     "restart": "Start another lesson",
+    "history": {
+      "eyebrow": "Lesson journal",
+      "title": "Previous private lessons",
+      "empty": "Your completed lesson summaries will appear here.",
+      "delete": "Delete lesson summary",
+      "status": {
+        "active": "Lesson was not completed",
+        "summarizing": "Summary is being prepared",
+        "completed": "Lesson completed",
+        "report_failed": "Summary needs another attempt"
+      }
+    },
+    "report": {
+      "title": "Your lesson summary",
+      "preparing": "Preparing your personal review…",
+      "failed": "The lesson ended, but the summary could not be prepared yet.",
+      "retry": "Try preparing the summary again",
+      "strengths": "What went well",
+      "corrections": "Useful corrections",
+      "grammar": "Grammar to remember",
+      "vocabulary": "Vocabulary from the lesson",
+      "suggestions": "New words worth saving",
+      "next": "Next lesson:",
+      "noEvidence": "There was not enough speech to identify a specific strength.",
+      "noCorrections": "No important correction was needed.",
+      "noGrammar": "No separate grammar point was needed.",
+      "noVocabulary": "No saved vocabulary was evaluated in this lesson.",
+      "reviewNow": "Review recommended words now",
+      "saveWord": "Save word",
+      "saved": "Saved"
+    },
     "roles": {
       "learner": "You",
       "tutor": "Tutor",

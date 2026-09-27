@@ -58,12 +58,102 @@ export type PrivateLessonInput = {
   grammarFocus?: string;
 };
 
+export const privateLessonReportSchema = z.object({
+  summary: z.string(),
+  strengths: z.array(z.string()),
+  corrections: z.array(
+    z.object({
+      original: z.string(),
+      corrected: z.string(),
+      explanation: z.string(),
+    }),
+  ),
+  grammarPoints: z.array(
+    z.object({
+      topic: z.string(),
+      explanation: z.string(),
+      example: z.string().nullable(),
+    }),
+  ),
+  vocabulary: z.array(
+    z.object({
+      learningItemId: uuid,
+      sourceText: z.string(),
+      translationText: z.string(),
+      outcome: z.enum(["practiced", "needs_review", "not_observed"]),
+      note: z.string(),
+    }),
+  ),
+  newWordSuggestions: z.array(
+    z.object({
+      sourceText: z.string(),
+      translationText: z.string(),
+      example: z.string().nullable(),
+    }),
+  ),
+  nextLessonPlan: z.string(),
+  recommendedReviewItemIds: z.array(uuid),
+});
+
+export const savedPrivateLessonSchema = z.object({
+  id: uuid,
+  targetLanguageCode: z.string(),
+  supportLanguageCode: z.string().nullable(),
+  level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+  topic: z.string(),
+  grammarFocus: z.string().nullable(),
+  teacherVoice: z.enum(["female", "male"]),
+  speechRate: z.enum(["slow", "normal", "fast"]),
+  plannedDurationSeconds: z.number().int().positive(),
+  actualDurationSeconds: z.number().int().nonnegative().nullable(),
+  targetWords: privateLessonSessionSchema.shape.lesson.shape.targetWords,
+  status: z.enum(["active", "summarizing", "completed", "report_failed"]),
+  startedAt: z.string().datetime(),
+  endedAt: z.string().datetime().nullable(),
+  report: privateLessonReportSchema.nullable(),
+});
+
+export type SavedPrivateLesson = z.infer<typeof savedPrivateLessonSchema>;
+export type PrivateLessonReport = z.infer<typeof privateLessonReportSchema>;
+export type PrivateLessonTurn = { role: "learner" | "tutor"; text: string };
+
 export function createPrivateLessonSession(input: PrivateLessonInput) {
   return product(
     privateLessonSessionSchema,
     "private-lessons/realtime-sessions",
     "POST",
     input,
+  );
+}
+
+export function completePrivateLessonSession(
+  id: string,
+  input: {
+    actualDurationSeconds: number;
+    completionReason: "completed" | "stopped" | "disconnected";
+    turns: PrivateLessonTurn[];
+  },
+) {
+  return product(
+    z.object({ lesson: savedPrivateLessonSchema }),
+    `private-lessons/${id}/complete`,
+    "POST",
+    input,
+  ).then((result) => result.lesson);
+}
+
+export function listPrivateLessons(limit = 20) {
+  return product(
+    z.object({ lessons: z.array(savedPrivateLessonSchema) }),
+    `private-lessons?limit=${limit}`,
+  ).then((result) => result.lessons);
+}
+
+export function deletePrivateLesson(id: string) {
+  return product(
+    z.object({ deleted: z.literal(true) }),
+    `private-lessons/${id}`,
+    "DELETE",
   );
 }
 

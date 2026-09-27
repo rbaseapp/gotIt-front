@@ -4,7 +4,7 @@ import { TeacherAvatar } from "../src/components/TeacherAvatar";
 
 describe("TeacherAvatar", () => {
   it("maps listening, thinking, and audio levels to distinct animation states", () => {
-    const { rerender } = render(
+    const { container, rerender } = render(
       <TeacherAvatar
         activity="listening"
         active
@@ -18,6 +18,9 @@ describe("TeacherAvatar", () => {
       "female",
       "listening",
     );
+    expect(
+      container.querySelectorAll(".teacher-avatar-portrait img"),
+    ).toHaveLength(5);
 
     rerender(
       <TeacherAvatar

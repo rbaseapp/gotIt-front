@@ -81,6 +81,37 @@
     "finishing": "Zusammenfassung und Verabschiedung…",
     "translateLast": "Letzten Satz übersetzen",
     "restart": "Weitere Stunde starten",
+    "history": {
+      "eyebrow": "Lerntagebuch",
+      "title": "Frühere Privatstunden",
+      "empty": "Zusammenfassungen abgeschlossener Lektionen erscheinen hier.",
+      "delete": "Lektionszusammenfassung löschen",
+      "status": {
+        "active": "Lektion nicht abgeschlossen",
+        "summarizing": "Zusammenfassung wird erstellt",
+        "completed": "Lektion abgeschlossen",
+        "report_failed": "Zusammenfassung erneut versuchen"
+      }
+    },
+    "report": {
+      "title": "Deine Lektionszusammenfassung",
+      "preparing": "Persönliche Wiederholung wird erstellt…",
+      "failed": "Die Lektion endete, aber die Zusammenfassung ist noch nicht verfügbar.",
+      "retry": "Zusammenfassung erneut erstellen",
+      "strengths": "Was gut lief",
+      "corrections": "Nützliche Korrekturen",
+      "grammar": "Grammatik zum Merken",
+      "vocabulary": "Wortschatz der Lektion",
+      "suggestions": "Neue Wörter zum Speichern",
+      "next": "Nächste Lektion:",
+      "noEvidence": "Nicht genug Sprache für eine konkrete Stärke.",
+      "noCorrections": "Keine wichtige Korrektur nötig.",
+      "noGrammar": "Kein eigener Grammatikpunkt nötig.",
+      "noVocabulary": "Kein gespeicherter Wortschatz wurde bewertet.",
+      "reviewNow": "Empfohlene Wörter jetzt üben",
+      "saveWord": "Wort speichern",
+      "saved": "Gespeichert"
+    },
     "roles": { "learner": "Du", "tutor": "Lehrkraft", "system": "Stunde" },
     "errors": {
       "BROWSER_UNSUPPORTED": "Dieser Browser unterstützt keine Live-Sprachstunde. Verwende Chrome, Edge oder Safari in einer aktuellen Version über HTTPS.",

@@ -81,6 +81,37 @@
     "finishing": "Résumé et au revoir…",
     "translateLast": "Traduire la dernière phrase",
     "restart": "Commencer un autre cours",
+    "history": {
+      "eyebrow": "Journal des cours",
+      "title": "Cours particuliers précédents",
+      "empty": "Les résumés de vos cours apparaîtront ici.",
+      "delete": "Supprimer le résumé",
+      "status": {
+        "active": "Cours non terminé",
+        "summarizing": "Résumé en préparation",
+        "completed": "Cours terminé",
+        "report_failed": "Le résumé doit être réessayé"
+      }
+    },
+    "report": {
+      "title": "Résumé de votre cours",
+      "preparing": "Préparation de votre révision personnelle…",
+      "failed": "Le cours est terminé, mais le résumé n’est pas encore prêt.",
+      "retry": "Réessayer de préparer le résumé",
+      "strengths": "Points réussis",
+      "corrections": "Corrections utiles",
+      "grammar": "Grammaire à retenir",
+      "vocabulary": "Vocabulaire du cours",
+      "suggestions": "Nouveaux mots à enregistrer",
+      "next": "Prochain cours :",
+      "noEvidence": "Pas assez de parole pour identifier une force précise.",
+      "noCorrections": "Aucune correction importante nécessaire.",
+      "noGrammar": "Aucun point de grammaire distinct nécessaire.",
+      "noVocabulary": "Aucun vocabulaire enregistré n’a été évalué.",
+      "reviewNow": "Réviser les mots recommandés",
+      "saveWord": "Enregistrer",
+      "saved": "Enregistré"
+    },
     "roles": { "learner": "Vous", "tutor": "Professeur", "system": "Cours" },
     "errors": {
       "BROWSER_UNSUPPORTED": "Ce navigateur ne peut pas lancer un cours vocal en direct. Utilisez une version récente de Chrome, Edge ou Safari via HTTPS.",

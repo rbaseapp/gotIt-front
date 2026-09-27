@@ -1,8 +1,14 @@
 import type { CSSProperties } from "react";
+import tutorFemaleBlink from "../assets/private-lesson/tutor-female-blink.png";
 import tutorFemaleListening from "../assets/private-lesson/tutor-female-listening.png";
 import tutorFemaleSpeaking from "../assets/private-lesson/tutor-female-speaking.png";
+import tutorFemaleSpeakingWide from "../assets/private-lesson/tutor-female-speaking-wide.png";
+import tutorFemaleThinking from "../assets/private-lesson/tutor-female-thinking.png";
+import tutorMaleBlink from "../assets/private-lesson/tutor-blink.png";
 import tutorMaleListening from "../assets/private-lesson/tutor-listening.png";
 import tutorMaleSpeaking from "../assets/private-lesson/tutor-speaking.png";
+import tutorMaleSpeakingWide from "../assets/private-lesson/tutor-speaking-wide.png";
+import tutorMaleThinking from "../assets/private-lesson/tutor-thinking.png";
 
 type TeacherAvatarProps = {
   activity: "idle" | "listening" | "thinking";
@@ -27,6 +33,11 @@ export function TeacherAvatar({
     variant === "female" ? tutorFemaleListening : tutorMaleListening;
   const speakingImage =
     variant === "female" ? tutorFemaleSpeaking : tutorMaleSpeaking;
+  const speakingWideImage =
+    variant === "female" ? tutorFemaleSpeakingWide : tutorMaleSpeakingWide;
+  const blinkImage = variant === "female" ? tutorFemaleBlink : tutorMaleBlink;
+  const thinkingImage =
+    variant === "female" ? tutorFemaleThinking : tutorMaleThinking;
 
   return (
     <div
@@ -48,8 +59,18 @@ export function TeacherAvatar({
       <span className="teacher-avatar-ring" aria-hidden="true" />
       <span className="teacher-avatar-portrait" aria-hidden="true">
         <img src={listeningImage} alt="" />
+        <img
+          className="teacher-avatar-thinking-frame"
+          src={thinkingImage}
+          alt=""
+        />
         <img className="teacher-avatar-speaking" src={speakingImage} alt="" />
-        <span className="teacher-avatar-blink" />
+        <img
+          className="teacher-avatar-speaking-wide"
+          src={speakingWideImage}
+          alt=""
+        />
+        <img className="teacher-avatar-blink" src={blinkImage} alt="" />
       </span>
       <span className="teacher-avatar-thinking" aria-hidden="true">
         <i /> <i /> <i />

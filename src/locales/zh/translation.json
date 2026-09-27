@@ -81,6 +81,37 @@
     "finishing": "正在总结并道别…",
     "translateLast": "翻译上一句话",
     "restart": "开始另一节课",
+    "history": {
+      "eyebrow": "课程日志",
+      "title": "以往私人课程",
+      "empty": "已完成课程的总结会显示在这里。",
+      "delete": "删除课程总结",
+      "status": {
+        "active": "课程未完成",
+        "summarizing": "正在生成总结",
+        "completed": "课程已完成",
+        "report_failed": "需要重试生成总结"
+      }
+    },
+    "report": {
+      "title": "你的课程总结",
+      "preparing": "正在准备个性化复习…",
+      "failed": "课程已结束，但总结暂未生成。",
+      "retry": "重新生成总结",
+      "strengths": "表现出色之处",
+      "corrections": "实用纠正",
+      "grammar": "需要记住的语法",
+      "vocabulary": "本课词汇",
+      "suggestions": "值得保存的新词",
+      "next": "下一课：",
+      "noEvidence": "口语内容不足，无法确定具体优势。",
+      "noCorrections": "没有需要重点纠正的内容。",
+      "noGrammar": "没有单独的语法点。",
+      "noVocabulary": "本课未评估已保存词汇。",
+      "reviewNow": "立即复习推荐词汇",
+      "saveWord": "保存单词",
+      "saved": "已保存"
+    },
     "roles": { "learner": "您", "tutor": "导师", "system": "课程" },
     "errors": {
       "BROWSER_UNSUPPORTED": "此浏览器无法运行实时语音课程。请通过 HTTPS 使用最新版 Chrome、Edge 或 Safari。",
