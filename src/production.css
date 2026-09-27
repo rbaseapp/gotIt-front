@@ -4526,3 +4526,221 @@ body.game-viewport-compact .memorization-card {
   padding: 8px;
   gap: 6px;
 }
+.private-lesson-roadmap {
+  margin: 1.25rem 0;
+  padding: 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
+  border-radius: 1.15rem;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary) 7%, var(--surface)),
+    var(--surface)
+  );
+}
+
+.private-lesson-roadmap > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.private-lesson-roadmap h3,
+.private-lesson-roadmap p {
+  margin: 0;
+}
+.private-lesson-roadmap .eyebrow {
+  margin-bottom: 0.25rem;
+}
+
+.private-lesson-roadmap-overall,
+.private-lesson-milestone-score {
+  height: 0.42rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-muted));
+}
+
+.private-lesson-roadmap-overall {
+  margin: 1rem 0;
+}
+.private-lesson-roadmap-overall > span,
+.private-lesson-milestone-score > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), #6fd4aa);
+}
+
+.private-lesson-milestones {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.private-lesson-milestones article {
+  min-height: 7.2rem;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  opacity: 0.62;
+}
+
+.private-lesson-milestones article.current {
+  border-color: var(--primary);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--primary) 13%, transparent);
+  opacity: 1;
+}
+
+.private-lesson-milestones article.completed {
+  opacity: 0.9;
+}
+.private-lesson-milestones article > span {
+  display: grid;
+  width: 1.7rem;
+  height: 1.7rem;
+  place-items: center;
+  margin-bottom: 0.5rem;
+  border-radius: 50%;
+  color: var(--primary-contrast);
+  background: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.private-lesson-milestones article div {
+  display: grid;
+  gap: 0.35rem;
+}
+.private-lesson-milestones small {
+  color: var(--text-muted);
+  font-style: normal;
+}
+.private-lesson-roadmap-note {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.9rem !important;
+  color: var(--text-muted);
+}
+
+.private-lesson-roadmap-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  color: var(--text-muted);
+}
+
+.private-lesson-recommended-goal {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+  border-radius: 1rem;
+  color: inherit;
+  text-align: start;
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  cursor: pointer;
+}
+.private-lesson-recommended-goal > span {
+  display: grid;
+  flex: 1;
+  gap: 0.15rem;
+}
+.private-lesson-recommended-goal small {
+  color: var(--primary);
+  font-weight: 800;
+}
+.private-lesson-recommended-goal em {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-style: normal;
+}
+.private-lesson-goal-chooser details {
+  margin-top: 0.75rem;
+}
+.private-lesson-goal-chooser summary {
+  cursor: pointer;
+  font-weight: 750;
+}
+.private-lesson-goal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+}
+.private-lesson-goal-grid button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: inherit;
+  text-align: start;
+  background: var(--surface);
+  cursor: pointer;
+}
+.private-lesson-goal-grid button:hover {
+  border-color: var(--primary);
+}
+.private-lesson-goal-grid button > span {
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.35rem;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 11%, transparent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.private-lesson-advanced {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.8rem 1rem;
+}
+.private-lesson-advanced > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+}
+.private-lesson-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+.private-lesson-advanced > summary > span {
+  display: grid;
+  gap: 0.15rem;
+}
+.private-lesson-advanced > summary small {
+  color: var(--text-muted);
+}
+.private-lesson-advanced[open] > summary {
+  margin-bottom: 1rem;
+}
+.private-lesson-advanced[open] {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (max-width: 760px) {
+  .private-lesson-milestones {
+    grid-template-columns: 1fr;
+  }
+  .private-lesson-milestones article {
+    min-height: 0;
+    display: flex;
+    gap: 0.6rem;
+  }
+  .private-lesson-milestones article > span {
+    flex: 0 0 auto;
+    margin-bottom: 0;
+  }
+  .private-lesson-goal-grid {
+    grid-template-columns: 1fr;
+  }
+}

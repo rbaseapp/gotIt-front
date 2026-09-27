@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   complete: vi.fn(),
   remove: vi.fn(),
   capture: vi.fn(),
+  setup: vi.fn(),
+  createRoadmap: vi.fn(),
 }));
 
 vi.mock("../src/context/AppContext", () => ({
@@ -39,6 +41,8 @@ vi.mock("../src/lib/privateLesson", async (importOriginal) => {
     listPrivateLessons: mocks.list,
     completePrivateLessonSession: mocks.complete,
     deletePrivateLesson: mocks.remove,
+    getPrivateLessonSetup: mocks.setup,
+    createPrivateLessonRoadmap: mocks.createRoadmap,
   };
 });
 
@@ -98,6 +102,61 @@ const session = {
       response: { instructions: "Translate." },
     },
   },
+} as const;
+
+const setup = {
+  preferences: null,
+  roadmap: null,
+  curriculum: {
+    recommended: {
+      goalKind: "grammar",
+      goalKey: "modal-verbs",
+      reason: "A practical next step for level B1",
+    },
+    communicationGoals: [{ key: "everyday-conversation" }],
+    grammarTopics: [
+      {
+        key: "modal-verbs",
+        cefr: "B1",
+        prerequisites: ["present-simple-continuous"],
+      },
+      {
+        key: "passive-voice",
+        cefr: "B1",
+        prerequisites: ["verb-forms-v1-v2-v3"],
+      },
+    ],
+  },
+} as const;
+
+const roadmap = {
+  id: "77777777-7777-4777-8777-777777777777",
+  targetLanguageCode: "en",
+  goalKind: "recommended",
+  goalKey: "recommended-foundation",
+  goalTitle: "Modal Verbs",
+  recommendedReason: "A practical next step for level B1",
+  status: "active",
+  currentMilestonePosition: 1,
+  milestones: [
+    "foundation",
+    "guided-use",
+    "controlled-conversation",
+    "free-conversation",
+    "independent-mastery",
+  ].map((key, index) => ({
+    id: `88888888-8888-4888-8888-88888888888${index}`,
+    position: index + 1,
+    key,
+    title: key,
+    description: key,
+    communicationObjective: "Use modal verbs in conversation",
+    grammarTopics: ["modal-verbs"],
+    successCriteria: { minimumLessons: 2, targetScore: 75 },
+    status: index === 0 ? "current" : "locked",
+    progressScore: 0,
+    evidenceLessonCount: 0,
+  })),
 } as const;
 
 const savedLesson = {
@@ -172,6 +231,9 @@ const lessonWithSuggestion = {
 describe("private voice lesson", () => {
   beforeEach(() => {
     mocks.list.mockResolvedValue([]);
+    mocks.setup.mockResolvedValue(setup);
+    mocks.createRoadmap.mockReset();
+    mocks.createRoadmap.mockResolvedValue(roadmap);
     mocks.complete.mockReset();
     mocks.remove.mockReset();
     mocks.capture.mockReset();
@@ -183,6 +245,24 @@ describe("private voice lesson", () => {
       },
     });
     mocks.setMicrophoneMuted.mockClear();
+  });
+
+  it("offers one recommended roadmap action and keeps the full catalog optional", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(
+      (await screen.findAllByText("פעלים מודאליים")).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("מומלץ עבורך")).toBeInTheDocument();
+    expect(screen.queryByText("סביל — Passive Voice")).not.toBeVisible();
+
+    await user.click(screen.getByText("מומלץ עבורך").closest("button")!);
+    expect(mocks.createRoadmap).toHaveBeenCalledWith({
+      targetLanguageCode: "en",
+      goalKind: "recommended",
+      goalKey: "modal-verbs",
+    });
   });
   it("uses the authenticated app API without asking the learner for a token", async () => {
     mocks.create.mockResolvedValue(session);
@@ -337,12 +417,18 @@ describe("private voice lesson", () => {
     renderPage();
 
     await user.selectOptions(screen.getByLabelText("קול המורה"), "male");
-    await user.selectOptions(screen.getByLabelText("מהירות דיבור"), "fast");
+    await user.selectOptions(
+      screen.getByLabelText("מהירות דיבור"),
+      "very_fast",
+    );
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "תרגום המשפט האחרון" });
 
     expect(mocks.create).toHaveBeenCalledWith(
-      expect.objectContaining({ teacherVoice: "male", speechRate: "fast" }),
+      expect.objectContaining({
+        teacherVoice: "male",
+        speechRate: "very_fast",
+      }),
     );
     await user.click(
       screen.getByRole("button", { name: "תרגום המשפט האחרון" }),

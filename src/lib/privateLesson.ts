@@ -23,6 +23,98 @@ export const privateLessonVocabularyModes = ["learned", "none"] as const;
 export type PrivateLessonVocabularyMode =
   (typeof privateLessonVocabularyModes)[number];
 
+export const privateLessonSpeechRates = [
+  "very_slow",
+  "slow",
+  "normal",
+  "fast",
+  "very_fast",
+] as const;
+export type PrivateLessonSpeechRate = (typeof privateLessonSpeechRates)[number];
+
+const roadmapMilestoneSchema = z.object({
+  id: uuid,
+  position: z.number().int().min(1).max(5),
+  key: z.string(),
+  title: z.string(),
+  description: z.string(),
+  communicationObjective: z.string(),
+  grammarTopics: z.array(z.string()),
+  successCriteria: z.object({
+    minimumLessons: z.number().int(),
+    targetScore: z.number().int(),
+  }),
+  status: z.enum(["locked", "current", "completed"]),
+  progressScore: z.number().int().min(0).max(100),
+  evidenceLessonCount: z.number().int().nonnegative(),
+});
+
+export const privateLessonRoadmapSchema = z.object({
+  id: uuid,
+  targetLanguageCode: z.string(),
+  goalKind: z.enum(["recommended", "communication", "grammar"]),
+  goalKey: z.string(),
+  goalTitle: z.string(),
+  recommendedReason: z.string(),
+  status: z.enum(["active", "paused", "completed"]),
+  currentMilestonePosition: z.number().int().min(1).max(5),
+  milestones: z.array(roadmapMilestoneSchema).length(5),
+});
+
+const lessonRoadmapContextSchema = z
+  .object({
+    roadmapId: uuid,
+    milestoneId: uuid,
+    milestoneKey: z.string(),
+    goalTitle: z.string(),
+    communicationObjective: z.string(),
+    grammarTopics: z.array(z.string()),
+    successCriteria: z.object({
+      minimumLessons: z.number().int(),
+      targetScore: z.number().int(),
+    }),
+  })
+  .nullable();
+
+export const privateLessonSetupSchema = z.object({
+  preferences: z
+    .object({
+      supportLanguageCode: z.string().nullable(),
+      requestedDurationMinutes: z.union([
+        z.literal(1),
+        z.literal(5),
+        z.literal(10),
+        z.literal(15),
+      ]),
+      teacherVoice: z.enum(["female", "male"]),
+      speechRate: z.enum(privateLessonSpeechRates),
+      focusAreas: z.array(z.enum(privateLessonFocusAreas)),
+      customFocus: z.string().nullable(),
+      correctionMode: z.enum(privateLessonCorrectionModes),
+      vocabularyMode: z.enum(privateLessonVocabularyModes),
+    })
+    .nullable(),
+  roadmap: privateLessonRoadmapSchema.nullable(),
+  curriculum: z.object({
+    recommended: z.object({
+      goalKind: z.literal("grammar"),
+      goalKey: z.string(),
+      reason: z.string(),
+    }),
+    communicationGoals: z.array(z.object({ key: z.string() })),
+    grammarTopics: z.array(
+      z.object({
+        key: z.string(),
+        cefr: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+        prerequisites: z.array(z.string()),
+      }),
+    ),
+  }),
+});
+
+export type PrivateLessonSetup = z.infer<typeof privateLessonSetupSchema>;
+export type PrivateLessonRoadmap = z.infer<typeof privateLessonRoadmapSchema>;
+
 const instructionEventSchema = z
   .object({
     type: z.literal("response.create"),
@@ -54,7 +146,7 @@ export const privateLessonSessionSchema = z.object({
     vocabularyMode: z.enum(privateLessonVocabularyModes),
     continuesFromLessonId: uuid.nullable(),
     teacherVoice: z.enum(["female", "male"]),
-    speechRate: z.enum(["slow", "normal", "fast"]),
+    speechRate: z.enum(privateLessonSpeechRates),
     targetWords: z.array(
       z.object({
         learningItemId: uuid,
@@ -62,6 +154,7 @@ export const privateLessonSessionSchema = z.object({
         translationText: z.string().min(1),
       }),
     ),
+    roadmap: lessonRoadmapContextSchema.optional().default(null),
   }),
   realtime: z.object({
     clientSecret: z.string().min(1).max(4096),
@@ -82,7 +175,7 @@ export type PrivateLessonInput = {
   requestedLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   requestedDurationMinutes?: PrivateLessonDurationMinutes;
   teacherVoice?: "female" | "male";
-  speechRate?: "slow" | "normal" | "fast";
+  speechRate?: PrivateLessonSpeechRate;
   topic?: string;
   grammarFocus?: string;
   focusAreas?: PrivateLessonFocusArea[];
@@ -194,10 +287,11 @@ export const savedPrivateLessonSchema = z.object({
   vocabularyMode: z.enum(privateLessonVocabularyModes).default("learned"),
   continuesFromLessonId: uuid.nullable().default(null),
   teacherVoice: z.enum(["female", "male"]),
-  speechRate: z.enum(["slow", "normal", "fast"]),
+  speechRate: z.enum(privateLessonSpeechRates),
   plannedDurationSeconds: z.number().int().positive(),
   actualDurationSeconds: z.number().int().nonnegative().nullable(),
   targetWords: privateLessonSessionSchema.shape.lesson.shape.targetWords,
+  roadmap: lessonRoadmapContextSchema.optional().default(null),
   status: z.enum(["active", "summarizing", "completed", "report_failed"]),
   startedAt: z.string().datetime(),
   endedAt: z.string().datetime().nullable(),
@@ -238,6 +332,26 @@ export function listPrivateLessons(limit = 20) {
     z.object({ lessons: z.array(savedPrivateLessonSchema) }),
     `private-lessons?limit=${limit}`,
   ).then((result) => result.lessons);
+}
+
+export function getPrivateLessonSetup(targetLanguageCode: string) {
+  return product(
+    privateLessonSetupSchema,
+    `private-lessons/setup?targetLanguageCode=${encodeURIComponent(targetLanguageCode)}`,
+  );
+}
+
+export function createPrivateLessonRoadmap(input: {
+  targetLanguageCode: string;
+  goalKind: "recommended" | "communication" | "grammar";
+  goalKey: string;
+}) {
+  return product(
+    z.object({ roadmap: privateLessonRoadmapSchema }),
+    "private-lessons/roadmaps",
+    "POST",
+    input,
+  ).then((result) => result.roadmap);
 }
 
 export function deletePrivateLesson(id: string) {

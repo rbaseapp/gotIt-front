@@ -32,6 +32,49 @@
     "billing": "订阅"
   },
   "privateLesson": {
+    "preferences": {
+      "title": "Lesson preferences",
+      "saved": "Saved automatically for this language"
+    },
+    "roadmap": {
+      "eyebrow": "Your learning roadmap",
+      "loading": "Preparing your learning path…",
+      "chooseTitle": "Choose one direction — we’ll build the path",
+      "chooseDescription": "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
+      "recommended": "Recommended for you",
+      "change": "Change goal",
+      "communicationTitle": "Choose a communication goal",
+      "grammarTitle": "Explore English skills",
+      "currentHint": "This lesson revisits the current milestone and advances only after consistent evidence.",
+      "evidence_one": "{{count}}/2 lesson · {{score}}/75 score",
+      "evidence_other": "{{count}}/2 lessons · {{score}}/75 score",
+      "goals": {
+        "everyday-conversation": "Everyday conversation",
+        "workplace-communication": "Workplace communication",
+        "travel-confidence": "Travel confidence",
+        "job-interviews": "Job interviews",
+        "presentations": "Presentations"
+      },
+      "topics": {
+        "present-simple-continuous": "Present Simple / Continuous",
+        "past-simple-continuous": "Past Simple / Continuous",
+        "verb-forms-v1-v2-v3": "Verb forms V1 / V2 / V3",
+        "prepositions": "Prepositions",
+        "future-forms": "Future forms",
+        "modal-verbs": "Modal verbs",
+        "gerund-infinitive": "Gerund / Infinitive",
+        "conditionals": "Conditionals",
+        "passive-voice": "Passive Voice",
+        "advanced-sentence-structure": "Advanced sentence structure"
+      },
+      "stages": {
+        "foundation": "Foundation",
+        "guided-use": "Guided use",
+        "controlled-conversation": "Controlled conversation",
+        "free-conversation": "Free conversation",
+        "independent-mastery": "Independent use"
+      }
+    },
     "eyebrow": "GotIt Voice",
     "title": "您的私人语音课",
     "description": "按您选择的时长进行专注对话，并根据您的水平、兴趣和已保存词汇量身定制。",
@@ -57,9 +100,11 @@
     },
     "speechRate": "语速",
     "speedOptions": {
+      "very_slow": "很慢",
       "slow": "慢",
       "normal": "正常",
-      "fast": "快"
+      "fast": "快",
+      "very_fast": "很快"
     },
     "topic": "主题",
     "topicPlaceholder": "例如：旅行或求职面试",

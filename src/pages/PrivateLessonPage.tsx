@@ -36,9 +36,11 @@ import { captureReceipt, errorMessage, product } from "../lib/product";
 import {
   completePrivateLessonSession,
   connectPrivateLesson,
+  createPrivateLessonRoadmap,
   createPrivateLessonSession,
   deletePrivateLesson,
   listPrivateLessons,
+  getPrivateLessonSetup,
   PrivateLessonConnectionError,
   type PrivateLessonConnection,
   type PrivateLessonDurationMinutes,
@@ -46,10 +48,13 @@ import {
   type PrivateLessonCorrectionMode,
   privateLessonVocabularyModes,
   type PrivateLessonVocabularyMode,
+  privateLessonSpeechRates,
+  type PrivateLessonSpeechRate,
   privateLessonFocusAreas,
   type PrivateLessonFocusArea,
   type SavedPrivateLesson,
   type PrivateLessonSession,
+  type PrivateLessonSetup,
 } from "../lib/privateLesson";
 
 type Phase =
@@ -57,7 +62,14 @@ type Phase =
 type Turn = { id: number; role: "learner" | "tutor" | "system"; text: string };
 type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 type TeacherVoice = "female" | "male";
-type SpeechRate = "slow" | "normal" | "fast";
+
+const speechRateMultipliers: Record<PrivateLessonSpeechRate, number> = {
+  very_slow: 0.7,
+  slow: 0.85,
+  normal: 1,
+  fast: 1.2,
+  very_fast: 1.4,
+};
 
 export function PrivateLessonPage() {
   const { t } = useTranslation();
@@ -72,7 +84,8 @@ export function PrivateLessonPage() {
   );
   const [level, setLevel] = useState<"" | CefrLevel>("");
   const [teacherVoice, setTeacherVoice] = useState<TeacherVoice>("female");
-  const [speechRate, setSpeechRate] = useState<SpeechRate>("normal");
+  const [speechRate, setSpeechRate] =
+    useState<PrivateLessonSpeechRate>("normal");
   const [lessonDurationMinutes, setLessonDurationMinutes] =
     useState<PrivateLessonDurationMinutes>(5);
   const [topic, setTopic] = useState(profile.interests[0] || "");
@@ -101,6 +114,10 @@ export function PrivateLessonPage() {
   const [reportError, setReportError] = useState("");
   const [history, setHistory] = useState<SavedPrivateLesson[]>([]);
   const [historyError, setHistoryError] = useState("");
+  const [lessonSetup, setLessonSetup] = useState<PrivateLessonSetup>();
+  const [setupLoading, setSetupLoading] = useState(true);
+  const [roadmapCreating, setRoadmapCreating] = useState("");
+  const [showGoalChooser, setShowGoalChooser] = useState(false);
   const [selectedHistory, setSelectedHistory] = useState<SavedPrivateLesson>();
   const [savedSuggestions, setSavedSuggestions] = useState<Set<string>>(
     new Set(),
@@ -194,6 +211,9 @@ export function PrivateLessonPage() {
       ]);
       window.dispatchEvent(new Event("gotit:lesson-assessment-updated"));
       void retryProfile();
+      void getPrivateLessonSetup(targetLanguage)
+        .then(setLessonSetup)
+        .catch(() => undefined);
     } catch (reason) {
       setReportError(errorMessage(reason));
     } finally {
@@ -248,9 +268,8 @@ export function PrivateLessonPage() {
       .trim()
       .split(/\s+/u)
       .filter(Boolean).length;
-    const rateMultiplier = { slow: 0.85, normal: 1, fast: 1.2 }[
-      activeSession.lesson.speechRate
-    ];
+    const rateMultiplier =
+      speechRateMultipliers[activeSession.lesson.speechRate];
     const estimatedPlaybackMs = Math.min(
       20_000,
       Math.max(3_000, (wordCount / (2.4 * rateMultiplier)) * 1000 + 1_500),
@@ -384,25 +403,40 @@ export function PrivateLessonPage() {
   }, []);
 
   useEffect(() => {
-    if (personalizationTouched.current) return;
-    const targetBase = new Intl.Locale(targetLanguage).language;
-    const previousLesson = history.find(
-      (lesson) =>
-        lesson.status === "completed" &&
-        new Intl.Locale(lesson.targetLanguageCode).language === targetBase,
-    );
-    if (!previousLesson) return;
-    setFocusAreas(
-      previousLesson.focusAreas?.length
-        ? previousLesson.focusAreas
-        : ["speaking", "vocabulary"],
-    );
-    setCustomFocus(previousLesson.customFocus ?? "");
-    setCorrectionMode(previousLesson.correctionMode);
-    setVocabularyMode(previousLesson.vocabularyMode);
-    setTopic(previousLesson.topic);
-    setGrammarFocus(previousLesson.grammarFocus ?? "");
-  }, [history, targetLanguage]);
+    let active = true;
+    setSetupLoading(true);
+    setError("");
+    void getPrivateLessonSetup(targetLanguage)
+      .then((setup) => {
+        if (!active) return;
+        setLessonSetup(setup);
+        const saved = setup.preferences;
+        if (saved) {
+          setSupportLanguage(saved.supportLanguageCode ?? "");
+          setLessonDurationMinutes(saved.requestedDurationMinutes);
+          setTeacherVoice(saved.teacherVoice);
+          setSpeechRate(saved.speechRate);
+          setFocusAreas(
+            saved.focusAreas.length ? saved.focusAreas : ["speaking"],
+          );
+          setCustomFocus(saved.customFocus ?? "");
+          setCorrectionMode(saved.correctionMode);
+          setVocabularyMode(saved.vocabularyMode);
+        }
+        const currentMilestone = setup.roadmap?.milestones.find(
+          (item) => item.status === "current",
+        );
+        if (currentMilestone && !personalizationTouched.current) {
+          setTopic(currentMilestone.communicationObjective);
+          setGrammarFocus(currentMilestone.grammarTopics.join(", "));
+        }
+      })
+      .catch((reason) => active && setError(errorMessage(reason)))
+      .finally(() => active && setSetupLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [targetLanguage]);
 
   const sessionFullscreen = phase !== "setup" && phase !== "preparing";
   usePrivateLessonViewport(sessionFullscreen);
@@ -601,6 +635,35 @@ export function PrivateLessonPage() {
         : [...current, area],
     );
   };
+  const chooseRoadmap = async (
+    goalKind: "recommended" | "communication" | "grammar",
+    goalKey: string,
+  ) => {
+    setRoadmapCreating(`${goalKind}:${goalKey}`);
+    setError("");
+    try {
+      const roadmap = await createPrivateLessonRoadmap({
+        targetLanguageCode: targetLanguage,
+        goalKind,
+        goalKey,
+      });
+      setLessonSetup((current) =>
+        current ? { ...current, roadmap } : current,
+      );
+      setShowGoalChooser(false);
+      const current = roadmap.milestones.find(
+        (item) => item.status === "current",
+      );
+      if (current) {
+        setTopic(current.communicationObjective);
+        setGrammarFocus(current.grammarTopics.join(", "));
+      }
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setRoadmapCreating("");
+    }
+  };
 
   return (
     <div
@@ -666,6 +729,23 @@ export function PrivateLessonPage() {
                 </p>
               </section>
             )}
+            {setupLoading ? (
+              <div className="private-lesson-roadmap-loading">
+                <LoaderCircle className="spin" size={20} />
+                {t("privateLesson.roadmap.loading", {
+                  defaultValue: "Preparing your learning path…",
+                })}
+              </div>
+            ) : lessonSetup ? (
+              <RoadmapPanel
+                setup={lessonSetup}
+                choosing={showGoalChooser || !lessonSetup.roadmap}
+                creating={roadmapCreating}
+                onShowChooser={() => setShowGoalChooser(true)}
+                onChoose={(kind, key) => void chooseRoadmap(kind, key)}
+                t={t}
+              />
+            ) : null}
             <form
               className="form-stack"
               onSubmit={(event) => void startLesson(event)}
@@ -729,187 +809,214 @@ export function PrivateLessonPage() {
                     </select>
                   </label>
                 </div>
-                <div className="live-form-grid">
-                  <label className="field">
-                    <span>{t("privateLesson.teacherVoice")}</span>
-                    <select
-                      value={teacherVoice}
-                      onChange={(event) =>
-                        setTeacherVoice(event.target.value as TeacherVoice)
-                      }
-                    >
-                      <option value="female">
-                        {t("privateLesson.voiceOptions.female")}
-                      </option>
-                      <option value="male">
-                        {t("privateLesson.voiceOptions.male")}
-                      </option>
-                    </select>
-                  </label>
-                  <label className="field">
-                    <span>{t("privateLesson.speechRate")}</span>
-                    <select
-                      value={speechRate}
-                      onChange={(event) =>
-                        setSpeechRate(event.target.value as SpeechRate)
-                      }
-                    >
-                      {(["slow", "normal", "fast"] as const).map((value) => (
-                        <option key={value} value={value}>
-                          {t(`privateLesson.speedOptions.${value}`)}
+                <details className="private-lesson-advanced">
+                  <summary>
+                    <span>
+                      <strong>
+                        {t("privateLesson.preferences.title", {
+                          defaultValue: "Lesson preferences",
+                        })}
+                      </strong>
+                      <small>
+                        {t("privateLesson.preferences.saved", {
+                          defaultValue: "Saved automatically for this language",
+                        })}
+                      </small>
+                    </span>
+                    <Gauge size={20} />
+                  </summary>
+                  <div className="live-form-grid">
+                    <label className="field">
+                      <span>{t("privateLesson.teacherVoice")}</span>
+                      <select
+                        value={teacherVoice}
+                        onChange={(event) =>
+                          setTeacherVoice(event.target.value as TeacherVoice)
+                        }
+                      >
+                        <option value="female">
+                          {t("privateLesson.voiceOptions.female")}
                         </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-                <div className="live-form-grid">
-                  <label className="field">
-                    <span>{t("privateLesson.level")}</span>
-                    <select
-                      value={level}
-                      onChange={(event) =>
-                        setLevel(event.target.value as "" | CefrLevel)
-                      }
-                    >
-                      <option value="">
-                        {t("privateLesson.automaticLevel")}
-                      </option>
-                      {(["A1", "A2", "B1", "B2", "C1", "C2"] as const).map(
-                        (value) => (
+                        <option value="male">
+                          {t("privateLesson.voiceOptions.male")}
+                        </option>
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>{t("privateLesson.speechRate")}</span>
+                      <select
+                        value={speechRate}
+                        onChange={(event) =>
+                          setSpeechRate(
+                            event.target.value as PrivateLessonSpeechRate,
+                          )
+                        }
+                      >
+                        {privateLessonSpeechRates.map((value) => (
                           <option key={value} value={value}>
-                            {t(`privateLesson.levelOptions.${value}`)}
+                            {t(`privateLesson.speedOptions.${value}`)}
                           </option>
-                        ),
-                      )}
-                    </select>
-                  </label>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="live-form-grid">
+                    <label className="field">
+                      <span>{t("privateLesson.level")}</span>
+                      <select
+                        value={level}
+                        onChange={(event) =>
+                          setLevel(event.target.value as "" | CefrLevel)
+                        }
+                      >
+                        <option value="">
+                          {t("privateLesson.automaticLevel")}
+                        </option>
+                        {(["A1", "A2", "B1", "B2", "C1", "C2"] as const).map(
+                          (value) => (
+                            <option key={value} value={value}>
+                              {t(`privateLesson.levelOptions.${value}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>{t("privateLesson.topic")}</span>
+                      <input
+                        value={topic}
+                        onChange={(event) => {
+                          personalizationTouched.current = true;
+                          setTopic(event.target.value);
+                        }}
+                        maxLength={120}
+                        placeholder={t("privateLesson.topicPlaceholder")}
+                      />
+                    </label>
+                  </div>
+                  <div className="field private-lesson-focus-field">
+                    <span>{t("privateLesson.focus.title")}</span>
+                    <small>{t("privateLesson.focus.description")}</small>
+                    <div className="private-lesson-focus-options">
+                      {privateLessonFocusAreas.map((area) => (
+                        <label
+                          key={area}
+                          className={
+                            focusAreas.includes(area) ? "selected" : ""
+                          }
+                        >
+                          <input
+                            type="checkbox"
+                            checked={focusAreas.includes(area)}
+                            onChange={() => toggleFocusArea(area)}
+                          />
+                          <span>
+                            {t(`privateLesson.focus.options.${area}`)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <fieldset className="private-lesson-correction-field">
+                    <legend>{t("privateLesson.vocabularyMode.title")}</legend>
+                    <small>
+                      {t("privateLesson.vocabularyMode.description")}
+                    </small>
+                    <div className="private-lesson-correction-options private-lesson-vocabulary-options">
+                      {privateLessonVocabularyModes.map((mode) => (
+                        <label
+                          key={mode}
+                          className={vocabularyMode === mode ? "selected" : ""}
+                        >
+                          <input
+                            type="radio"
+                            name="vocabulary-mode"
+                            value={mode}
+                            checked={vocabularyMode === mode}
+                            onChange={() => {
+                              personalizationTouched.current = true;
+                              setVocabularyMode(mode);
+                            }}
+                          />
+                          <span>
+                            <strong>
+                              {t(
+                                `privateLesson.vocabularyMode.options.${mode}.title`,
+                              )}
+                            </strong>
+                            <small>
+                              {t(
+                                `privateLesson.vocabularyMode.options.${mode}.description`,
+                              )}
+                            </small>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <fieldset className="private-lesson-correction-field">
+                    <legend>{t("privateLesson.correctionMode.title")}</legend>
+                    <small>
+                      {t("privateLesson.correctionMode.description")}
+                    </small>
+                    <div className="private-lesson-correction-options">
+                      {privateLessonCorrectionModes.map((mode) => (
+                        <label
+                          key={mode}
+                          className={correctionMode === mode ? "selected" : ""}
+                        >
+                          <input
+                            type="radio"
+                            name="correction-mode"
+                            value={mode}
+                            checked={correctionMode === mode}
+                            onChange={() => {
+                              personalizationTouched.current = true;
+                              setCorrectionMode(mode);
+                            }}
+                          />
+                          <span>
+                            <strong>
+                              {t(
+                                `privateLesson.correctionMode.options.${mode}.title`,
+                              )}
+                            </strong>
+                            <small>
+                              {t(
+                                `privateLesson.correctionMode.options.${mode}.description`,
+                              )}
+                            </small>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
                   <label className="field">
-                    <span>{t("privateLesson.topic")}</span>
-                    <input
-                      value={topic}
+                    <span>{t("privateLesson.customFocus")}</span>
+                    <textarea
+                      value={customFocus}
                       onChange={(event) => {
                         personalizationTouched.current = true;
-                        setTopic(event.target.value);
+                        setCustomFocus(event.target.value);
                       }}
-                      maxLength={120}
-                      placeholder={t("privateLesson.topicPlaceholder")}
+                      maxLength={300}
+                      rows={3}
+                      placeholder={t("privateLesson.customFocusPlaceholder")}
                     />
                   </label>
-                </div>
-                <div className="field private-lesson-focus-field">
-                  <span>{t("privateLesson.focus.title")}</span>
-                  <small>{t("privateLesson.focus.description")}</small>
-                  <div className="private-lesson-focus-options">
-                    {privateLessonFocusAreas.map((area) => (
-                      <label
-                        key={area}
-                        className={focusAreas.includes(area) ? "selected" : ""}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={focusAreas.includes(area)}
-                          onChange={() => toggleFocusArea(area)}
-                        />
-                        <span>{t(`privateLesson.focus.options.${area}`)}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <fieldset className="private-lesson-correction-field">
-                  <legend>{t("privateLesson.vocabularyMode.title")}</legend>
-                  <small>{t("privateLesson.vocabularyMode.description")}</small>
-                  <div className="private-lesson-correction-options private-lesson-vocabulary-options">
-                    {privateLessonVocabularyModes.map((mode) => (
-                      <label
-                        key={mode}
-                        className={vocabularyMode === mode ? "selected" : ""}
-                      >
-                        <input
-                          type="radio"
-                          name="vocabulary-mode"
-                          value={mode}
-                          checked={vocabularyMode === mode}
-                          onChange={() => {
-                            personalizationTouched.current = true;
-                            setVocabularyMode(mode);
-                          }}
-                        />
-                        <span>
-                          <strong>
-                            {t(
-                              `privateLesson.vocabularyMode.options.${mode}.title`,
-                            )}
-                          </strong>
-                          <small>
-                            {t(
-                              `privateLesson.vocabularyMode.options.${mode}.description`,
-                            )}
-                          </small>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-                <fieldset className="private-lesson-correction-field">
-                  <legend>{t("privateLesson.correctionMode.title")}</legend>
-                  <small>{t("privateLesson.correctionMode.description")}</small>
-                  <div className="private-lesson-correction-options">
-                    {privateLessonCorrectionModes.map((mode) => (
-                      <label
-                        key={mode}
-                        className={correctionMode === mode ? "selected" : ""}
-                      >
-                        <input
-                          type="radio"
-                          name="correction-mode"
-                          value={mode}
-                          checked={correctionMode === mode}
-                          onChange={() => {
-                            personalizationTouched.current = true;
-                            setCorrectionMode(mode);
-                          }}
-                        />
-                        <span>
-                          <strong>
-                            {t(
-                              `privateLesson.correctionMode.options.${mode}.title`,
-                            )}
-                          </strong>
-                          <small>
-                            {t(
-                              `privateLesson.correctionMode.options.${mode}.description`,
-                            )}
-                          </small>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-                <label className="field">
-                  <span>{t("privateLesson.customFocus")}</span>
-                  <textarea
-                    value={customFocus}
-                    onChange={(event) => {
-                      personalizationTouched.current = true;
-                      setCustomFocus(event.target.value);
-                    }}
-                    maxLength={300}
-                    rows={3}
-                    placeholder={t("privateLesson.customFocusPlaceholder")}
-                  />
-                </label>
-                <label className="field">
-                  <span>{t("privateLesson.grammarFocus")}</span>
-                  <input
-                    value={grammarFocus}
-                    onChange={(event) => {
-                      personalizationTouched.current = true;
-                      setGrammarFocus(event.target.value);
-                    }}
-                    maxLength={160}
-                    placeholder={t("privateLesson.grammarPlaceholder")}
-                  />
-                </label>
+                  <label className="field">
+                    <span>{t("privateLesson.grammarFocus")}</span>
+                    <input
+                      value={grammarFocus}
+                      onChange={(event) => {
+                        personalizationTouched.current = true;
+                        setGrammarFocus(event.target.value);
+                      }}
+                      maxLength={160}
+                      placeholder={t("privateLesson.grammarPlaceholder")}
+                    />
+                  </label>
+                </details>
                 <button
                   className="button primary private-lesson-start"
                   type="submit"
@@ -1250,6 +1357,210 @@ export function PrivateLessonPage() {
       )}
       <audio ref={audioRef} autoPlay />
     </div>
+  );
+}
+
+function RoadmapPanel({
+  setup,
+  choosing,
+  creating,
+  onShowChooser,
+  onChoose,
+  t,
+}: {
+  setup: PrivateLessonSetup;
+  choosing: boolean;
+  creating: string;
+  onShowChooser: () => void;
+  onChoose: (
+    kind: "recommended" | "communication" | "grammar",
+    key: string,
+  ) => void;
+  t: TFunction;
+}) {
+  const roadmap = setup.roadmap;
+  const label = (section: "goals" | "topics", key: string) =>
+    t(`privateLesson.roadmap.${section}.${key}`, {
+      defaultValue: key
+        .split("-")
+        .map((part) => part[0]?.toUpperCase() + part.slice(1))
+        .join(" "),
+    });
+  if (!choosing && roadmap) {
+    const completed = roadmap.milestones.filter(
+      (item) => item.status === "completed",
+    ).length;
+    const current = roadmap.milestones.find(
+      (item) => item.status === "current",
+    );
+    const progress = Math.round(
+      ((completed * 100 + (current?.progressScore ?? 0)) /
+        roadmap.milestones.length) *
+        1,
+    );
+    return (
+      <section className="private-lesson-roadmap">
+        <header>
+          <div>
+            <p className="eyebrow">
+              {t("privateLesson.roadmap.eyebrow", {
+                defaultValue: "Your learning roadmap",
+              })}
+            </p>
+            <h3>
+              {label(
+                roadmap.goalKind === "communication" ? "goals" : "topics",
+                roadmap.goalKey === "recommended-foundation"
+                  ? setup.curriculum.recommended.goalKey
+                  : roadmap.goalKey,
+              )}
+            </h3>
+          </div>
+          <button
+            className="button secondary"
+            type="button"
+            onClick={onShowChooser}
+          >
+            {t("privateLesson.roadmap.change", { defaultValue: "Change goal" })}
+          </button>
+        </header>
+        <div className="private-lesson-roadmap-overall">
+          <span style={{ width: `${progress}%` }} />
+        </div>
+        <div className="private-lesson-milestones">
+          {roadmap.milestones.map((milestone) => (
+            <article className={milestone.status} key={milestone.id}>
+              <span>
+                {milestone.status === "completed" ? (
+                  <Check size={16} />
+                ) : (
+                  milestone.position
+                )}
+              </span>
+              <div>
+                <strong>
+                  {t(`privateLesson.roadmap.stages.${milestone.key}`, {
+                    defaultValue: milestone.title,
+                  })}
+                </strong>
+                {milestone.status === "current" && (
+                  <>
+                    <small>
+                      {milestone.grammarTopics
+                        .map((key) => label("topics", key))
+                        .join(" · ")}
+                    </small>
+                    <div className="private-lesson-milestone-score">
+                      <i style={{ width: `${milestone.progressScore}%` }} />
+                    </div>
+                    <small>
+                      {t("privateLesson.roadmap.evidence", {
+                        count: milestone.evidenceLessonCount,
+                        score: milestone.progressScore,
+                        defaultValue: `${milestone.evidenceLessonCount}/2 lessons · ${milestone.progressScore}/75 score`,
+                      })}
+                    </small>
+                  </>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+        {current && (
+          <p className="private-lesson-roadmap-note">
+            <Target size={17} />
+            {t("privateLesson.roadmap.currentHint", {
+              defaultValue:
+                "This lesson will revisit the current milestone and advance only after consistent evidence.",
+            })}
+          </p>
+        )}
+      </section>
+    );
+  }
+
+  const recommended = setup.curriculum.recommended;
+  return (
+    <section className="private-lesson-roadmap private-lesson-goal-chooser">
+      <header>
+        <div>
+          <p className="eyebrow">
+            {t("privateLesson.roadmap.eyebrow", {
+              defaultValue: "Your learning roadmap",
+            })}
+          </p>
+          <h3>
+            {t("privateLesson.roadmap.chooseTitle", {
+              defaultValue: "Choose one direction — we’ll build the path",
+            })}
+          </h3>
+          <p>
+            {t("privateLesson.roadmap.chooseDescription", {
+              defaultValue:
+                "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
+            })}
+          </p>
+        </div>
+      </header>
+      <button
+        className="private-lesson-recommended-goal"
+        type="button"
+        disabled={Boolean(creating)}
+        onClick={() => onChoose("recommended", recommended.goalKey)}
+      >
+        <Sparkles size={22} />
+        <span>
+          <small>
+            {t("privateLesson.roadmap.recommended", {
+              defaultValue: "Recommended for you",
+            })}
+          </small>
+          <strong>{label("topics", recommended.goalKey)}</strong>
+          <em>{recommended.reason}</em>
+        </span>
+        {creating.startsWith("recommended:") && (
+          <LoaderCircle className="spin" size={19} />
+        )}
+      </button>
+      <details>
+        <summary>
+          {t("privateLesson.roadmap.communicationTitle", {
+            defaultValue: "Choose a communication goal",
+          })}
+        </summary>
+        <div className="private-lesson-goal-grid">
+          {setup.curriculum.communicationGoals.map(({ key }) => (
+            <button
+              key={key}
+              type="button"
+              disabled={Boolean(creating)}
+              onClick={() => onChoose("communication", key)}
+            >
+              <MessageCircleMore size={18} /> {label("goals", key)}
+            </button>
+          ))}
+        </div>
+      </details>
+      <details>
+        <summary>
+          {t("privateLesson.roadmap.grammarTitle", {
+            defaultValue: "Explore English skills",
+          })}
+        </summary>
+        <div className="private-lesson-goal-grid">
+          {setup.curriculum.grammarTopics.map(({ key, cefr }) => (
+            <button
+              key={key}
+              type="button"
+              disabled={Boolean(creating)}
+              onClick={() => onChoose("grammar", key)}
+            >
+              <span>{cefr}</span> {label("topics", key)}
+            </button>
+          ))}
+        </div>
+      </details>
+    </section>
   );
 }
 

@@ -32,6 +32,49 @@
     "billing": "מנוי"
   },
   "privateLesson": {
+    "preferences": {
+      "title": "העדפות השיעור",
+      "saved": "נשמר אוטומטית עבור השפה הזו"
+    },
+    "roadmap": {
+      "eyebrow": "מפת ההתקדמות שלך",
+      "loading": "מכינים את מסלול הלמידה שלך…",
+      "chooseTitle": "בוחרים כיוון אחד — ואנחנו בונים את הדרך",
+      "chooseDescription": "אפשר להתחיל מההמלצה האישית או לבחור מטרת תקשורת או מיומנות באנגלית. ניתן לשנות בהמשך.",
+      "recommended": "מומלץ עבורך",
+      "change": "שינוי מטרה",
+      "communicationTitle": "בחירת מטרת תקשורת",
+      "grammarTitle": "גילוי מיומנויות באנגלית",
+      "currentHint": "השיעור יחזור על אבן הדרך הנוכחית ויתקדם רק לאחר הצטברות ראיות עקביות.",
+      "evidence_one": "שיעור {{count}} מתוך 2 · ציון {{score}} מתוך 75",
+      "evidence_other": "{{count}} שיעורים מתוך 2 · ציון {{score}} מתוך 75",
+      "goals": {
+        "everyday-conversation": "שיחה יומיומית",
+        "workplace-communication": "תקשורת במקום העבודה",
+        "travel-confidence": "ביטחון בטיולים",
+        "job-interviews": "ראיונות עבודה",
+        "presentations": "מצגות"
+      },
+      "topics": {
+        "present-simple-continuous": "הווה פשוט ומתמשך",
+        "past-simple-continuous": "עבר פשוט ומתמשך",
+        "verb-forms-v1-v2-v3": "צורות הפועל V1 / V2 / V3",
+        "prepositions": "מילות יחס",
+        "future-forms": "צורות עתיד",
+        "modal-verbs": "פעלים מודאליים",
+        "gerund-infinitive": "Gerund / Infinitive",
+        "conditionals": "משפטי תנאי",
+        "passive-voice": "סביל — Passive Voice",
+        "advanced-sentence-structure": "מבנה משפט מתקדם"
+      },
+      "stages": {
+        "foundation": "בניית יסודות",
+        "guided-use": "שימוש מודרך",
+        "controlled-conversation": "שיחה מבוקרת",
+        "free-conversation": "שיחה חופשית",
+        "independent-mastery": "שימוש עצמאי"
+      }
+    },
     "eyebrow": "GotIt Voice",
     "title": "השיעור הפרטי שלך",
     "description": "שיחה ממוקדת בזמן שמתאים לך, המותאמת לרמה, לתחומי העניין ולאוצר המילים השמור שלך.",
@@ -57,9 +100,11 @@
     },
     "speechRate": "מהירות דיבור",
     "speedOptions": {
+      "very_slow": "איטית מאוד",
       "slow": "איטית",
       "normal": "רגילה",
-      "fast": "מהירה"
+      "fast": "מהירה",
+      "very_fast": "מהירה מאוד"
     },
     "topic": "נושא",
     "topicPlaceholder": "לדוגמה: טיולים או ראיון עבודה",
