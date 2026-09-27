@@ -18,6 +18,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { createPortal } from "react-dom";
 import { TeacherAvatar } from "../components/TeacherAvatar";
 import { useApp } from "../context/AppContext";
 import { errorMessage } from "../lib/product";
@@ -518,151 +519,156 @@ export function PrivateLessonPage() {
           )}
         </section>
       ) : (
-        <section
-          className="private-lesson-session live-panel"
-          role="dialog"
-          aria-modal="true"
-          aria-label={t("privateLesson.title")}
-        >
-          <header className="private-lesson-session-header">
-            <div>
-              <p className="eyebrow">{t("privateLesson.active")}</p>
-              <h2 dir="auto">{session?.lesson.topic}</h2>
-              <span className={`private-lesson-status ${phase}`}>
-                <i aria-hidden="true" /> {status}
+        createPortal(
+          <section
+            className="private-lesson-session live-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("privateLesson.title")}
+          >
+            <header className="private-lesson-session-header">
+              <div>
+                <p className="eyebrow">{t("privateLesson.active")}</p>
+                <h2 dir="auto">{session?.lesson.topic}</h2>
+                <span className={`private-lesson-status ${phase}`}>
+                  <i aria-hidden="true" /> {status}
+                </span>
+              </div>
+              <div
+                className="private-lesson-timer"
+                aria-label={t("privateLesson.timerLabel")}
+                aria-live="polite"
+              >
+                {minutes}:{seconds}
+              </div>
+            </header>
+
+            <div className="private-lesson-meta">
+              <span>
+                <Languages size={16} /> {session?.lesson.targetLanguageCode}
               </span>
-            </div>
-            <div
-              className="private-lesson-timer"
-              aria-label={t("privateLesson.timerLabel")}
-              aria-live="polite"
-            >
-              {minutes}:{seconds}
-            </div>
-          </header>
-
-          <div className="private-lesson-meta">
-            <span>
-              <Languages size={16} /> {session?.lesson.targetLanguageCode}
-            </span>
-            <span>{session?.lesson.level}</span>
-            <span>
-              <UserRound size={16} />
-              {session &&
-                t(`privateLesson.voiceOptions.${session.lesson.teacherVoice}`)}
-            </span>
-            <span>
-              <Gauge size={16} />
-              {session &&
-                t(`privateLesson.speedOptions.${session.lesson.speechRate}`)}
-            </span>
-            {session?.lesson.grammarFocus && (
-              <span dir="auto">{session.lesson.grammarFocus}</span>
-            )}
-          </div>
-
-          <div className="private-lesson-tutor-stage">
-            <TeacherAvatar
-              activity={
-                phase === "connecting" || phase === "wrapping" || responding
-                  ? "thinking"
-                  : phase === "active"
-                    ? "listening"
-                    : "idle"
-              }
-              audioLevel={tutorAudioLevel}
-              active={phase === "active" || phase === "wrapping"}
-              label={status}
-              variant={session?.lesson.teacherVoice ?? teacherVoice}
-            />
-            <div className="private-lesson-tutor-caption" aria-live="polite">
-              <strong>{t("privateLesson.roles.tutor")}</strong>
-              <span>{status}</span>
-            </div>
-          </div>
-
-          <div className="private-lesson-words">
-            <strong>{t("privateLesson.wordsTitle")}</strong>
-            <div>
-              {session?.lesson.targetWords.length ? (
-                session.lesson.targetWords.map((word) => (
-                  <span key={word.learningItemId} dir="auto">
-                    {word.sourceText} · {word.translationText}
-                  </span>
-                ))
-              ) : (
-                <span>{t("privateLesson.noWords")}</span>
+              <span>{session?.lesson.level}</span>
+              <span>
+                <UserRound size={16} />
+                {session &&
+                  t(
+                    `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
+                  )}
+              </span>
+              <span>
+                <Gauge size={16} />
+                {session &&
+                  t(`privateLesson.speedOptions.${session.lesson.speechRate}`)}
+              </span>
+              {session?.lesson.grammarFocus && (
+                <span dir="auto">{session.lesson.grammarFocus}</span>
               )}
             </div>
-          </div>
 
-          <div
-            className="private-lesson-transcript"
-            aria-live="polite"
-            ref={transcriptRef}
-          >
-            <div className="private-lesson-transcript-title">
-              <MessageCircleMore size={18} />
-              <strong>{t("privateLesson.transcriptTitle")}</strong>
-            </div>
-            {turns.length ? (
-              turns.map((turn) => (
-                <div
-                  className={`private-lesson-turn ${turn.role}`}
-                  key={turn.id}
-                >
-                  <small>{t(`privateLesson.roles.${turn.role}`)}</small>
-                  <p dir="auto">{turn.text}</p>
-                </div>
-              ))
-            ) : (
-              <div className="private-lesson-listening">
-                {phase === "connecting" ? (
-                  <LoaderCircle className="spin" size={24} />
-                ) : (
-                  <span className="private-lesson-wave" aria-hidden="true">
-                    <i /> <i /> <i /> <i /> <i />
-                  </span>
-                )}
-                <p>{status}</p>
+            <div className="private-lesson-tutor-stage">
+              <TeacherAvatar
+                activity={
+                  phase === "connecting" || phase === "wrapping" || responding
+                    ? "thinking"
+                    : phase === "active"
+                      ? "listening"
+                      : "idle"
+                }
+                audioLevel={tutorAudioLevel}
+                active={phase === "active" || phase === "wrapping"}
+                label={status}
+                variant={session?.lesson.teacherVoice ?? teacherVoice}
+              />
+              <div className="private-lesson-tutor-caption" aria-live="polite">
+                <strong>{t("privateLesson.roles.tutor")}</strong>
+                <span>{status}</span>
               </div>
-            )}
-          </div>
+            </div>
 
-          {phase === "ended" ? (
-            <button className="button primary" type="button" onClick={reset}>
-              <RotateCcw size={18} /> {t("privateLesson.restart")}
-            </button>
-          ) : (
-            <div className="private-lesson-actions">
-              {session?.realtime.translationEvent && (
+            <div className="private-lesson-words">
+              <strong>{t("privateLesson.wordsTitle")}</strong>
+              <div>
+                {session?.lesson.targetWords.length ? (
+                  session.lesson.targetWords.map((word) => (
+                    <span key={word.learningItemId} dir="auto">
+                      {word.sourceText} · {word.translationText}
+                    </span>
+                  ))
+                ) : (
+                  <span>{t("privateLesson.noWords")}</span>
+                )}
+              </div>
+            </div>
+
+            <div
+              className="private-lesson-transcript"
+              aria-live="polite"
+              ref={transcriptRef}
+            >
+              <div className="private-lesson-transcript-title">
+                <MessageCircleMore size={18} />
+                <strong>{t("privateLesson.transcriptTitle")}</strong>
+              </div>
+              {turns.length ? (
+                turns.map((turn) => (
+                  <div
+                    className={`private-lesson-turn ${turn.role}`}
+                    key={turn.id}
+                  >
+                    <small>{t(`privateLesson.roles.${turn.role}`)}</small>
+                    <p dir="auto">{turn.text}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="private-lesson-listening">
+                  {phase === "connecting" ? (
+                    <LoaderCircle className="spin" size={24} />
+                  ) : (
+                    <span className="private-lesson-wave" aria-hidden="true">
+                      <i /> <i /> <i /> <i /> <i />
+                    </span>
+                  )}
+                  <p>{status}</p>
+                </div>
+              )}
+            </div>
+
+            {phase === "ended" ? (
+              <button className="button primary" type="button" onClick={reset}>
+                <RotateCcw size={18} /> {t("privateLesson.restart")}
+              </button>
+            ) : (
+              <div className="private-lesson-actions">
+                {session?.realtime.translationEvent && (
+                  <button
+                    className="button secondary"
+                    type="button"
+                    disabled={responding || phase === "wrapping"}
+                    onClick={() => requestTranslation(session)}
+                  >
+                    <Languages size={17} /> {t("privateLesson.translateLast")}
+                  </button>
+                )}
                 <button
                   className="button secondary"
                   type="button"
-                  disabled={responding || phase === "wrapping"}
-                  onClick={() => requestTranslation(session)}
+                  disabled={phase === "wrapping"}
+                  onClick={() => session && requestWrapUp(session)}
                 >
-                  <Languages size={17} /> {t("privateLesson.translateLast")}
+                  {phase === "wrapping" ? (
+                    <LoaderCircle className="spin" size={17} />
+                  ) : (
+                    <Square size={16} />
+                  )}
+                  {phase === "wrapping"
+                    ? t("privateLesson.finishing")
+                    : t("privateLesson.finish")}
                 </button>
-              )}
-              <button
-                className="button secondary"
-                type="button"
-                disabled={phase === "wrapping"}
-                onClick={() => session && requestWrapUp(session)}
-              >
-                {phase === "wrapping" ? (
-                  <LoaderCircle className="spin" size={17} />
-                ) : (
-                  <Square size={16} />
-                )}
-                {phase === "wrapping"
-                  ? t("privateLesson.finishing")
-                  : t("privateLesson.finish")}
-              </button>
-            </div>
-          )}
-        </section>
+              </div>
+            )}
+          </section>,
+          document.body,
+        )
       )}
       <audio ref={audioRef} autoPlay />
     </div>

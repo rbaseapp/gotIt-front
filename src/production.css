@@ -235,7 +235,8 @@
   border-bottom: 1.5px solid var(--tutor-eyelid-line);
   border-radius: 52% 52% 42% 42% / 88% 88% 28% 28%;
   background: var(--tutor-eyelid);
-  box-shadow: 0 -1px 2px color-mix(in srgb, var(--tutor-eyelid) 80%, transparent);
+  box-shadow: 0 -1px 2px
+    color-mix(in srgb, var(--tutor-eyelid) 80%, transparent);
   opacity: 0;
   transform: scaleY(0.35);
   transform-origin: center bottom;
@@ -538,18 +539,18 @@ body.private-lesson-session-open .private-lesson-session.live-panel {
   max-height: none;
   margin: 0;
   overflow: hidden;
-  grid-template-columns: minmax(260px, 0.78fr) minmax(420px, 1.35fr);
+  grid-template-columns: minmax(300px, 0.68fr) minmax(520px, 1.5fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
     "header header"
     "meta words"
     "tutor transcript"
     "tutor actions";
-  gap: clamp(8px, 1.5vh, 14px) clamp(12px, 1.5vw, 22px);
-  padding: clamp(10px, 2vh, 20px) clamp(12px, 2.2vw, 30px);
+  gap: clamp(8px, 1.3vh, 12px) clamp(12px, 1.4vw, 20px);
+  padding: clamp(10px, 1.7vh, 16px) clamp(12px, 1.7vw, 24px);
   border: 0;
   border-radius: 0;
-  background: linear-gradient(145deg, #f9fcfa 0%, #eef6f2 100%);
+  background: #f4f8f5;
   box-shadow: none;
 }
 body.private-lesson-session-open .private-lesson-session-header {
@@ -599,12 +600,21 @@ body.private-lesson-session-open .private-lesson-tutor-stage {
   height: 100%;
   min-width: 0;
   min-height: 0;
-  align-content: center;
-  padding: clamp(8px, 1.5vh, 16px);
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: stretch;
+  padding: clamp(10px, 1.5vh, 16px);
+  background:
+    radial-gradient(
+      circle at 50% 46%,
+      rgba(72, 151, 113, 0.2),
+      transparent 38%
+    ),
+    #eaf4ef;
 }
 body.private-lesson-session-open .teacher-avatar {
-  width: min(270px, 31vw, 39vh);
-  max-height: 82%;
+  width: min(360px, 30vw, 48vh);
+  max-height: 100%;
+  align-self: center;
 }
 body.private-lesson-session-open .private-lesson-tutor-caption {
   min-width: 0;
@@ -634,6 +644,8 @@ body.private-lesson-session-open .private-lesson-transcript {
   max-height: none;
   overscroll-behavior: contain;
   padding: clamp(10px, 1.5vh, 16px);
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(32, 83, 61, 0.05);
   scrollbar-width: thin;
 }
 body.private-lesson-session-open .private-lesson-listening {
@@ -660,10 +672,9 @@ body.private-lesson-session-open .private-lesson-session > .button {
 @media (max-width: 760px) {
   body.private-lesson-session-open .private-lesson-session.live-panel {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(115px, 0.6fr) auto minmax(
-        140px,
-        1fr
-      ) auto;
+    grid-template-rows:
+      auto auto minmax(115px, 0.6fr) auto minmax(140px, 1fr)
+      auto;
     grid-template-areas:
       "header"
       "meta"
@@ -778,10 +789,9 @@ body.private-lesson-viewport-compact .private-lesson-meta {
 
 @media (max-width: 760px) {
   body.private-lesson-viewport-short .private-lesson-session.live-panel {
-    grid-template-rows: auto auto minmax(90px, 0.52fr) auto minmax(
-        110px,
-        1fr
-      ) auto;
+    grid-template-rows:
+      auto auto minmax(90px, 0.52fr) auto minmax(110px, 1fr)
+      auto;
   }
   body.private-lesson-viewport-compact .private-lesson-session.live-panel {
     grid-template-rows: auto minmax(82px, 0.48fr) auto minmax(100px, 1fr) auto;
