@@ -11,6 +11,7 @@ import {
   HelpCircle,
   LogOut,
   Menu,
+  Mic2,
   Plus,
   Settings,
   X,
@@ -29,6 +30,12 @@ import { useTranslation } from "react-i18next";
 const navItems = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: BarChart3 },
   { to: "/learn", labelKey: "nav.learn", icon: Gamepad2 },
+  {
+    to: "/private-lesson",
+    labelKey: "nav.privateLesson",
+    icon: Mic2,
+    liveOnly: true,
+  },
   { to: "/vocabulary", labelKey: "nav.vocabulary", icon: BookOpen },
   { to: "/word-packs", labelKey: "nav.wordPacks", icon: LibraryBig, liveOnly: true },
   { to: "/reading", labelKey: "nav.reading", icon: BookOpenText },

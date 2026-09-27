@@ -71,6 +71,11 @@ const BillingCheckoutPage = lazy(() =>
     default: m.BillingCheckoutPage,
   })),
 );
+const PrivateLessonPage = lazy(() =>
+  import("./pages/PrivateLessonPage").then((m) => ({
+    default: m.PrivateLessonPage,
+  })),
+);
 
 export default function App() {
   const { t } = useTranslation();
@@ -179,6 +184,18 @@ export default function App() {
                     }
                   />
                   <Route path="/transfer" element={<TransferPage />} />
+                  <Route
+                    path="/private-lesson"
+                    element={
+                      mode === "live" ? (
+                        <LiveGameAccess>
+                          <PrivateLessonPage />
+                        </LiveGameAccess>
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
                   <Route
                     path="/word-packs"
                     element={
