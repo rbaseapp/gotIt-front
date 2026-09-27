@@ -48,10 +48,12 @@ export const privateLessonSessionSchema = z.object({
 });
 
 export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
+export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15;
 export type PrivateLessonInput = {
   targetLanguageCode: string;
   supportLanguageCode?: string;
   requestedLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  requestedDurationMinutes?: PrivateLessonDurationMinutes;
   teacherVoice?: "female" | "male";
   speechRate?: "slow" | "normal" | "fast";
   topic?: string;
@@ -159,6 +161,7 @@ export function deletePrivateLesson(id: string) {
 
 export type PrivateLessonConnection = {
   send: (event: unknown) => boolean;
+  setMicrophoneMuted: (muted: boolean) => boolean;
   close: () => void;
 };
 
@@ -311,6 +314,12 @@ export async function connectPrivateLesson(
       send(event) {
         if (channel.readyState !== "open") return false;
         channel.send(JSON.stringify(event));
+        return true;
+      },
+      setMicrophoneMuted(muted) {
+        const track = stream?.getAudioTracks()[0];
+        if (!track || track.readyState === "ended") return false;
+        track.enabled = !muted;
         return true;
       },
       close() {

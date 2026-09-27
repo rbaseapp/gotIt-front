@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   BarChart3,
   BookOpen,
@@ -61,6 +61,11 @@ export function AppShell({
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  useEffect(() => {
+    const openSidebar = () => setMobileOpen(true);
+    window.addEventListener("gotit:open-sidebar", openSidebar);
+    return () => window.removeEventListener("gotit:open-sidebar", openSidebar);
+  }, []);
   const pageTitle =
     navItems.find((item) => location.pathname.startsWith(item.to))?.labelKey;
 

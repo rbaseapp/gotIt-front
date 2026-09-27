@@ -12,8 +12,10 @@ import {
   Gauge,
   Languages,
   LoaderCircle,
+  Menu,
   MessageCircleMore,
   Mic2,
+  MicOff,
   Plus,
   RotateCcw,
   Sparkles,
@@ -36,6 +38,7 @@ import {
   listPrivateLessons,
   PrivateLessonConnectionError,
   type PrivateLessonConnection,
+  type PrivateLessonDurationMinutes,
   type SavedPrivateLesson,
   type PrivateLessonSession,
 } from "../lib/privateLesson";
@@ -63,6 +66,8 @@ export function PrivateLessonPage() {
   const [level, setLevel] = useState<"" | CefrLevel>("");
   const [teacherVoice, setTeacherVoice] = useState<TeacherVoice>("female");
   const [speechRate, setSpeechRate] = useState<SpeechRate>("normal");
+  const [lessonDurationMinutes, setLessonDurationMinutes] =
+    useState<PrivateLessonDurationMinutes>(5);
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [grammarFocus, setGrammarFocus] = useState("");
   const [phase, setPhase] = useState<Phase>("setup");
@@ -85,6 +90,8 @@ export function PrivateLessonPage() {
     new Set(),
   );
   const [responding, setResponding] = useState(false);
+  const [microphoneMuted, setMicrophoneMuted] = useState(false);
+  const [microphoneReady, setMicrophoneReady] = useState(false);
   const turnId = useRef(0);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -127,6 +134,8 @@ export function PrivateLessonPage() {
     abortRef.current = undefined;
     connectionRef.current?.close();
     connectionRef.current = undefined;
+    setMicrophoneMuted(false);
+    setMicrophoneReady(false);
     activeResponse.current = false;
     setResponding(false);
     setTutorAudioLevel(0);
@@ -387,6 +396,7 @@ export function PrivateLessonPage() {
           ? { supportLanguageCode: supportLanguage.trim() }
           : {}),
         ...(level ? { requestedLevel: level } : {}),
+        requestedDurationMinutes: lessonDurationMinutes,
         teacherVoice,
         speechRate,
         ...(topic.trim() ? { topic: topic.trim() } : {}),
@@ -430,7 +440,10 @@ export function PrivateLessonPage() {
         controller.signal,
       );
       if (controller.signal.aborted) connection.close();
-      else connectionRef.current = connection;
+      else {
+        connectionRef.current = connection;
+        setMicrophoneReady(true);
+      }
     } catch (reason) {
       if (controller.signal.aborted) return;
       dispose();
@@ -452,7 +465,7 @@ export function PrivateLessonPage() {
     setCompletedLesson(undefined);
     setReportError("");
     setError("");
-    setRemaining(300);
+    setRemaining(lessonDurationMinutes * 60);
     setStatus(t("privateLesson.ready"));
     setPhase("setup");
   };
@@ -507,6 +520,11 @@ export function PrivateLessonPage() {
     await deletePrivateLesson(lesson.id);
     setHistory((current) => current.filter((item) => item.id !== lesson.id));
     if (selectedHistory?.id === lesson.id) setSelectedHistory(undefined);
+  };
+  const toggleMicrophone = () => {
+    const nextMuted = !microphoneMuted;
+    if (connectionRef.current?.setMicrophoneMuted(nextMuted))
+      setMicrophoneMuted(nextMuted);
   };
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
@@ -586,6 +604,25 @@ export function PrivateLessonPage() {
                       dir="ltr"
                       placeholder={t("privateLesson.noSupport")}
                     />
+                  </label>
+                  <label className="field">
+                    <span>{t("privateLesson.duration")}</span>
+                    <select
+                      value={lessonDurationMinutes}
+                      onChange={(event) =>
+                        setLessonDurationMinutes(
+                          Number(
+                            event.target.value,
+                          ) as PrivateLessonDurationMinutes,
+                        )
+                      }
+                    >
+                      {([1, 5, 10, 15] as const).map((value) => (
+                        <option key={value} value={value}>
+                          {t(`privateLesson.durationOptions.${value}`)}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                 </div>
                 <div className="live-form-grid">
@@ -754,7 +791,6 @@ export function PrivateLessonPage() {
           <section
             className={`private-lesson-session live-panel${phase === "ended" ? " has-report" : ""}`}
             role="dialog"
-            aria-modal="true"
             aria-label={t("privateLesson.title")}
           >
             <header className="private-lesson-session-header">
@@ -765,12 +801,43 @@ export function PrivateLessonPage() {
                   <i aria-hidden="true" /> {status}
                 </span>
               </div>
-              <div
-                className="private-lesson-timer"
-                aria-label={t("privateLesson.timerLabel")}
-                aria-live="polite"
-              >
-                {minutes}:{seconds}
+              <div className="private-lesson-header-controls">
+                <button
+                  className="icon-button private-lesson-sidebar-button"
+                  type="button"
+                  aria-label={t("shell.openMenu")}
+                  onClick={() =>
+                    window.dispatchEvent(new Event("gotit:open-sidebar"))
+                  }
+                >
+                  <Menu size={20} />
+                </button>
+                <button
+                  className={`private-lesson-mute${microphoneMuted ? " muted" : ""}`}
+                  type="button"
+                  aria-label={
+                    microphoneMuted
+                      ? t("privateLesson.unmuteMicrophone")
+                      : t("privateLesson.muteMicrophone")
+                  }
+                  aria-pressed={microphoneMuted}
+                  disabled={!microphoneReady || phase === "wrapping"}
+                  onClick={toggleMicrophone}
+                >
+                  {microphoneMuted ? <MicOff size={19} /> : <Mic2 size={19} />}
+                  <span>
+                    {microphoneMuted
+                      ? t("privateLesson.unmuteMicrophone")
+                      : t("privateLesson.muteMicrophone")}
+                  </span>
+                </button>
+                <div
+                  className="private-lesson-timer"
+                  aria-label={t("privateLesson.timerLabel")}
+                  aria-live="polite"
+                >
+                  {minutes}:{seconds}
+                </div>
               </div>
             </header>
 

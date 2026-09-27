@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   connect: vi.fn(),
   close: vi.fn(),
   send: vi.fn(() => true),
+  setMicrophoneMuted: vi.fn(() => true),
   list: vi.fn(async () => []),
   complete: vi.fn(),
   remove: vi.fn(),
@@ -127,6 +128,7 @@ describe("private voice lesson", () => {
     mocks.list.mockResolvedValue([]);
     mocks.complete.mockReset();
     mocks.remove.mockReset();
+    mocks.setMicrophoneMuted.mockClear();
   });
   it("uses the authenticated app API without asking the learner for a token", async () => {
     mocks.create.mockResolvedValue(session);
@@ -137,7 +139,11 @@ describe("private voice lesson", () => {
         handlers: { onOpen: () => void },
       ) => {
         handlers.onOpen();
-        return { close: mocks.close, send: mocks.send };
+        return {
+          close: mocks.close,
+          send: mocks.send,
+          setMicrophoneMuted: mocks.setMicrophoneMuted,
+        };
       },
     );
     const user = userEvent.setup();
@@ -145,14 +151,15 @@ describe("private voice lesson", () => {
 
     expect(screen.queryByLabelText(/אסימון/u)).not.toBeInTheDocument();
     expect(screen.getByLabelText("השפה לתרגול")).toHaveValue("en");
-    await user.click(
-      screen.getByRole("button", { name: "התחלת שיעור של חמש דקות" }),
-    );
+    expect(screen.getByLabelText("משך השיעור")).toHaveDisplayValue("5 דקות");
+    await user.selectOptions(screen.getByLabelText("משך השיעור"), "10");
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
 
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith({
         targetLanguageCode: "en",
         supportLanguageCode: "he",
+        requestedDurationMinutes: 10,
         teacherVoice: "female",
         speechRate: "normal",
         topic: "technology",
@@ -166,6 +173,17 @@ describe("private voice lesson", () => {
     expect(fullscreenLesson.parentElement).toBe(document.body);
     expect(document.body).toHaveClass("private-lesson-session-open");
     expect(mocks.connect).toHaveBeenCalledOnce();
+
+    const openSidebar = vi.fn();
+    window.addEventListener("gotit:open-sidebar", openSidebar, { once: true });
+    await user.click(screen.getByRole("button", { name: "פתיחת תפריט" }));
+    expect(openSidebar).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole("button", { name: "השתקת המיקרופון" }));
+    expect(mocks.setMicrophoneMuted).toHaveBeenCalledWith(true);
+    expect(
+      screen.getByRole("button", { name: "הפעלת המיקרופון" }),
+    ).toHaveAttribute("aria-pressed", "true");
   });
 
   it("lets the learner request a translation and ends through the recap event", async () => {
@@ -183,7 +201,11 @@ describe("private voice lesson", () => {
       ) => {
         onRealtimeEvent = handlers.onEvent;
         handlers.onOpen();
-        return { close: mocks.close, send: mocks.send };
+        return {
+          close: mocks.close,
+          send: mocks.send,
+          setMicrophoneMuted: mocks.setMicrophoneMuted,
+        };
       },
     );
     const user = userEvent.setup();
@@ -191,9 +213,7 @@ describe("private voice lesson", () => {
 
     await user.selectOptions(screen.getByLabelText("קול המורה"), "male");
     await user.selectOptions(screen.getByLabelText("מהירות דיבור"), "fast");
-    await user.click(
-      screen.getByRole("button", { name: "התחלת שיעור של חמש דקות" }),
-    );
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "תרגום המשפט האחרון" });
 
     expect(mocks.create).toHaveBeenCalledWith(
@@ -255,14 +275,16 @@ describe("private voice lesson", () => {
       ) => {
         closeSession = handlers.onClose;
         handlers.onOpen();
-        return { close: mocks.close, send: mocks.send };
+        return {
+          close: mocks.close,
+          send: mocks.send,
+          setMicrophoneMuted: mocks.setMicrophoneMuted,
+        };
       },
     );
     const user = userEvent.setup();
     renderPage();
-    await user.click(
-      screen.getByRole("button", { name: "התחלת שיעור של חמש דקות" }),
-    );
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "סיום השיעור" });
     closeSession?.();
 
