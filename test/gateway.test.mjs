@@ -13,6 +13,7 @@ let gatewayOrigin;
 let directory;
 let renderFailuresRemaining = 0;
 let renderRetryRequests = 0;
+let googleAuthRequests = 0;
 const listen = (server) =>
   new Promise((resolve) =>
     server.listen(0, "127.0.0.1", () => resolve(server.address().port)),
@@ -38,10 +39,7 @@ before(async () => {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
     const receivedBody = Buffer.concat(chunks).toString();
-    if (
-      req.url === "/api/v1/auth/google" &&
-      receivedBody.includes('"idToken":"render-outage"')
-    ) {
+    if (req.url === "/ready") {
       renderRetryRequests++;
       if (renderFailuresRemaining-- > 0) {
         res.writeHead(502, {
@@ -51,6 +49,7 @@ before(async () => {
         return;
       }
     }
+    if (req.url === "/api/v1/auth/google") googleAuthRequests++;
     res.writeHead(
       req.url === "/api/v1/redirect" ? 302 : 200,
       req.url === "/api/v1/redirect"
@@ -91,6 +90,9 @@ before(async () => {
     PADDLE_PRO_YEARLY_PRICE_ID: "pri_11111111111111111111111111",
   });
   config.upstreamRetryDelays = [5, 10, 20];
+  config.upstreamWarmupRetryDelays = [5, 10, 20];
+  config.upstreamReadyTtlMs = 0;
+  config.prewarmUpstreams = false;
   gateway = createGateway(config);
   const port = await listen(gateway);
   gatewayOrigin = `http://127.0.0.1:${port}`;
@@ -208,9 +210,10 @@ describe("production frontend gateway", () => {
       accessToken: "opaque-facebook-token",
     });
   });
-  it("retries a transient Render gateway outage without replaying provider HTML", async () => {
+  it("waits for a sleeping Core before sending a Google credential once", async () => {
     renderFailuresRemaining = 2;
     renderRetryRequests = 0;
+    googleAuthRequests = 0;
     const response = await fetch(
       `${gatewayOrigin}/core-api/api/v1/auth/google`,
       {
@@ -223,10 +226,12 @@ describe("production frontend gateway", () => {
     assert.equal(response.status, 200);
     assert.equal(body.path, "/api/v1/auth/google");
     assert.equal(renderRetryRequests, 3);
+    assert.equal(googleAuthRequests, 1);
   });
-  it("returns a stable API error when a Render outage outlasts retries", async () => {
+  it("does not send a Google credential while Core remains unavailable", async () => {
     renderFailuresRemaining = 10;
     renderRetryRequests = 0;
+    googleAuthRequests = 0;
     const response = await fetch(
       `${gatewayOrigin}/core-api/api/v1/auth/google`,
       {
@@ -243,6 +248,8 @@ describe("production frontend gateway", () => {
     assert.equal(response.headers.get("retry-after"), "2");
     assert.equal((await response.json()).error.code, "UPSTREAM_UNAVAILABLE");
     assert.equal(renderRetryRequests, 4);
+    assert.equal(googleAuthRequests, 0);
+    renderFailuresRemaining = 0;
   });
   it("forwards product idempotency and strips arbitrary client headers", async () => {
     const response = await fetch(

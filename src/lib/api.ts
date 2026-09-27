@@ -72,7 +72,7 @@ async function request(
   let response: Response;
   const timeoutMs =
     base === coreUrl
-      ? 75000
+      ? 95000
       : path === "pronunciation/assessments"
         ? 60000
         : path.includes("/study/") && path.endsWith("/image")

@@ -20,7 +20,10 @@ const mime = {
 };
 const applePayAssociationPath =
   "/.well-known/apple-developer-merchantid-domain-association";
-const defaultUpstreamRetryDelays = [500, 1500, 3000, 5000, 8000, 13000, 20000];
+const defaultUpstreamRetryDelays = [250, 750, 1500];
+const defaultUpstreamWarmupRetryDelays = [
+  500, 1500, 3000, 5000, 8000, 13000, 20000, 15000,
+];
 const renderUnavailableStatuses = new Set([502, 503, 504]);
 const csp =
   "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://connect.facebook.net https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://*.facebook.com https://*.fbcdn.net https://*.paddle.com; connect-src 'self' https://api.openai.com https://accounts.google.com/gsi/ https://*.facebook.com https://*.facebook.net https://*.paddle.com; frame-src https://accounts.google.com/gsi/ https://*.facebook.com https://*.paddle.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.facebook.com https://*.paddle.com; frame-ancestors 'none'";
@@ -91,11 +94,37 @@ export function configuration(env = process.env) {
         : {}),
     },
     upstreamRetryDelays: defaultUpstreamRetryDelays,
+    upstreamWarmupRetryDelays: defaultUpstreamWarmupRetryDelays,
+    upstreamReadyTtlMs: 10 * 60 * 1000,
+    prewarmUpstreams: true,
   };
 }
 export function createGateway(config) {
   let draining = false;
+  let startupPrewarmTriggered = false;
+  let coreReadyUntil = 0;
+  let coreWarmup;
   const buckets = new Map();
+  const ensureCoreReady = () => {
+    if (Date.now() < coreReadyUntil) return Promise.resolve();
+    if (!coreWarmup) {
+      coreWarmup = waitForUpstream(
+        config.core,
+        config.upstreamWarmupRetryDelays,
+      )
+        .then(() => {
+          coreReadyUntil = Date.now() + config.upstreamReadyTtlMs;
+        })
+        .finally(() => {
+          coreWarmup = undefined;
+        });
+    }
+    return coreWarmup;
+  };
+  const prewarmCore = () => {
+    if (config.prewarmUpstreams !== false)
+      void ensureCoreReady().catch(() => {});
+  };
   const server = http.createServer(async (req, res) => {
     const requestId = crypto.randomUUID();
     res.setHeader("X-Request-ID", requestId);
@@ -152,6 +181,10 @@ export function createGateway(config) {
           return;
         }
         await stat(resolve(config.dist, "index.html"));
+        if (!startupPrewarmTriggered) {
+          startupPrewarmTriggered = true;
+          prewarmCore();
+        }
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           req.method === "HEAD"
@@ -269,6 +302,15 @@ export function createGateway(config) {
         if (req.headers["idempotency-key"])
           headers["Idempotency-Key"] = req.headers["idempotency-key"];
         if (body) headers["Content-Type"] = "application/json";
+        if (prefix === "/core-api") {
+          try {
+            await ensureCoreReady();
+          } catch {
+            res.setHeader("Retry-After", "2");
+            fail(503, "UPSTREAM_UNAVAILABLE");
+            return;
+          }
+        }
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 80000);
         const cancel = () => {
@@ -277,6 +319,11 @@ export function createGateway(config) {
         res.on("close", cancel);
         try {
           const upstreamUrl = `${prefix === "/core-api" ? config.core : config.gotit}${apiPath}${url.search}`;
+          const retryDelays =
+            ["GET", "HEAD"].includes(req.method) ||
+            req.headers["idempotency-key"]
+              ? config.upstreamRetryDelays
+              : [];
           let response;
           let content;
           for (let attempt = 0; ; attempt++) {
@@ -308,12 +355,13 @@ export function createGateway(config) {
               renderUnavailableStatuses.has(response.status) &&
               response.headers.get("content-type")?.startsWith("text/html");
             if (!infrastructureUnavailable) break;
-            if (attempt === config.upstreamRetryDelays.length) {
+            if (prefix === "/core-api") coreReadyUntil = 0;
+            if (attempt === retryDelays.length) {
               res.setHeader("Retry-After", "2");
               fail(503, "UPSTREAM_UNAVAILABLE");
               return;
             }
-            await delay(config.upstreamRetryDelays[attempt], undefined, {
+            await delay(retryDelays[attempt], undefined, {
               signal: controller.signal,
             });
           }
@@ -339,6 +387,7 @@ export function createGateway(config) {
       }
       const root = await realpath(config.dist);
       let target = resolve(root, `.${pathname}`);
+      let servingSpa = false;
       if (target !== root && !target.startsWith(`${root}${sep}`)) {
         fail(400, "INVALID_PATH");
         return;
@@ -350,6 +399,7 @@ export function createGateway(config) {
           return;
         }
         target = resolve(root, "index.html");
+        servingSpa = true;
         info = await stat(target);
       }
       target = await realpath(target);
@@ -365,6 +415,7 @@ export function createGateway(config) {
         fail(404, "NOT_FOUND");
         return;
       }
+      if (servingSpa) prewarmCore();
       if (pathname.startsWith("/assets/") && !target.endsWith(".html"))
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       res.writeHead(200, {
@@ -385,6 +436,38 @@ export function createGateway(config) {
     return new Promise((resolveClose) => server.close(resolveClose));
   };
   return server;
+}
+
+async function waitForUpstream(origin, retryDelays) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 85000);
+  try {
+    for (let attempt = 0; ; attempt++) {
+      let retryable = false;
+      try {
+        const response = await fetch(`${origin}/ready`, {
+          method: "GET",
+          headers: { "X-Request-ID": crypto.randomUUID() },
+          redirect: "manual",
+          signal: controller.signal,
+        });
+        await response.arrayBuffer();
+        if (response.status === 200) return;
+        retryable =
+          renderUnavailableStatuses.has(response.status) &&
+          response.headers.get("content-type")?.startsWith("text/html");
+      } catch {
+        retryable = !controller.signal.aborted;
+      }
+      if (!retryable || attempt === retryDelays.length)
+        throw new Error("Upstream readiness check failed");
+      await delay(retryDelays[attempt], undefined, {
+        signal: controller.signal,
+      });
+    }
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function detectedCountryCode(headers) {
