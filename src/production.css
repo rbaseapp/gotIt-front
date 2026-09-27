@@ -53,6 +53,12 @@
   min-height: 52px;
   justify-content: center;
 }
+.private-lesson-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
 .private-lesson-privacy {
   display: flex;
   align-items: center;
@@ -92,6 +98,16 @@
   background: #2e966d;
   box-shadow: 0 0 0 4px rgba(46, 150, 109, 0.13);
 }
+.private-lesson-status.wrapping i {
+  background: #d39a36;
+  box-shadow: 0 0 0 4px rgba(211, 154, 54, 0.12);
+  animation: lesson-status-pulse 1.2s ease-in-out infinite;
+}
+@keyframes lesson-status-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
 .private-lesson-status.ended i {
   background: #809087;
   box-shadow: none;
@@ -126,6 +142,132 @@
   color: #315a49;
   background: #f4f9f6;
   font-size: 13px;
+}
+.private-lesson-tutor-stage {
+  position: relative;
+  min-height: 300px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  align-content: end;
+  gap: 8px;
+  padding: 20px 20px 14px;
+  border: 1px solid #dce8e2;
+  border-radius: 24px;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(101, 167, 136, 0.2),
+      transparent 35%
+    ),
+    linear-gradient(180deg, #f5faf7 0%, #eaf4ef 100%);
+}
+.teacher-avatar {
+  position: relative;
+  width: min(270px, 72vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+.teacher-avatar-ring {
+  position: absolute;
+  inset: 11%;
+  z-index: -1;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #fff, #d6eadf);
+  box-shadow:
+    0 18px 45px rgba(31, 101, 75, 0.17),
+    0 0 0 var(--tutor-ring-size) rgba(76, 151, 115, var(--tutor-ring-alpha));
+  transform: scale(var(--tutor-ring-scale));
+  transition:
+    box-shadow 90ms linear,
+    transform 90ms linear;
+}
+.teacher-avatar-portrait {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 0 0 46% 46%;
+  animation: teacher-avatar-breathe 4.8s ease-in-out infinite;
+}
+.teacher-avatar-portrait img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+.teacher-avatar-speaking {
+  opacity: 0;
+}
+.teacher-avatar.speaking .teacher-avatar-speaking {
+  opacity: 1;
+}
+.teacher-avatar.speaking .teacher-avatar-portrait {
+  animation-duration: 1.7s;
+}
+.teacher-avatar-level {
+  position: absolute;
+  inset-inline-end: 3%;
+  inset-block-end: 15%;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 8px 20px rgba(31, 101, 75, 0.25);
+}
+.teacher-avatar-level i {
+  width: 3px;
+  height: var(--tutor-bar-small);
+  border-radius: 999px;
+  background: #fff;
+  transition: height 80ms linear;
+}
+.teacher-avatar-level i:nth-child(2),
+.teacher-avatar-level i:nth-child(4) {
+  height: var(--tutor-bar-medium);
+}
+.teacher-avatar-level i:nth-child(3) {
+  height: var(--tutor-bar-large);
+}
+.private-lesson-tutor-caption {
+  position: relative;
+  z-index: 1;
+  min-width: min(340px, 90%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  color: #315a49;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 8px 24px rgba(31, 101, 75, 0.08);
+  font-size: 13px;
+  backdrop-filter: blur(8px);
+}
+.private-lesson-tutor-caption strong::after {
+  content: "·";
+  margin-inline-start: 8px;
+  color: #91a39a;
+}
+@keyframes teacher-avatar-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 .private-lesson-words {
   display: grid;
@@ -251,6 +393,22 @@
   }
   .private-lesson-turn {
     width: 92%;
+  }
+  .private-lesson-actions,
+  .private-lesson-actions .button {
+    width: 100%;
+  }
+  .private-lesson-tutor-stage {
+    min-height: 250px;
+    padding-inline: 10px;
+  }
+  .teacher-avatar {
+    width: min(225px, 76vw);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .teacher-avatar-portrait {
+    animation: none;
   }
 }
 .live-panel {

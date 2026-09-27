@@ -42,6 +42,8 @@ const session = {
     level: "B1",
     topic: "technology",
     grammarFocus: null,
+    teacherVoice: "female",
+    speechRate: "normal",
     targetWords: [
       {
         learningItemId: "22222222-2222-4222-8222-222222222222",
@@ -62,6 +64,10 @@ const session = {
     wrapUpEvent: {
       type: "response.create",
       response: { instructions: "Summarize." },
+    },
+    translationEvent: {
+      type: "response.create",
+      response: { instructions: "Translate." },
     },
   },
 } as const;
@@ -92,11 +98,57 @@ describe("private voice lesson", () => {
       expect(mocks.create).toHaveBeenCalledWith({
         targetLanguageCode: "en",
         supportLanguageCode: "he",
+        teacherVoice: "female",
+        speechRate: "normal",
         topic: "technology",
       }),
     );
     expect(await screen.findByText("achieve · להשיג")).toBeInTheDocument();
     expect(mocks.connect).toHaveBeenCalledOnce();
+  });
+
+  it("lets the learner request a translation and ends through the recap event", async () => {
+    mocks.create.mockResolvedValue(session);
+    mocks.send.mockClear();
+    let onRealtimeEvent: ((event: Record<string, unknown>) => void) | undefined;
+    mocks.connect.mockImplementation(
+      async (
+        _session: unknown,
+        _audio: unknown,
+        handlers: {
+          onOpen: () => void;
+          onEvent: (event: Record<string, unknown>) => void;
+        },
+      ) => {
+        onRealtimeEvent = handlers.onEvent;
+        handlers.onOpen();
+        return { close: mocks.close, send: mocks.send };
+      },
+    );
+    const user = userEvent.setup();
+    render(<PrivateLessonPage />);
+
+    await user.selectOptions(screen.getByLabelText("קול המורה"), "male");
+    await user.selectOptions(screen.getByLabelText("מהירות דיבור"), "fast");
+    await user.click(
+      screen.getByRole("button", { name: "התחלת שיעור של חמש דקות" }),
+    );
+    await screen.findByRole("button", { name: "תרגום המשפט האחרון" });
+
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({ teacherVoice: "male", speechRate: "fast" }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "תרגום המשפט האחרון" }),
+    );
+    expect(mocks.send).toHaveBeenCalledWith(session.realtime.translationEvent);
+
+    await user.click(screen.getByRole("button", { name: "סיום השיעור" }));
+    expect(mocks.send).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "session.update" }),
+    );
+    onRealtimeEvent?.({ type: "response.done" });
+    expect(mocks.send).toHaveBeenCalledWith(session.realtime.wrapUpEvent);
   });
 
   it("rejects a server response that could send the ephemeral secret elsewhere", () => {

@@ -26,6 +26,8 @@ export const privateLessonSessionSchema = z.object({
     level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
     topic: z.string().min(1).max(120),
     grammarFocus: z.string().min(1).max(160).nullable(),
+    teacherVoice: z.enum(["female", "male"]),
+    speechRate: z.enum(["slow", "normal", "fast"]),
     targetWords: z.array(
       z.object({
         learningItemId: uuid,
@@ -41,6 +43,7 @@ export const privateLessonSessionSchema = z.object({
     connectionUrl: z.literal("https://api.openai.com/v1/realtime/calls"),
     openingEvent: instructionEventSchema,
     wrapUpEvent: instructionEventSchema,
+    translationEvent: instructionEventSchema.nullable(),
   }),
 });
 
@@ -49,6 +52,8 @@ export type PrivateLessonInput = {
   targetLanguageCode: string;
   supportLanguageCode?: string;
   requestedLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  teacherVoice?: "female" | "male";
+  speechRate?: "slow" | "normal" | "fast";
   topic?: string;
   grammarFocus?: string;
 };
@@ -83,6 +88,7 @@ type RealtimeHandlers = {
   onOpen: () => void;
   onClose: () => void;
   onEvent: (event: Record<string, unknown>) => void;
+  onAudioLevel?: (level: number) => void;
 };
 
 export async function connectPrivateLesson(
@@ -97,10 +103,54 @@ export async function connectPrivateLesson(
   const peer = new RTCPeerConnection();
   let stream: MediaStream | undefined;
   let closed = false;
+  let audioContext: AudioContext | undefined;
+  let meterFrame: number | undefined;
   const channel = peer.createDataChannel("oai-events");
+  const stopAudioMeter = () => {
+    if (meterFrame !== undefined) window.cancelAnimationFrame(meterFrame);
+    meterFrame = undefined;
+    handlers.onAudioLevel?.(0);
+    if (audioContext) void audioContext.close().catch(() => undefined);
+    audioContext = undefined;
+  };
+  const startAudioMeter = (remoteStream: MediaStream) => {
+    if (!handlers.onAudioLevel) return;
+    stopAudioMeter();
+    try {
+      audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(remoteStream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.72;
+      source.connect(analyser);
+      const samples = new Uint8Array(analyser.fftSize);
+      let lastUpdate = 0;
+      let smoothedLevel = 0;
+      const sample = (timestamp: number) => {
+        analyser.getByteTimeDomainData(samples);
+        let sumSquares = 0;
+        for (const sampleValue of samples) {
+          const centered = (sampleValue - 128) / 128;
+          sumSquares += centered * centered;
+        }
+        const rms = Math.sqrt(sumSquares / samples.length);
+        const measuredLevel = Math.min(1, Math.max(0, (rms - 0.012) * 14));
+        smoothedLevel = smoothedLevel * 0.58 + measuredLevel * 0.42;
+        if (timestamp - lastUpdate >= 70) {
+          handlers.onAudioLevel?.(smoothedLevel);
+          lastUpdate = timestamp;
+        }
+        meterFrame = window.requestAnimationFrame(sample);
+      };
+      meterFrame = window.requestAnimationFrame(sample);
+    } catch {
+      stopAudioMeter();
+    }
+  };
   const close = () => {
     if (closed) return;
     closed = true;
+    stopAudioMeter();
     channel.close();
     peer.close();
     stream?.getTracks().forEach((track) => track.stop());
@@ -126,7 +176,9 @@ export async function connectPrivateLesson(
     if (signal.aborted) throw new PrivateLessonConnectionError("CANCELLED");
 
     peer.ontrack = (event) => {
-      audioElement.srcObject = event.streams[0] ?? null;
+      const remoteStream = event.streams[0] ?? new MediaStream([event.track]);
+      audioElement.srcObject = remoteStream;
+      startAudioMeter(remoteStream);
       void audioElement.play().catch(() => undefined);
     };
     peer.addTrack(stream.getAudioTracks()[0]!, stream);

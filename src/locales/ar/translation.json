@@ -42,6 +42,17 @@
     "noSupport": "بدون لغة مساعدة",
     "level": "المستوى",
     "automaticLevel": "استخدام مستوى ملفي الشخصي",
+    "teacherVoice": "صوت المعلّم",
+    "voiceOptions": {
+      "female": "صوت نسائي",
+      "male": "صوت رجالي"
+    },
+    "speechRate": "سرعة الكلام",
+    "speedOptions": {
+      "slow": "بطيئة",
+      "normal": "عادية",
+      "fast": "سريعة"
+    },
     "topic": "الموضوع",
     "topicPlaceholder": "مثلاً: السفر أو مقابلات العمل",
     "grammarFocus": "التركيز النحوي",
@@ -58,6 +69,8 @@
     "connected": "تم الاتصال. يمكنك البدء بالكلام.",
     "endingAfterTurn": "أوشك الوقت على الانتهاء. سيبدأ الملخص بعد هذه الإجابة.",
     "wrapping": "جاري تلخيص الدرس…",
+    "goodbyePlaying": "يُلخّص المعلّم الدرس ويودّعك…",
+    "translating": "تتم الترجمة إلى لغة المساعدة…",
     "ended": "انتهى الدرس.",
     "stopped": "أنهيت الدرس.",
     "connectionClosed": "تم إغلاق الاتصال الصوتي.",
@@ -65,6 +78,8 @@
     "timeFinished": "اكتمل درس الدقائق الخمس.",
     "transcriptTitle": "النص المباشر",
     "finish": "إنهاء الدرس",
+    "finishing": "تلخيص ووداع…",
+    "translateLast": "ترجمة الجملة الأخيرة",
     "restart": "بدء درس آخر",
     "roles": { "learner": "أنت", "tutor": "المعلم", "system": "الدرس" },
     "errors": {

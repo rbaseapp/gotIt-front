@@ -42,6 +42,17 @@
     "noSupport": "Sin idioma de ayuda",
     "level": "Nivel",
     "automaticLevel": "Usar el nivel de mi perfil",
+    "teacherVoice": "Voz del profesor",
+    "voiceOptions": {
+      "female": "Voz femenina",
+      "male": "Voz masculina"
+    },
+    "speechRate": "Velocidad al hablar",
+    "speedOptions": {
+      "slow": "Lenta",
+      "normal": "Normal",
+      "fast": "Rápida"
+    },
     "topic": "Tema",
     "topicPlaceholder": "Por ejemplo: viajes o entrevistas de trabajo",
     "grammarFocus": "Enfoque gramatical",
@@ -58,6 +69,8 @@
     "connected": "Conectado. Puedes empezar a hablar.",
     "endingAfterTurn": "El tiempo casi ha terminado. El resumen comenzará después de esta respuesta.",
     "wrapping": "Resumiendo la clase…",
+    "goodbyePlaying": "El profesor está resumiendo y despidiéndose…",
+    "translating": "Traduciendo a tu idioma de ayuda…",
     "ended": "La clase ha terminado.",
     "stopped": "Has terminado la clase.",
     "connectionClosed": "La conexión de voz se cerró.",
@@ -65,6 +78,8 @@
     "timeFinished": "La clase de cinco minutos se ha completado.",
     "transcriptTitle": "Transcripción en directo",
     "finish": "Terminar clase",
+    "finishing": "Resumiendo y despidiéndose…",
+    "translateLast": "Traducir la última frase",
     "restart": "Comenzar otra clase",
     "roles": { "learner": "Tú", "tutor": "Tutor", "system": "Clase" },
     "errors": {

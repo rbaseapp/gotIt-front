@@ -42,6 +42,17 @@
     "noSupport": "Keine Hilfssprache",
     "level": "Niveau",
     "automaticLevel": "Niveau aus meinem Profil",
+    "teacherVoice": "Stimme der Lehrkraft",
+    "voiceOptions": {
+      "female": "Weibliche Stimme",
+      "male": "Männliche Stimme"
+    },
+    "speechRate": "Sprechgeschwindigkeit",
+    "speedOptions": {
+      "slow": "Langsam",
+      "normal": "Normal",
+      "fast": "Schnell"
+    },
     "topic": "Thema",
     "topicPlaceholder": "Zum Beispiel Reisen oder Bewerbungsgespräche",
     "grammarFocus": "Grammatikschwerpunkt",
@@ -58,6 +69,8 @@
     "connected": "Verbunden. Du kannst sprechen.",
     "endingAfterTurn": "Die Zeit ist fast um. Nach dieser Antwort beginnt die Zusammenfassung.",
     "wrapping": "Die Stunde wird zusammengefasst…",
+    "goodbyePlaying": "Die Lehrkraft fasst zusammen und verabschiedet sich…",
+    "translating": "Übersetzung in deine Hilfssprache…",
     "ended": "Die Stunde ist beendet.",
     "stopped": "Du hast die Stunde beendet.",
     "connectionClosed": "Die Sprachverbindung wurde geschlossen.",
@@ -65,6 +78,8 @@
     "timeFinished": "Die fünfminütige Stunde ist abgeschlossen.",
     "transcriptTitle": "Live-Transkript",
     "finish": "Stunde beenden",
+    "finishing": "Zusammenfassung und Verabschiedung…",
+    "translateLast": "Letzten Satz übersetzen",
     "restart": "Weitere Stunde starten",
     "roles": { "learner": "Du", "tutor": "Lehrkraft", "system": "Stunde" },
     "errors": {

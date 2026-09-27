@@ -42,6 +42,17 @@
     "noSupport": "ללא שפת עזרה",
     "level": "רמה",
     "automaticLevel": "לפי הרמה בפרופיל שלי",
+    "teacherVoice": "קול המורה",
+    "voiceOptions": {
+      "female": "קול נשי",
+      "male": "קול גברי"
+    },
+    "speechRate": "מהירות דיבור",
+    "speedOptions": {
+      "slow": "איטית",
+      "normal": "רגילה",
+      "fast": "מהירה"
+    },
     "topic": "נושא",
     "topicPlaceholder": "לדוגמה: טיולים או ראיון עבודה",
     "grammarFocus": "מיקוד דקדוקי",
@@ -58,6 +69,8 @@
     "connected": "החיבור הצליח. אפשר להתחיל לדבר.",
     "endingAfterTurn": "הזמן כמעט הסתיים. הסיכום יתחיל לאחר התשובה הנוכחית.",
     "wrapping": "מסכמים את השיעור…",
+    "goodbyePlaying": "המורה מסכם ונפרד ממך…",
+    "translating": "מתרגמים לשפת העזרה שלך…",
     "ended": "השיעור הסתיים.",
     "stopped": "סיימת את השיעור.",
     "connectionClosed": "החיבור הקולי נסגר.",
@@ -65,6 +78,8 @@
     "timeFinished": "השיעור בן חמש הדקות הושלם.",
     "transcriptTitle": "תמלול חי",
     "finish": "סיום השיעור",
+    "finishing": "מסכמים ונפרדים…",
+    "translateLast": "תרגום המשפט האחרון",
     "restart": "התחלת שיעור נוסף",
     "roles": {
       "learner": "אתם",

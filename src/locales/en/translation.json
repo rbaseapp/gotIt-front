@@ -42,6 +42,17 @@
     "noSupport": "No help language",
     "level": "Level",
     "automaticLevel": "Use my profile level",
+    "teacherVoice": "Tutor voice",
+    "voiceOptions": {
+      "female": "Female voice",
+      "male": "Male voice"
+    },
+    "speechRate": "Speaking speed",
+    "speedOptions": {
+      "slow": "Slow",
+      "normal": "Normal",
+      "fast": "Fast"
+    },
     "topic": "Topic",
     "topicPlaceholder": "For example: travel or job interviews",
     "grammarFocus": "Grammar focus",
@@ -58,6 +69,8 @@
     "connected": "Connected. You can start speaking.",
     "endingAfterTurn": "Time is almost up. The recap will begin after this answer.",
     "wrapping": "Wrapping up the lesson…",
+    "goodbyePlaying": "Your tutor is recapping and saying goodbye…",
+    "translating": "Translating into your help language…",
     "ended": "The lesson has ended.",
     "stopped": "You ended the lesson.",
     "connectionClosed": "The voice connection closed.",
@@ -65,6 +78,8 @@
     "timeFinished": "The five-minute lesson is complete.",
     "transcriptTitle": "Live transcript",
     "finish": "End lesson",
+    "finishing": "Recapping and saying goodbye…",
+    "translateLast": "Translate last sentence",
     "restart": "Start another lesson",
     "roles": {
       "learner": "You",

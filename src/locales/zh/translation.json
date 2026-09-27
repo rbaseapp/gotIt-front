@@ -42,6 +42,17 @@
     "noSupport": "不使用辅助语言",
     "level": "水平",
     "automaticLevel": "使用个人资料中的水平",
+    "teacherVoice": "教师声音",
+    "voiceOptions": {
+      "female": "女声",
+      "male": "男声"
+    },
+    "speechRate": "语速",
+    "speedOptions": {
+      "slow": "慢",
+      "normal": "正常",
+      "fast": "快"
+    },
     "topic": "主题",
     "topicPlaceholder": "例如：旅行或求职面试",
     "grammarFocus": "语法重点",
@@ -58,6 +69,8 @@
     "connected": "已连接，可以开始说话。",
     "endingAfterTurn": "时间快到了，本次回答结束后将开始总结。",
     "wrapping": "正在总结课程…",
+    "goodbyePlaying": "老师正在总结并向你道别…",
+    "translating": "正在翻译成你的辅助语言…",
     "ended": "课程已结束。",
     "stopped": "您已结束课程。",
     "connectionClosed": "语音连接已关闭。",
@@ -65,6 +78,8 @@
     "timeFinished": "五分钟课程已完成。",
     "transcriptTitle": "实时转录",
     "finish": "结束课程",
+    "finishing": "正在总结并道别…",
+    "translateLast": "翻译上一句话",
     "restart": "开始另一节课",
     "roles": { "learner": "您", "tutor": "导师", "system": "课程" },
     "errors": {
