@@ -151,6 +151,12 @@ describe("private voice lesson", () => {
 
     expect(screen.queryByLabelText(/אסימון/u)).not.toBeInTheDocument();
     expect(screen.getByLabelText("השפה לתרגול")).toHaveValue("en");
+    expect(screen.getByLabelText("השפה לתרגול")).toHaveDisplayValue(
+      "English — English",
+    );
+    expect(
+      screen.getByRole("option", { name: "Hebrew — עברית" }),
+    ).toHaveValue("he");
     expect(screen.getByLabelText("משך השיעור")).toHaveDisplayValue("5 דקות");
     await user.selectOptions(screen.getByLabelText("משך השיעור"), "10");
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));

@@ -29,6 +29,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { TeacherAvatar } from "../components/TeacherAvatar";
 import { useApp } from "../context/AppContext";
+import { getBilingualLanguageOptions } from "../lib/languages";
 import { captureReceipt, errorMessage, product } from "../lib/product";
 import {
   completePrivateLessonSession,
@@ -54,11 +55,11 @@ export function PrivateLessonPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useApp();
-  const learningLanguages = profile.languages.map(
-    (entry) => entry.languageCode,
-  );
+  const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
-    learningLanguages[0] || profile.defaultSourceLanguage || "en",
+    profile.languages[0]?.languageCode ||
+      profile.defaultSourceLanguage ||
+      "en",
   );
   const [supportLanguage, setSupportLanguage] = useState(
     profile.defaultTranslationLanguage || "",
@@ -567,31 +568,20 @@ export function PrivateLessonPage() {
                 <div className="live-form-grid">
                   <label className="field">
                     <span>{t("privateLesson.targetLanguage")}</span>
-                    {learningLanguages.length ? (
-                      <select
-                        value={targetLanguage}
-                        onChange={(event) =>
-                          setTargetLanguage(event.target.value)
-                        }
-                        dir="ltr"
-                      >
-                        {learningLanguages.map((language) => (
-                          <option key={language} value={language}>
-                            {language}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        value={targetLanguage}
-                        onChange={(event) =>
-                          setTargetLanguage(event.target.value)
-                        }
-                        maxLength={64}
-                        dir="ltr"
-                        required
-                      />
-                    )}
+                    <select
+                      value={targetLanguage}
+                      onChange={(event) =>
+                        setTargetLanguage(event.target.value)
+                      }
+                      dir="auto"
+                      required
+                    >
+                      {languageOptions.map(([code, label]) => (
+                        <option key={code} value={code}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label className="field">
                     <span>{t("privateLesson.supportLanguage")}</span>
