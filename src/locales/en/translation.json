@@ -46,6 +46,7 @@
       "chooseTitle": "Choose one direction — we’ll build the path",
       "chooseDescription": "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
       "recommended": "Recommended for you",
+      "recommendedReason": "Based on your current level and the most useful next skill",
       "change": "Change goal",
       "communicationTitle": "Choose a communication goal",
       "grammarTitle": "Explore English skills",
