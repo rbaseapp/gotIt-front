@@ -49,6 +49,99 @@
   height: 62px;
   border-radius: 50%;
 }
+.private-lesson-latest-assessment {
+  display: grid;
+  gap: 16px;
+  padding: clamp(16px, 2vw, 22px);
+  border: 1px solid #bedccb;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f0faf5, #fffaf0);
+  box-shadow: 0 12px 30px rgba(31, 101, 75, 0.1);
+}
+.private-lesson-assessment-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.private-lesson-assessment-heading > span {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #fff;
+  background: var(--green);
+}
+.private-lesson-assessment-heading div {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.private-lesson-assessment-heading .eyebrow {
+  flex-basis: 100%;
+  margin: 0;
+}
+.private-lesson-assessment-heading strong {
+  color: var(--green-dark);
+  font-size: 27px;
+}
+.private-lesson-assessment-heading small,
+.private-lesson-focus-field > small {
+  color: var(--muted);
+}
+.private-lesson-continuity-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(49, 90, 73, 0.14);
+  color: #315a49;
+}
+.private-lesson-continuity-note svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+}
+.private-lesson-focus-field {
+  gap: 5px;
+}
+.private-lesson-focus-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+.private-lesson-focus-options label {
+  position: relative;
+  cursor: pointer;
+}
+.private-lesson-focus-options input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.private-lesson-focus-options span {
+  display: inline-flex;
+  padding: 9px 13px;
+  border: 1px solid #d6e3dc;
+  border-radius: 999px;
+  color: #52685b;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  transition: 150ms ease;
+}
+.private-lesson-focus-options label:hover span,
+.private-lesson-focus-options input:focus-visible + span {
+  border-color: #65a788;
+}
+.private-lesson-focus-options label.selected span {
+  border-color: var(--green);
+  color: #fff;
+  background: var(--green);
+  box-shadow: 0 6px 14px rgba(31, 101, 75, 0.17);
+}
 .private-lesson-start {
   min-height: 52px;
   justify-content: center;
@@ -608,6 +701,81 @@
 .private-lesson-report-summary h3 {
   font-size: clamp(18px, 2vw, 25px);
 }
+.private-lesson-assessment {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #c8dfd3;
+  border-radius: 16px;
+  background: #f6fbf8;
+}
+.private-lesson-assessment > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.private-lesson-assessment > header h4,
+.private-lesson-assessment > header p {
+  margin: 0;
+}
+.private-lesson-assessment > header > span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #315a49;
+  background: #e3f1e9;
+  font-size: 12px;
+  font-weight: 700;
+}
+.private-lesson-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.private-lesson-skill-grid article {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+.private-lesson-skill-grid article > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+.private-lesson-skill-grid article strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+.private-lesson-skill-grid article span {
+  color: #52685b;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.private-lesson-skill-grid article p {
+  color: #52685b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.private-lesson-skill-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dce8e2;
+}
+.private-lesson-skill-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), #e2ac4f);
+}
+.private-lesson-assessment.compact {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
 .private-lesson-report-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -843,6 +1011,12 @@ body.private-lesson-session-open .private-lesson-session > .button {
 }
 
 @media (max-width: 760px) {
+  .private-lesson-skill-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .private-lesson-skill-grid article:last-child {
+    grid-column: 1 / -1;
+  }
   .private-lesson-report-grid {
     grid-template-columns: minmax(0, 1fr);
   }

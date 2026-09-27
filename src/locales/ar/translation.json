@@ -65,6 +65,20 @@
     "topicPlaceholder": "مثلاً: السفر أو مقابلات العمل",
     "grammarFocus": "التركيز النحوي",
     "grammarPlaceholder": "مثلاً: الماضي البسيط",
+    "focus": {
+      "title": "ما الذي تريد تحسينه؟",
+      "description": "اختر مجالاً واحداً أو أكثر ليمنحها المدرّس وقت تدريب إضافياً.",
+      "options": {
+        "speaking": "التحدث",
+        "vocabulary": "المفردات",
+        "grammar": "القواعد",
+        "fluency": "الطلاقة",
+        "pronunciation": "النطق",
+        "listening": "الاستماع"
+      }
+    },
+    "customFocus": "هدفي الشخصي",
+    "customFocusPlaceholder": "مثلاً: التحدث بثقة في اجتماعات العملاء",
     "duration": "مدة الدرس",
     "durationOptions": {
       "1": "دقيقة واحدة",
@@ -98,6 +112,24 @@
     "finishing": "تلخيص ووداع…",
     "translateLast": "ترجمة الجملة الأخيرة",
     "restart": "بدء درس آخر",
+    "continuity": { "title": "سيواصل درسك التالي من هنا:" },
+    "assessment": {
+      "latest": "تقدير مستواك الحالي",
+      "title": "تقييم المستوى من هذا الدرس",
+      "overall": "التقدير العام: {{level}}",
+      "confidence": {
+        "low": "تقدير أولي · يلزم مزيد من التدريب",
+        "medium": "تقدير قائم على الأداء",
+        "high": "أدلة قوية من هذا الدرس"
+      },
+      "skills": {
+        "speaking": "التحدث",
+        "vocabulary": "المفردات",
+        "grammar": "القواعد",
+        "fluency": "الطلاقة",
+        "comprehension": "الفهم"
+      }
+    },
     "history": {
       "eyebrow": "سجل الدروس",
       "title": "الدروس الخاصة السابقة",
@@ -138,6 +170,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "مستواك في الإنجليزية",
     "closeMenu": "إغلاق القائمة",
     "openMenu": "فتح القائمة",
     "upgradePro": "ترقية إلى PRO",

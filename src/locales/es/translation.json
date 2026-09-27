@@ -65,6 +65,20 @@
     "topicPlaceholder": "Por ejemplo: viajes o entrevistas de trabajo",
     "grammarFocus": "Enfoque gramatical",
     "grammarPlaceholder": "Por ejemplo: pasado simple",
+    "focus": {
+      "title": "¿Qué quieres mejorar?",
+      "description": "Elige una o más áreas. El tutor les dedicará más tiempo de práctica.",
+      "options": {
+        "speaking": "Expresión oral",
+        "vocabulary": "Vocabulario",
+        "grammar": "Gramática",
+        "fluency": "Fluidez",
+        "pronunciation": "Pronunciación",
+        "listening": "Comprensión auditiva"
+      }
+    },
+    "customFocus": "Mi objetivo personal",
+    "customFocusPlaceholder": "Por ejemplo: hablar con confianza en reuniones con clientes",
     "duration": "Duración de la clase",
     "durationOptions": {
       "1": "1 minuto",
@@ -98,6 +112,24 @@
     "finishing": "Resumiendo y despidiéndose…",
     "translateLast": "Traducir la última frase",
     "restart": "Comenzar otra clase",
+    "continuity": { "title": "Tu próxima clase continuará desde aquí:" },
+    "assessment": {
+      "latest": "Tu estimación de nivel actual",
+      "title": "Evaluación de nivel de esta clase",
+      "overall": "Estimación general: {{level}}",
+      "confidence": {
+        "low": "Estimación inicial · hace falta más práctica",
+        "medium": "Estimación basada en tu desempeño",
+        "high": "Evidencia sólida de esta clase"
+      },
+      "skills": {
+        "speaking": "Expresión oral",
+        "vocabulary": "Vocabulario",
+        "grammar": "Gramática",
+        "fluency": "Fluidez",
+        "comprehension": "Comprensión"
+      }
+    },
     "history": {
       "eyebrow": "Diario de clases",
       "title": "Clases privadas anteriores",
@@ -138,6 +170,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Tu nivel de inglés",
     "closeMenu": "Cerrar menú",
     "openMenu": "Abrir menú",
     "upgradePro": "Actualizar a PRO",

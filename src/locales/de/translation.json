@@ -65,6 +65,20 @@
     "topicPlaceholder": "Zum Beispiel Reisen oder Bewerbungsgespräche",
     "grammarFocus": "Grammatikschwerpunkt",
     "grammarPlaceholder": "Zum Beispiel: einfache Vergangenheit",
+    "focus": {
+      "title": "Was möchtest du verbessern?",
+      "description": "Wähle einen oder mehrere Bereiche. Der Tutor gibt ihnen zusätzliche Übungszeit.",
+      "options": {
+        "speaking": "Sprechen",
+        "vocabulary": "Wortschatz",
+        "grammar": "Grammatik",
+        "fluency": "Sprachfluss",
+        "pronunciation": "Aussprache",
+        "listening": "Hörverstehen"
+      }
+    },
+    "customFocus": "Mein persönliches Ziel",
+    "customFocusPlaceholder": "Zum Beispiel: sicher in Kundenterminen sprechen",
     "duration": "Unterrichtsdauer",
     "durationOptions": {
       "1": "1 Minute",
@@ -98,6 +112,24 @@
     "finishing": "Zusammenfassung und Verabschiedung…",
     "translateLast": "Letzten Satz übersetzen",
     "restart": "Weitere Stunde starten",
+    "continuity": { "title": "Deine nächste Stunde macht hier weiter:" },
+    "assessment": {
+      "latest": "Deine aktuelle Niveauschätzung",
+      "title": "Niveaubewertung aus dieser Stunde",
+      "overall": "Gesamtschätzung: {{level}}",
+      "confidence": {
+        "low": "Erste Schätzung · mehr Übung nötig",
+        "medium": "Leistungsbasierte Schätzung",
+        "high": "Starke Belege aus dieser Stunde"
+      },
+      "skills": {
+        "speaking": "Sprechen",
+        "vocabulary": "Wortschatz",
+        "grammar": "Grammatik",
+        "fluency": "Sprachfluss",
+        "comprehension": "Verständnis"
+      }
+    },
     "history": {
       "eyebrow": "Lerntagebuch",
       "title": "Frühere Privatstunden",
@@ -138,6 +170,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Dein Englischniveau",
     "closeMenu": "Menü schließen",
     "openMenu": "Menü öffnen",
     "upgradePro": "Upgrade zu PRO",

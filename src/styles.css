@@ -552,6 +552,7 @@ select:focus-visible {
   background: #fbfbf8;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 .sidebar-top {
   margin: 0 0 30px;
@@ -614,6 +615,77 @@ select:focus-visible {
   display: flex;
   gap: 10px;
   background: #faf5e9;
+}
+.sidebar-skill-assessment {
+  flex: 0 0 auto;
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 10px;
+  padding: 13px;
+  border: 1px solid #bedccb;
+  border-radius: 14px;
+  color: #315a49;
+  background: linear-gradient(135deg, #edf8f2, #fff8e9);
+  box-shadow: 0 8px 22px rgba(31, 101, 75, 0.09);
+}
+.sidebar-skill-assessment:hover {
+  border-color: #7fb69b;
+  transform: translateY(-1px);
+}
+.sidebar-skill-assessment > span {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.sidebar-skill-assessment > strong {
+  color: var(--green-dark);
+  font-size: 24px;
+}
+.sidebar-skill-assessment > div {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+.sidebar-skill-assessment small {
+  display: grid;
+  gap: 2px;
+  color: #66766e;
+  font-size: 8px;
+  text-align: center;
+}
+.sidebar-skill-assessment small b {
+  color: #315a49;
+  font-size: 12px;
+}
+.sidebar-skill-assessment + .sidebar-tip {
+  margin-top: 10px;
+}
+.topbar-level-assessment {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid #bedccb;
+  border-radius: 12px;
+  color: #315a49;
+  background: #edf8f2;
+  font-size: 11px;
+  font-weight: 700;
+}
+.topbar-level-assessment b {
+  min-width: 30px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--green);
+  text-align: center;
+}
+.topbar-level-assessment:hover {
+  border-color: #7fb69b;
+  background: #e5f4ec;
 }
 .tip-icon {
   flex: 0 0 30px;
@@ -3462,6 +3534,9 @@ select:focus-visible {
     height: 64px;
   }
   .topbar-title > span {
+    display: none;
+  }
+  .topbar-level-assessment > span {
     display: none;
   }
   .compact-stat span,

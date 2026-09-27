@@ -26,6 +26,10 @@ import { LiveCaptureModal } from "./LiveCaptureModal";
 import { SubscriptionBanner } from "./SubscriptionBanner";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useTranslation } from "react-i18next";
+import {
+  listPrivateLessons,
+  type SavedPrivateLesson,
+} from "../lib/privateLesson";
 
 const navItems = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: BarChart3 },
@@ -37,7 +41,12 @@ const navItems = [
     liveOnly: true,
   },
   { to: "/vocabulary", labelKey: "nav.vocabulary", icon: BookOpen },
-  { to: "/word-packs", labelKey: "nav.wordPacks", icon: LibraryBig, liveOnly: true },
+  {
+    to: "/word-packs",
+    labelKey: "nav.wordPacks",
+    icon: LibraryBig,
+    liveOnly: true,
+  },
   { to: "/reading", labelKey: "nav.reading", icon: BookOpenText },
   { to: "/transfer", labelKey: "nav.transfer", icon: BookOpen },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
@@ -61,13 +70,47 @@ export function AppShell({
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [latestLessonAssessment, setLatestLessonAssessment] =
+    useState<SavedPrivateLesson>();
   useEffect(() => {
     const openSidebar = () => setMobileOpen(true);
     window.addEventListener("gotit:open-sidebar", openSidebar);
     return () => window.removeEventListener("gotit:open-sidebar", openSidebar);
   }, []);
-  const pageTitle =
-    navItems.find((item) => location.pathname.startsWith(item.to))?.labelKey;
+  useEffect(() => {
+    if (mode !== "live") {
+      setLatestLessonAssessment(undefined);
+      return;
+    }
+    let active = true;
+    const loadAssessment = () => {
+      void listPrivateLessons(20)
+        .then((lessons) => {
+          if (!active) return;
+          setLatestLessonAssessment(
+            lessons.find(
+              (lesson) =>
+                lesson.status === "completed" && lesson.report?.assessment,
+            ),
+          );
+        })
+        .catch(() => {
+          // The assessment stays hidden when this account cannot access private lessons.
+        });
+    };
+    loadAssessment();
+    window.addEventListener("gotit:lesson-assessment-updated", loadAssessment);
+    return () => {
+      active = false;
+      window.removeEventListener(
+        "gotit:lesson-assessment-updated",
+        loadAssessment,
+      );
+    };
+  }, [mode]);
+  const pageTitle = navItems.find((item) =>
+    location.pathname.startsWith(item.to),
+  )?.labelKey;
 
   return (
     <div className="app-layout">
@@ -115,6 +158,31 @@ export function AppShell({
               </NavLink>
             ))}
         </nav>
+        {latestLessonAssessment?.report && (
+          <NavLink
+            to="/private-lesson"
+            className="sidebar-skill-assessment"
+            onClick={() => setMobileOpen(false)}
+          >
+            <span>{t("shell.levelAssessment")}</span>
+            <strong>
+              {latestLessonAssessment.report.assessment.overallLevel}
+            </strong>
+            <div>
+              {(["speaking", "vocabulary", "grammar"] as const).map((skill) => (
+                <small key={skill}>
+                  {t(`privateLesson.assessment.skills.${skill}`)}
+                  <b>
+                    {
+                      latestLessonAssessment.report!.assessment.skills[skill]
+                        .score
+                    }
+                  </b>
+                </small>
+              ))}
+            </div>
+          </NavLink>
+        )}
         <div className="sidebar-tip">
           <span className="tip-icon">
             <Zap size={18} />
@@ -132,7 +200,10 @@ export function AppShell({
           <HelpCircle size={19} />
           {t("shell.helpCenter")}
         </NavLink>
-        <nav className="sidebar-legal-links" aria-label={t("shell.legalNavigation")}>
+        <nav
+          className="sidebar-legal-links"
+          aria-label={t("shell.legalNavigation")}
+        >
           <Link to="/terms-of-service">{t("shell.terms")}</Link>
           <Link to="/privacy-policy">{t("shell.privacy")}</Link>
           <Link to="/refund-policy">{t("shell.refunds")}</Link>
@@ -160,6 +231,17 @@ export function AppShell({
             <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
           </div>
           <div className="topbar-actions">
+            {latestLessonAssessment?.report && (
+              <Link
+                to="/private-lesson"
+                className="topbar-level-assessment"
+                title={t("shell.levelAssessment")}
+              >
+                <BarChart3 size={16} />
+                <span>{t("shell.levelAssessment")}</span>
+                <b>{latestLessonAssessment.report.assessment.overallLevel}</b>
+              </Link>
+            )}
             {mode === "demo" && (
               <>
                 <div className="compact-stat streak">
@@ -188,12 +270,12 @@ export function AppShell({
                     {user?.role === "admin"
                       ? "Admin"
                       : mode === "demo"
-                      ? t("shell.demoLevel", { level: levelFromXp(stats.xp) })
-                      : status?.tier === "paid"
-                        ? t("shell.proUser")
-                        : status?.tier === "trial"
-                          ? t("shell.trial")
-                          : t("shell.freeAccount")}
+                        ? t("shell.demoLevel", { level: levelFromXp(stats.xp) })
+                        : status?.tier === "paid"
+                          ? t("shell.proUser")
+                          : status?.tier === "trial"
+                            ? t("shell.trial")
+                            : t("shell.freeAccount")}
                   </small>
                 </span>
                 <ChevronDown size={16} />
@@ -221,8 +303,8 @@ export function AppShell({
               : user?.role === "admin"
                 ? t("shell.liveBanner")
                 : status?.tier === "free"
-                ? t("shell.readOnlyBanner")
-                : t("shell.liveBanner")}
+                  ? t("shell.readOnlyBanner")
+                  : t("shell.liveBanner")}
           </div>
           {profileError && (
             <div className="form-error" role="alert">

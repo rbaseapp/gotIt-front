@@ -65,6 +65,20 @@
     "topicPlaceholder": "For example: travel or job interviews",
     "grammarFocus": "Grammar focus",
     "grammarPlaceholder": "For example: past simple",
+    "focus": {
+      "title": "What do you want to improve?",
+      "description": "Choose one or more areas. The tutor will give them extra practice time.",
+      "options": {
+        "speaking": "Speaking",
+        "vocabulary": "Vocabulary",
+        "grammar": "Grammar",
+        "fluency": "Fluency",
+        "pronunciation": "Pronunciation",
+        "listening": "Listening"
+      }
+    },
+    "customFocus": "My personal goal",
+    "customFocusPlaceholder": "For example: I want to speak confidently in client meetings",
     "duration": "Lesson duration",
     "durationOptions": {
       "1": "1 minute",
@@ -98,6 +112,26 @@
     "finishing": "Recapping and saying goodbye…",
     "translateLast": "Translate last sentence",
     "restart": "Start another lesson",
+    "continuity": {
+      "title": "Your next lesson continues here:"
+    },
+    "assessment": {
+      "latest": "Your current level estimate",
+      "title": "Level assessment from this lesson",
+      "overall": "Overall estimate: {{level}}",
+      "confidence": {
+        "low": "Initial estimate · more practice needed",
+        "medium": "Evidence-based estimate",
+        "high": "Strong evidence from this lesson"
+      },
+      "skills": {
+        "speaking": "Speaking",
+        "vocabulary": "Vocabulary",
+        "grammar": "Grammar",
+        "fluency": "Fluency",
+        "comprehension": "Comprehension"
+      }
+    },
     "history": {
       "eyebrow": "Lesson journal",
       "title": "Previous private lessons",
@@ -142,6 +176,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Your English level",
     "closeMenu": "Close menu",
     "openMenu": "Open menu",
     "upgradePro": "Upgrade to PRO",

@@ -65,6 +65,20 @@
     "topicPlaceholder": "例如：旅行或求职面试",
     "grammarFocus": "语法重点",
     "grammarPlaceholder": "例如：一般过去时",
+    "focus": {
+      "title": "你想提高什么？",
+      "description": "可选择一个或多个领域，导师会安排更多练习时间。",
+      "options": {
+        "speaking": "口语",
+        "vocabulary": "词汇",
+        "grammar": "语法",
+        "fluency": "流利度",
+        "pronunciation": "发音",
+        "listening": "听力"
+      }
+    },
+    "customFocus": "我的个人目标",
+    "customFocusPlaceholder": "例如：在客户会议中自信表达",
     "duration": "课程时长",
     "durationOptions": {
       "1": "1 分钟",
@@ -98,6 +112,24 @@
     "finishing": "正在总结并道别…",
     "translateLast": "翻译上一句话",
     "restart": "开始另一节课",
+    "continuity": { "title": "下一节课将从这里继续：" },
+    "assessment": {
+      "latest": "你当前的等级评估",
+      "title": "本节课的等级评估",
+      "overall": "综合评估：{{level}}",
+      "confidence": {
+        "low": "初步评估 · 需要更多练习",
+        "medium": "基于表现的评估",
+        "high": "本节课有充分依据"
+      },
+      "skills": {
+        "speaking": "口语",
+        "vocabulary": "词汇",
+        "grammar": "语法",
+        "fluency": "流利度",
+        "comprehension": "理解"
+      }
+    },
     "history": {
       "eyebrow": "课程日志",
       "title": "以往私人课程",
@@ -138,6 +170,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "你的英语水平",
     "closeMenu": "关闭菜单",
     "openMenu": "打开菜单",
     "upgradePro": "升级到专业版",

@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { product, uuid } from "./product";
 
+export const privateLessonFocusAreas = [
+  "speaking",
+  "vocabulary",
+  "grammar",
+  "fluency",
+  "pronunciation",
+  "listening",
+] as const;
+export type PrivateLessonFocusArea = (typeof privateLessonFocusAreas)[number];
+
 const instructionEventSchema = z
   .object({
     type: z.literal("response.create"),
@@ -26,6 +36,9 @@ export const privateLessonSessionSchema = z.object({
     level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
     topic: z.string().min(1).max(120),
     grammarFocus: z.string().min(1).max(160).nullable(),
+    focusAreas: z.array(z.enum(privateLessonFocusAreas)).min(1).max(6),
+    customFocus: z.string().min(1).max(300).nullable(),
+    continuesFromLessonId: uuid.nullable(),
     teacherVoice: z.enum(["female", "male"]),
     speechRate: z.enum(["slow", "normal", "fast"]),
     targetWords: z.array(
@@ -58,10 +71,63 @@ export type PrivateLessonInput = {
   speechRate?: "slow" | "normal" | "fast";
   topic?: string;
   grammarFocus?: string;
+  focusAreas?: PrivateLessonFocusArea[];
+  customFocus?: string | null;
 };
+
+const legacyAssessment = {
+  overallLevel: "A2" as const,
+  confidence: "low" as const,
+  skills: {
+    speaking: {
+      score: 35,
+      level: "A2" as const,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    vocabulary: {
+      score: 35,
+      level: "A2" as const,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    grammar: {
+      score: 35,
+      level: "A2" as const,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    fluency: {
+      score: 35,
+      level: "A2" as const,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    comprehension: {
+      score: 35,
+      level: "A2" as const,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+  },
+};
+
+const skillAssessmentSchema = z.object({
+  score: z.number().int().min(0).max(100),
+  level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+  feedback: z.string(),
+});
 
 export const privateLessonReportSchema = z.object({
   summary: z.string(),
+  assessment: z
+    .object({
+      overallLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+      confidence: z.enum(["low", "medium", "high"]),
+      skills: z.object({
+        speaking: skillAssessmentSchema,
+        vocabulary: skillAssessmentSchema,
+        grammar: skillAssessmentSchema,
+        fluency: skillAssessmentSchema,
+        comprehension: skillAssessmentSchema,
+      }),
+    })
+    .default(legacyAssessment),
   strengths: z.array(z.string()),
   corrections: z.array(
     z.object({
@@ -104,6 +170,11 @@ export const savedPrivateLessonSchema = z.object({
   level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
   topic: z.string(),
   grammarFocus: z.string().nullable(),
+  focusAreas: z
+    .array(z.enum(privateLessonFocusAreas))
+    .default(["speaking", "vocabulary"]),
+  customFocus: z.string().nullable().default(null),
+  continuesFromLessonId: uuid.nullable().default(null),
   teacherVoice: z.enum(["female", "male"]),
   speechRate: z.enum(["slow", "normal", "fast"]),
   plannedDurationSeconds: z.number().int().positive(),

@@ -65,6 +65,20 @@
     "topicPlaceholder": "Par exemple : voyages ou entretiens d’embauche",
     "grammarFocus": "Objectif grammatical",
     "grammarPlaceholder": "Par exemple : passé simple",
+    "focus": {
+      "title": "Que voulez-vous améliorer ?",
+      "description": "Choisissez un ou plusieurs domaines. Le professeur leur consacrera plus de temps.",
+      "options": {
+        "speaking": "Expression orale",
+        "vocabulary": "Vocabulaire",
+        "grammar": "Grammaire",
+        "fluency": "Fluidité",
+        "pronunciation": "Prononciation",
+        "listening": "Compréhension orale"
+      }
+    },
+    "customFocus": "Mon objectif personnel",
+    "customFocusPlaceholder": "Par exemple : parler avec assurance lors de réunions clients",
     "duration": "Durée du cours",
     "durationOptions": {
       "1": "1 minute",
@@ -98,6 +112,24 @@
     "finishing": "Résumé et au revoir…",
     "translateLast": "Traduire la dernière phrase",
     "restart": "Commencer un autre cours",
+    "continuity": { "title": "Votre prochain cours reprendra ici :" },
+    "assessment": {
+      "latest": "Votre estimation de niveau actuelle",
+      "title": "Évaluation du niveau pour ce cours",
+      "overall": "Estimation globale : {{level}}",
+      "confidence": {
+        "low": "Première estimation · plus de pratique nécessaire",
+        "medium": "Estimation fondée sur vos résultats",
+        "high": "Données solides issues de ce cours"
+      },
+      "skills": {
+        "speaking": "Expression orale",
+        "vocabulary": "Vocabulaire",
+        "grammar": "Grammaire",
+        "fluency": "Fluidité",
+        "comprehension": "Compréhension"
+      }
+    },
     "history": {
       "eyebrow": "Journal des cours",
       "title": "Cours particuliers précédents",
@@ -138,6 +170,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Votre niveau d’anglais",
     "closeMenu": "Fermer le menu",
     "openMenu": "Ouvrir le menu",
     "upgradePro": "Passer à PRO",

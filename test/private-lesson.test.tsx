@@ -25,6 +25,7 @@ vi.mock("../src/context/AppContext", () => ({
       languages: [{ languageCode: "en", effectiveLevel: "B1" }],
       interests: ["technology"],
     },
+    retryProfile: vi.fn(async () => undefined),
   }),
 }));
 
@@ -58,12 +59,15 @@ const session = {
   lesson: {
     id: "11111111-1111-4111-8111-111111111111",
     durationSeconds: 300,
-    wrapUpAfterSeconds: 255,
+    wrapUpAfterSeconds: 295,
     targetLanguageCode: "en",
     supportLanguageCode: "he",
     level: "B1",
     topic: "technology",
     grammarFocus: null,
+    focusAreas: ["speaking", "vocabulary"],
+    customFocus: null,
+    continuesFromLessonId: null,
     teacherVoice: "female",
     speechRate: "normal",
     targetWords: [
@@ -111,6 +115,21 @@ const savedLesson = {
   endedAt: "2026-09-27T10:02:20.000Z",
   report: {
     summary: "You spoke clearly about technology.",
+    assessment: {
+      overallLevel: "B1",
+      confidence: "medium",
+      skills: {
+        speaking: { score: 60, level: "B1", feedback: "Clear answers." },
+        vocabulary: { score: 55, level: "B1", feedback: "Useful vocabulary." },
+        grammar: { score: 52, level: "B1", feedback: "Mostly accurate." },
+        fluency: { score: 56, level: "B1", feedback: "Good flow." },
+        comprehension: {
+          score: 62,
+          level: "B1",
+          feedback: "Relevant responses.",
+        },
+      },
+    },
     strengths: ["Clear answers"],
     corrections: [],
     grammarPoints: [],
@@ -211,6 +230,8 @@ describe("private voice lesson", () => {
         teacherVoice: "female",
         speechRate: "normal",
         topic: "technology",
+        focusAreas: ["speaking", "vocabulary"],
+        customFocus: null,
       }),
     );
     expect(await screen.findByText("achieve · להשיג")).toBeInTheDocument();

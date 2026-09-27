@@ -20,7 +20,9 @@ import {
   RotateCcw,
   Sparkles,
   Square,
+  Target,
   Trash2,
+  TrendingUp,
   UserRound,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -40,6 +42,8 @@ import {
   PrivateLessonConnectionError,
   type PrivateLessonConnection,
   type PrivateLessonDurationMinutes,
+  privateLessonFocusAreas,
+  type PrivateLessonFocusArea,
   type SavedPrivateLesson,
   type PrivateLessonSession,
 } from "../lib/privateLesson";
@@ -54,7 +58,7 @@ type SpeechRate = "slow" | "normal" | "fast";
 export function PrivateLessonPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { profile } = useApp();
+  const { profile, retryProfile } = useApp();
   const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
     profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
@@ -69,6 +73,11 @@ export function PrivateLessonPage() {
     useState<PrivateLessonDurationMinutes>(5);
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [grammarFocus, setGrammarFocus] = useState("");
+  const [focusAreas, setFocusAreas] = useState<PrivateLessonFocusArea[]>([
+    "speaking",
+    "vocabulary",
+  ]);
+  const [customFocus, setCustomFocus] = useState("");
   const [phase, setPhase] = useState<Phase>("setup");
   const phaseRef = useRef<Phase>(phase);
   phaseRef.current = phase;
@@ -112,6 +121,7 @@ export function PrivateLessonPage() {
   const assistantBuffer = useRef("");
   const lessonStartedAt = useRef(0);
   const finalizing = useRef(false);
+  const personalizationTouched = useRef(false);
   const completionReason = useRef<"completed" | "stopped" | "disconnected">(
     "completed",
   );
@@ -174,6 +184,8 @@ export function PrivateLessonPage() {
         lesson,
         ...current.filter((item) => item.id !== lesson.id),
       ]);
+      window.dispatchEvent(new Event("gotit:lesson-assessment-updated"));
+      void retryProfile();
     } catch (reason) {
       setReportError(errorMessage(reason));
     } finally {
@@ -363,6 +375,25 @@ export function PrivateLessonPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (personalizationTouched.current) return;
+    const targetBase = new Intl.Locale(targetLanguage).language;
+    const previousLesson = history.find(
+      (lesson) =>
+        lesson.status === "completed" &&
+        new Intl.Locale(lesson.targetLanguageCode).language === targetBase,
+    );
+    if (!previousLesson) return;
+    setFocusAreas(
+      previousLesson.focusAreas?.length
+        ? previousLesson.focusAreas
+        : ["speaking", "vocabulary"],
+    );
+    setCustomFocus(previousLesson.customFocus ?? "");
+    setTopic(previousLesson.topic);
+    setGrammarFocus(previousLesson.grammarFocus ?? "");
+  }, [history, targetLanguage]);
+
   const sessionFullscreen = phase !== "setup" && phase !== "preparing";
   usePrivateLessonViewport(sessionFullscreen);
   useEffect(() => {
@@ -402,6 +433,8 @@ export function PrivateLessonPage() {
         speechRate,
         ...(topic.trim() ? { topic: topic.trim() } : {}),
         ...(grammarFocus.trim() ? { grammarFocus: grammarFocus.trim() } : {}),
+        focusAreas,
+        customFocus: customFocus.trim() || null,
       });
       if (controller.signal.aborted) return;
       setSession(created);
@@ -533,6 +566,7 @@ export function PrivateLessonPage() {
   const removeHistoryLesson = async (lesson: SavedPrivateLesson) => {
     await deletePrivateLesson(lesson.id);
     setHistory((current) => current.filter((item) => item.id !== lesson.id));
+    window.dispatchEvent(new Event("gotit:lesson-assessment-updated"));
     if (selectedHistory?.id === lesson.id) setSelectedHistory(undefined);
   };
   const toggleMicrophone = () => {
@@ -542,6 +576,19 @@ export function PrivateLessonPage() {
   };
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
+  const latestAssessmentLesson = history.find(
+    (lesson) => lesson.status === "completed" && lesson.report?.assessment,
+  );
+  const toggleFocusArea = (area: PrivateLessonFocusArea) => {
+    personalizationTouched.current = true;
+    setFocusAreas((current) =>
+      current.includes(area)
+        ? current.length === 1
+          ? current
+          : current.filter((item) => item !== area)
+        : [...current, area],
+    );
+  };
 
   return (
     <div
@@ -570,6 +617,43 @@ export function PrivateLessonPage() {
                 <p>{t("privateLesson.setupDescription")}</p>
               </div>
             </div>
+            {latestAssessmentLesson?.report && (
+              <section
+                className="private-lesson-latest-assessment"
+                aria-label={t("privateLesson.assessment.latest")}
+              >
+                <div className="private-lesson-assessment-heading">
+                  <span>
+                    <TrendingUp size={22} />
+                  </span>
+                  <div>
+                    <p className="eyebrow">
+                      {t("privateLesson.assessment.latest")}
+                    </p>
+                    <strong>
+                      {latestAssessmentLesson.report.assessment.overallLevel}
+                    </strong>
+                    <small>
+                      {t(
+                        `privateLesson.assessment.confidence.${latestAssessmentLesson.report.assessment.confidence}`,
+                      )}
+                    </small>
+                  </div>
+                </div>
+                <SkillAssessment
+                  assessment={latestAssessmentLesson.report.assessment}
+                  compact
+                  t={t}
+                />
+                <p className="private-lesson-continuity-note">
+                  <Target size={16} />
+                  <span>
+                    <strong>{t("privateLesson.continuity.title")}</strong>{" "}
+                    {latestAssessmentLesson.report.nextLessonPlan}
+                  </span>
+                </p>
+              </section>
+            )}
             <form
               className="form-stack"
               onSubmit={(event) => void startLesson(event)}
@@ -691,17 +775,55 @@ export function PrivateLessonPage() {
                     <span>{t("privateLesson.topic")}</span>
                     <input
                       value={topic}
-                      onChange={(event) => setTopic(event.target.value)}
+                      onChange={(event) => {
+                        personalizationTouched.current = true;
+                        setTopic(event.target.value);
+                      }}
                       maxLength={120}
                       placeholder={t("privateLesson.topicPlaceholder")}
                     />
                   </label>
                 </div>
+                <div className="field private-lesson-focus-field">
+                  <span>{t("privateLesson.focus.title")}</span>
+                  <small>{t("privateLesson.focus.description")}</small>
+                  <div className="private-lesson-focus-options">
+                    {privateLessonFocusAreas.map((area) => (
+                      <label
+                        key={area}
+                        className={focusAreas.includes(area) ? "selected" : ""}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={focusAreas.includes(area)}
+                          onChange={() => toggleFocusArea(area)}
+                        />
+                        <span>{t(`privateLesson.focus.options.${area}`)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <label className="field">
+                  <span>{t("privateLesson.customFocus")}</span>
+                  <textarea
+                    value={customFocus}
+                    onChange={(event) => {
+                      personalizationTouched.current = true;
+                      setCustomFocus(event.target.value);
+                    }}
+                    maxLength={300}
+                    rows={3}
+                    placeholder={t("privateLesson.customFocusPlaceholder")}
+                  />
+                </label>
                 <label className="field">
                   <span>{t("privateLesson.grammarFocus")}</span>
                   <input
                     value={grammarFocus}
-                    onChange={(event) => setGrammarFocus(event.target.value)}
+                    onChange={(event) => {
+                      personalizationTouched.current = true;
+                      setGrammarFocus(event.target.value);
+                    }}
                     maxLength={160}
                     placeholder={t("privateLesson.grammarPlaceholder")}
                   />
@@ -1068,6 +1190,7 @@ function LessonReportView({
           {report.nextLessonPlan}
         </p>
       </section>
+      <SkillAssessment assessment={report.assessment} t={t} />
       <div className="private-lesson-report-grid">
         <section>
           <h4>{t("privateLesson.report.strengths")}</h4>
@@ -1182,6 +1305,63 @@ function LessonReportView({
         </button>
       )}
     </div>
+  );
+}
+
+function SkillAssessment({
+  assessment,
+  compact = false,
+  t,
+}: {
+  assessment: NonNullable<SavedPrivateLesson["report"]>["assessment"];
+  compact?: boolean;
+  t: TFunction;
+}) {
+  const entries = Object.entries(assessment.skills) as Array<
+    [
+      keyof typeof assessment.skills,
+      (typeof assessment.skills)[keyof typeof assessment.skills],
+    ]
+  >;
+  return (
+    <section
+      className={`private-lesson-assessment${compact ? " compact" : ""}`}
+    >
+      {!compact && (
+        <header>
+          <div>
+            <p className="eyebrow">{t("privateLesson.assessment.title")}</p>
+            <h4>
+              {t("privateLesson.assessment.overall", {
+                level: assessment.overallLevel,
+              })}
+            </h4>
+          </div>
+          <span>
+            {t(`privateLesson.assessment.confidence.${assessment.confidence}`)}
+          </span>
+        </header>
+      )}
+      <div className="private-lesson-skill-grid">
+        {entries.map(([skill, result]) => (
+          <article key={skill} title={result.feedback}>
+            <div>
+              <strong>{t(`privateLesson.assessment.skills.${skill}`)}</strong>
+              <span>
+                {result.level} · {result.score}
+              </span>
+            </div>
+            <div
+              className="private-lesson-skill-track"
+              aria-label={`${result.score}/100`}
+            >
+              <i style={{ width: `${result.score}%` }} />
+            </div>
+            {!compact && <p>{result.feedback}</p>}
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 

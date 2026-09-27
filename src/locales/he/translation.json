@@ -65,6 +65,20 @@
     "topicPlaceholder": "לדוגמה: טיולים או ראיון עבודה",
     "grammarFocus": "מיקוד דקדוקי",
     "grammarPlaceholder": "לדוגמה: עבר פשוט",
+    "focus": {
+      "title": "מה חשוב לך לשפר?",
+      "description": "אפשר לבחור תחום אחד או יותר. המורה יקדיש להם זמן תרגול נוסף.",
+      "options": {
+        "speaking": "דיבור",
+        "vocabulary": "אוצר מילים",
+        "grammar": "דקדוק",
+        "fluency": "שטף דיבור",
+        "pronunciation": "הגייה",
+        "listening": "הבנת הנשמע"
+      }
+    },
+    "customFocus": "המטרה האישית שלי",
+    "customFocusPlaceholder": "לדוגמה: לדבר בביטחון בפגישות עם לקוחות",
     "duration": "משך השיעור",
     "durationOptions": {
       "1": "דקה אחת",
@@ -98,6 +112,26 @@
     "finishing": "מסכמים ונפרדים…",
     "translateLast": "תרגום המשפט האחרון",
     "restart": "התחלת שיעור נוסף",
+    "continuity": {
+      "title": "השיעור הבא ימשיך מכאן:"
+    },
+    "assessment": {
+      "latest": "הערכת הרמה העדכנית שלך",
+      "title": "הערכת רמה מהשיעור הזה",
+      "overall": "הערכה כללית: {{level}}",
+      "confidence": {
+        "low": "הערכה ראשונית · נדרש עוד תרגול",
+        "medium": "הערכה מבוססת ביצוע",
+        "high": "הערכה עם ראיות חזקות מהשיעור"
+      },
+      "skills": {
+        "speaking": "דיבור",
+        "vocabulary": "אוצר מילים",
+        "grammar": "דקדוק",
+        "fluency": "שטף",
+        "comprehension": "הבנה"
+      }
+    },
     "history": {
       "eyebrow": "יומן שיעורים",
       "title": "שיעורים פרטיים קודמים",
@@ -142,6 +176,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "רמת האנגלית שלך",
     "closeMenu": "סגירת תפריט",
     "openMenu": "פתיחת תפריט",
     "upgradePro": "שדרוג ל־PRO",
