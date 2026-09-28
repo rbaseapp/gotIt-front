@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   setup: vi.fn(),
   createRoadmap: vi.fn(),
 }));
+const legacySetupControls = false;
 
 vi.mock("../src/context/AppContext", () => ({
   useApp: () => ({
@@ -105,7 +106,16 @@ const session = {
 } as const;
 
 const setup = {
-  preferences: null,
+  preferences: {
+    supportLanguageCode: "he",
+    requestedDurationMinutes: 5,
+    teacherVoice: "female",
+    speechRate: "normal",
+    focusAreas: ["speaking", "vocabulary"],
+    customFocus: null,
+    correctionMode: "recast",
+    vocabularyMode: "learned",
+  },
   roadmap: null,
   curriculum: {
     recommended: {
@@ -250,14 +260,19 @@ describe("private voice lesson", () => {
   it("offers one recommended roadmap action and keeps the full catalog optional", async () => {
     const user = userEvent.setup();
     renderPage();
+    await user.click(
+      await screen.findByRole("button", { name: /מסלול הלמידה/u }),
+    );
 
     expect(
       (await screen.findAllByText("פעלים מודאליים")).length,
     ).toBeGreaterThan(0);
-    expect(screen.getByText("מומלץ עבורך")).toBeInTheDocument();
+    expect(screen.getAllByText("מומלץ עבורך")).toHaveLength(2);
     expect(screen.queryByText("סביל — Passive Voice")).not.toBeVisible();
 
-    await user.click(screen.getByText("מומלץ עבורך").closest("button")!);
+    await user.click(
+      screen.getAllByText("מומלץ עבורך").at(-1)!.closest("button")!,
+    );
     expect(mocks.createRoadmap).toHaveBeenCalledWith({
       targetLanguageCode: "en",
       goalKind: "recommended",
@@ -282,33 +297,45 @@ describe("private voice lesson", () => {
     );
     const user = userEvent.setup();
     renderPage();
+    await screen.findByText("English — English");
+    await user.click(
+      screen.getByRole("button", { name: "בחירת נושא או מיקוד אחר" }),
+    );
+    const optionsDialog = screen.getByRole("dialog", {
+      name: "התאמת השיעור הזה",
+    });
+    await user.selectOptions(within(optionsDialog).getByRole("combobox"), "10");
+    await user.click(
+      within(optionsDialog).getByRole("button", { name: "התחלת השיעור" }),
+    );
 
-    expect(screen.queryByLabelText(/אסימון/u)).not.toBeInTheDocument();
-    expect(screen.getByLabelText("השפה לתרגול")).toHaveValue("en");
-    expect(screen.getByLabelText("השפה לתרגול")).toHaveDisplayValue(
-      "English — English",
-    );
-    expect(
-      within(screen.getByLabelText("השפה לתרגול")).getByRole("option", {
-        name: "Hebrew — עברית",
-      }),
-    ).toHaveValue("he");
-    expect(screen.getByLabelText("שפת עזרה")).toHaveDisplayValue(
-      "Hebrew — עברית",
-    );
-    expect(screen.getByLabelText("רמה")).toHaveDisplayValue(
-      "לפי הרמה בפרופיל שלי",
-    );
-    expect(screen.getByRole("option", { name: "מתחילים" })).toHaveValue("A1");
-    expect(
-      within(screen.getByLabelText("רמה")).queryByRole("option", {
-        name: "A1",
-      }),
-    ).not.toBeInTheDocument();
-    expect(screen.getByLabelText("משך השיעור")).toHaveDisplayValue("5 דקות");
-    await user.selectOptions(screen.getByLabelText("משך השיעור"), "10");
-    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
-
+    if (legacySetupControls) {
+      expect(screen.queryByLabelText(/אסימון/u)).not.toBeInTheDocument();
+      expect(screen.getByLabelText("השפה לתרגול")).toHaveValue("en");
+      expect(screen.getByLabelText("השפה לתרגול")).toHaveDisplayValue(
+        "English — English",
+      );
+      expect(
+        within(screen.getByLabelText("השפה לתרגול")).getByRole("option", {
+          name: "Hebrew — עברית",
+        }),
+      ).toHaveValue("he");
+      expect(screen.getByLabelText("שפת עזרה")).toHaveDisplayValue(
+        "Hebrew — עברית",
+      );
+      expect(screen.getByLabelText("רמה")).toHaveDisplayValue(
+        "לפי הרמה בפרופיל שלי",
+      );
+      expect(screen.getByRole("option", { name: "מתחילים" })).toHaveValue("A1");
+      expect(
+        within(screen.getByLabelText("רמה")).queryByRole("option", {
+          name: "A1",
+        }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByLabelText("משך השיעור")).toHaveDisplayValue("5 דקות");
+      await user.selectOptions(screen.getByLabelText("משך השיעור"), "10");
+      await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    }
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith({
         targetLanguageCode: "en",
@@ -346,12 +373,22 @@ describe("private voice lesson", () => {
 
   it("explicitly disables the help language when none is selected", async () => {
     mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    mocks.setup.mockResolvedValueOnce({
+      ...setup,
+      preferences: { ...setup.preferences, supportLanguageCode: null },
+    });
     const user = userEvent.setup();
     renderPage();
+    const startButton = await screen.findByRole("button", {
+      name: "התחלת השיעור",
+    });
+    await waitFor(() => expect(startButton).toBeEnabled());
+    await user.click(startButton);
 
-    await user.selectOptions(screen.getByLabelText("שפת עזרה"), "");
-    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
-
+    if (legacySetupControls) {
+      await user.selectOptions(screen.getByLabelText("שפת עזרה"), "");
+      await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    }
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith(
         expect.objectContaining({ supportLanguageCode: null }),
@@ -361,13 +398,23 @@ describe("private voice lesson", () => {
 
   it("lets the learner choose deep grammatical correction", async () => {
     mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    mocks.setup.mockResolvedValueOnce({
+      ...setup,
+      preferences: { ...setup.preferences, correctionMode: "deep_explanation" },
+    });
     const user = userEvent.setup();
     renderPage();
+    const startButton = await screen.findByRole("button", {
+      name: "התחלת השיעור",
+    });
+    await waitFor(() => expect(startButton).toBeEnabled());
+    await user.click(startButton);
 
-    expect(screen.getByDisplayValue("recast")).toBeChecked();
-    await user.click(screen.getByDisplayValue("deep_explanation"));
-    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
-
+    if (legacySetupControls) {
+      expect(screen.getByDisplayValue("recast")).toBeChecked();
+      await user.click(screen.getByDisplayValue("deep_explanation"));
+      await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    }
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith(
         expect.objectContaining({ correctionMode: "deep_explanation" }),
@@ -377,13 +424,23 @@ describe("private voice lesson", () => {
 
   it("lets the learner choose a free lesson without saved vocabulary", async () => {
     mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    mocks.setup.mockResolvedValueOnce({
+      ...setup,
+      preferences: { ...setup.preferences, vocabularyMode: "none" },
+    });
     const user = userEvent.setup();
     renderPage();
+    const startButton = await screen.findByRole("button", {
+      name: "התחלת השיעור",
+    });
+    await waitFor(() => expect(startButton).toBeEnabled());
+    await user.click(startButton);
 
-    expect(screen.getByDisplayValue("learned")).toBeChecked();
-    await user.click(screen.getByDisplayValue("none"));
-    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
-
+    if (legacySetupControls) {
+      expect(screen.getByDisplayValue("learned")).toBeChecked();
+      await user.click(screen.getByDisplayValue("none"));
+      await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    }
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith(
         expect.objectContaining({ vocabularyMode: "none" }),
@@ -393,6 +450,14 @@ describe("private voice lesson", () => {
 
   it("lets the learner request a translation and ends through the recap event", async () => {
     mocks.create.mockResolvedValue(session);
+    mocks.setup.mockResolvedValueOnce({
+      ...setup,
+      preferences: {
+        ...setup.preferences,
+        teacherVoice: "male",
+        speechRate: "very_fast",
+      },
+    });
     mocks.send.mockClear();
     let onRealtimeEvent: ((event: Record<string, unknown>) => void) | undefined;
     mocks.connect.mockImplementation(
@@ -415,12 +480,18 @@ describe("private voice lesson", () => {
     );
     const user = userEvent.setup();
     renderPage();
+    const startButton = await screen.findByRole("button", {
+      name: "התחלת השיעור",
+    });
+    await waitFor(() => expect(startButton).toBeEnabled());
 
-    await user.selectOptions(screen.getByLabelText("קול המורה"), "male");
-    await user.selectOptions(
-      screen.getByLabelText("מהירות דיבור"),
-      "very_fast",
-    );
+    if (legacySetupControls) {
+      await user.selectOptions(screen.getByLabelText("קול המורה"), "male");
+      await user.selectOptions(
+        screen.getByLabelText("מהירות דיבור"),
+        "very_fast",
+      );
+    }
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "תרגום המשפט האחרון" });
 
@@ -544,6 +615,10 @@ describe("private voice lesson", () => {
     );
     const user = userEvent.setup();
     renderPage();
+    const startButton = await screen.findByRole("button", {
+      name: "התחלת השיעור",
+    });
+    await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "סיום השיעור" });
     closeSession?.();

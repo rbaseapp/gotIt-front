@@ -32,6 +32,25 @@
     "billing": "الاشتراك"
   },
   "privateLesson": {
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
     "preferences": {
       "title": "Lesson preferences",
       "saved": "Saved automatically for this language"
@@ -196,6 +215,9 @@
       "latest": "تقدير مستواك الحالي",
       "title": "تقييم المستوى من هذا الدرس",
       "overall": "التقدير العام: {{level}}",
+      "provisional": "نطاق الأدلة من الدرس: {{range}}",
+      "insufficient": "لا توجد أدلة كافية",
+      "collecting": "جارٍ جمع الأدلة",
       "confidence": {
         "low": "تقدير أولي · يلزم مزيد من التدريب",
         "medium": "تقدير قائم على الأداء",
@@ -249,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "مستواك في الإنجليزية",
+    "levelAssessment": "تقدير مستوى الإنجليزية",
     "closeMenu": "إغلاق القائمة",
     "openMenu": "فتح القائمة",
     "upgradePro": "ترقية إلى PRO",
@@ -335,6 +357,10 @@
     "retry": "حاول مجددًا"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "الواجهة",
     "interfaceDescription": "اختر اللغة المستخدمة من قبل القوائم والشاشات في GotIt.",
     "savedLocally": "تُحفظ تفضيلات الواجهة في هذا المتصفح ولا تغير لغات التعلم أو الترجمة الخاصة بك.",

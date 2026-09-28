@@ -32,6 +32,25 @@
     "billing": "Suscripción"
   },
   "privateLesson": {
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
     "preferences": {
       "title": "Lesson preferences",
       "saved": "Saved automatically for this language"
@@ -196,6 +215,9 @@
       "latest": "Tu estimación de nivel actual",
       "title": "Evaluación de nivel de esta clase",
       "overall": "Estimación general: {{level}}",
+      "provisional": "Rango de evidencia de la lección: {{range}}",
+      "insufficient": "No hay suficiente evidencia",
+      "collecting": "Recopilando evidencia",
       "confidence": {
         "low": "Estimación inicial · hace falta más práctica",
         "medium": "Estimación basada en tu desempeño",
@@ -249,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "Tu nivel de inglés",
+    "levelAssessment": "Estimación de tu nivel de inglés",
     "closeMenu": "Cerrar menú",
     "openMenu": "Abrir menú",
     "upgradePro": "Actualizar a PRO",
@@ -335,6 +357,10 @@
     "retry": "Intentar de nuevo"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "Interfaz",
     "interfaceDescription": "Elige el idioma utilizado por los menús y pantallas de GotIt.",
     "savedLocally": "La preferencia de interfaz se guarda en este navegador y no cambia sus idiomas de aprendizaje o traducción.",

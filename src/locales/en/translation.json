@@ -32,6 +32,25 @@
     "billing": "Subscription"
   },
   "privateLesson": {
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
     "eyebrow": "GotIt Voice",
     "title": "Your private voice lesson",
     "description": "A focused lesson built around your level and progress.",
@@ -198,6 +217,9 @@
       "latest": "Your current level estimate",
       "title": "Level assessment from this lesson",
       "overall": "Overall estimate: {{level}}",
+      "provisional": "Lesson evidence range: {{range}}",
+      "insufficient": "Not enough evidence",
+      "collecting": "Collecting evidence",
       "confidence": {
         "low": "Initial estimate · more practice needed",
         "medium": "Evidence-based estimate",
@@ -255,7 +277,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "Your English level",
+    "levelAssessment": "English level estimate",
     "closeMenu": "Close menu",
     "openMenu": "Open menu",
     "upgradePro": "Upgrade to PRO",
@@ -340,6 +362,10 @@
     "retry": "Try again"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "Interface",
     "interfaceDescription": "Choose the language used by GotIt menus and screens.",
     "savedLocally": "The interface preference is saved in this browser and does not change your learning or translation languages.",

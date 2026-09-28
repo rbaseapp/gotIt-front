@@ -201,33 +201,58 @@ export type PrivateLessonInput = {
   vocabularyMode?: PrivateLessonVocabularyMode;
 };
 
+const legacySkillEvidence = {
+  confidence: 0.1,
+  evidenceQuality: "insufficient" as const,
+  highestTestedLevel: null,
+  evidenceCount: 0,
+  dimensions: null,
+  evidence: [],
+};
+
 const legacyAssessment = {
-  overallLevel: "A2" as const,
+  overallLevel: null,
+  levelRange: null,
   confidence: "low" as const,
+  evidenceSufficient: false,
+  calibrationTarget: null,
+  basis: "More evidence is needed.",
+  lessonPerformance: {
+    taskLevel: "A2" as const,
+    score: 0,
+    result: "insufficient" as const,
+    evidenceQuality: "insufficient" as const,
+    independence: 0,
+  },
   skills: {
     speaking: {
+      ...legacySkillEvidence,
       score: 35,
-      level: "A2" as const,
+      level: null,
       feedback: "Complete another lesson to refresh this estimate.",
     },
     vocabulary: {
+      ...legacySkillEvidence,
       score: 35,
-      level: "A2" as const,
+      level: null,
       feedback: "Complete another lesson to refresh this estimate.",
     },
     grammar: {
+      ...legacySkillEvidence,
       score: 35,
-      level: "A2" as const,
+      level: null,
       feedback: "Complete another lesson to refresh this estimate.",
     },
     fluency: {
+      ...legacySkillEvidence,
       score: 35,
-      level: "A2" as const,
+      level: null,
       feedback: "Complete another lesson to refresh this estimate.",
     },
     comprehension: {
+      ...legacySkillEvidence,
       score: 35,
-      level: "A2" as const,
+      level: null,
       feedback: "Complete another lesson to refresh this estimate.",
     },
   },
@@ -235,16 +260,66 @@ const legacyAssessment = {
 
 const skillAssessmentSchema = z.object({
   score: z.number().int().min(0).max(100),
-  level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+  level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]).nullable().default(null),
   feedback: z.string(),
+  confidence: z.number().min(0).max(1).default(0.1),
+  evidenceQuality: z
+    .enum(["insufficient", "weak", "moderate", "strong"])
+    .default("insufficient"),
+  highestTestedLevel: z
+    .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+    .nullable()
+    .default(null),
+  evidenceCount: z.number().int().min(0).default(0),
+  dimensions: z
+    .object({
+      accuracy: z.number().int().min(0).max(100),
+      independence: z.number().int().min(0).max(100),
+      range: z.number().int().min(0).max(100),
+      complexity: z.number().int().min(0).max(100),
+      consistency: z.number().int().min(0).max(100),
+    })
+    .nullable()
+    .default(null),
+  evidence: z
+    .array(
+      z.object({
+        learnerQuote: z.string(),
+        observation: z.string(),
+        independent: z.boolean(),
+      }),
+    )
+    .default([]),
 });
 
 export const privateLessonReportSchema = z.object({
   summary: z.string(),
   assessment: z
     .object({
-      overallLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+      overallLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]).nullable(),
+      levelRange: z
+        .object({
+          from: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+          to: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+        })
+        .nullable()
+        .default(null),
       confidence: z.enum(["low", "medium", "high"]),
+      evidenceSufficient: z.boolean().default(false),
+      calibrationTarget: z
+        .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+        .nullable()
+        .default(null),
+      basis: z.string().default("More evidence is needed."),
+      lessonPerformance: z
+        .object({
+          taskLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+          score: z.number().int().min(0).max(100),
+          result: z.enum(["insufficient", "developing", "successful", "strong"]),
+          evidenceQuality: z.enum(["insufficient", "weak", "moderate", "strong"]),
+          independence: z.number().int().min(0).max(100),
+        })
+        .default(legacyAssessment.lessonPerformance),
       skills: z.object({
         speaking: skillAssessmentSchema,
         vocabulary: skillAssessmentSchema,

@@ -32,6 +32,25 @@
     "billing": "Abonnement"
   },
   "privateLesson": {
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
     "preferences": {
       "title": "Lesson preferences",
       "saved": "Saved automatically for this language"
@@ -196,6 +215,9 @@
       "latest": "Deine aktuelle Niveauschätzung",
       "title": "Niveaubewertung aus dieser Stunde",
       "overall": "Gesamtschätzung: {{level}}",
+      "provisional": "Evidenzbereich dieser Lektion: {{range}}",
+      "insufficient": "Nicht genügend Nachweise",
+      "collecting": "Nachweise werden gesammelt",
       "confidence": {
         "low": "Erste Schätzung · mehr Übung nötig",
         "medium": "Leistungsbasierte Schätzung",
@@ -249,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "Dein Englischniveau",
+    "levelAssessment": "Einschätzung deines Englischniveaus",
     "closeMenu": "Menü schließen",
     "openMenu": "Menü öffnen",
     "upgradePro": "Upgrade zu PRO",
@@ -335,6 +357,10 @@
     "retry": "Versuchen Sie es erneut"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "Oberfläche",
     "interfaceDescription": "Wähle die Sprache, die von GotIt-Menüs und -Bildschirmen verwendet wird.",
     "savedLocally": "Die Schnittstelleneinstellung wird in diesem Browser gespeichert und ändert nicht deine Lern- oder Übersetzungssprachen.",

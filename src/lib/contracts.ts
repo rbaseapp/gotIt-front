@@ -181,6 +181,60 @@ export function parseProfile(payload: unknown): ProfilePatch {
         (typeof confidence !== "number" || confidence < 0 || confidence > 1)
       )
         throw new Error("Invalid API response");
+      const cefr = (input: unknown) => {
+        const value = text(input);
+        if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(value))
+          throw new Error("Invalid API response");
+        return value as "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+      };
+      const estimatedLevelRange =
+        language.estimatedLevelRange === undefined ||
+        language.estimatedLevelRange === null
+          ? language.estimatedLevelRange
+          : (() => {
+              const range = object(language.estimatedLevelRange);
+              return { from: cefr(range.from), to: cefr(range.to) };
+            })();
+      const skillEstimates =
+        language.skillEstimates === undefined
+          ? undefined
+          : Array.isArray(language.skillEstimates)
+            ? language.skillEstimates.map((input) => {
+                const skill = object(input);
+                const name = text(skill.skill);
+                if (
+                  ![
+                    "speaking",
+                    "vocabulary",
+                    "grammar",
+                    "fluency",
+                    "comprehension",
+                  ].includes(name)
+                )
+                  throw new Error("Invalid API response");
+                const skillConfidence = Number(skill.confidence);
+                if (skillConfidence < 0 || skillConfidence > 1)
+                  throw new Error("Invalid API response");
+                return {
+                  skill: name as
+                    | "speaking"
+                    | "vocabulary"
+                    | "grammar"
+                    | "fluency"
+                    | "comprehension",
+                  score: Number(skill.score),
+                  level: cefr(skill.level),
+                  confidence: skillConfidence,
+                  evidenceCount: integer(skill.evidenceCount),
+                  highestTestedLevel:
+                    skill.highestTestedLevel === null
+                      ? null
+                      : cefr(skill.highestTestedLevel),
+                };
+              })
+            : (() => {
+                throw new Error("Invalid API response");
+              })();
       return {
         languageCode: text(language.languageCode),
         selfAssessedLevel: language.selfAssessedLevel,
@@ -201,6 +255,23 @@ export function parseProfile(payload: unknown): ProfilePatch {
                   : text(language.lastEvaluatedAt),
             }
           : {}),
+        ...(estimatedLevelRange !== undefined ? { estimatedLevelRange } : {}),
+        ...(language.assessmentEvidenceCount !== undefined
+          ? {
+              assessmentEvidenceCount: integer(
+                language.assessmentEvidenceCount,
+              ),
+            }
+          : {}),
+        ...(language.calibrationTarget !== undefined
+          ? {
+              calibrationTarget:
+                language.calibrationTarget === null
+                  ? null
+                  : cefr(language.calibrationTarget),
+            }
+          : {}),
+        ...(skillEstimates !== undefined ? { skillEstimates } : {}),
       };
     }),
     interests: value.interests.map(text),

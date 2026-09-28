@@ -111,6 +111,14 @@ export function AppShell({
   const pageTitle = navItems.find((item) =>
     location.pathname.startsWith(item.to),
   )?.labelKey;
+  const latestAssessment = latestLessonAssessment?.report?.assessment;
+  const latestLevelLabel = latestAssessment?.overallLevel
+    ? latestAssessment.overallLevel
+    : latestAssessment?.levelRange
+      ? latestAssessment.levelRange.from === latestAssessment.levelRange.to
+        ? latestAssessment.levelRange.from
+        : `${latestAssessment.levelRange.from}–${latestAssessment.levelRange.to}`
+      : t("privateLesson.assessment.collecting");
 
   return (
     <div className="app-layout">
@@ -166,7 +174,7 @@ export function AppShell({
           >
             <span>{t("shell.levelAssessment")}</span>
             <strong>
-              {latestLessonAssessment.report.assessment.overallLevel}
+              {latestLevelLabel}
             </strong>
             <div>
               {(["speaking", "vocabulary", "grammar"] as const).map((skill) => (
@@ -239,7 +247,7 @@ export function AppShell({
               >
                 <BarChart3 size={16} />
                 <span>{t("shell.levelAssessment")}</span>
-                <b>{latestLessonAssessment.report.assessment.overallLevel}</b>
+                <b>{latestLevelLabel}</b>
               </Link>
             )}
             {mode === "demo" && (

@@ -62,16 +62,21 @@ export function SettingsPage() {
   const [resetOpen, setResetOpen] = useState(false);
   const [lessonLanguage, setLessonLanguage] = useState(() =>
     getSavedPrivateLessonLanguage(
-      profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
+      profile.languages[0]?.languageCode ||
+        profile.defaultSourceLanguage ||
+        "en",
     ),
   );
-  const [lessonPreferences, setLessonPreferences] = useState<PrivateLessonPreferences>({
-    ...defaultLessonPreferences,
-    supportLanguageCode: profile.defaultTranslationLanguage,
-  });
+  const [lessonPreferences, setLessonPreferences] =
+    useState<PrivateLessonPreferences>({
+      ...defaultLessonPreferences,
+      supportLanguageCode: profile.defaultTranslationLanguage,
+    });
   const [lessonSettingsLoading, setLessonSettingsLoading] = useState(false);
-  const [lessonPreferencesRemoteAvailable, setLessonPreferencesRemoteAvailable] =
-    useState(false);
+  const [
+    lessonPreferencesRemoteAvailable,
+    setLessonPreferencesRemoteAvailable,
+  ] = useState(false);
   useEffect(() => {
     setForm(structuredClone(profile));
   }, [profile]);
@@ -94,7 +99,11 @@ export function SettingsPage() {
           },
         );
       })
-      .catch((reason) => active && setError(reason instanceof Error ? reason.message : String(reason)))
+      .catch(
+        (reason) =>
+          active &&
+          setError(reason instanceof Error ? reason.message : String(reason)),
+      )
       .finally(() => active && setLessonSettingsLoading(false));
     return () => {
       active = false;
@@ -116,7 +125,9 @@ export function SettingsPage() {
         await savePrivateLessonPreferences(lessonLanguage, lessonPreferences);
       setSaved(true);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : t("settings.saveFailed"));
+      setError(
+        reason instanceof Error ? reason.message : t("settings.saveFailed"),
+      );
     } finally {
       setSaving(false);
     }
@@ -189,13 +200,15 @@ export function SettingsPage() {
             <Globe2 size={18} />
             {t("settings.languagesNav")}
           </a>
+          <a href="#private-lessons">
+            <Mic2 size={18} />
+            {t("settings.privateLessonNav", {
+              defaultValue: "Private lessons",
+            })}
+          </a>
           <a href="#learning">
             <SlidersHorizontal size={18} />
             {t("settings.learningNav")}
-          </a>
-          <a href="#private-lessons">
-            <Mic2 size={18} />
-            {t("settings.privateLessonNav", { defaultValue: "Private lessons" })}
           </a>
         </nav>
         <div className="settings-content">
@@ -231,7 +244,9 @@ export function SettingsPage() {
                   <span>
                     {t("settings.displayName")}{" "}
                     <small>
-                      {mode === "live" ? t("settings.localTab") : t("settings.demo")}
+                      {mode === "live"
+                        ? t("settings.localTab")
+                        : t("settings.demo")}
                     </small>
                   </span>
                   <input
@@ -307,7 +322,9 @@ export function SettingsPage() {
                     })
                   }
                 >
-                  <option value="" disabled>{t("settings.chooseTranslationLanguage")}</option>
+                  <option value="" disabled>
+                    {t("settings.chooseTranslationLanguage")}
+                  </option>
                   {languageOptions.map(([code, label]) => (
                     <option value={code} key={code}>
                       {label} · {code}
@@ -324,7 +341,9 @@ export function SettingsPage() {
                     <label className="field">
                       <span>{t("settings.languageCode")}</span>
                       <input
-                        aria-label={t("settings.languageNumber", { number: index + 1 })}
+                        aria-label={t("settings.languageNumber", {
+                          number: index + 1,
+                        })}
                         value={language.languageCode}
                         dir="ltr"
                         required
@@ -382,7 +401,13 @@ export function SettingsPage() {
                       (language.effectiveLevel ||
                         language.systemEstimatedLevel) && (
                         <small className="muted-note">
-                          {t("settings.effectiveLevel", { level: language.effectiveLevel || "—" })} · {t("settings.systemLevel", { level: language.systemEstimatedLevel || "—" })}
+                          {t("settings.effectiveLevel", {
+                            level: language.effectiveLevel || "—",
+                          })}{" "}
+                          ·{" "}
+                          {t("settings.systemLevel", {
+                            level: language.systemEstimatedLevel || "—",
+                          })}
                           {language.systemConfidence !== null &&
                           language.systemConfidence !== undefined
                             ? ` · ${t("settings.confidence", { value: Math.round(language.systemConfidence * 100) })}`
@@ -408,9 +433,7 @@ export function SettingsPage() {
                 <Plus size={16} />
                 {t("settings.addLearningLanguage")}
               </button>
-              <p className="muted-note">
-                {t("settings.levelHelp")}
-              </p>
+              <p className="muted-note">{t("settings.levelHelp")}</p>
             </section>
             <section className="settings-card" id="private-lessons">
               <div className="settings-card-heading">
@@ -431,7 +454,10 @@ export function SettingsPage() {
                   </p>
                 </div>
               </div>
-              <fieldset className="plain-fieldset form-stack" disabled={lessonSettingsLoading}>
+              <fieldset
+                className="plain-fieldset form-stack"
+                disabled={lessonSettingsLoading}
+              >
                 <div className="settings-fields">
                   <label className="field">
                     <span>{t("privateLesson.targetLanguage")}</span>
@@ -443,7 +469,9 @@ export function SettingsPage() {
                       }}
                     >
                       {languageOptions.map(([code, label]) => (
-                        <option key={code} value={code}>{label}</option>
+                        <option key={code} value={code}>
+                          {label}
+                        </option>
                       ))}
                     </select>
                   </label>
@@ -463,7 +491,9 @@ export function SettingsPage() {
                       {languageOptions
                         .filter(([code]) => code !== lessonLanguage)
                         .map(([code, label]) => (
-                          <option key={code} value={code}>{label}</option>
+                          <option key={code} value={code}>
+                            {label}
+                          </option>
                         ))}
                     </select>
                   </label>
@@ -475,12 +505,16 @@ export function SettingsPage() {
                         setSaved(false);
                         setLessonPreferences((current) => ({
                           ...current,
-                          requestedDurationMinutes: Number(event.target.value) as PrivateLessonPreferences["requestedDurationMinutes"],
+                          requestedDurationMinutes: Number(
+                            event.target.value,
+                          ) as PrivateLessonPreferences["requestedDurationMinutes"],
                         }));
                       }}
                     >
                       {([1, 5, 10, 15] as const).map((value) => (
-                        <option key={value} value={value}>{t(`privateLesson.durationOptions.${value}`)}</option>
+                        <option key={value} value={value}>
+                          {t(`privateLesson.durationOptions.${value}`)}
+                        </option>
                       ))}
                     </select>
                   </label>
@@ -492,12 +526,17 @@ export function SettingsPage() {
                         setSaved(false);
                         setLessonPreferences((current) => ({
                           ...current,
-                          teacherVoice: event.target.value as PrivateLessonPreferences["teacherVoice"],
+                          teacherVoice: event.target
+                            .value as PrivateLessonPreferences["teacherVoice"],
                         }));
                       }}
                     >
-                      <option value="female">{t("privateLesson.voiceOptions.female")}</option>
-                      <option value="male">{t("privateLesson.voiceOptions.male")}</option>
+                      <option value="female">
+                        {t("privateLesson.voiceOptions.female")}
+                      </option>
+                      <option value="male">
+                        {t("privateLesson.voiceOptions.male")}
+                      </option>
                     </select>
                   </label>
                   <label className="field">
@@ -508,22 +547,37 @@ export function SettingsPage() {
                         setSaved(false);
                         setLessonPreferences((current) => ({
                           ...current,
-                          speechRate: event.target.value as PrivateLessonPreferences["speechRate"],
+                          speechRate: event.target
+                            .value as PrivateLessonPreferences["speechRate"],
                         }));
                       }}
                     >
                       {privateLessonSpeechRates.map((value) => (
-                        <option key={value} value={value}>{t(`privateLesson.speedOptions.${value}`)}</option>
+                        <option key={value} value={value}>
+                          {t(`privateLesson.speedOptions.${value}`)}
+                        </option>
                       ))}
                     </select>
                   </label>
                 </div>
                 <div className="field private-lesson-focus-field">
                   <span>{t("privateLesson.focus.title")}</span>
-                  <small>{t("settings.privateLessonFocusHelp", { defaultValue: "These are the default skills emphasized in every lesson." })}</small>
+                  <small>
+                    {t("settings.privateLessonFocusHelp", {
+                      defaultValue:
+                        "These are the default skills emphasized in every lesson.",
+                    })}
+                  </small>
                   <div className="private-lesson-focus-options">
                     {privateLessonFocusAreas.map((area) => (
-                      <label key={area} className={lessonPreferences.focusAreas.includes(area) ? "selected" : ""}>
+                      <label
+                        key={area}
+                        className={
+                          lessonPreferences.focusAreas.includes(area)
+                            ? "selected"
+                            : ""
+                        }
+                      >
                         <input
                           type="checkbox"
                           checked={lessonPreferences.focusAreas.includes(area)}
@@ -543,12 +597,17 @@ export function SettingsPage() {
                         setSaved(false);
                         setLessonPreferences((current) => ({
                           ...current,
-                          correctionMode: event.target.value as PrivateLessonPreferences["correctionMode"],
+                          correctionMode: event.target
+                            .value as PrivateLessonPreferences["correctionMode"],
                         }));
                       }}
                     >
                       {privateLessonCorrectionModes.map((value) => (
-                        <option key={value} value={value}>{t(`privateLesson.correctionMode.options.${value}.title`)}</option>
+                        <option key={value} value={value}>
+                          {t(
+                            `privateLesson.correctionMode.options.${value}.title`,
+                          )}
+                        </option>
                       ))}
                     </select>
                   </label>
@@ -560,12 +619,17 @@ export function SettingsPage() {
                         setSaved(false);
                         setLessonPreferences((current) => ({
                           ...current,
-                          vocabularyMode: event.target.value as PrivateLessonPreferences["vocabularyMode"],
+                          vocabularyMode: event.target
+                            .value as PrivateLessonPreferences["vocabularyMode"],
                         }));
                       }}
                     >
                       {privateLessonVocabularyModes.map((value) => (
-                        <option key={value} value={value}>{t(`privateLesson.vocabularyMode.options.${value}.title`)}</option>
+                        <option key={value} value={value}>
+                          {t(
+                            `privateLesson.vocabularyMode.options.${value}.title`,
+                          )}
+                        </option>
                       ))}
                     </select>
                   </label>
@@ -587,7 +651,10 @@ export function SettingsPage() {
                   </label>
                 </div>
                 {lessonSettingsLoading && (
-                  <p className="muted-note"><LoaderCircle className="spin" size={16} /> {t("common.loadingFromServer")}</p>
+                  <p className="muted-note">
+                    <LoaderCircle className="spin" size={16} />{" "}
+                    {t("common.loadingFromServer")}
+                  </p>
                 )}
               </fieldset>
             </section>
@@ -669,7 +736,9 @@ export function SettingsPage() {
                   >
                     <option value="">{t("settings.noPreference")}</option>
                     <option value="auto">{t("settings.automatic")}</option>
-                    <option value="dictionary">{t("settings.dictionary")}</option>
+                    <option value="dictionary">
+                      {t("settings.dictionary")}
+                    </option>
                     <option value="ai">AI</option>
                   </select>
                 </label>
@@ -770,9 +839,7 @@ export function SettingsPage() {
           </fieldset>
           <div className="settings-card">
             <h2>{t("settings.remindersTitle")}</h2>
-            <p className="muted-note">
-              {t("settings.remindersDescription")}
-            </p>
+            <p className="muted-note">{t("settings.remindersDescription")}</p>
           </div>
           {error && (
             <p className="form-error" role="alert">
@@ -802,7 +869,11 @@ export function SettingsPage() {
               ) : (
                 <Save size={18} />
               )}
-              {saving ? t("settings.saving") : saved ? t("settings.saved") : t("settings.saveChanges")}
+              {saving
+                ? t("settings.saving")
+                : saved
+                  ? t("settings.saved")
+                  : t("settings.saveChanges")}
             </button>
           </div>
           {saved && (
@@ -818,9 +889,7 @@ export function SettingsPage() {
         title={t("settings.resetDemoTitle")}
       >
         <div className="modal-body">
-          <p>
-            {t("settings.resetDemoDescription")}
-          </p>
+          <p>{t("settings.resetDemoDescription")}</p>
           <div className="modal-actions">
             <button
               className="button secondary"
