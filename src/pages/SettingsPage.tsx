@@ -3,6 +3,7 @@ import {
   Check,
   Globe2,
   LoaderCircle,
+  Mic2,
   Plus,
   RotateCcw,
   Save,
@@ -18,6 +19,29 @@ import type { UserProfile } from "../types";
 import { getLanguageOptions } from "../lib/languages";
 import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
+import {
+  getPrivateLessonSetup,
+  getSavedPrivateLessonLanguage,
+  privateLessonCorrectionModes,
+  privateLessonFocusAreas,
+  privateLessonSpeechRates,
+  privateLessonVocabularyModes,
+  savePrivateLessonLanguage,
+  savePrivateLessonPreferences,
+  type PrivateLessonFocusArea,
+  type PrivateLessonPreferences,
+} from "../lib/privateLesson";
+
+const defaultLessonPreferences: PrivateLessonPreferences = {
+  supportLanguageCode: null,
+  requestedDurationMinutes: 5,
+  teacherVoice: "female",
+  speechRate: "normal",
+  focusAreas: ["speaking", "vocabulary"],
+  customFocus: null,
+  correctionMode: "recast",
+  vocabularyMode: "learned",
+};
 
 export function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -36,9 +60,46 @@ export function SettingsPage() {
   const [error, setError] = useState("");
   const [newInterest, setNewInterest] = useState("");
   const [resetOpen, setResetOpen] = useState(false);
+  const [lessonLanguage, setLessonLanguage] = useState(() =>
+    getSavedPrivateLessonLanguage(
+      profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
+    ),
+  );
+  const [lessonPreferences, setLessonPreferences] = useState<PrivateLessonPreferences>({
+    ...defaultLessonPreferences,
+    supportLanguageCode: profile.defaultTranslationLanguage,
+  });
+  const [lessonSettingsLoading, setLessonSettingsLoading] = useState(false);
+  const [lessonPreferencesRemoteAvailable, setLessonPreferencesRemoteAvailable] =
+    useState(false);
   useEffect(() => {
     setForm(structuredClone(profile));
   }, [profile]);
+  useEffect(() => {
+    if (mode !== "live" || !lessonLanguage) return;
+    let active = true;
+    setLessonSettingsLoading(true);
+    setLessonPreferencesRemoteAvailable(false);
+    void getPrivateLessonSetup(lessonLanguage)
+      .then((setup) => {
+        if (!active) return;
+        setLessonPreferencesRemoteAvailable(true);
+        setLessonPreferences(
+          setup.preferences ?? {
+            ...defaultLessonPreferences,
+            supportLanguageCode:
+              profile.defaultTranslationLanguage === lessonLanguage
+                ? null
+                : profile.defaultTranslationLanguage,
+          },
+        );
+      })
+      .catch((reason) => active && setError(reason instanceof Error ? reason.message : String(reason)))
+      .finally(() => active && setLessonSettingsLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [lessonLanguage, mode, profile.defaultTranslationLanguage]);
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
@@ -50,6 +111,9 @@ export function SettingsPage() {
     setSaving(true);
     try {
       await updateProfile(form);
+      savePrivateLessonLanguage(lessonLanguage);
+      if (mode === "live" && lessonPreferencesRemoteAvailable)
+        await savePrivateLessonPreferences(lessonLanguage, lessonPreferences);
       setSaved(true);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : t("settings.saveFailed"));
@@ -71,6 +135,17 @@ export function SettingsPage() {
     )
       patch({ interests: [...form.interests, value] });
     setNewInterest("");
+  };
+  const toggleLessonFocus = (area: PrivateLessonFocusArea) => {
+    setSaved(false);
+    setLessonPreferences((current) => ({
+      ...current,
+      focusAreas: current.focusAreas.includes(area)
+        ? current.focusAreas.length === 1
+          ? current.focusAreas
+          : current.focusAreas.filter((item) => item !== area)
+        : [...current.focusAreas, area],
+    }));
   };
   return (
     <div className="settings-page page-enter">
@@ -117,6 +192,10 @@ export function SettingsPage() {
           <a href="#learning">
             <SlidersHorizontal size={18} />
             {t("settings.learningNav")}
+          </a>
+          <a href="#private-lessons">
+            <Mic2 size={18} />
+            {t("settings.privateLessonNav", { defaultValue: "Private lessons" })}
           </a>
         </nav>
         <div className="settings-content">
@@ -332,6 +411,185 @@ export function SettingsPage() {
               <p className="muted-note">
                 {t("settings.levelHelp")}
               </p>
+            </section>
+            <section className="settings-card" id="private-lessons">
+              <div className="settings-card-heading">
+                <span className="settings-icon green">
+                  <Mic2 size={21} />
+                </span>
+                <div>
+                  <h2>
+                    {t("settings.privateLessonTitle", {
+                      defaultValue: "Private lesson preferences",
+                    })}
+                  </h2>
+                  <p>
+                    {t("settings.privateLessonDescription", {
+                      defaultValue:
+                        "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+                    })}
+                  </p>
+                </div>
+              </div>
+              <fieldset className="plain-fieldset form-stack" disabled={lessonSettingsLoading}>
+                <div className="settings-fields">
+                  <label className="field">
+                    <span>{t("privateLesson.targetLanguage")}</span>
+                    <select
+                      value={lessonLanguage}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonLanguage(event.target.value);
+                      }}
+                    >
+                      {languageOptions.map(([code, label]) => (
+                        <option key={code} value={code}>{label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>{t("privateLesson.supportLanguage")}</span>
+                    <select
+                      value={lessonPreferences.supportLanguageCode ?? ""}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          supportLanguageCode: event.target.value || null,
+                        }));
+                      }}
+                    >
+                      <option value="">{t("privateLesson.noSupport")}</option>
+                      {languageOptions
+                        .filter(([code]) => code !== lessonLanguage)
+                        .map(([code, label]) => (
+                          <option key={code} value={code}>{label}</option>
+                        ))}
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>{t("privateLesson.duration")}</span>
+                    <select
+                      value={lessonPreferences.requestedDurationMinutes}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          requestedDurationMinutes: Number(event.target.value) as PrivateLessonPreferences["requestedDurationMinutes"],
+                        }));
+                      }}
+                    >
+                      {([1, 5, 10, 15] as const).map((value) => (
+                        <option key={value} value={value}>{t(`privateLesson.durationOptions.${value}`)}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>{t("privateLesson.teacherVoice")}</span>
+                    <select
+                      value={lessonPreferences.teacherVoice}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          teacherVoice: event.target.value as PrivateLessonPreferences["teacherVoice"],
+                        }));
+                      }}
+                    >
+                      <option value="female">{t("privateLesson.voiceOptions.female")}</option>
+                      <option value="male">{t("privateLesson.voiceOptions.male")}</option>
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>{t("privateLesson.speechRate")}</span>
+                    <select
+                      value={lessonPreferences.speechRate}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          speechRate: event.target.value as PrivateLessonPreferences["speechRate"],
+                        }));
+                      }}
+                    >
+                      {privateLessonSpeechRates.map((value) => (
+                        <option key={value} value={value}>{t(`privateLesson.speedOptions.${value}`)}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="field private-lesson-focus-field">
+                  <span>{t("privateLesson.focus.title")}</span>
+                  <small>{t("settings.privateLessonFocusHelp", { defaultValue: "These are the default skills emphasized in every lesson." })}</small>
+                  <div className="private-lesson-focus-options">
+                    {privateLessonFocusAreas.map((area) => (
+                      <label key={area} className={lessonPreferences.focusAreas.includes(area) ? "selected" : ""}>
+                        <input
+                          type="checkbox"
+                          checked={lessonPreferences.focusAreas.includes(area)}
+                          onChange={() => toggleLessonFocus(area)}
+                        />
+                        <span>{t(`privateLesson.focus.options.${area}`)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="settings-fields">
+                  <label className="field">
+                    <span>{t("privateLesson.correctionMode.title")}</span>
+                    <select
+                      value={lessonPreferences.correctionMode}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          correctionMode: event.target.value as PrivateLessonPreferences["correctionMode"],
+                        }));
+                      }}
+                    >
+                      {privateLessonCorrectionModes.map((value) => (
+                        <option key={value} value={value}>{t(`privateLesson.correctionMode.options.${value}.title`)}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>{t("privateLesson.vocabularyMode.title")}</span>
+                    <select
+                      value={lessonPreferences.vocabularyMode}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          vocabularyMode: event.target.value as PrivateLessonPreferences["vocabularyMode"],
+                        }));
+                      }}
+                    >
+                      {privateLessonVocabularyModes.map((value) => (
+                        <option key={value} value={value}>{t(`privateLesson.vocabularyMode.options.${value}.title`)}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="field full">
+                    <span>{t("privateLesson.customFocus")}</span>
+                    <textarea
+                      rows={2}
+                      maxLength={300}
+                      value={lessonPreferences.customFocus ?? ""}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          customFocus: event.target.value || null,
+                        }));
+                      }}
+                      placeholder={t("privateLesson.customFocusPlaceholder")}
+                    />
+                  </label>
+                </div>
+                {lessonSettingsLoading && (
+                  <p className="muted-note"><LoaderCircle className="spin" size={16} /> {t("common.loadingFromServer")}</p>
+                )}
+              </fieldset>
             </section>
             <section className="settings-card" id="learning">
               <div className="settings-card-heading">

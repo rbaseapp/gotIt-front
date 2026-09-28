@@ -34,8 +34,8 @@
   "privateLesson": {
     "eyebrow": "GotIt Voice",
     "title": "Your private voice lesson",
-    "description": "A focused conversation at the length you choose, built around your level, interests, and saved vocabulary.",
-    "setupTitle": "Shape this lesson",
+    "description": "A focused lesson built around your level and progress.",
+    "setupTitle": "What would you like to learn today?",
     "preferences": {
       "title": "Lesson preferences",
       "saved": "Saved automatically for this language"

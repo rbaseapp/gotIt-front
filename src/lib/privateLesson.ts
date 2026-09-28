@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { product, uuid } from "./product";
+import { readStorage, writeStorage } from "./storage";
 
 export const privateLessonFocusAreas = [
   "speaking",
@@ -117,6 +118,19 @@ export const privateLessonSetupSchema = z.object({
 
 export type PrivateLessonSetup = z.infer<typeof privateLessonSetupSchema>;
 export type PrivateLessonRoadmap = z.infer<typeof privateLessonRoadmapSchema>;
+export type PrivateLessonPreferences = NonNullable<
+  PrivateLessonSetup["preferences"]
+>;
+
+const PRIVATE_LESSON_LANGUAGE_KEY = "gotit.privateLesson.targetLanguage";
+
+export function getSavedPrivateLessonLanguage(fallback: string) {
+  return readStorage(PRIVATE_LESSON_LANGUAGE_KEY, fallback);
+}
+
+export function savePrivateLessonLanguage(languageCode: string) {
+  return writeStorage(PRIVATE_LESSON_LANGUAGE_KEY, languageCode);
+}
 
 const instructionEventSchema = z
   .object({
@@ -354,6 +368,18 @@ export function getPrivateLessonSetup(targetLanguageCode: string) {
     privateLessonSetupSchema,
     `private-lessons/setup?targetLanguageCode=${encodeURIComponent(targetLanguageCode)}`,
   );
+}
+
+export function savePrivateLessonPreferences(
+  targetLanguageCode: string,
+  preferences: PrivateLessonPreferences,
+) {
+  return product(
+    z.object({ preferences: privateLessonSetupSchema.shape.preferences }),
+    "private-lessons/preferences",
+    "PUT",
+    { targetLanguageCode, ...preferences },
+  ).then((result) => result.preferences);
 }
 
 export function createPrivateLessonRoadmap(input: {
