@@ -1067,7 +1067,10 @@ export function PrivateLessonPage() {
                         {new Date(lesson.startedAt).toLocaleDateString()} ·{" "}
                         {lesson.level}
                       </span>
-                      <small>
+                      <small
+                        dir="auto"
+                        lang={lesson.report ? lesson.targetLanguageCode : undefined}
+                      >
                         {lesson.report?.summary ??
                           t(`privateLesson.history.status.${lesson.status}`)}
                       </small>
@@ -1593,13 +1596,17 @@ function LessonReportView({
   const report = lesson.report;
   if (!report) return null;
   return (
-    <div className="private-lesson-report" dir="auto">
+    <div className="private-lesson-report">
       <section className="private-lesson-report-summary">
         <p className="eyebrow">{t("privateLesson.report.title")}</p>
-        <h3>{report.summary}</h3>
+        <h3 dir="auto" lang={lesson.targetLanguageCode}>
+          {report.summary}
+        </h3>
         <p>
           <strong>{t("privateLesson.report.next")}</strong>{" "}
-          {report.nextLessonPlan}
+          <span dir="auto" lang={lesson.targetLanguageCode}>
+            {report.nextLessonPlan}
+          </span>
         </p>
       </section>
       <SkillAssessment assessment={report.assessment} t={t} />
@@ -1609,7 +1616,9 @@ function LessonReportView({
           {report.strengths.length ? (
             <ul>
               {report.strengths.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item} dir="auto" lang={lesson.targetLanguageCode}>
+                  {item}
+                </li>
               ))}
             </ul>
           ) : (
@@ -1620,7 +1629,11 @@ function LessonReportView({
           <h4>{t("privateLesson.report.corrections")}</h4>
           {report.corrections.length ? (
             report.corrections.map((item, index) => (
-              <article key={`${item.original}:${index}`}>
+              <article
+                key={`${item.original}:${index}`}
+                dir="auto"
+                lang={lesson.targetLanguageCode}
+              >
                 <del>{item.original}</del> <strong>{item.corrected}</strong>
                 <p>{item.explanation}</p>
               </article>
@@ -1633,7 +1646,11 @@ function LessonReportView({
           <h4>{t("privateLesson.report.grammar")}</h4>
           {report.grammarPoints.length ? (
             report.grammarPoints.map((item) => (
-              <article key={item.topic}>
+              <article
+                key={item.topic}
+                dir="auto"
+                lang={lesson.targetLanguageCode}
+              >
                 <strong>{item.topic}</strong>
                 <p>{item.explanation}</p>
                 {item.example && <small>{item.example}</small>}
@@ -1647,7 +1664,11 @@ function LessonReportView({
           <h4>{t("privateLesson.report.vocabulary")}</h4>
           {report.vocabulary.length ? (
             report.vocabulary.map((item) => (
-              <article key={item.learningItemId}>
+              <article
+                key={item.learningItemId}
+                dir="auto"
+                lang={lesson.targetLanguageCode}
+              >
                 <strong>
                   {item.sourceText} · {item.translationText}
                 </strong>
@@ -1669,7 +1690,7 @@ function LessonReportView({
               const saving = savingSuggestions.has(key);
               return (
                 <article key={key}>
-                  <span>
+                  <span dir="auto" lang={lesson.targetLanguageCode}>
                     <strong>{suggestion.sourceText}</strong> ·{" "}
                     {suggestion.translationText}
                   </span>
@@ -1769,7 +1790,7 @@ function SkillAssessment({
             >
               <i style={{ width: `${result.score}%` }} />
             </div>
-            {!compact && <p>{result.feedback}</p>}
+            {!compact && <p dir="auto">{result.feedback}</p>}
           </article>
         ))}
       </div>

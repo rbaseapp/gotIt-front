@@ -463,12 +463,12 @@ describe("private voice lesson", () => {
     await user.click(
       await screen.findByRole("button", { name: /technology/u }),
     );
-    expect(
-      screen.getByRole("heading", {
-        name: "You spoke clearly about technology.",
-      }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Clear answers")).toBeInTheDocument();
+    const summary = screen.getByRole("heading", {
+      name: "You spoke clearly about technology.",
+    });
+    expect(summary).toHaveAttribute("dir", "auto");
+    expect(summary).toHaveAttribute("lang", "en");
+    expect(screen.getByText("Clear answers")).toHaveAttribute("dir", "auto");
     expect(
       screen.getByRole("button", { name: "תרגול המילים המומלצות עכשיו" }),
     ).toBeInTheDocument();
