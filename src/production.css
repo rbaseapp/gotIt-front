@@ -951,6 +951,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
 }
 .private-lesson-assessment > header h4,
@@ -977,6 +978,7 @@
   gap: 7px;
 }
 .private-lesson-skill-grid article > div:first-child {
+  min-width: 0;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -993,11 +995,15 @@
   white-space: nowrap;
 }
 .private-lesson-skill-grid article p {
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: #52685b;
   font-size: 12px;
   line-height: 1.45;
 }
 .private-lesson-skill-track {
+  width: 100%;
+  min-width: 0;
   height: 7px;
   overflow: hidden;
   border-radius: 999px;
@@ -1021,6 +1027,7 @@
 }
 .private-lesson-report-grid > section,
 .private-lesson-report-suggestions {
+  min-width: 0;
   display: grid;
   align-content: start;
   gap: 8px;
@@ -1029,8 +1036,15 @@
   background: #f4f9f6;
 }
 .private-lesson-report-grid article {
+  min-width: 0;
   display: grid;
   gap: 3px;
+}
+.private-lesson-report-grid article > *,
+.private-lesson-report-summary > *,
+.private-lesson-report-suggestions article > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .private-lesson-report-grid ul {
   margin: 0;
@@ -1139,6 +1153,16 @@ body.private-lesson-session-open .private-lesson-session-header {
   padding-bottom: clamp(6px, 1vh, 10px);
   border-bottom: 1px solid #dce8e2;
 }
+body.private-lesson-session-open
+  .private-lesson-session-header
+  > :first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+body.private-lesson-session-open .private-lesson-header-controls {
+  min-width: 0;
+  flex: 0 0 auto;
+}
 body.private-lesson-session-open .private-lesson-session-header .eyebrow,
 body.private-lesson-session-open .private-lesson-session-header h2 {
   margin: 0;
@@ -1152,7 +1176,8 @@ body.private-lesson-session-open .private-lesson-session-header h2 {
   white-space: nowrap;
 }
 body.private-lesson-session-open .private-lesson-status {
-  max-width: min(68vw, 720px);
+  display: block;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1259,6 +1284,7 @@ body.private-lesson-session-open .private-lesson-session > .button {
     grid-template-columns: minmax(0, 1fr);
   }
   .private-lesson-report {
+    min-width: 0;
     padding: 12px;
   }
   .private-lesson-report-suggestions article {
@@ -1386,6 +1412,15 @@ body.private-lesson-session-open .private-lesson-session > .button {
     min-height: 38px;
     padding: 7px 9px;
     font-size: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .private-lesson-skill-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .private-lesson-skill-grid article:last-child {
+    grid-column: auto;
   }
 }
 

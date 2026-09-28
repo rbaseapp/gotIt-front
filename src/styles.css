@@ -3100,6 +3100,7 @@ select:focus-visible {
 
 /* Settings */
 .settings-layout {
+  min-width: 0;
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 20px;
@@ -3132,10 +3133,13 @@ select:focus-visible {
   font-weight: 600;
 }
 .settings-content {
+  min-width: 0;
   display: grid;
   gap: 14px;
 }
 .settings-card {
+  min-width: 0;
+  max-width: 100%;
   padding: 23px;
   border: 1px solid var(--line);
   border-radius: 17px;
@@ -3144,10 +3148,14 @@ select:focus-visible {
   scroll-margin-top: 95px;
 }
 .settings-card-heading {
+  min-width: 0;
   margin-bottom: 21px;
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.settings-card-heading > div {
+  min-width: 0;
 }
 .settings-card-heading h2 {
   margin: 0 0 4px;
@@ -3182,9 +3190,13 @@ select:focus-visible {
   background: var(--blue-soft);
 }
 .settings-fields {
+  min-width: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 17px;
+}
+.settings-fields > * {
+  min-width: 0;
 }
 .settings-fields .field.full {
   grid-column: 1 / -1;
@@ -3430,6 +3442,8 @@ select:focus-visible {
   .mobile-close,
   .mobile-menu {
     display: grid;
+    width: 44px;
+    height: 44px;
   }
   .sidebar-scrim {
     position: fixed;
@@ -3659,6 +3673,9 @@ select:focus-visible {
   }
   .settings-card {
     padding: 18px 15px;
+  }
+  .settings-nav a {
+    min-height: 44px;
   }
   .settings-actions {
     flex-direction: column-reverse;
