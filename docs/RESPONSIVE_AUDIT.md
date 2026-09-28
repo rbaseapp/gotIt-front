@@ -99,17 +99,38 @@ npm run check
 `npm run check` covers TypeScript, ESLint, Vitest, the production build, and
 the frontend gateway tests.
 
-## Remaining live-device verification
+## Production verification
 
-The automated suite covers layout and overflow deterministically. The
-following items require a real authenticated/live state or physical-device
-behavior and remain separate sign-off items until checked:
+The authenticated production application was verified after deploying code
+commit `efe836f2bae742e83f24bfadb242bdf74f3513f4`. Render checked out that exact
+commit, completed its build, and reported the service as Live. GitHub Actions
+run 91 also completed successfully.
 
-- the real-time microphone permission and on-screen keyboard transitions;
-- iPhone safe-area insets and Safari dynamic browser chrome;
-- Android Chrome keyboard resizing during live lesson input;
-- payment-provider UI rendered inside Paddle's hosted overlay;
-- authenticated-only server states that cannot be produced with demo data.
+The production checks completed without failures:
 
-These items must be recorded as verified or blocked before the broader audit
-goal is marked complete.
+- 42 checks across dashboard, vocabulary, and settings at all 14 viewports;
+- the real saved private-lesson report at all 14 viewports, including an
+  explicit intersection test for the grammar and vocabulary cards;
+- 70 route checks across ten additional authenticated and public screens at
+  seven representative phone, landscape, tablet, and desktop sizes;
+- the real add-word modal at 320x568, including every visible form control;
+- the authenticated mobile drawer at 320x568, including 44x44px open and close
+  controls and zero document or drawer overflow;
+- HTTP 200 responses from both the production root and health endpoint.
+
+## Physical-device boundaries
+
+The automated and authenticated browser checks cover deterministic layout,
+overflow, wrapping, and touch-target behavior. The following remain explicit
+physical-device or third-party sign-off items rather than claimed browser
+coverage:
+
+- iPhone Safari safe-area behavior and dynamic browser chrome;
+- Android Chrome resizing while the on-screen keyboard is open;
+- microphone permission transitions during an active real-time lesson;
+- Paddle's hosted payment overlay and its provider-controlled responsive UI.
+
+No payment was initiated and no additional live lesson was created during the
+audit. The active timer state is covered by the long-content regression fixture
+at all 14 sizes; the saved report was separately verified with real production
+data.
