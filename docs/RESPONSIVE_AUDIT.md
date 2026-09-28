@@ -84,7 +84,10 @@ headings, fields, and field children now use explicit shrink boundaries.
 ### Mobile navigation target
 
 The primary mobile menu button was 38x38px. It is now 44x44px at all mobile
-and tablet breakpoints where the sidebar menu is used.
+and tablet breakpoints where the sidebar menu is used. Production verification
+with the authenticated 320px sidebar also showed that the close control could
+shrink to 40px beside the full live logo; both controls now have a fixed 44px
+flex basis and cannot shrink.
 
 ## Verification commands
 
