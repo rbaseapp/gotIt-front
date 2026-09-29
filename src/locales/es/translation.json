@@ -32,6 +32,22 @@
     "billing": "Suscripción"
   },
   "privateLesson": {
+    "mode": {
+      "title": "Tipo de clase",
+      "teachingLanguage": "Idioma de las explicaciones",
+      "chooseTeachingLanguage": "Elige un idioma para las explicaciones",
+      "beginnerHint": "El profesor explicará en este idioma e introducirá gradualmente entre 3 y 5 frases útiles.",
+      "options": {
+        "standard": {
+          "title": "Clase estándar",
+          "description": "La clase se desarrolla principalmente en el idioma que practicas, con ayuda cuando la necesites."
+        },
+        "absolute_beginner": {
+          "title": "Empezar desde cero",
+          "description": "No necesitas conocimientos previos. El profesor explica en tu idioma y practica tus primeras frases."
+        }
+      }
+    },
     "preparingRecommendation": "Preparing a lesson for you…",
     "recommendedForYou": "Recommended for you",
     "recommendedFallbackTitle": "Everyday conversation",

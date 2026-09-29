@@ -67,6 +67,7 @@ const session = {
     wrapUpAfterSeconds: 295,
     targetLanguageCode: "en",
     supportLanguageCode: "he",
+    lessonMode: "standard",
     level: "B1",
     topic: "technology",
     grammarFocus: null,
@@ -108,6 +109,7 @@ const session = {
 const setup = {
   preferences: {
     supportLanguageCode: "he",
+    lessonMode: "standard",
     requestedDurationMinutes: 5,
     teacherVoice: "female",
     speechRate: "normal",
@@ -173,6 +175,7 @@ const savedLesson = {
   id: session.lesson.id,
   targetLanguageCode: "en",
   supportLanguageCode: "he",
+  lessonMode: "standard",
   level: "B1",
   topic: "technology",
   grammarFocus: null,
@@ -279,6 +282,28 @@ describe("private voice lesson", () => {
       goalKey: "modal-verbs",
     });
   });
+
+  it("starts a zero-background lesson with a teaching language and A1 level", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("radio", { name: /מתחילים מאפס/u }),
+    );
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          lessonMode: "absolute_beginner",
+          requestedLevel: "A1",
+          speechRate: "slow",
+        }),
+      ),
+    );
+  });
   it("uses the authenticated app API without asking the learner for a token", async () => {
     mocks.create.mockResolvedValue(session);
     mocks.connect.mockImplementation(
@@ -340,6 +365,7 @@ describe("private voice lesson", () => {
       expect(mocks.create).toHaveBeenCalledWith({
         targetLanguageCode: "en",
         supportLanguageCode: "he",
+        lessonMode: "standard",
         requestedDurationMinutes: 10,
         teacherVoice: "female",
         speechRate: "normal",
@@ -575,7 +601,9 @@ describe("private voice lesson", () => {
     ).toBeInTheDocument();
     const levelButton = screen.getByRole("button", { name: /הרמה שלך/u });
     expect(within(levelButton).getByText("B1")).toBeInTheDocument();
-    expect(screen.queryByText("Continue the Spanish lesson.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Continue the Spanish lesson."),
+    ).not.toBeInTheDocument();
   });
 
   it("saves a suggested word from the lesson report", async () => {

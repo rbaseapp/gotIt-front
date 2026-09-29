@@ -32,6 +32,22 @@
     "billing": "Abonnement"
   },
   "privateLesson": {
+    "mode": {
+      "title": "Type de cours",
+      "teachingLanguage": "Langue des explications",
+      "chooseTeachingLanguage": "Choisissez une langue d’explication",
+      "beginnerHint": "Le professeur expliquera dans cette langue et introduira progressivement 3 à 5 phrases utiles.",
+      "options": {
+        "standard": {
+          "title": "Cours standard",
+          "description": "Le cours se déroule principalement dans la langue pratiquée, avec de l’aide si nécessaire."
+        },
+        "absolute_beginner": {
+          "title": "Partir de zéro",
+          "description": "Aucune connaissance préalable requise. Le professeur explique dans votre langue et pratique vos premières phrases."
+        }
+      }
+    },
     "preparingRecommendation": "Preparing a lesson for you…",
     "recommendedForYou": "Recommended for you",
     "recommendedFallbackTitle": "Everyday conversation",

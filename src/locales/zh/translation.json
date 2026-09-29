@@ -32,6 +32,22 @@
     "billing": "订阅"
   },
   "privateLesson": {
+    "mode": {
+      "title": "课程类型",
+      "teachingLanguage": "讲解所用语言",
+      "chooseTeachingLanguage": "选择讲解语言",
+      "beginnerHint": "老师会用这种语言讲解，并逐步加入 3–5 个实用的新语言短句。",
+      "options": {
+        "standard": {
+          "title": "常规课程",
+          "description": "课程主要使用练习语言，必要时提供帮助。"
+        },
+        "absolute_beginner": {
+          "title": "从零开始",
+          "description": "无需任何基础。老师会用你的语言讲解并练习最初的短句。"
+        }
+      }
+    },
     "preparingRecommendation": "Preparing a lesson for you…",
     "recommendedForYou": "Recommended for you",
     "recommendedFallbackTitle": "Everyday conversation",

@@ -50,6 +50,7 @@ import {
   PrivateLessonConnectionError,
   type PrivateLessonConnection,
   type PrivateLessonDurationMinutes,
+  type PrivateLessonMode,
   privateLessonCorrectionModes,
   type PrivateLessonCorrectionMode,
   privateLessonVocabularyModes,
@@ -105,6 +106,7 @@ export function PrivateLessonPage() {
   const [supportLanguage, setSupportLanguage] = useState(
     profile.defaultTranslationLanguage || "",
   );
+  const [lessonMode, setLessonMode] = useState<PrivateLessonMode>("standard");
   const [level, setLevel] = useState<"" | CefrLevel>("");
   const [teacherVoice, setTeacherVoice] = useState<TeacherVoice>("female");
   const [speechRate, setSpeechRate] =
@@ -439,6 +441,7 @@ export function PrivateLessonPage() {
         const saved = setup.preferences;
         if (saved) {
           setSupportLanguage(saved.supportLanguageCode ?? "");
+          setLessonMode(saved.lessonMode);
           setLessonDurationMinutes(saved.requestedDurationMinutes);
           setTeacherVoice(saved.teacherVoice);
           setSpeechRate(saved.speechRate);
@@ -497,6 +500,7 @@ export function PrivateLessonPage() {
       const created = await createPrivateLessonSession({
         targetLanguageCode: targetLanguage.trim(),
         supportLanguageCode: supportLanguage.trim() || null,
+        lessonMode,
         ...(level ? { requestedLevel: level } : {}),
         requestedDurationMinutes: lessonDurationMinutes,
         teacherVoice,
@@ -652,20 +656,26 @@ export function PrivateLessonPage() {
     (lesson) =>
       lesson.status === "completed" &&
       lesson.report?.assessment &&
+      lesson.lessonMode === lessonMode &&
       sameBaseLanguage(lesson.targetLanguageCode, targetLanguage),
   );
-  const currentMilestone = lessonSetup?.roadmap?.milestones.find(
-    (item) => item.status === "current",
-  );
+  const currentMilestone =
+    lessonMode === "absolute_beginner"
+      ? undefined
+      : lessonSetup?.roadmap?.milestones.find(
+          (item) => item.status === "current",
+        );
   const profileLanguage = profile.languages.find(
     (language) =>
       language.languageCode.split("-")[0] === targetLanguage.split("-")[0],
   );
   const effectiveLevel =
-    latestAssessmentLesson?.report?.assessment.overallLevel ||
-    profileLanguage?.effectiveLevel ||
-    profileLanguage?.selfAssessedLevel ||
-    "A2";
+    lessonMode === "absolute_beginner"
+      ? "A1"
+      : latestAssessmentLesson?.report?.assessment.overallLevel ||
+        profileLanguage?.effectiveLevel ||
+        profileLanguage?.selfAssessedLevel ||
+        "A2";
   const targetLanguageLabel =
     languageOptions.find(([code]) =>
       sameBaseLanguage(code, targetLanguage),
@@ -690,6 +700,13 @@ export function PrivateLessonPage() {
       t("privateLesson.recommendedFallbackTitle", {
         defaultValue: "Everyday conversation",
       });
+  const chooseLessonMode = (mode: PrivateLessonMode) => {
+    setLessonMode(mode);
+    if (mode === "absolute_beginner") {
+      setLevel("A1");
+      setSpeechRate((current) => (current === "normal" ? "slow" : current));
+    }
+  };
   const showLegacySetup = false;
   const toggleFocusArea = (area: PrivateLessonFocusArea) => {
     personalizationTouched.current = true;
@@ -758,6 +775,62 @@ export function PrivateLessonPage() {
               </div>
             </div>
             <div className="private-lesson-clean-content">
+              <fieldset className="private-lesson-mode-field">
+                <legend>{t("privateLesson.mode.title")}</legend>
+                <div className="private-lesson-mode-options">
+                  {(["standard", "absolute_beginner"] as const).map((mode) => (
+                    <label
+                      key={mode}
+                      className={lessonMode === mode ? "selected" : ""}
+                    >
+                      <input
+                        type="radio"
+                        name="lesson-mode"
+                        value={mode}
+                        checked={lessonMode === mode}
+                        onChange={() => chooseLessonMode(mode)}
+                      />
+                      <span>
+                        <strong>
+                          {t(`privateLesson.mode.options.${mode}.title`)}
+                        </strong>
+                        <small>
+                          {t(`privateLesson.mode.options.${mode}.description`)}
+                        </small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              {lessonMode === "absolute_beginner" && (
+                <div className="private-lesson-beginner-language">
+                  <label className="field">
+                    <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                    <select
+                      value={supportLanguage}
+                      onChange={(event) =>
+                        setSupportLanguage(event.target.value)
+                      }
+                      dir="auto"
+                      required
+                    >
+                      <option value="" disabled>
+                        {t("privateLesson.mode.chooseTeachingLanguage")}
+                      </option>
+                      {languageOptions
+                        .filter(
+                          ([code]) => !sameBaseLanguage(code, targetLanguage),
+                        )
+                        .map(([code, label]) => (
+                          <option key={code} value={code}>
+                            {label}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <p>{t("privateLesson.mode.beginnerHint")}</p>
+                </div>
+              )}
               {setupLoading ? (
                 <div className="private-lesson-roadmap-loading">
                   <LoaderCircle className="spin" size={20} />
@@ -793,6 +866,9 @@ export function PrivateLessonPage() {
                         <Languages size={15} /> {targetLanguageLabel}
                       </span>
                       <span>
+                        {t(`privateLesson.mode.options.${lessonMode}.title`)}
+                      </span>
+                      <span>
                         <Clock3 size={15} />{" "}
                         {t(
                           `privateLesson.durationOptions.${lessonDurationMinutes}`,
@@ -814,6 +890,8 @@ export function PrivateLessonPage() {
                   type="submit"
                   disabled={
                     !targetLanguage.trim() ||
+                    (lessonMode === "absolute_beginner" &&
+                      !supportLanguage.trim()) ||
                     phase === "preparing" ||
                     setupLoading
                   }
@@ -1392,7 +1470,59 @@ export function PrivateLessonPage() {
                     "These changes apply to this lesson only. Your regular preferences stay in Settings.",
                 })}
               </p>
+              <fieldset className="private-lesson-mode-field compact">
+                <legend>{t("privateLesson.mode.title")}</legend>
+                <div className="private-lesson-mode-options">
+                  {(["standard", "absolute_beginner"] as const).map((mode) => (
+                    <label
+                      key={mode}
+                      className={lessonMode === mode ? "selected" : ""}
+                    >
+                      <input
+                        type="radio"
+                        name="lesson-mode-modal"
+                        value={mode}
+                        checked={lessonMode === mode}
+                        onChange={() => chooseLessonMode(mode)}
+                      />
+                      <span>
+                        <strong>
+                          {t(`privateLesson.mode.options.${mode}.title`)}
+                        </strong>
+                        <small>
+                          {t(`privateLesson.mode.options.${mode}.description`)}
+                        </small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
               <div className="live-form-grid">
+                {lessonMode === "absolute_beginner" && (
+                  <label className="field">
+                    <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                    <select
+                      value={supportLanguage}
+                      onChange={(event) =>
+                        setSupportLanguage(event.target.value)
+                      }
+                      required
+                    >
+                      <option value="" disabled>
+                        {t("privateLesson.mode.chooseTeachingLanguage")}
+                      </option>
+                      {languageOptions
+                        .filter(
+                          ([code]) => !sameBaseLanguage(code, targetLanguage),
+                        )
+                        .map(([code, label]) => (
+                          <option key={code} value={code}>
+                            {label}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                )}
                 <label className="field">
                   <span>{t("privateLesson.duration")}</span>
                   <select

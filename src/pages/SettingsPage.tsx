@@ -34,6 +34,7 @@ import {
 
 const defaultLessonPreferences: PrivateLessonPreferences = {
   supportLanguageCode: null,
+  lessonMode: "standard",
   requestedDurationMinutes: 5,
   teacherVoice: "female",
   speechRate: "normal",
@@ -460,6 +461,29 @@ export function SettingsPage() {
               >
                 <div className="settings-fields">
                   <label className="field">
+                    <span>{t("privateLesson.mode.title")}</span>
+                    <select
+                      value={lessonPreferences.lessonMode}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setLessonPreferences((current) => ({
+                          ...current,
+                          lessonMode: event.target
+                            .value as PrivateLessonPreferences["lessonMode"],
+                        }));
+                      }}
+                    >
+                      <option value="standard">
+                        {t("privateLesson.mode.options.standard.title")}
+                      </option>
+                      <option value="absolute_beginner">
+                        {t(
+                          "privateLesson.mode.options.absolute_beginner.title",
+                        )}
+                      </option>
+                    </select>
+                  </label>
+                  <label className="field">
                     <span>{t("privateLesson.targetLanguage")}</span>
                     <select
                       value={lessonLanguage}
@@ -479,6 +503,9 @@ export function SettingsPage() {
                     <span>{t("privateLesson.supportLanguage")}</span>
                     <select
                       value={lessonPreferences.supportLanguageCode ?? ""}
+                      required={
+                        lessonPreferences.lessonMode === "absolute_beginner"
+                      }
                       onChange={(event) => {
                         setSaved(false);
                         setLessonPreferences((current) => ({

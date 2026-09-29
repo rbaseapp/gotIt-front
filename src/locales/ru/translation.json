@@ -32,6 +32,22 @@
     "billing": "Подписка"
   },
   "privateLesson": {
+    "mode": {
+      "title": "Тип урока",
+      "teachingLanguage": "Язык объяснений",
+      "chooseTeachingLanguage": "Выберите язык объяснений",
+      "beginnerHint": "Преподаватель будет объяснять на этом языке и постепенно введёт 3–5 полезных фраз.",
+      "options": {
+        "standard": {
+          "title": "Обычный урок",
+          "description": "Урок проходит в основном на изучаемом языке, с помощью при необходимости."
+        },
+        "absolute_beginner": {
+          "title": "С нуля",
+          "description": "Предварительные знания не нужны. Преподаватель объясняет на вашем языке и отрабатывает первые фразы."
+        }
+      }
+    },
     "preparingRecommendation": "Preparing a lesson for you…",
     "recommendedForYou": "Recommended for you",
     "recommendedFallbackTitle": "Everyday conversation",

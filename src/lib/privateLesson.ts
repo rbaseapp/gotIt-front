@@ -33,6 +33,9 @@ export const privateLessonSpeechRates = [
 ] as const;
 export type PrivateLessonSpeechRate = (typeof privateLessonSpeechRates)[number];
 
+export const privateLessonModes = ["standard", "absolute_beginner"] as const;
+export type PrivateLessonMode = (typeof privateLessonModes)[number];
+
 const roadmapMilestoneSchema = z.object({
   id: uuid,
   position: z.number().int().min(1).max(5),
@@ -84,6 +87,7 @@ export const privateLessonSetupSchema = z.object({
   preferences: z
     .object({
       supportLanguageCode: z.string().nullable(),
+      lessonMode: z.enum(privateLessonModes).default("standard"),
       requestedDurationMinutes: z.union([
         z.literal(1),
         z.literal(5),
@@ -159,6 +163,7 @@ export const privateLessonSessionSchema = z.object({
       .max(20 * 60),
     targetLanguageCode: z.string().min(1).max(64),
     supportLanguageCode: z.string().min(1).max(64).nullable(),
+    lessonMode: z.enum(privateLessonModes).default("standard"),
     level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
     topic: z.string().min(1).max(120),
     grammarFocus: z.string().min(1).max(160).nullable(),
@@ -194,6 +199,7 @@ export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15;
 export type PrivateLessonInput = {
   targetLanguageCode: string;
   supportLanguageCode?: string | null;
+  lessonMode?: PrivateLessonMode;
   requestedLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   requestedDurationMinutes?: PrivateLessonDurationMinutes;
   teacherVoice?: "female" | "male";
@@ -320,8 +326,18 @@ export const privateLessonReportSchema = z.object({
         .object({
           taskLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
           score: z.number().int().min(0).max(100),
-          result: z.enum(["insufficient", "developing", "successful", "strong"]),
-          evidenceQuality: z.enum(["insufficient", "weak", "moderate", "strong"]),
+          result: z.enum([
+            "insufficient",
+            "developing",
+            "successful",
+            "strong",
+          ]),
+          evidenceQuality: z.enum([
+            "insufficient",
+            "weak",
+            "moderate",
+            "strong",
+          ]),
           independence: z.number().int().min(0).max(100),
         })
         .default(legacyAssessment.lessonPerformance),
@@ -385,6 +401,7 @@ export const savedPrivateLessonSchema = z.object({
   id: uuid,
   targetLanguageCode: z.string(),
   supportLanguageCode: z.string().nullable(),
+  lessonMode: z.enum(privateLessonModes).default("standard"),
   level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
   topic: z.string(),
   grammarFocus: z.string().nullable(),

@@ -32,6 +32,22 @@
     "billing": "الاشتراك"
   },
   "privateLesson": {
+    "mode": {
+      "title": "نوع الدرس",
+      "teachingLanguage": "لغة الشرح",
+      "chooseTeachingLanguage": "اختر لغة الشرح",
+      "beginnerHint": "سيشرح المعلم بهذه اللغة ويقدم تدريجيًا من 3 إلى 5 عبارات مفيدة.",
+      "options": {
+        "standard": {
+          "title": "درس عادي",
+          "description": "يُقدَّم الدرس أساسًا باللغة التي تتدرب عليها، مع المساعدة عند الحاجة."
+        },
+        "absolute_beginner": {
+          "title": "البدء من الصفر",
+          "description": "لا تحتاج إلى معرفة مسبقة. يشرح المعلم بلغتك ويدرّبك على عباراتك الأولى."
+        }
+      }
+    },
     "preparingRecommendation": "Preparing a lesson for you…",
     "recommendedForYou": "Recommended for you",
     "recommendedFallbackTitle": "Everyday conversation",

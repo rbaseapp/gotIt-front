@@ -32,6 +32,22 @@
     "billing": "Abonnement"
   },
   "privateLesson": {
+    "mode": {
+      "title": "Unterrichtsart",
+      "teachingLanguage": "Sprache für Erklärungen",
+      "chooseTeachingLanguage": "Erklärungssprache wählen",
+      "beginnerHint": "Die Lehrkraft erklärt in dieser Sprache und führt schrittweise 3–5 nützliche Sätze ein.",
+      "options": {
+        "standard": {
+          "title": "Standardunterricht",
+          "description": "Der Unterricht findet hauptsächlich in der Übungssprache statt, mit Hilfe bei Bedarf."
+        },
+        "absolute_beginner": {
+          "title": "Bei null anfangen",
+          "description": "Keine Vorkenntnisse nötig. Die Lehrkraft erklärt in deiner Sprache und übt deine ersten Sätze."
+        }
+      }
+    },
     "preparingRecommendation": "Preparing a lesson for you…",
     "recommendedForYou": "Recommended for you",
     "recommendedFallbackTitle": "Everyday conversation",

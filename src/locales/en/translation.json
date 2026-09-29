@@ -59,6 +59,22 @@
       "title": "Lesson preferences",
       "saved": "Saved automatically for this language"
     },
+    "mode": {
+      "title": "Lesson type",
+      "teachingLanguage": "Language used for explanations",
+      "chooseTeachingLanguage": "Choose an explanation language",
+      "beginnerHint": "The tutor will explain in this language and gradually introduce 3–5 useful phrases in the new language.",
+      "options": {
+        "standard": {
+          "title": "Standard lesson",
+          "description": "The lesson is mainly in the language you practice, with help when needed."
+        },
+        "absolute_beginner": {
+          "title": "Start from zero",
+          "description": "No prior knowledge needed. The tutor explains in your language and practices your first phrases."
+        }
+      }
+    },
     "roadmap": {
       "eyebrow": "Your learning roadmap",
       "loading": "Preparing your learning path…",
