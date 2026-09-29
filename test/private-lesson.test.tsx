@@ -52,9 +52,9 @@ vi.mock("../src/lib/product", async (importOriginal) => {
   return { ...original, product: mocks.capture };
 });
 
-function renderPage() {
+function renderPage(initialEntry = "/private-lesson") {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <PrivateLessonPage />
     </MemoryRouter>,
   );
@@ -281,6 +281,20 @@ describe("private voice lesson", () => {
       goalKind: "recommended",
       goalKey: "modal-verbs",
     });
+  });
+
+  it("opens level details when the shell level action targets the page", async () => {
+    const user = userEvent.setup();
+    renderPage("/private-lesson?view=level");
+
+    const dialog = await screen.findByRole("dialog", {
+      name: /הרמה הנוכחית שלך/u,
+    });
+    expect(dialog).toBeInTheDocument();
+    await user.click(
+      within(dialog).getAllByRole("button", { name: "סגירה" }).at(-1)!,
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("starts a zero-background lesson with a teaching language and A1 level", async () => {
@@ -563,6 +577,7 @@ describe("private voice lesson", () => {
     const summary = screen.getByRole("heading", {
       name: "You spoke clearly about technology.",
     });
+    expect(summary.closest('[role="dialog"]')).toBeInTheDocument();
     expect(summary).toHaveAttribute("dir", "auto");
     expect(summary).toHaveAttribute("lang", "he");
     expect(screen.getByText("Clear answers")).toHaveAttribute("dir", "auto");

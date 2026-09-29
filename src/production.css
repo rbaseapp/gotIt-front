@@ -1020,6 +1020,9 @@
   gap: 16px;
   padding: clamp(16px, 2vw, 26px);
 }
+.private-lesson-history-modal {
+  width: min(100%, 860px);
+}
 .private-lesson-report h3,
 .private-lesson-report h4,
 .private-lesson-report p {

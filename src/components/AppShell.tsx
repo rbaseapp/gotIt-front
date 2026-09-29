@@ -209,7 +209,7 @@ export function AppShell({
         </nav>
         {latestLessonAssessment?.report && (
           <NavLink
-            to="/private-lesson"
+            to="/private-lesson?view=level"
             className="sidebar-skill-assessment"
             onClick={() => setMobileOpen(false)}
           >
@@ -282,7 +282,7 @@ export function AppShell({
           <div className="topbar-actions">
             {latestLessonAssessment?.report && (
               <Link
-                to="/private-lesson"
+                to="/private-lesson?view=level"
                 className="topbar-level-assessment"
                 title={`${t("shell.levelAssessment")} · ${assessmentLanguageLabel}`}
               >

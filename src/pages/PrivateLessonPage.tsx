@@ -32,7 +32,7 @@ import {
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { TeacherAvatar } from "../components/TeacherAvatar";
 import { Modal } from "../components/Modal";
 import { useApp } from "../context/AppContext";
@@ -94,6 +94,7 @@ const speechRateMultipliers: Record<PrivateLessonSpeechRate, number> = {
 export function PrivateLessonPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { profile, retryProfile } = useApp();
   const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
@@ -706,6 +707,15 @@ export function PrivateLessonPage() {
       setLevel("A1");
       setSpeechRate((current) => (current === "normal" ? "slow" : current));
     }
+  };
+  const levelDetailsOpen =
+    showLevelDetails || searchParams.get("view") === "level";
+  const closeLevelDetails = () => {
+    setShowLevelDetails(false);
+    if (searchParams.get("view") !== "level") return;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("view");
+    setSearchParams(nextParams, { replace: true });
   };
   const showLegacySetup = false;
   const toggleFocusArea = (area: PrivateLessonFocusArea) => {
@@ -1357,8 +1367,8 @@ export function PrivateLessonPage() {
             )}
           </section>
           <Modal
-            open={showLevelDetails}
-            onClose={() => setShowLevelDetails(false)}
+            open={levelDetailsOpen}
+            onClose={closeLevelDetails}
             title={t("privateLesson.levelDetailsTitle", {
               defaultValue: "Your current level",
             })}
@@ -1402,7 +1412,7 @@ export function PrivateLessonPage() {
                 <button
                   className="button secondary"
                   type="button"
-                  onClick={() => setShowLevelDetails(false)}
+                  onClick={closeLevelDetails}
                 >
                   {t("common.close")}
                 </button>
@@ -1410,7 +1420,7 @@ export function PrivateLessonPage() {
                   className="button primary"
                   type="button"
                   onClick={() => {
-                    setShowLevelDetails(false);
+                    closeLevelDetails();
                     navigate("/settings#languages");
                   }}
                 >
@@ -1686,7 +1696,19 @@ export function PrivateLessonPage() {
             ) : (
               <p>{t("privateLesson.history.empty")}</p>
             )}
-            {selectedHistory?.report && (
+          </section>
+          <Modal
+            open={Boolean(selectedHistory)}
+            onClose={() => setSelectedHistory(undefined)}
+            title={
+              selectedHistory
+                ? `${t("privateLesson.report.title")} · ${selectedHistory.topic}`
+                : t("privateLesson.report.title")
+            }
+            size="lg"
+            className="private-lesson-history-modal"
+          >
+            {selectedHistory?.report ? (
               <LessonReportView
                 lesson={selectedHistory}
                 savedSuggestions={savedSuggestions}
@@ -1698,8 +1720,14 @@ export function PrivateLessonPage() {
                 }
                 t={t}
               />
-            )}
-          </section>
+            ) : selectedHistory ? (
+              <div className="modal-body">
+                <p>
+                  {t(`privateLesson.history.status.${selectedHistory.status}`)}
+                </p>
+              </div>
+            ) : null}
+          </Modal>
         </>
       ) : (
         createPortal(
