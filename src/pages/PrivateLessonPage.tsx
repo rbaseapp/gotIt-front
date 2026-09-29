@@ -69,6 +69,19 @@ type Turn = { id: number; role: "learner" | "tutor" | "system"; text: string };
 type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 type TeacherVoice = "female" | "male";
 
+function sameBaseLanguage(first: string, second: string) {
+  try {
+    return (
+      new Intl.Locale(first).language.toLowerCase() ===
+      new Intl.Locale(second).language.toLowerCase()
+    );
+  } catch {
+    return (
+      first.toLowerCase().split("-")[0] === second.toLowerCase().split("-")[0]
+    );
+  }
+}
+
 const speechRateMultipliers: Record<PrivateLessonSpeechRate, number> = {
   very_slow: 0.7,
   slow: 0.85,
@@ -407,7 +420,7 @@ export function PrivateLessonPage() {
 
   useEffect(() => {
     let active = true;
-    void listPrivateLessons()
+    void listPrivateLessons(50)
       .then((lessons) => active && setHistory(lessons))
       .catch((reason) => active && setHistoryError(errorMessage(reason)));
     return () => {
@@ -636,7 +649,10 @@ export function PrivateLessonPage() {
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
   const latestAssessmentLesson = history.find(
-    (lesson) => lesson.status === "completed" && lesson.report?.assessment,
+    (lesson) =>
+      lesson.status === "completed" &&
+      lesson.report?.assessment &&
+      sameBaseLanguage(lesson.targetLanguageCode, targetLanguage),
   );
   const currentMilestone = lessonSetup?.roadmap?.milestones.find(
     (item) => item.status === "current",
@@ -651,8 +667,21 @@ export function PrivateLessonPage() {
     profileLanguage?.selfAssessedLevel ||
     "A2";
   const targetLanguageLabel =
-    languageOptions.find(([code]) => code === targetLanguage)?.[1] ||
-    targetLanguage;
+    languageOptions.find(([code]) =>
+      sameBaseLanguage(code, targetLanguage),
+    )?.[1] || targetLanguage;
+  const historyGroups = Array.from(
+    history.reduce((groups, lesson) => {
+      const languageCode =
+        languageOptions.find(([code]) =>
+          sameBaseLanguage(code, lesson.targetLanguageCode),
+        )?.[0] ?? lesson.targetLanguageCode;
+      const current = groups.get(languageCode) ?? [];
+      current.push(lesson);
+      groups.set(languageCode, current);
+      return groups;
+    }, new globalThis.Map<string, SavedPrivateLesson[]>()),
+  );
   const lessonTitle = currentMilestone
     ? t(`privateLesson.roadmap.stages.${currentMilestone.key}`, {
         defaultValue: currentMilestone.title,
@@ -820,7 +849,8 @@ export function PrivateLessonPage() {
                     <small>
                       {t("privateLesson.yourLevel", {
                         defaultValue: "Your level",
-                      })}
+                      })}{" "}
+                      · {targetLanguageLabel}
                     </small>
                     <strong>{effectiveLevel}</strong>
                   </span>
@@ -1466,41 +1496,61 @@ export function PrivateLessonPage() {
                 {historyError}
               </p>
             ) : history.length ? (
-              <div className="private-lesson-history-list">
-                {history.map((lesson) => (
-                  <article key={lesson.id}>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedHistory(lesson)}
-                    >
-                      <strong dir="auto">{lesson.topic}</strong>
-                      <span>
-                        {new Date(lesson.startedAt).toLocaleDateString()} ·{" "}
-                        {lesson.level}
-                      </span>
-                      <small
-                        dir="auto"
-                        lang={
-                          lesson.report ? lesson.targetLanguageCode : undefined
-                        }
-                      >
-                        {lesson.report?.summary ??
-                          t(`privateLesson.history.status.${lesson.status}`)}
-                      </small>
-                    </button>
-                    <button
-                      className="icon-button"
-                      type="button"
-                      aria-label={t("privateLesson.history.delete")}
-                      onClick={() =>
-                        void removeHistoryLesson(lesson).catch((reason) =>
-                          setHistoryError(errorMessage(reason)),
-                        )
-                      }
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </article>
+              <div className="private-lesson-history-groups">
+                {historyGroups.map(([languageCode, lessons]) => (
+                  <section
+                    key={languageCode}
+                    className="private-lesson-history-group"
+                  >
+                    <h3>
+                      <Languages size={18} aria-hidden="true" />
+                      {languageOptions.find(
+                        ([code]) => code === languageCode,
+                      )?.[1] ?? languageCode}
+                    </h3>
+                    <div className="private-lesson-history-list">
+                      {lessons.map((lesson) => (
+                        <article key={lesson.id}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedHistory(lesson)}
+                          >
+                            <strong dir="auto">{lesson.topic}</strong>
+                            <span>
+                              {new Date(lesson.startedAt).toLocaleDateString()}{" "}
+                              · {lesson.level}
+                            </span>
+                            <small
+                              dir="auto"
+                              lang={
+                                lesson.report
+                                  ? (lesson.supportLanguageCode ??
+                                    lesson.targetLanguageCode)
+                                  : undefined
+                              }
+                            >
+                              {lesson.report?.summary ??
+                                t(
+                                  `privateLesson.history.status.${lesson.status}`,
+                                )}
+                            </small>
+                          </button>
+                          <button
+                            className="icon-button"
+                            type="button"
+                            aria-label={t("privateLesson.history.delete")}
+                            onClick={() =>
+                              void removeHistoryLesson(lesson).catch((reason) =>
+                                setHistoryError(errorMessage(reason)),
+                              )
+                            }
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
                 ))}
               </div>
             ) : (
@@ -2008,16 +2058,18 @@ function LessonReportView({
 }) {
   const report = lesson.report;
   if (!report) return null;
+  const reportLanguageCode =
+    lesson.supportLanguageCode ?? lesson.targetLanguageCode;
   return (
     <div className="private-lesson-report">
       <section className="private-lesson-report-summary">
         <p className="eyebrow">{t("privateLesson.report.title")}</p>
-        <h3 dir="auto" lang={lesson.targetLanguageCode}>
+        <h3 dir="auto" lang={reportLanguageCode}>
           {report.summary}
         </h3>
         <p>
           <strong>{t("privateLesson.report.next")}</strong>{" "}
-          <span dir="auto" lang={lesson.targetLanguageCode}>
+          <span dir="auto" lang={reportLanguageCode}>
             {report.nextLessonPlan}
           </span>
         </p>
@@ -2029,7 +2081,7 @@ function LessonReportView({
           {report.strengths.length ? (
             <ul>
               {report.strengths.map((item) => (
-                <li key={item} dir="auto" lang={lesson.targetLanguageCode}>
+                <li key={item} dir="auto" lang={reportLanguageCode}>
                   {item}
                 </li>
               ))}
@@ -2042,13 +2094,13 @@ function LessonReportView({
           <h4>{t("privateLesson.report.corrections")}</h4>
           {report.corrections.length ? (
             report.corrections.map((item, index) => (
-              <article
-                key={`${item.original}:${index}`}
-                dir="auto"
-                lang={lesson.targetLanguageCode}
-              >
-                <del>{item.original}</del> <strong>{item.corrected}</strong>
-                <p>{item.explanation}</p>
+              <article key={`${item.original}:${index}`}>
+                <div dir="auto" lang={lesson.targetLanguageCode}>
+                  <del>{item.original}</del> <strong>{item.corrected}</strong>
+                </div>
+                <p dir="auto" lang={reportLanguageCode}>
+                  {item.explanation}
+                </p>
               </article>
             ))
           ) : (
@@ -2059,14 +2111,16 @@ function LessonReportView({
           <h4>{t("privateLesson.report.grammar")}</h4>
           {report.grammarPoints.length ? (
             report.grammarPoints.map((item) => (
-              <article
-                key={item.topic}
-                dir="auto"
-                lang={lesson.targetLanguageCode}
-              >
-                <strong>{item.topic}</strong>
-                <p>{item.explanation}</p>
-                {item.example && <small>{item.example}</small>}
+              <article key={item.topic}>
+                <strong dir="auto">{item.topic}</strong>
+                <p dir="auto" lang={reportLanguageCode}>
+                  {item.explanation}
+                </p>
+                {item.example && (
+                  <small dir="auto" lang={lesson.targetLanguageCode}>
+                    {item.example}
+                  </small>
+                )}
               </article>
             ))
           ) : (
@@ -2077,15 +2131,19 @@ function LessonReportView({
           <h4>{t("privateLesson.report.vocabulary")}</h4>
           {report.vocabulary.length ? (
             report.vocabulary.map((item) => (
-              <article
-                key={item.learningItemId}
-                dir="auto"
-                lang={lesson.targetLanguageCode}
-              >
+              <article key={item.learningItemId}>
                 <strong>
-                  {item.sourceText} · {item.translationText}
+                  <span dir="auto" lang={lesson.targetLanguageCode}>
+                    {item.sourceText}
+                  </span>
+                  {" · "}
+                  <span dir="auto" lang={reportLanguageCode}>
+                    {item.translationText}
+                  </span>
                 </strong>
-                <p>{item.note}</p>
+                <p dir="auto" lang={reportLanguageCode}>
+                  {item.note}
+                </p>
               </article>
             ))
           ) : (
@@ -2103,9 +2161,14 @@ function LessonReportView({
               const saving = savingSuggestions.has(key);
               return (
                 <article key={key}>
-                  <span dir="auto" lang={lesson.targetLanguageCode}>
-                    <strong>{suggestion.sourceText}</strong> ·{" "}
-                    {suggestion.translationText}
+                  <span>
+                    <strong dir="auto" lang={lesson.targetLanguageCode}>
+                      {suggestion.sourceText}
+                    </strong>
+                    {" · "}
+                    <span dir="auto" lang={reportLanguageCode}>
+                      {suggestion.translationText}
+                    </span>
                   </span>
                   {lesson.supportLanguageCode && (
                     <button

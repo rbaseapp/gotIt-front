@@ -493,7 +493,7 @@ describe("private voice lesson", () => {
       );
     }
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
-    await screen.findByRole("button", { name: "תרגום המשפט האחרון" });
+    await screen.findByRole("button", { name: "תרגום קטע הדיבור האחרון" });
 
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -502,7 +502,7 @@ describe("private voice lesson", () => {
       }),
     );
     await user.click(
-      screen.getByRole("button", { name: "תרגום המשפט האחרון" }),
+      screen.getByRole("button", { name: "תרגום קטע הדיבור האחרון" }),
     );
     expect(mocks.send).toHaveBeenCalledWith(session.realtime.translationEvent);
 
@@ -538,11 +538,44 @@ describe("private voice lesson", () => {
       name: "You spoke clearly about technology.",
     });
     expect(summary).toHaveAttribute("dir", "auto");
-    expect(summary).toHaveAttribute("lang", "en");
+    expect(summary).toHaveAttribute("lang", "he");
     expect(screen.getByText("Clear answers")).toHaveAttribute("dir", "auto");
     expect(
       screen.getByRole("button", { name: "תרגול המילים המומלצות עכשיו" }),
     ).toBeInTheDocument();
+  });
+
+  it("separates lesson history and level progress by target language", async () => {
+    const spanishLesson = {
+      ...savedLesson,
+      id: "99999999-9999-4999-8999-999999999999",
+      targetLanguageCode: "es",
+      supportLanguageCode: "en",
+      topic: "viajes",
+      startedAt: "2026-09-28T10:00:00.000Z",
+      report: {
+        ...savedLesson.report,
+        summary: "Resumen de la lección.",
+        assessment: {
+          ...savedLesson.report.assessment,
+          overallLevel: "C2",
+        },
+        nextLessonPlan: "Continue the Spanish lesson.",
+      },
+    } as const;
+    mocks.list.mockResolvedValue([spanishLesson, savedLesson]);
+
+    renderPage();
+
+    expect(
+      await screen.findByRole("heading", { name: /English/u }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Spanish/u }),
+    ).toBeInTheDocument();
+    const levelButton = screen.getByRole("button", { name: /הרמה שלך/u });
+    expect(within(levelButton).getByText("B1")).toBeInTheDocument();
+    expect(screen.queryByText("Continue the Spanish lesson.")).not.toBeInTheDocument();
   });
 
   it("saves a suggested word from the lesson report", async () => {

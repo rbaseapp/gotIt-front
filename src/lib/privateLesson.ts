@@ -123,13 +123,18 @@ export type PrivateLessonPreferences = NonNullable<
 >;
 
 const PRIVATE_LESSON_LANGUAGE_KEY = "gotit.privateLesson.targetLanguage";
+export const PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT =
+  "gotit:private-lesson-language-changed";
 
 export function getSavedPrivateLessonLanguage(fallback: string) {
   return readStorage(PRIVATE_LESSON_LANGUAGE_KEY, fallback);
 }
 
 export function savePrivateLessonLanguage(languageCode: string) {
-  return writeStorage(PRIVATE_LESSON_LANGUAGE_KEY, languageCode);
+  const saved = writeStorage(PRIVATE_LESSON_LANGUAGE_KEY, languageCode);
+  if (saved && typeof window !== "undefined")
+    window.dispatchEvent(new Event(PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT));
+  return saved;
 }
 
 const instructionEventSchema = z

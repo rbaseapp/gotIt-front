@@ -889,6 +889,23 @@
   display: grid;
   gap: 8px;
 }
+.private-lesson-history-groups,
+.private-lesson-history-group {
+  display: grid;
+  gap: 14px;
+}
+.private-lesson-history-group + .private-lesson-history-group {
+  padding-top: 16px;
+  border-top: 1px solid #dce8e2;
+}
+.private-lesson-history-group > h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--green-dark);
+  font-size: 15px;
+}
 .private-lesson-history-list article {
   padding: 10px 12px;
   border: 1px solid #dce8e2;

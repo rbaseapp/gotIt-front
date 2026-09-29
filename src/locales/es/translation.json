@@ -208,7 +208,7 @@
     "transcriptTitle": "Transcripción en directo",
     "finish": "Terminar clase",
     "finishing": "Resumiendo y despidiéndose…",
-    "translateLast": "Traducir la última frase",
+    "translateLast": "Traducir la última intervención",
     "restart": "Comenzar otra clase",
     "continuity": { "title": "Tu próxima clase continuará desde aquí:" },
     "assessment": {
@@ -271,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "Estimación de tu nivel de inglés",
+    "levelAssessment": "Estimación de tu nivel de idioma",
     "closeMenu": "Cerrar menú",
     "openMenu": "Abrir menú",
     "upgradePro": "Actualizar a PRO",

@@ -208,7 +208,7 @@
     "transcriptTitle": "Transcription en direct",
     "finish": "Terminer le cours",
     "finishing": "Résumé et au revoir…",
-    "translateLast": "Traduire la dernière phrase",
+    "translateLast": "Traduire la dernière prise de parole",
     "restart": "Commencer un autre cours",
     "continuity": { "title": "Votre prochain cours reprendra ici :" },
     "assessment": {
@@ -271,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "Estimation de votre niveau d’anglais",
+    "levelAssessment": "Évaluation de votre niveau de langue",
     "closeMenu": "Fermer le menu",
     "openMenu": "Ouvrir le menu",
     "upgradePro": "Passer à PRO",

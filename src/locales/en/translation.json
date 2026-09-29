@@ -208,7 +208,7 @@
     "transcriptTitle": "Live transcript",
     "finish": "End lesson",
     "finishing": "Recapping and saying goodbye…",
-    "translateLast": "Translate last sentence",
+    "translateLast": "Translate last speaking turn",
     "restart": "Start another lesson",
     "continuity": {
       "title": "Your next lesson continues here:"
@@ -277,7 +277,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "English level estimate",
+    "levelAssessment": "Language level estimate",
     "closeMenu": "Close menu",
     "openMenu": "Open menu",
     "upgradePro": "Upgrade to PRO",

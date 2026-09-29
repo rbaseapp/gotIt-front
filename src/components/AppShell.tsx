@@ -27,9 +27,25 @@ import { SubscriptionBanner } from "./SubscriptionBanner";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useTranslation } from "react-i18next";
 import {
+  getSavedPrivateLessonLanguage,
   listPrivateLessons,
+  PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
   type SavedPrivateLesson,
 } from "../lib/privateLesson";
+import { getBilingualLanguageOptions } from "../lib/languages";
+
+function sameBaseLanguage(first: string, second: string) {
+  try {
+    return (
+      new Intl.Locale(first).language.toLowerCase() ===
+      new Intl.Locale(second).language.toLowerCase()
+    );
+  } catch {
+    return (
+      first.toLowerCase().split("-")[0] === second.toLowerCase().split("-")[0]
+    );
+  }
+}
 
 const navItems = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: BarChart3 },
@@ -67,11 +83,18 @@ export function AppShell({
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
   const canWriteVocabulary = hasEntitlement("vocabulary.write");
+  const defaultLessonLanguage =
+    profile.languages[0]?.languageCode ||
+    profile.defaultSourceLanguage ||
+    "en";
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [latestLessonAssessment, setLatestLessonAssessment] =
     useState<SavedPrivateLesson>();
+  const [assessmentLanguage, setAssessmentLanguage] = useState(() =>
+    getSavedPrivateLessonLanguage(defaultLessonLanguage),
+  );
   useEffect(() => {
     const openSidebar = () => setMobileOpen(true);
     window.addEventListener("gotit:open-sidebar", openSidebar);
@@ -84,13 +107,19 @@ export function AppShell({
     }
     let active = true;
     const loadAssessment = () => {
-      void listPrivateLessons(20)
+      const selectedLanguage = getSavedPrivateLessonLanguage(
+        defaultLessonLanguage,
+      );
+      setAssessmentLanguage(selectedLanguage);
+      void listPrivateLessons(50)
         .then((lessons) => {
           if (!active) return;
           setLatestLessonAssessment(
             lessons.find(
               (lesson) =>
-                lesson.status === "completed" && lesson.report?.assessment,
+                lesson.status === "completed" &&
+                lesson.report?.assessment &&
+                sameBaseLanguage(lesson.targetLanguageCode, selectedLanguage),
             ),
           );
         })
@@ -100,14 +129,22 @@ export function AppShell({
     };
     loadAssessment();
     window.addEventListener("gotit:lesson-assessment-updated", loadAssessment);
+    window.addEventListener(
+      PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
+      loadAssessment,
+    );
     return () => {
       active = false;
       window.removeEventListener(
         "gotit:lesson-assessment-updated",
         loadAssessment,
       );
+      window.removeEventListener(
+        PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
+        loadAssessment,
+      );
     };
-  }, [mode]);
+  }, [defaultLessonLanguage, mode]);
   const pageTitle = navItems.find((item) =>
     location.pathname.startsWith(item.to),
   )?.labelKey;
@@ -119,6 +156,10 @@ export function AppShell({
         ? latestAssessment.levelRange.from
         : `${latestAssessment.levelRange.from}–${latestAssessment.levelRange.to}`
       : t("privateLesson.assessment.collecting");
+  const assessmentLanguageLabel =
+    getBilingualLanguageOptions().find(([code]) =>
+      sameBaseLanguage(code, assessmentLanguage),
+    )?.[1] ?? assessmentLanguage;
 
   return (
     <div className="app-layout">
@@ -172,10 +213,10 @@ export function AppShell({
             className="sidebar-skill-assessment"
             onClick={() => setMobileOpen(false)}
           >
-            <span>{t("shell.levelAssessment")}</span>
-            <strong>
-              {latestLevelLabel}
-            </strong>
+            <span>
+              {t("shell.levelAssessment")} · {assessmentLanguageLabel}
+            </span>
+            <strong>{latestLevelLabel}</strong>
             <div>
               {(["speaking", "vocabulary", "grammar"] as const).map((skill) => (
                 <small key={skill}>
@@ -243,10 +284,10 @@ export function AppShell({
               <Link
                 to="/private-lesson"
                 className="topbar-level-assessment"
-                title={t("shell.levelAssessment")}
+                title={`${t("shell.levelAssessment")} · ${assessmentLanguageLabel}`}
               >
                 <BarChart3 size={16} />
-                <span>{t("shell.levelAssessment")}</span>
+                <span>{assessmentLanguageLabel}</span>
                 <b>{latestLevelLabel}</b>
               </Link>
             )}

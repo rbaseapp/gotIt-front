@@ -208,7 +208,7 @@
     "transcriptTitle": "Live-Transkript",
     "finish": "Stunde beenden",
     "finishing": "Zusammenfassung und Verabschiedung…",
-    "translateLast": "Letzten Satz übersetzen",
+    "translateLast": "Letzten Redebeitrag übersetzen",
     "restart": "Weitere Stunde starten",
     "continuity": { "title": "Deine nächste Stunde macht hier weiter:" },
     "assessment": {
@@ -271,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "Einschätzung deines Englischniveaus",
+    "levelAssessment": "Einschätzung deines Sprachniveaus",
     "closeMenu": "Menü schließen",
     "openMenu": "Menü öffnen",
     "upgradePro": "Upgrade zu PRO",

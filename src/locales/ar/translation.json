@@ -208,7 +208,7 @@
     "transcriptTitle": "النص المباشر",
     "finish": "إنهاء الدرس",
     "finishing": "تلخيص ووداع…",
-    "translateLast": "ترجمة الجملة الأخيرة",
+    "translateLast": "ترجمة مقطع الكلام الأخير",
     "restart": "بدء درس آخر",
     "continuity": { "title": "سيواصل درسك التالي من هنا:" },
     "assessment": {
@@ -271,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "تقدير مستوى الإنجليزية",
+    "levelAssessment": "تقدير مستوى اللغة",
     "closeMenu": "إغلاق القائمة",
     "openMenu": "فتح القائمة",
     "upgradePro": "ترقية إلى PRO",

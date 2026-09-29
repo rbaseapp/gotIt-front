@@ -208,7 +208,7 @@
     "transcriptTitle": "实时转录",
     "finish": "结束课程",
     "finishing": "正在总结并道别…",
-    "translateLast": "翻译上一句话",
+    "translateLast": "翻译上一段发言",
     "restart": "开始另一节课",
     "continuity": { "title": "下一节课将从这里继续：" },
     "assessment": {
@@ -271,7 +271,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "英语水平评估",
+    "levelAssessment": "语言水平评估",
     "closeMenu": "关闭菜单",
     "openMenu": "打开菜单",
     "upgradePro": "升级到专业版",

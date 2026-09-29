@@ -208,7 +208,7 @@
     "transcriptTitle": "תמלול חי",
     "finish": "סיום השיעור",
     "finishing": "מסכמים ונפרדים…",
-    "translateLast": "תרגום המשפט האחרון",
+    "translateLast": "תרגום קטע הדיבור האחרון",
     "restart": "התחלת שיעור נוסף",
     "continuity": {
       "title": "השיעור הבא ימשיך מכאן:"
@@ -277,7 +277,7 @@
     }
   },
   "shell": {
-    "levelAssessment": "הערכת רמת האנגלית",
+    "levelAssessment": "הערכת רמה בשפה",
     "closeMenu": "סגירת תפריט",
     "openMenu": "פתיחת תפריט",
     "upgradePro": "שדרוג ל־PRO",
