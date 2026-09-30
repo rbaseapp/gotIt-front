@@ -176,7 +176,10 @@ const realtimeResponse = z.object({
     clientSecret: z.string(),
     expiresAt: z.string().nullable(),
     model: z.string(),
-    connectionUrl: z.literal("https://api.openai.com/v1/realtime/calls"),
+    connectionUrl: z.union([
+      z.literal("https://api.openai.com/v1/realtime/calls"),
+      z.literal("/api/v1/realtime/connect"),
+    ]),
     openingEvent: z.object({
       type: z.literal("response.create"),
       response: z.object({ instructions: z.string() }),

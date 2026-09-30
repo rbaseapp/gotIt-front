@@ -1505,6 +1505,9 @@
     }
   },
   "apiErrors": {
+    "AI_DAILY_LIMIT_REACHED": "Du hast das Tageslimit für diese KI-Funktion erreicht. Versuche es morgen erneut.",
+    "AI_SESSION_ACTIVE": "Beende die aktuelle Sprachlektion, bevor du eine neue startest.",
+    "AI_SESSION_UNAVAILABLE": "Die Verbindung zur Sprachlektion ist fehlgeschlagen. Starte eine neue Lektion.",
     "SUBSCRIPTION_REQUIRED": "Diese Funktion ist mit einem Pro-Abonnement verfügbar. Sie können über die Abonnementseite ein Upgrade durchführen.",
     "PRIVATE_LESSON_MINUTES_REQUIRED": "Für diese Stunde fehlen KI-Tutor-Minuten. Wähle eine kürzere Stunde oder kaufe 60 weitere Minuten.",
     "AI_MONTHLY_LIMIT_REACHED": "Sie haben Ihre AI-Artikel-Zuteilung verwendet. Ihre Zuteilung wird am Anfang des nächsten Monats erneuert.",

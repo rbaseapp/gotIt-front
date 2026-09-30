@@ -74,6 +74,13 @@ before(async () => {
       return;
     }
     if (req.url === "/api/v1/auth/google") googleAuthRequests++;
+    if (req.url === "/api/v1/realtime/connect") {
+      res.writeHead(200, { "Content-Type": "application/sdp" });
+      res.end(
+        `v=0\r\no=provider\r\na=received:${req.headers["content-type"]}:${receivedBody.length}\r\n`,
+      );
+      return;
+    }
     res.writeHead(
       req.url === "/api/v1/redirect" ? 302 : 200,
       req.url === "/api/v1/redirect"
@@ -345,6 +352,31 @@ describe("production frontend gateway", () => {
     assert.equal(
       (await fetch(`${gatewayOrigin}/core-api/api/v1/profile`)).status,
       404,
+    );
+  });
+  it("forwards SDP only to the guarded Realtime connect endpoint", async () => {
+    const response = await fetch(
+      `${gatewayOrigin}/gotit-api/api/v1/realtime/connect`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer ticket",
+          "Content-Type": "application/sdp",
+        },
+        body: "v=0\r\no=browser\r\n",
+      },
+    );
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /a=received:application\/sdp:/);
+    assert.equal(
+      (
+        await fetch(`${gatewayOrigin}/gotit-api/api/v1/profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/sdp" },
+          body: "v=0",
+        })
+      ).status,
+      415,
     );
   });
   it("enforces canonical production HTTPS configuration", () => {

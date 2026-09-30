@@ -296,11 +296,17 @@ export function createGateway(config) {
           chunks.push(chunk);
         }
         const body = size ? Buffer.concat(chunks) : undefined;
+        const realtimeSdp =
+          prefix === "/gotit-api" && apiPath === "/api/v1/realtime/connect";
         if (
           body &&
-          (!/^application\/json(?:\s*;|$)/i.test(
-            req.headers["content-type"] || "",
-          ) ||
+          (!(realtimeSdp
+            ? /^application\/sdp(?:\s*;|$)/i.test(
+                req.headers["content-type"] || "",
+              )
+            : /^application\/json(?:\s*;|$)/i.test(
+                req.headers["content-type"] || "",
+              )) ||
             req.method === "GET")
         ) {
           fail(415, "JSON_REQUIRED");
@@ -316,7 +322,10 @@ export function createGateway(config) {
           headers.Authorization = req.headers.authorization;
         if (req.headers["idempotency-key"])
           headers["Idempotency-Key"] = req.headers["idempotency-key"];
-        if (body) headers["Content-Type"] = "application/json";
+        if (body)
+          headers["Content-Type"] = realtimeSdp
+            ? "application/sdp"
+            : "application/json";
         if (prefix === "/core-api") {
           try {
             await ensureCoreReady();

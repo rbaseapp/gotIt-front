@@ -1505,6 +1505,9 @@
     }
   },
   "apiErrors": {
+    "AI_DAILY_LIMIT_REACHED": "Vous avez atteint la limite quotidienne de cette fonction d’IA. Réessayez demain.",
+    "AI_SESSION_ACTIVE": "Terminez la leçon vocale en cours avant d’en commencer une autre.",
+    "AI_SESSION_UNAVAILABLE": "La connexion à la leçon vocale a échoué. Commencez une nouvelle leçon.",
     "SUBSCRIPTION_REQUIRED": "Cette fonctionnalité est disponible avec un abonnement Pro. Vous pouvez effectuer une mise à niveau à partir de la page d'abonnement.",
     "PRIVATE_LESSON_MINUTES_REQUIRED": "Vous n’avez pas assez de minutes pour ce cours. Choisissez un cours plus court ou achetez 60 minutes de plus.",
     "AI_MONTHLY_LIMIT_REACHED": "Vous avez utilisé votre allocation d'articles IA. Votre allocation renouvellera au début du mois prochain.",

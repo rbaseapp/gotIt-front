@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { product, uuid } from "./product";
 import { readStorage, writeStorage } from "./storage";
+import { productApiUrl } from "./api";
 
 export const privateLessonFocusAreas = [
   "speaking",
@@ -198,7 +199,10 @@ export const privateLessonSessionSchema = z.object({
     clientSecret: z.string().min(1).max(4096),
     expiresAt: z.string().datetime().nullable(),
     model: z.string().min(1).max(200),
-    connectionUrl: z.literal("https://api.openai.com/v1/realtime/calls"),
+    connectionUrl: z.union([
+      z.literal("https://api.openai.com/v1/realtime/calls"),
+      z.literal("/api/v1/realtime/connect"),
+    ]),
     openingEvent: instructionEventSchema,
     continuationEvent: instructionEventSchema.optional(),
     wrapUpEvent: instructionEventSchema,
@@ -607,6 +611,13 @@ export async function connectPrivateLesson(
   const close = () => {
     if (closed) return;
     closed = true;
+    if (session.realtime.connectionUrl === "/api/v1/realtime/connect")
+      void fetch(productApiUrl("/api/v1/realtime/end"), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.realtime.clientSecret}` },
+        credentials: "omit",
+        keepalive: true,
+      }).catch(() => undefined);
     stopAudioMeter();
     channel.close();
     peer.close();
@@ -662,7 +673,11 @@ export async function connectPrivateLesson(
 
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
-    const response = await fetch(session.realtime.connectionUrl, {
+    const connectionUrl =
+      session.realtime.connectionUrl === "/api/v1/realtime/connect"
+        ? productApiUrl(session.realtime.connectionUrl)
+        : session.realtime.connectionUrl;
+    const response = await fetch(connectionUrl, {
       method: "POST",
       body: offer.sdp,
       headers: {

@@ -1496,6 +1496,9 @@
     }
   },
   "apiErrors": {
+    "AI_DAILY_LIMIT_REACHED": "您已达到此 AI 功能的每日使用上限。请明天再试。",
+    "AI_SESSION_ACTIVE": "请先结束当前语音课程，再开始新课程。",
+    "AI_SESSION_UNAVAILABLE": "无法连接语音课程。请重新开始。",
     "SUBSCRIPTION_REQUIRED": "订阅 Pro 版即可使用此功能。您可以从订阅页面升级。",
     "PRIVATE_LESSON_MINUTES_REQUIRED": "本次课程的分钟数不足。请选择更短的课程或再购买 60 分钟。",
     "AI_MONTHLY_LIMIT_REACHED": "您已使用全部 4 篇 AI 月刊文章。您的津贴将在下月初更新。",

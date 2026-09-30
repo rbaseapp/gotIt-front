@@ -747,6 +747,15 @@ describe("private voice lesson", () => {
         ...session,
         realtime: {
           ...session.realtime,
+          connectionUrl: "/api/v1/realtime/connect",
+        },
+      }).success,
+    ).toBe(true);
+    expect(
+      privateLessonSessionSchema.safeParse({
+        ...session,
+        realtime: {
+          ...session.realtime,
           connectionUrl: "https://evil.example/realtime",
         },
       }).success,
@@ -924,13 +933,31 @@ describe("private voice lesson", () => {
     const course = courseWithPlan(true);
     mocks.course.mockResolvedValue({ course });
     mocks.list.mockResolvedValue([
-      { ...savedLesson, topic: "Selected course lesson", course: { courseId: course.id } },
-      { ...savedLesson, id: "99999999-9999-4999-8999-999999999998", topic: "Other English course", course: { courseId: "10000000-0000-4000-8000-000000000002" } },
-      { ...savedLesson, id: "99999999-9999-4999-8999-999999999997", topic: "Free English lesson", course: null },
+      {
+        ...savedLesson,
+        topic: "Selected course lesson",
+        course: { courseId: course.id },
+      },
+      {
+        ...savedLesson,
+        id: "99999999-9999-4999-8999-999999999998",
+        topic: "Other English course",
+        course: { courseId: "10000000-0000-4000-8000-000000000002" },
+      },
+      {
+        ...savedLesson,
+        id: "99999999-9999-4999-8999-999999999997",
+        topic: "Free English lesson",
+        course: null,
+      },
     ]);
     renderPage(`/private-lesson?course=${course.id}`);
-    expect(await screen.findByRole("heading", { name: "השיעורים בקורס הזה" })).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /Selected course lesson/ })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "השיעורים בקורס הזה" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /Selected course lesson/ }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Other English course")).not.toBeInTheDocument();
     expect(screen.queryByText("Free English lesson")).not.toBeInTheDocument();
     expect(mocks.list).toHaveBeenCalledWith(50, course.id);
@@ -994,7 +1021,11 @@ describe("private voice lesson", () => {
       async (
         _session: unknown,
         _audio: unknown,
-        handlers: { onOpen: () => void; onClose: () => void; onEvent: (event: Record<string, unknown>) => void },
+        handlers: {
+          onOpen: () => void;
+          onClose: () => void;
+          onEvent: (event: Record<string, unknown>) => void;
+        },
       ) => {
         closeSession = handlers.onClose;
         onEvent = handlers.onEvent;
@@ -1014,14 +1045,23 @@ describe("private voice lesson", () => {
     await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "סיום השיעור" });
-    act(() => onEvent?.({ type: "response.output_audio_transcript.done", transcript: "You made a good start." }));
+    act(() =>
+      onEvent?.({
+        type: "response.output_audio_transcript.done",
+        transcript: "You made a good start.",
+      }),
+    );
     act(() => closeSession?.());
 
     expect(mocks.complete).not.toHaveBeenCalled();
     expect(screen.getAllByText("החיבור הקולי נסגר.").length).toBeGreaterThan(0);
     expect(screen.getByText("You made a good start.")).toBeInTheDocument();
-    expect(screen.queryByText("You spoke clearly about technology.")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "יצירת סיכום השיעור" }));
+    expect(
+      screen.queryByText("You spoke clearly about technology."),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "יצירת סיכום השיעור" }),
+    );
     await waitFor(() =>
       expect(mocks.complete).toHaveBeenCalledWith(
         session.lesson.id,
@@ -1031,7 +1071,9 @@ describe("private voice lesson", () => {
         }),
       ),
     );
-    expect(await screen.findByText("You spoke clearly about technology.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("You spoke clearly about technology."),
+    ).toBeInTheDocument();
   });
 
   it("waits for the tutor's current response at time expiry and leaves the report behind a button", async () => {
@@ -1060,10 +1102,11 @@ describe("private voice lesson", () => {
     await screen.findByRole("button", { name: "סיום השיעור" });
 
     act(() => onEvent?.({ type: "response.created" }));
-    await waitFor(() =>
-      expect(mocks.send).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "session.update" }),
-      ),
+    await waitFor(
+      () =>
+        expect(mocks.send).toHaveBeenCalledWith(
+          expect.objectContaining({ type: "session.update" }),
+        ),
       { timeout: 3_000 },
     );
     expect(mocks.send).not.toHaveBeenCalledWith(session.realtime.wrapUpEvent);
@@ -1074,19 +1117,31 @@ describe("private voice lesson", () => {
       onEvent?.({ type: "response.done" });
     });
     expect(mocks.send).not.toHaveBeenCalledWith(session.realtime.wrapUpEvent);
-    await waitFor(() =>
-      expect(mocks.send).toHaveBeenCalledWith(session.realtime.wrapUpEvent),
+    await waitFor(
+      () =>
+        expect(mocks.send).toHaveBeenCalledWith(session.realtime.wrapUpEvent),
       { timeout: 3_000 },
     );
     act(() => {
       onEvent?.({ type: "response.created" });
-      onEvent?.({ type: "response.output_audio_transcript.done", transcript: "Time is up. Great work! See you next time." });
+      onEvent?.({
+        type: "response.output_audio_transcript.done",
+        transcript: "Time is up. Great work! See you next time.",
+      });
       onEvent?.({ type: "response.done" });
     });
-    await screen.findByRole("button", { name: "יצירת סיכום השיעור" }, { timeout: 12_000 });
-    expect(screen.getByText("Time is up. Great work! See you next time.")).toBeInTheDocument();
+    await screen.findByRole(
+      "button",
+      { name: "יצירת סיכום השיעור" },
+      { timeout: 12_000 },
+    );
+    expect(
+      screen.getByText("Time is up. Great work! See you next time."),
+    ).toBeInTheDocument();
     expect(mocks.complete).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "יצירת סיכום השיעור" }));
+    await user.click(
+      screen.getByRole("button", { name: "יצירת סיכום השיעור" }),
+    );
     await waitFor(() => expect(mocks.complete).toHaveBeenCalledOnce());
   }, 20_000);
 });

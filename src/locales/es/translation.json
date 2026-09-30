@@ -1505,6 +1505,9 @@
     }
   },
   "apiErrors": {
+    "AI_DAILY_LIMIT_REACHED": "Has alcanzado el límite diario de esta función de IA. Vuelve a intentarlo mañana.",
+    "AI_SESSION_ACTIVE": "Termina la clase de voz actual antes de iniciar otra.",
+    "AI_SESSION_UNAVAILABLE": "No se pudo conectar a la clase de voz. Inicia una clase nueva.",
     "SUBSCRIPTION_REQUIRED": "Esta función está disponible con una suscripción Pro. Puedes actualizar desde la página de suscripción.",
     "PRIVATE_LESSON_MINUTES_REQUIRED": "No tienes suficientes minutos para esta clase. Elige una clase más corta o compra 60 minutos más.",
     "AI_MONTHLY_LIMIT_REACHED": "Has utilizado tu asignación actual de artículos de IA.",

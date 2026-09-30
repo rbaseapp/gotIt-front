@@ -15,6 +15,7 @@ const productUrl = (import.meta.env.VITE_GOTIT_API_URL || "/gotit-api").replace(
   /\/$/,
   "",
 );
+export const productApiUrl = (path: string) => `${productUrl}${path}`;
 
 export class ApiError extends Error {
   constructor(
@@ -30,6 +31,9 @@ const messageCodes = new Set([
   "SUBSCRIPTION_REQUIRED",
   "PRIVATE_LESSON_MINUTES_REQUIRED",
   "AI_MONTHLY_LIMIT_REACHED",
+  "AI_DAILY_LIMIT_REACHED",
+  "AI_SESSION_ACTIVE",
+  "AI_SESSION_UNAVAILABLE",
   "BILLING_NOT_CONFIGURED",
   "INVALID_CREDENTIALS",
   "USER_ALREADY_EXISTS",
