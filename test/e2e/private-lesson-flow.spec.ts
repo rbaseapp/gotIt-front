@@ -60,20 +60,7 @@ for (const language of ["he", "en"])
         sessionStorage.setItem("gotit.refresh", "fixture-refresh");
         // Exercise the real connection adapter using deterministic provider events.
         // No microphone permission, provider traffic or generated voice is involved.
-        const track = {
-          _enabled: true,
-          get enabled() {
-            return this._enabled;
-          },
-          set enabled(value: boolean) {
-            this._enabled = value;
-            document.documentElement.dataset.lessonMicrophone = value
-              ? "on"
-              : "off";
-          },
-          readyState: "live",
-          stop() {},
-        };
+        const track = { enabled: true, readyState: "live", stop() {} };
         navigator.mediaDevices.getUserMedia = async () =>
           ({
             getTracks: () => [track],
@@ -226,24 +213,6 @@ for (const language of ["he", "en"])
       await expect(page.locator("html")).toHaveAttribute(
         "data-lesson-responses",
         "1",
-      );
-      const talk = page.getByRole("button", {
-        name: language === "he" ? "לחצו והחזיקו כדי לדבר" : "Press and hold to talk",
-      });
-      await expect(page.locator("html")).toHaveAttribute(
-        "data-lesson-microphone",
-        "off",
-      );
-      await talk.hover();
-      await page.mouse.down();
-      await expect(page.locator("html")).toHaveAttribute(
-        "data-lesson-microphone",
-        "on",
-      );
-      await page.mouse.up();
-      await expect(page.locator("html")).toHaveAttribute(
-        "data-lesson-microphone",
-        "off",
       );
       await page.clock.runFor(30_000);
       await expect(page.locator("html")).toHaveAttribute(

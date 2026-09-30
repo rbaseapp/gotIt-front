@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent, PointerEvent } from "react";
 import { Mic, Square, Volume2, Send, LoaderCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { recordVoice } from "../lib/voice";
@@ -87,6 +88,7 @@ export function CourseComposer({
   submitLabel,
   onDraftChange,
   replaceVoice = false,
+  holdToTalk = false,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -97,6 +99,7 @@ export function CourseComposer({
   submitLabel?: string;
   onDraftChange?: () => void;
   replaceVoice?: boolean;
+  holdToTalk?: boolean;
 }) {
   const { t } = useTranslation();
   const [recording, setRecording] = useState(false),
@@ -104,6 +107,8 @@ export function CourseComposer({
     [error, setError] = useState("");
   const controller = useRef<AbortController | null>(null),
     release = useRef<AbortController | null>(null);
+  const holdPointer = useRef<number | null>(null),
+    holdKey = useRef<string | null>(null);
   const channel = useRef<"text" | "voice">("text");
   const input = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -115,6 +120,25 @@ export function CourseComposer({
     },
     [],
   );
+  useEffect(() => {
+    if (!holdToTalk) return;
+    const cancel = () => {
+      if (holdPointer.current === null && holdKey.current === null) return;
+      holdPointer.current = null;
+      holdKey.current = null;
+      controller.current?.abort();
+      setRecording(false);
+    };
+    const cancelIfHidden = () => {
+      if (document.hidden) cancel();
+    };
+    window.addEventListener("blur", cancel);
+    document.addEventListener("visibilitychange", cancelIfHidden);
+    return () => {
+      window.removeEventListener("blur", cancel);
+      document.removeEventListener("visibilitychange", cancelIfHidden);
+    };
+  }, [holdToTalk]);
   async function record() {
     if (recording) {
       release.current?.abort();
@@ -129,6 +153,7 @@ export function CourseComposer({
     setRecording(true);
     try {
       const audio = await recordVoice(abort.signal, stop.signal, 15);
+      if (abort.signal.aborted) return;
       setRecording(false);
       setTranscribing(true);
       const result = await courseApi.transcribe(audio, language);
@@ -144,11 +169,59 @@ export function CourseComposer({
     } catch (err) {
       if (!abort.signal.aborted) setError(errorMessage(err));
     } finally {
+      if (controller.current === abort) {
+        controller.current = null;
+        release.current = null;
+      }
       if (!abort.signal.aborted) {
         setRecording(false);
         setTranscribing(false);
       }
     }
+  }
+  function finishHold(cancel = false) {
+    holdPointer.current = null;
+    holdKey.current = null;
+    if (cancel) {
+      controller.current?.abort();
+      setRecording(false);
+    } else release.current?.abort();
+  }
+  function startPointer(event: PointerEvent<HTMLButtonElement>) {
+    if (
+      event.button !== 0 ||
+      disabled ||
+      recording ||
+      transcribing ||
+      holdPointer.current !== null ||
+      holdKey.current !== null
+    )
+      return;
+    holdPointer.current = event.pointerId;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    void record();
+  }
+  function stopPointer(event: PointerEvent<HTMLButtonElement>, cancel = false) {
+    if (holdPointer.current === event.pointerId) finishHold(cancel);
+  }
+  function startKey(event: KeyboardEvent<HTMLButtonElement>) {
+    if (
+      (event.key !== " " && event.key !== "Enter") ||
+      event.repeat ||
+      disabled ||
+      recording ||
+      transcribing
+    )
+      return;
+    event.preventDefault();
+    if (holdPointer.current !== null || holdKey.current !== null) return;
+    holdKey.current = event.key;
+    void record();
+  }
+  function stopKey(event: KeyboardEvent<HTMLButtonElement>) {
+    if (holdKey.current !== event.key) return;
+    event.preventDefault();
+    finishHold();
   }
   return (
     <form
@@ -176,9 +249,27 @@ export function CourseComposer({
       <div className="course-composer-actions">
         <button
           type="button"
-          className={`button secondary${recording ? " course-recording" : ""}`}
+          className={`button secondary${recording ? " course-recording" : ""}${holdToTalk ? " course-hold-to-talk" : ""}`}
           disabled={disabled || transcribing}
-          onClick={() => void record()}
+          onClick={holdToTalk ? undefined : () => void record()}
+          onPointerDown={holdToTalk ? startPointer : undefined}
+          onPointerUp={holdToTalk ? (event) => stopPointer(event) : undefined}
+          onPointerCancel={
+            holdToTalk ? (event) => stopPointer(event, true) : undefined
+          }
+          onLostPointerCapture={
+            holdToTalk ? (event) => stopPointer(event, true) : undefined
+          }
+          onKeyDown={holdToTalk ? startKey : undefined}
+          onKeyUp={holdToTalk ? stopKey : undefined}
+          onBlur={
+            holdToTalk
+              ? () => {
+                  if (holdPointer.current !== null || holdKey.current !== null)
+                    finishHold(true);
+                }
+              : undefined
+          }
           aria-pressed={recording}
         >
           {transcribing ? (
@@ -192,8 +283,12 @@ export function CourseComposer({
             transcribing
               ? "courses.transcribing"
               : recording
-                ? "courses.stopRecording"
-                : "courses.voiceAnswer",
+                ? holdToTalk
+                  ? "courses.releaseToTranscribe"
+                  : "courses.stopRecording"
+                : holdToTalk
+                  ? "courses.holdToTalk"
+                  : "courses.voiceAnswer",
           )}
         </button>
         <button
@@ -205,7 +300,11 @@ export function CourseComposer({
           {submitLabel ?? t("courses.send")}
         </button>
       </div>
-      {recording && <small role="status">{t("courses.recordingHint")}</small>}
+      {recording && (
+        <small role="status">
+          {t(holdToTalk ? "courses.releaseToTranscribe" : "courses.recordingHint")}
+        </small>
+      )}
       {channel.current === "voice" && value && (
         <small>{t("courses.checkTranscript")}</small>
       )}

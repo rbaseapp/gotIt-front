@@ -10,6 +10,7 @@ async function signedIn(
   screen: "welcome" | "intake" | "preferences" | "plan" | "active" | "homework",
   language = "he",
   oralFirst = false,
+  homeworkData = fixtureHomework,
 ) {
   await page.addInitScript((locale) => {
     localStorage.removeItem("gotit.mode");
@@ -72,7 +73,7 @@ async function signedIn(
               : path.endsWith(`/courses/${fixtureCourse.id}`)
                 ? { course }
                 : path.endsWith(`/homework/${fixtureHomework.id}`)
-                  ? { homework: { ...fixtureHomework, oralFirst } }
+                  ? { homework: { ...homeworkData, oralFirst } }
                   : null;
     if (payload) await route.fulfill({ json: payload });
     else
@@ -222,6 +223,82 @@ test("a learner who needs oral support can hear each choice before selecting it"
       () => document.documentElement.scrollWidth <= innerWidth + 1,
     ),
   ).toBe(true);
+});
+
+test("homework voice answer records only during a held press", async ({ page }) => {
+  const homework = structuredClone(fixtureHomework);
+  homework.tasks[0]!.done = true;
+  homework.completedCount = 1;
+  await page.addInitScript(() => {
+    const state = window as Window & {
+      __recordStarts: number;
+      __trackStops: number;
+      __talkPointerId: number;
+    };
+    state.__recordStarts = 0;
+    state.__trackStops = 0;
+    document.addEventListener(
+      "pointerdown",
+      (event) => {
+        if ((event.target as Element).closest(".course-hold-to-talk"))
+          state.__talkPointerId = event.pointerId;
+      },
+      true,
+    );
+    navigator.mediaDevices.getUserMedia = async () =>
+      ({
+        getTracks: () => [
+          {
+            stop: () => state.__trackStops++,
+          },
+        ],
+      }) as unknown as MediaStream;
+    Object.defineProperty(window, "MediaRecorder", {
+      configurable: true,
+      value: class {
+        static isTypeSupported() {
+          return false;
+        }
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: ((event: { data: Blob }) => void) | null = null;
+        onstop: (() => void) | null = null;
+        start() {
+          this.state = "recording";
+          state.__recordStarts++;
+        }
+        stop() {
+          this.state = "inactive";
+          this.ondataavailable?.({ data: new Blob() });
+          this.onstop?.();
+        }
+      },
+    });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signedIn(page, "homework", "he", false, homework);
+  const talk = page.locator(".course-hold-to-talk");
+  await expect(talk).toBeVisible();
+  await expect(talk).toHaveText("לחצו והחזיקו כדי לדבר");
+  await talk.hover();
+  await page.mouse.down();
+  await expect(talk).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(() => page.evaluate(() => (window as Window & { __recordStarts: number }).__recordStarts)).toBe(1);
+  await page.mouse.up();
+  await expect(talk).toHaveAttribute("aria-pressed", "false");
+  await expect.poll(() => page.evaluate(() => (window as Window & { __trackStops: number }).__trackStops)).toBeGreaterThan(0);
+
+  await talk.hover();
+  await page.mouse.down();
+  await expect(talk).toHaveAttribute("aria-pressed", "true");
+  await page.evaluate(() => {
+    const id = (window as Window & { __talkPointerId: number }).__talkPointerId;
+    document.querySelector(".course-hold-to-talk")?.dispatchEvent(
+      new PointerEvent("pointercancel", { bubbles: true, pointerId: id }),
+    );
+  });
+  await page.mouse.up();
+  await expect(talk).toHaveAttribute("aria-pressed", "false");
 });
 
 for (const viewport of [

@@ -349,6 +349,9 @@
 .course-recording {
   outline: 2px solid #c45a4f;
 }
+.course-hold-to-talk {
+  touch-action: none;
+}
 .course-history {
   margin-block-end: 24px;
   font-size: 13px;

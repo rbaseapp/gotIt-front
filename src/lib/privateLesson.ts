@@ -552,7 +552,6 @@ export async function connectPrivateLesson(
   audioElement: HTMLAudioElement,
   handlers: RealtimeHandlers,
   signal: AbortSignal,
-  initiallyMuted = false,
 ): Promise<PrivateLessonConnection> {
   if (!window.RTCPeerConnection || !navigator.mediaDevices?.getUserMedia)
     throw new PrivateLessonConnectionError("BROWSER_UNSUPPORTED");
@@ -631,7 +630,6 @@ export async function connectPrivateLesson(
       throw new PrivateLessonConnectionError("MICROPHONE_UNAVAILABLE");
     }
     if (signal.aborted) throw new PrivateLessonConnectionError("CANCELLED");
-    if (initiallyMuted) stream.getAudioTracks().forEach((track) => (track.enabled = false));
 
     peer.ontrack = (event) => {
       const remoteStream = event.streams[0] ?? new MediaStream([event.track]);

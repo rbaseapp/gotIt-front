@@ -1702,6 +1702,8 @@
     "answerPlaceholder": "Write a short reply, or use the microphone…",
     "send": "Send",
     "voiceAnswer": "Answer by voice",
+    "holdToTalk": "Press and hold to talk",
+    "releaseToTranscribe": "Release to transcribe",
     "stopRecording": "Finish recording",
     "transcribing": "Transcribing…",
     "recordingHint": "Recording up to 15 seconds. Press finish when you are ready.",

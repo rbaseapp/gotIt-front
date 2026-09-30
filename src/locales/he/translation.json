@@ -1702,6 +1702,8 @@
     "answerPlaceholder": "אפשר לכתוב תשובה קצרה, או להשתמש במיקרופון…",
     "send": "שליחה",
     "voiceAnswer": "תשובה בקול",
+    "holdToTalk": "לחצו והחזיקו כדי לדבר",
+    "releaseToTranscribe": "שחררו כדי לתמלל",
     "stopRecording": "סיום הקלטה",
     "transcribing": "מתמללים…",
     "recordingHint": "מקליטים עד 15 שניות. אפשר לסיים בלחיצה בכל רגע.",

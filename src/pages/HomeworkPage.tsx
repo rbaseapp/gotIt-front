@@ -331,6 +331,7 @@ export function HomeworkPage() {
                   disabled={busy}
                   label={t("courses.yourAnswer")}
                   submitLabel={t("courses.checkAnswer")}
+                  holdToTalk
                 />
               ))}
             {attempt && (

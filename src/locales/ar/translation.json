@@ -1748,6 +1748,8 @@
     "answerPlaceholder": "اكتب إجابة قصيرة أو استخدم الميكروفون…",
     "send": "إرسال",
     "voiceAnswer": "إجابة بالصوت",
+    "holdToTalk": "اضغط مطولاً للتحدث",
+    "releaseToTranscribe": "حرر الزر لتحويل الكلام إلى نص",
     "stopRecording": "إنهاء التسجيل",
     "transcribing": "نحوّل الكلام إلى نص…",
     "recordingHint": "نسجّل حتى 15 ثانية. يمكنك الإنهاء متى شئت.",

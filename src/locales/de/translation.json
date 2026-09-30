@@ -1703,6 +1703,8 @@
     "answerPlaceholder": "Schreibe kurz oder nutze das Mikrofon…",
     "send": "Senden",
     "voiceAnswer": "Per Sprache antworten",
+    "holdToTalk": "Zum Sprechen gedrückt halten",
+    "releaseToTranscribe": "Zum Transkribieren loslassen",
     "stopRecording": "Aufnahme beenden",
     "transcribing": "Wird transkribiert…",
     "recordingHint": "Bis zu 15 Sekunden Aufnahme. Du kannst jederzeit beenden.",

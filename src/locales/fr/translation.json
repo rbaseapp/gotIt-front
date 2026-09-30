@@ -1703,6 +1703,8 @@
     "answerPlaceholder": "Écrivez une courte réponse ou utilisez le micro…",
     "send": "Envoyer",
     "voiceAnswer": "Répondre à voix haute",
+    "holdToTalk": "Maintenez appuyé pour parler",
+    "releaseToTranscribe": "Relâchez pour transcrire",
     "stopRecording": "Terminer",
     "transcribing": "Transcription…",
     "recordingHint": "Enregistrement de 15 secondes maximum. Terminez quand vous le souhaitez.",

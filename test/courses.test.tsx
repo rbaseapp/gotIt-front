@@ -1,9 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { CoursePage } from "../src/pages/CoursePage";
 import { HomeworkPage } from "../src/pages/HomeworkPage";
+import { recordVoice } from "../src/lib/voice";
 import {
   fixtureCourse,
   fixtureHomework,
@@ -55,6 +56,7 @@ function renderRoute(path: string) {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(recordVoice).mockReset().mockResolvedValue("recorded-wav");
   mocks.translationLanguage = "he";
   sessionStorage.clear();
   mocks.list.mockResolvedValue({ courses: [], homework: [], available: true });
@@ -507,6 +509,58 @@ describe("personal course experience", () => {
     );
     await user.click(screen.getByRole("button", { name: "למשימה הבאה" }));
     expect(screen.getByText("משימה 2 מתוך 2")).toBeInTheDocument();
+  });
+  it("records a homework voice answer only while held and cancels a lost pointer", async () => {
+    const homework = structuredClone(fixtureHomework);
+    homework.tasks[0]!.done = true;
+    homework.completedCount = 1;
+    mocks.homework.mockResolvedValue({ homework });
+    mocks.homeworkCommand.mockResolvedValue({ homework });
+    vi.mocked(recordVoice).mockImplementation(
+      (cancel, release) =>
+        new Promise<string>((resolve, reject) => {
+          cancel.addEventListener("abort", () => reject(new Error("cancelled")), {
+            once: true,
+          });
+          release.addEventListener("abort", () => resolve("recorded-wav"), {
+            once: true,
+          });
+        }),
+    );
+    const user = userEvent.setup();
+    renderRoute(`/homework/${homework.id}`);
+    const talk = await screen.findByRole("button", {
+      name: "לחצו והחזיקו כדי לדבר",
+    });
+    fireEvent.click(talk);
+    expect(recordVoice).not.toHaveBeenCalled();
+
+    fireEvent.pointerDown(talk, { pointerId: 3, button: 0 });
+    expect(recordVoice).toHaveBeenCalledTimes(1);
+    expect(talk).toHaveAttribute("aria-pressed", "true");
+    const firstCancel = vi.mocked(recordVoice).mock.calls[0]![0];
+    fireEvent.pointerCancel(talk, { pointerId: 3 });
+    expect(firstCancel.aborted).toBe(true);
+    expect(talk).toHaveAttribute("aria-pressed", "false");
+    expect(mocks.transcribe).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(talk, { key: " " });
+    expect(recordVoice).toHaveBeenCalledTimes(2);
+    const release = vi.mocked(recordVoice).mock.calls[1]![1];
+    expect(release.aborted).toBe(false);
+    fireEvent.keyUp(talk, { key: " " });
+    expect(release.aborted).toBe(true);
+    expect(await screen.findByRole("textbox")).toHaveValue(
+      "I want to speak at work",
+    );
+    expect(mocks.transcribe).toHaveBeenCalledWith("recorded-wav", "en");
+
+    await user.click(screen.getByRole("button", { name: "בדיקת התשובה" }));
+    expect(mocks.homeworkCommand).toHaveBeenCalledWith(
+      homework.id,
+      "actions",
+      expect.objectContaining({ action: "answer", channel: "voice" }),
+    );
   });
   it("refreshes an unstarted older exercise before showing its question", async () => {
     const old = structuredClone(fixtureHomework);

@@ -1703,6 +1703,8 @@
     "answerPlaceholder": "写一句简短的回答，或使用麦克风…",
     "send": "发送",
     "voiceAnswer": "语音回答",
+    "holdToTalk": "按住说话",
+    "releaseToTranscribe": "松开后转写",
     "stopRecording": "结束录音",
     "transcribing": "正在转写…",
     "recordingHint": "最多录制15秒，可随时点击结束。",
