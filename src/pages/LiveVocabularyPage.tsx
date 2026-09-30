@@ -614,6 +614,16 @@ export function LiveVocabularyPage() {
                   onClick={() => setSearchParams({ item: item.id })}
                 >
                   <strong dir="auto">{item.sourceText}</strong>
+                  {item.phoneticScheme?.startsWith("transliteration:") &&
+                    item.phoneticText && (
+                      <span
+                        className="live-word-transliteration"
+                        lang={item.phoneticScheme.slice(16)}
+                        dir="auto"
+                      >
+                        {item.phoneticText}
+                      </span>
+                    )}
                   <span dir="auto">
                     {item.primaryTranslation || t("vocabulary.noMeaning")}
                   </span>
@@ -913,6 +923,16 @@ function DetailForm({
     <>
       <div className="live-detail-title">
         <h2 dir="auto">{item.sourceText}</h2>
+        {item.phoneticScheme?.startsWith("transliteration:") &&
+          item.phoneticText && (
+            <p
+              className="live-word-transliteration"
+              lang={item.phoneticScheme.slice(16)}
+              dir="auto"
+            >
+              {item.phoneticText}
+            </p>
+          )}
         <p dir="auto">{primary}</p>
         <span className="pill">
           {labels[item.learningStatus]} ·{" "}

@@ -1490,6 +1490,44 @@ describe("live server-backed flows", () => {
       screen.queryByText("sensitive database diagnostic"),
     ).not.toBeInTheDocument();
   });
+  it("shows a Hebrew reading guide below an English vocabulary word only for transliteration", async () => {
+    const word = {
+      id: itemId,
+      sourceText: "dog",
+      sourceLanguageCode: "en",
+      translationLanguageCode: "he",
+      itemType: "word",
+      userStatus: "active",
+      learningStatus: "new",
+      userPriority: "normal",
+      manualHard: false,
+      overallMasteryScore: 0,
+      nextReviewAt: null,
+      createdAt: date,
+      updatedAt: date,
+      primaryTranslation: "כלב",
+    };
+    mount("/vocabulary", async (url) => {
+      if (url.endsWith("/tags")) return json({ tags: [] });
+      if (url.endsWith("/word-packs")) return json({ packs: [] });
+      if (url.includes("/learning-items?"))
+        return json({
+          items: [
+            { ...word, phoneticText: "דוֹג", phoneticScheme: "transliteration:he" },
+            { ...word, id: secondItemId, sourceText: "cat", phoneticText: "קָט", phoneticScheme: "hebrew_niqqud" },
+          ],
+          nextCursor: null,
+          totalCount: 2,
+          page: 1,
+          pageCount: 1,
+        });
+      throw new Error("Unexpected route");
+    }, seedProfile, [{ code: "en", count: 2 }]);
+    const guide = await screen.findByText("דוֹג");
+    expect(guide).toHaveAttribute("lang", "he");
+    expect(guide.parentElement?.querySelector("strong")?.textContent).toBe("dog");
+    expect(screen.queryByText("קָט")).not.toBeInTheDocument();
+  });
   it("signs out when a product request cannot refresh an expired session", async () => {
     mount("/vocabulary", async () =>
       json({ error: { code: "UNAUTHORIZED" } }, 401),

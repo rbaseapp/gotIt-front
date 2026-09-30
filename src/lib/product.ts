@@ -70,6 +70,8 @@ const sourceKind = z.enum([
 export const itemSchema = z.object({
   id: uuid,
   sourceText: z.string(),
+  phoneticText: z.string().nullable().optional(),
+  phoneticScheme: z.string().nullable().optional(),
   sourceLanguageCode: z.string(),
   translationLanguageCode: z.string(),
   itemType: z.string(),
@@ -110,7 +112,6 @@ export const detailSchema = itemSchema
   .omit({ primaryTranslation: true })
   .extend({
     partOfSpeech: z.string().nullable(),
-    phoneticText: z.string().nullable(),
     masterySource: z.enum(["user", "system"]).nullable(),
     reviewStage: count,
     learningRevision: count,
