@@ -211,6 +211,7 @@ export function PrivateLessonPage() {
   const wrapResponseStarted = useRef(false);
   const wrapResponseStartedAt = useRef(0);
   const wrapTranscript = useRef("");
+  const lastTutorAudioAt = useRef(0);
   const translationRequested = useRef(false);
   const assistantBuffer = useRef("");
   const lessonStartedAt = useRef(0);
@@ -296,7 +297,6 @@ export function PrivateLessonPage() {
     }
   };
   const finish = (
-    activeSession: PrivateLessonSession,
     message: string,
     includeTimeMessage = false,
     reason: "completed" | "stopped" | "disconnected" = "completed",
@@ -350,17 +350,23 @@ export function PrivateLessonPage() {
     );
     const elapsed = Date.now() - wrapResponseStartedAt.current;
     setStatus(t("privateLesson.goodbyePlaying"));
+    const finishWhenQuiet = () => {
+      const quietFor = Date.now() - lastTutorAudioAt.current;
+      if (quietFor < 1_200) {
+        timers.current.push(window.setTimeout(finishWhenQuiet, 1_200 - quietFor));
+        return;
+      }
+      finish(
+        completionReason.current === "stopped"
+          ? t("privateLesson.stopped")
+          : t("privateLesson.ended"),
+        true,
+        completionReason.current,
+      );
+    };
     timers.current.push(
       window.setTimeout(
-        () =>
-          finish(
-            activeSession,
-            completionReason.current === "stopped"
-              ? t("privateLesson.stopped")
-              : t("privateLesson.ended"),
-            true,
-            completionReason.current,
-          ),
+        finishWhenQuiet,
         Math.max(1_000, estimatedPlaybackMs - elapsed),
       ),
     );
@@ -432,6 +438,22 @@ export function PrivateLessonPage() {
       ),
     );
   };
+  const wrapAfterCurrentPlayback = (activeSession: PrivateLessonSession) => {
+    const quietFor = Date.now() - lastTutorAudioAt.current;
+    if (lastTutorAudioAt.current && quietFor < 1_200) {
+      timers.current.push(
+        window.setTimeout(
+          () => wrapAfterCurrentPlayback(activeSession),
+          Math.max(250, 1_200 - quietFor),
+        ),
+      );
+      return;
+    }
+    requestWrapUp(
+      activeSession,
+      completionReason.current === "stopped" ? "stopped" : "completed",
+    );
+  };
   const handleRealtimeEvent = (
     event: Record<string, unknown>,
     activeSession: PrivateLessonSession,
@@ -445,16 +467,13 @@ export function PrivateLessonPage() {
       if (wrapSent.current && !wrapResponseStarted.current) {
         wrapResponseStarted.current = true;
         wrapResponseStartedAt.current = Date.now();
+        lastTutorAudioAt.current = 0;
       }
     }
     if (event.type === "response.done") {
       activeResponse.current = false;
       setResponding(false);
-      if (wrapPending.current)
-        requestWrapUp(
-          activeSession,
-          completionReason.current === "stopped" ? "stopped" : "completed",
-        );
+      if (wrapPending.current) wrapAfterCurrentPlayback(activeSession);
       else if (wrapResponseStarted.current)
         finishAfterClosingPlayback(activeSession);
       else if (translationRequested.current) {
@@ -505,13 +524,13 @@ export function PrivateLessonPage() {
 
   useEffect(() => {
     let active = true;
-    void listPrivateLessons(50)
+    void listPrivateLessons(50, courseId ?? undefined)
       .then((lessons) => active && setHistory(lessons))
       .catch((reason) => active && setHistoryError(errorMessage(reason)));
     return () => {
       active = false;
     };
-  }, []);
+  }, [courseId]);
 
   useEffect(() => {
     let active = true;
@@ -610,6 +629,7 @@ export function PrivateLessonPage() {
     wrapResponseStarted.current = false;
     wrapResponseStartedAt.current = 0;
     wrapTranscript.current = "";
+    lastTutorAudioAt.current = 0;
     translationRequested.current = false;
     assistantBuffer.current = "";
     const controller = new AbortController();
@@ -673,7 +693,6 @@ export function PrivateLessonPage() {
               (phaseRef.current === "active" || phaseRef.current === "wrapping")
             ) {
               finish(
-                created,
                 t("privateLesson.connectionClosed"),
                 false,
                 "disconnected",
@@ -686,6 +705,7 @@ export function PrivateLessonPage() {
           },
           onAudioLevel(level) {
             if (controller.signal.aborted) return;
+            if (level > 0.06) lastTutorAudioAt.current = Date.now();
             flowRef.current?.audioLevel(level);
             setTutorAudioLevel(level);
           },

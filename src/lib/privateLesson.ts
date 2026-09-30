@@ -468,10 +468,12 @@ export function completePrivateLessonSession(
   ).then((result) => result.lesson);
 }
 
-export function listPrivateLessons(limit = 20) {
+export function listPrivateLessons(limit = 20, courseId?: string) {
+  const query = new URLSearchParams({ limit: String(limit) });
+  if (courseId) query.set("courseId", courseId);
   return product(
     z.object({ lessons: z.array(savedPrivateLessonSchema) }),
-    `private-lessons?limit=${limit}`,
+    `private-lessons?${query}`,
   ).then((result) => result.lessons);
 }
 

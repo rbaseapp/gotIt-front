@@ -58,6 +58,6 @@ export function getBilingualLanguageOptions(): ReadonlyArray<
     }
 
     const englishName = englishNames.of(code) || code;
-    return [code, `${englishName} — ${nativeName}`] as const;
+    return [code, code === "en" ? englishName : `${englishName} — ${nativeName}`] as const;
   });
 }
