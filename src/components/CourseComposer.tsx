@@ -86,6 +86,7 @@ export function CourseComposer({
   label,
   submitLabel,
   onDraftChange,
+  replaceVoice = false,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -95,6 +96,7 @@ export function CourseComposer({
   label?: string;
   submitLabel?: string;
   onDraftChange?: () => void;
+  replaceVoice?: boolean;
 }) {
   const { t } = useTranslation();
   const [recording, setRecording] = useState(false),
@@ -131,7 +133,11 @@ export function CourseComposer({
       setTranscribing(true);
       const result = await courseApi.transcribe(audio, language);
       if (!abort.signal.aborted) {
-        onChange([value, result.text].filter(Boolean).join(" "));
+        onChange(
+          replaceVoice
+            ? result.text
+            : [value, result.text].filter(Boolean).join(" "),
+        );
         channel.current = "voice";
         input.current?.focus();
       }
