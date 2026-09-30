@@ -82,12 +82,15 @@ async function request(
         ? 60000
         : path.includes("/study/") && path.endsWith("/image")
           ? 120000
-          : path.startsWith("reading") ||
-              path.startsWith("courses") ||
-              path.endsWith("/complete") ||
-              path === "import"
-            ? 75000
-            : 20000;
+          : path === "private-lessons/realtime-sessions"
+            ? 90000
+            : path.startsWith("courses")
+              ? 120000
+              : path.startsWith("reading") ||
+                  path.endsWith("/complete") ||
+                  path === "import"
+                ? 75000
+                : 20000;
   const timeoutSignal = AbortSignal.timeout(timeoutMs);
   try {
     response = await fetch(`${base}/api/v1/${path}`, {
