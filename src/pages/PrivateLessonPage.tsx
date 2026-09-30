@@ -171,6 +171,7 @@ export function PrivateLessonPage() {
   const turnsRef = useRef<Turn[]>([]);
   const [completedLesson, setCompletedLesson] = useState<SavedPrivateLesson>();
   const [reportLoading, setReportLoading] = useState(false);
+  const [reportRequested, setReportRequested] = useState(false);
   const [reportError, setReportError] = useState("");
   const [history, setHistory] = useState<SavedPrivateLesson[]>([]);
   const [historyError, setHistoryError] = useState("");
@@ -306,7 +307,6 @@ export function PrivateLessonPage() {
     setRemaining(0);
     setStatus(message);
     setPhase("ended");
-    void finalizeLesson(activeSession);
   };
   const requestWrapUp = (
     activeSession: PrivateLessonSession,
@@ -344,9 +344,9 @@ export function PrivateLessonPage() {
       .filter(Boolean).length;
     const rateMultiplier =
       speechRateMultipliers[activeSession.lesson.speechRate];
-    const estimatedPlaybackMs = Math.min(
-      20_000,
-      Math.max(3_000, (wordCount / (2.4 * rateMultiplier)) * 1000 + 1_500),
+    const estimatedPlaybackMs = Math.max(
+      3_000,
+      (wordCount / (2.4 * rateMultiplier)) * 1000 + 2_500,
     );
     const elapsed = Date.now() - wrapResponseStartedAt.current;
     setStatus(t("privateLesson.goodbyePlaying"));
@@ -429,12 +429,6 @@ export function PrivateLessonPage() {
       window.setTimeout(
         () => requestWrapUp(activeSession),
         activeSession.lesson.durationSeconds * 1000,
-      ),
-    );
-    timers.current.push(
-      window.setTimeout(
-        () => finish(activeSession, t("privateLesson.ended"), true),
-        (activeSession.lesson.durationSeconds + 30) * 1000,
       ),
     );
   };
@@ -593,7 +587,8 @@ export function PrivateLessonPage() {
   usePrivateLessonViewport(sessionFullscreen);
   useEffect(() => {
     const transcript = transcriptRef.current;
-    if (transcript) transcript.scrollTop = transcript.scrollHeight;
+    if (transcript && phase !== "ended")
+      transcript.scrollTop = transcript.scrollHeight;
   }, [phase, status, turns, needsContinue]);
 
   const startLesson = async (event: FormEvent) => {
@@ -605,6 +600,7 @@ export function PrivateLessonPage() {
     turnsRef.current = [];
     setSession(undefined);
     setCompletedLesson(undefined);
+    setReportRequested(false);
     setReportError("");
     setSavedSuggestions(new Set());
     finalizing.current = false;
@@ -721,6 +717,7 @@ export function PrivateLessonPage() {
     setTurns([]);
     turnsRef.current = [];
     setCompletedLesson(undefined);
+    setReportRequested(false);
     setReportError("");
     setError("");
     setRemaining(lessonDurationMinutes * 60);
@@ -843,7 +840,10 @@ export function PrivateLessonPage() {
   });
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
-  const latestAssessmentLesson = history.find(
+  const visibleHistory = courseId
+    ? history.filter((lesson) => lesson.course?.courseId === courseId)
+    : history;
+  const latestAssessmentLesson = visibleHistory.find(
     (lesson) =>
       lesson.status === "completed" &&
       lesson.report?.assessment &&
@@ -872,7 +872,7 @@ export function PrivateLessonPage() {
       sameBaseLanguage(code, targetLanguage),
     )?.[1] || targetLanguage;
   const historyGroups = Array.from(
-    history.reduce((groups, lesson) => {
+    visibleHistory.reduce((groups, lesson) => {
       const languageCode =
         languageOptions.find(([code]) =>
           sameBaseLanguage(code, lesson.targetLanguageCode),
@@ -1963,7 +1963,7 @@ export function PrivateLessonPage() {
             <div className="private-lesson-history-heading">
               <div>
                 <p className="eyebrow">{t("privateLesson.history.eyebrow")}</p>
-                <h2>{t("privateLesson.history.title")}</h2>
+                <h2>{t(courseId ? "courses.courseHistory" : "privateLesson.history.title")}</h2>
               </div>
               <BookOpen size={24} aria-hidden="true" />
             </div>
@@ -1971,7 +1971,7 @@ export function PrivateLessonPage() {
               <p className="form-error" role="alert">
                 {historyError}
               </p>
-            ) : history.length ? (
+            ) : visibleHistory.length ? (
               <div className="private-lesson-history-groups">
                 {historyGroups.map(([languageCode, lessons]) => (
                   <section
@@ -2030,7 +2030,7 @@ export function PrivateLessonPage() {
                 ))}
               </div>
             ) : (
-              <p>{t("privateLesson.history.empty")}</p>
+              <p>{t(courseId ? "courses.noCourseHistory" : "privateLesson.history.empty")}</p>
             )}
           </section>
           <Modal
@@ -2068,7 +2068,7 @@ export function PrivateLessonPage() {
       ) : (
         createPortal(
           <section
-            className={`private-lesson-session live-panel${phase === "ended" ? " has-report" : ""}`}
+            className={`private-lesson-session live-panel${reportRequested ? " has-report" : ""}`}
             role="dialog"
             aria-label={t("privateLesson.title")}
           >
@@ -2154,7 +2154,7 @@ export function PrivateLessonPage() {
               )}
             </div>
 
-            {phase === "ended" ? (
+            {phase === "ended" && reportRequested ? (
               <div className="private-lesson-report-shell">
                 {reportLoading ? (
                   <div className="private-lesson-report-loading" role="status">
@@ -2272,8 +2272,20 @@ export function PrivateLessonPage() {
 
             {phase === "ended" ? (
               <div className="private-lesson-actions private-lesson-report-actions">
+                {!reportRequested && session && (
+                  <button
+                    className="button primary"
+                    type="button"
+                    onClick={() => {
+                      setReportRequested(true);
+                      void finalizeLesson(session);
+                    }}
+                  >
+                    <BookOpen size={18} /> {t("privateLesson.report.generate")}
+                  </button>
+                )}
                 <button
-                  className="button primary"
+                  className="button secondary"
                   type="button"
                   onClick={reset}
                 >

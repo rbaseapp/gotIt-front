@@ -267,6 +267,7 @@
       }
     },
     "report": {
+      "generate": "Stundenzusammenfassung erstellen",
       "title": "Deine Lektionszusammenfassung",
       "preparing": "Persönliche Wiederholung wird erstellt…",
       "failed": "Die Lektion endete, aber die Zusammenfassung ist noch nicht verfügbar.",

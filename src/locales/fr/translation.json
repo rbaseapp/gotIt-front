@@ -267,6 +267,7 @@
       }
     },
     "report": {
+      "generate": "Créer le résumé du cours",
       "title": "Résumé de votre cours",
       "preparing": "Préparation de votre révision personnelle…",
       "failed": "Le cours est terminé, mais le résumé n’est pas encore prêt.",

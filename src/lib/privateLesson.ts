@@ -412,6 +412,7 @@ export const privateLessonReportSchema = z.object({
 
 export const savedPrivateLessonSchema = z.object({
   id: uuid,
+  course: z.object({ courseId: uuid }).passthrough().nullable().optional(),
   targetLanguageCode: z.string(),
   supportLanguageCode: z.string().nullable(),
   lessonMode: z.enum(privateLessonModes).default("standard"),

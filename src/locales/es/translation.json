@@ -267,6 +267,7 @@
       }
     },
     "report": {
+      "generate": "Crear resumen de la clase",
       "title": "Resumen de tu clase",
       "preparing": "Preparando tu repaso personal…",
       "failed": "La clase terminó, pero el resumen aún no está listo.",

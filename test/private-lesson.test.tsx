@@ -969,6 +969,21 @@ describe("private voice lesson", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows only lessons from the selected course, even when another course uses the same language", async () => {
+    const course = courseWithPlan(true);
+    mocks.course.mockResolvedValue({ course });
+    mocks.list.mockResolvedValue([
+      { ...savedLesson, topic: "Selected course lesson", course: { courseId: course.id } },
+      { ...savedLesson, id: "99999999-9999-4999-8999-999999999998", topic: "Other English course", course: { courseId: "10000000-0000-4000-8000-000000000002" } },
+      { ...savedLesson, id: "99999999-9999-4999-8999-999999999997", topic: "Free English lesson", course: null },
+    ]);
+    renderPage(`/private-lesson?course=${course.id}`);
+    expect(await screen.findByRole("heading", { name: "השיעורים בקורס הזה" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Selected course lesson/ })).toBeInTheDocument();
+    expect(screen.queryByText("Other English course")).not.toBeInTheDocument();
+    expect(screen.queryByText("Free English lesson")).not.toBeInTheDocument();
+  });
+
   it("saves a suggested word from the lesson report", async () => {
     mocks.list.mockResolvedValue([lessonWithSuggestion]);
     const libraryChanged = vi.fn();
@@ -1018,7 +1033,7 @@ describe("private voice lesson", () => {
     expect(screen.getByRole("button", { name: "שמירת מילה" })).toBeEnabled();
   });
 
-  it("finalizes and saves a report when the voice connection closes", async () => {
+  it("keeps the transcript readable until the learner asks for a report after the connection closes", async () => {
     mocks.create.mockResolvedValue(session);
     mocks.complete.mockResolvedValue(savedLesson);
     let closeSession: (() => void) | undefined;
@@ -1047,17 +1062,16 @@ describe("private voice lesson", () => {
     await screen.findByRole("button", { name: "סיום השיעור" });
     closeSession?.();
 
+    expect(mocks.complete).not.toHaveBeenCalled();
+    expect(screen.getByText("The voice connection closed.")).toBeInTheDocument();
+    expect(screen.queryByText("You spoke clearly about technology.")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "יצירת סיכום השיעור" }));
     await waitFor(() =>
       expect(mocks.complete).toHaveBeenCalledWith(
         session.lesson.id,
-        expect.objectContaining({
-          completionReason: "disconnected",
-          turns: [],
-        }),
+        expect.objectContaining({ completionReason: "disconnected", turns: [] }),
       ),
     );
-    expect(
-      await screen.findByText("You spoke clearly about technology."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("You spoke clearly about technology.")).toBeInTheDocument();
   });
 });
