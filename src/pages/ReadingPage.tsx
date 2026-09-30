@@ -7,6 +7,8 @@ import { speak, statusLabels } from "../lib/utils";
 import { CapabilityNotice } from "../components/CapabilityNotice";
 import type { LearningItem } from "../types";
 import { useTranslation } from "react-i18next";
+import { LanguageCombobox } from "../components/LanguageCombobox";
+import { getBilingualLanguageOptions } from "../lib/languages";
 
 interface Reading {
   id: string;
@@ -163,17 +165,14 @@ export function ReadingPage() {
             <div className="form-two-columns">
               <label className="field">
                 <span>{t("demoReading.targetLanguage")}</span>
-                <select
+                <LanguageCombobox
                   value={language}
-                  onChange={(event) => {
-                    setLanguage(event.target.value);
+                  options={getBilingualLanguageOptions().filter(([code]) => languages.includes(code))}
+                  onChange={(code) => {
+                    setLanguage(code);
                     setSelected([]);
                   }}
-                >
-                  {languages.map((value) => (
-                    <option key={value}>{value}</option>
-                  ))}
-                </select>
+                />
               </label>
               <label className="field">
                 <span>{t("demoReading.cefrLevel")}</span>

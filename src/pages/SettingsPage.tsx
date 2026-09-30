@@ -16,7 +16,8 @@ import { useApp } from "../context/AppContext";
 import { validateProfile } from "../lib/contracts";
 import { Modal } from "../components/Modal";
 import type { UserProfile } from "../types";
-import { getLanguageOptions } from "../lib/languages";
+import { getBilingualLanguageOptions } from "../lib/languages";
+import { LanguageCombobox } from "../components/LanguageCombobox";
 import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
 import {
@@ -45,8 +46,8 @@ const defaultLessonPreferences: PrivateLessonPreferences = {
 };
 
 export function SettingsPage() {
-  const { t, i18n } = useTranslation();
-  const languageOptions = getLanguageOptions(i18n.resolvedLanguage || "en");
+  const { t } = useTranslation();
+  const languageOptions = getBilingualLanguageOptions();
   const {
     profile,
     updateProfile,
@@ -294,44 +295,32 @@ export function SettingsPage() {
               </div>
               <label className="field">
                 <span>{t("settings.sourceLanguage")}</span>
-                <select
+                <LanguageCombobox
                   value={form.defaultSourceLanguage || ""}
-                  onChange={(event) =>
+                  onChange={(code) =>
                     patch({
-                      defaultSourceLanguage: event.target.value || null,
+                      defaultSourceLanguage: code || null,
                     })
                   }
-                >
-                  <option value="">{t("settings.autoDetect")}</option>
-                  {languageOptions.map(([code, label]) => (
-                    <option value={code} key={code}>
-                      {label} · {code}
-                    </option>
-                  ))}
-                </select>
+                  options={languageOptions}
+                  emptyLabel={t("settings.autoDetect")}
+                />
                 <small className="muted-note">
                   {t("settings.autoDetectHelp")}
                 </small>
               </label>
               <label className="field">
                 <span>{t("settings.translationLanguage")}</span>
-                <select
+                <LanguageCombobox
                   value={form.defaultTranslationLanguage || ""}
-                  onChange={(event) =>
+                  onChange={(code) =>
                     patch({
-                      defaultTranslationLanguage: event.target.value || null,
+                      defaultTranslationLanguage: code || null,
                     })
                   }
-                >
-                  <option value="" disabled>
-                    {t("settings.chooseTranslationLanguage")}
-                  </option>
-                  {languageOptions.map(([code, label]) => (
-                    <option value={code} key={code}>
-                      {label} · {code}
-                    </option>
-                  ))}
-                </select>
+                  options={languageOptions}
+                  emptyLabel={t("settings.chooseTranslationLanguage")}
+                />
                 <small className="muted-note">
                   {t("settings.translationLanguageHelp")}
                 </small>
@@ -340,20 +329,19 @@ export function SettingsPage() {
                 {form.languages.map((language, index) => (
                   <div className="language-editor-row" key={index}>
                     <label className="field">
-                      <span>{t("settings.languageCode")}</span>
-                      <input
-                        aria-label={t("settings.languageNumber", {
+                      <span>{t("language.label")}</span>
+                      <LanguageCombobox
+                        ariaLabel={t("settings.languageNumber", {
                           number: index + 1,
                         })}
                         value={language.languageCode}
-                        dir="ltr"
                         required
-                        maxLength={64}
-                        onChange={(event) =>
+                        options={languageOptions}
+                        onChange={(code) =>
                           patch({
                             languages: form.languages.map((value, i) =>
                               i === index
-                                ? { ...value, languageCode: event.target.value }
+                                ? { ...value, languageCode: code }
                                 : value,
                             ),
                           })
@@ -485,44 +473,32 @@ export function SettingsPage() {
                   </label>
                   <label className="field">
                     <span>{t("privateLesson.targetLanguage")}</span>
-                    <select
+                    <LanguageCombobox
                       value={lessonLanguage}
-                      onChange={(event) => {
+                      options={languageOptions}
+                      onChange={(code) => {
                         setSaved(false);
-                        setLessonLanguage(event.target.value);
+                        setLessonLanguage(code);
                       }}
-                    >
-                      {languageOptions.map(([code, label]) => (
-                        <option key={code} value={code}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </label>
                   <label className="field">
                     <span>{t("privateLesson.supportLanguage")}</span>
-                    <select
+                    <LanguageCombobox
                       value={lessonPreferences.supportLanguageCode ?? ""}
                       required={
                         lessonPreferences.lessonMode === "absolute_beginner"
                       }
-                      onChange={(event) => {
+                      onChange={(code) => {
                         setSaved(false);
                         setLessonPreferences((current) => ({
                           ...current,
-                          supportLanguageCode: event.target.value || null,
+                          supportLanguageCode: code || null,
                         }));
                       }}
-                    >
-                      <option value="">{t("privateLesson.noSupport")}</option>
-                      {languageOptions
-                        .filter(([code]) => code !== lessonLanguage)
-                        .map(([code, label]) => (
-                          <option key={code} value={code}>
-                            {label}
-                          </option>
-                        ))}
-                    </select>
+                      options={languageOptions.filter(([code]) => code !== lessonLanguage)}
+                      emptyLabel={t("privateLesson.noSupport")}
+                    />
                   </label>
                   <label className="field">
                     <span>{t("privateLesson.duration")}</span>

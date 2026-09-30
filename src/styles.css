@@ -50,7 +50,7 @@ select {
   color: var(--muted);
   font-weight: 600;
 }
-.ui-language-select select {
+.ui-language-select .language-combobox input {
   min-height: 38px;
   padding: 0 10px;
   border: 1px solid var(--line);
@@ -4784,4 +4784,51 @@ button:disabled {
   .session-footer span {
     font-size: 11px;
   }
+}
+.language-combobox {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.language-combobox input {
+  width: 100%;
+}
+
+.language-combobox-list {
+  position: absolute;
+  z-index: 50;
+  inset-inline: 0;
+  top: calc(100% + 3px);
+  max-height: 15rem;
+  overflow-y: auto;
+  background: var(--surface, #fff);
+  color: var(--text, #20232b);
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px #0002;
+}
+
+.language-combobox-list [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.language-combobox-list [role="option"].active,
+.language-combobox-list [role="option"]:hover {
+  background: #e6e9f8;
+  color: #171b46;
+}
+
+.language-combobox-list [aria-selected="true"] {
+  font-weight: 700;
+}
+
+.language-combobox-list small {
+  font-size: 0.75em;
+  opacity: 0.7;
 }

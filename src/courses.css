@@ -105,7 +105,7 @@
   font-size: 13px;
   color: var(--muted);
 }
-.course-language-pair select {
+.course-language-pair .language-combobox input {
   max-width: 100%;
   width: 100%;
   color: var(--ink);

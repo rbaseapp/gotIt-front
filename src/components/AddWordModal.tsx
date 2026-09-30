@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { BookOpen, Languages, Link2, Plus, Save } from "lucide-react";
+import { LanguageCombobox } from "./LanguageCombobox";
 import { useApp } from "../context/AppContext";
 import { canonicalLanguage } from "../lib/contracts";
 import { normalizeAnswer } from "../lib/practice";
@@ -121,30 +122,23 @@ export function AddWordModal({
               <span>
                 {t("demoAdd.sourceLanguage")} <Languages size={13} />
               </span>
-              <input
-                aria-label={t("demoAdd.sourceLanguageCode")}
+              <LanguageCombobox
+                ariaLabel={t("demoAdd.sourceLanguage")}
                 value={sourceLanguage}
-                onChange={(event) => setSourceLanguage(event.target.value)}
-                dir="ltr"
+                onChange={setSourceLanguage}
                 required
-                maxLength={64}
-                placeholder="en"
               />
             </label>
             <label className="field">
               <span>{t("demoAdd.translationLanguage")}</span>
-              <input
-                aria-label={t("demoAdd.translationLanguageCode")}
+              <LanguageCombobox
+                ariaLabel={t("demoAdd.translationLanguage")}
                 value={translationLanguage}
-                onChange={(event) => setTranslationLanguage(event.target.value)}
-                dir="ltr"
+                onChange={setTranslationLanguage}
                 required
-                maxLength={64}
-                placeholder="he"
               />
             </label>
           </div>
-          <small className="muted-note">{t("demoAdd.languageHelp")}</small>
           <label className="field">
             <span>{t("demoAdd.wordOrPhrase")}</span>
             <div className="input-with-icon">

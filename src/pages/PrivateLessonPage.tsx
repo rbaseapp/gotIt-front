@@ -34,6 +34,7 @@ import type { TFunction } from "i18next";
 import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TeacherAvatar } from "../components/TeacherAvatar";
+import { LanguageCombobox } from "../components/LanguageCombobox";
 import { PrivateLessonFlow } from "../lib/privateLessonFlow";
 import { Modal } from "../components/Modal";
 import { courseApi, type Course } from "../lib/courses";
@@ -1000,27 +1001,13 @@ export function PrivateLessonPage() {
                   <div className="private-lesson-beginner-language">
                     <label className="field">
                       <span>{t("privateLesson.mode.teachingLanguage")}</span>
-                      <select
+                      <LanguageCombobox
                         value={supportLanguage}
-                        onChange={(event) =>
-                          setSupportLanguage(event.target.value)
-                        }
-                        dir="auto"
+                        onChange={setSupportLanguage}
+                        options={languageOptions.filter(([code]) => !sameBaseLanguage(code, targetLanguage))}
+                        emptyLabel={t("privateLesson.mode.chooseTeachingLanguage")}
                         required
-                      >
-                        <option value="" disabled>
-                          {t("privateLesson.mode.chooseTeachingLanguage")}
-                        </option>
-                        {languageOptions
-                          .filter(
-                            ([code]) => !sameBaseLanguage(code, targetLanguage),
-                          )
-                          .map(([code, label]) => (
-                            <option key={code} value={code}>
-                              {label}
-                            </option>
-                          ))}
-                      </select>
+                      />
                     </label>
                     <p>{t("privateLesson.mode.beginnerHint")}</p>
                   </div>
@@ -1251,39 +1238,21 @@ export function PrivateLessonPage() {
                       <div className="live-form-grid">
                         <label className="field">
                           <span>{t("privateLesson.targetLanguage")}</span>
-                          <select
+                          <LanguageCombobox
                             value={targetLanguage}
-                            onChange={(event) =>
-                              setTargetLanguage(event.target.value)
-                            }
-                            dir="auto"
+                            onChange={setTargetLanguage}
+                            options={languageOptions}
                             required
-                          >
-                            {languageOptions.map(([code, label]) => (
-                              <option key={code} value={code}>
-                                {label}
-                              </option>
-                            ))}
-                          </select>
+                          />
                         </label>
                         <label className="field">
                           <span>{t("privateLesson.supportLanguage")}</span>
-                          <select
+                          <LanguageCombobox
                             value={supportLanguage}
-                            onChange={(event) =>
-                              setSupportLanguage(event.target.value)
-                            }
-                            dir="auto"
-                          >
-                            <option value="">
-                              {t("privateLesson.noSupport")}
-                            </option>
-                            {languageOptions.map(([code, label]) => (
-                              <option key={code} value={code}>
-                                {label}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={setSupportLanguage}
+                            options={languageOptions}
+                            emptyLabel={t("privateLesson.noSupport")}
+                          />
                         </label>
                         <label className="field">
                           <span>{t("privateLesson.duration")}</span>
@@ -1701,26 +1670,13 @@ export function PrivateLessonPage() {
                 {lessonMode === "absolute_beginner" && (
                   <label className="field">
                     <span>{t("privateLesson.mode.teachingLanguage")}</span>
-                    <select
+                    <LanguageCombobox
                       value={supportLanguage}
-                      onChange={(event) =>
-                        setSupportLanguage(event.target.value)
-                      }
+                      onChange={setSupportLanguage}
+                      options={languageOptions.filter(([code]) => !sameBaseLanguage(code, targetLanguage))}
+                      emptyLabel={t("privateLesson.mode.chooseTeachingLanguage")}
                       required
-                    >
-                      <option value="" disabled>
-                        {t("privateLesson.mode.chooseTeachingLanguage")}
-                      </option>
-                      {languageOptions
-                        .filter(
-                          ([code]) => !sameBaseLanguage(code, targetLanguage),
-                        )
-                        .map(([code, label]) => (
-                          <option key={code} value={code}>
-                            {label}
-                          </option>
-                        ))}
-                    </select>
+                    />
                   </label>
                 )}
                 <label className="field">
