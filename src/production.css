@@ -2313,6 +2313,8 @@ progress::-webkit-progress-value {
 }
 .memorization-visual {
   position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   /* Keep large source images and browser/OS zoom from taking over the session.
      The 7:4 frame scales down with the usable viewport height and never grows
      past the intended 560 x 320 desktop size. */
@@ -2329,8 +2331,7 @@ progress::-webkit-progress-value {
 }
 .memorization-visual > img,
 .memorization-image-loading {
-  position: absolute;
-  inset: 0;
+  grid-row: 1;
   width: 100%;
   height: 100%;
   min-width: 0;
@@ -2340,7 +2341,7 @@ progress::-webkit-progress-value {
 }
 .memorization-visual > img {
   display: block;
-  object-fit: cover;
+  object-fit: contain;
 }
 .memorization-image-loading {
   background: linear-gradient(105deg, #e6ece2 25%, #f7f8f3 38%, #e6ece2 52%);
@@ -2353,9 +2354,7 @@ progress::-webkit-progress-value {
   }
 }
 .image-credit {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
+  grid-row: 2;
   padding: 8px 12px;
   color: white;
   background: rgba(25, 35, 30, 0.74);
