@@ -1631,6 +1631,7 @@
     "title": "清晰的学习路径，适合你的节奏",
     "allCourses": "我的课程",
     "courseCount": "{{count}} 门课程",
+    "singleCourse": "1 门课程",
     "completedCount": "已完成 {{count}} / {{total}} 节课",
     "inProgress": "学习中",
     "awaitingApproval": "课程计划待确认",

@@ -1630,6 +1630,7 @@
     "title": "A clear path, made for you",
     "allCourses": "My courses",
     "courseCount": "{{count}} courses",
+    "singleCourse": "1 course",
     "completedCount": "{{count}} of {{total}} lessons done",
     "inProgress": "In progress",
     "awaitingApproval": "Plan awaiting approval",

@@ -268,7 +268,7 @@ export function CoursePage() {
               <section className="course-language-group" key={code} aria-label={languageName(code)}>
                 <div className="course-language-heading">
                   <h2>{languageName(code)}</h2>
-                  <span>{t("courses.courseCount", { count: items.length })}</span>
+                  <span>{t(items.length === 1 ? "courses.singleCourse" : "courses.courseCount", { count: items.length })}</span>
                 </div>
                 <div className="course-list">
                   {items.map((item) => {

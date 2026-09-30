@@ -378,6 +378,8 @@ describe("personal course experience", () => {
     expect(spanishGroup).toBeDefined();
     expect(within(english!).getAllByRole("link")).toHaveLength(2);
     expect(within(spanishGroup!).getAllByRole("link")).toHaveLength(1);
+    expect(within(english!).getByText("2 קורסים")).toBeInTheDocument();
+    expect(within(spanishGroup!).getByText("קורס אחד")).toBeInTheDocument();
     expect(within(english!).getByRole("link", { name: /1 מתוך 12 שיעורים בוצעו/ })).toHaveAttribute("href", `/courses/${first.id}`);
     expect(within(spanishGroup!).queryByText("English for travel")).not.toBeInTheDocument();
   });

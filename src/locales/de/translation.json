@@ -1631,6 +1631,7 @@
     "title": "Ein klarer Lernweg in deinem Tempo",
     "allCourses": "Meine Kurse",
     "courseCount": "{{count}} Kurse",
+    "singleCourse": "1 Kurs",
     "completedCount": "{{count}} von {{total}} Lektionen bearbeitet",
     "inProgress": "In Bearbeitung",
     "awaitingApproval": "Lehrplan wartet auf Freigabe",

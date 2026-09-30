@@ -1630,6 +1630,7 @@
     "title": "מסלול ברור, בקצב שלך",
     "allCourses": "הקורסים שלי",
     "courseCount": "{{count}} קורסים",
+    "singleCourse": "קורס אחד",
     "completedCount": "{{count}} מתוך {{total}} שיעורים בוצעו",
     "inProgress": "בתהליך למידה",
     "awaitingApproval": "התוכנית ממתינה לאישור",

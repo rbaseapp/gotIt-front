@@ -1676,6 +1676,7 @@
     "title": "مسار واضح يناسب وتيرتك",
     "allCourses": "دوراتي",
     "courseCount": "{{count}} دورات",
+    "singleCourse": "دورة واحدة",
     "completedCount": "أُنجزت {{count}} من {{total}} دروس",
     "inProgress": "قيد التعلّم",
     "awaitingApproval": "الخطة بانتظار الموافقة",

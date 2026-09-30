@@ -1631,6 +1631,7 @@
     "title": "Un camino claro, a tu ritmo",
     "allCourses": "Mis cursos",
     "courseCount": "{{count}} cursos",
+    "singleCourse": "1 curso",
     "completedCount": "{{count}} de {{total}} lecciones realizadas",
     "inProgress": "En curso",
     "awaitingApproval": "Plan pendiente de aprobación",

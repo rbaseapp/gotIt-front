@@ -1661,6 +1661,7 @@
     "title": "Понятный путь в вашем темпе",
     "allCourses": "Мои курсы",
     "courseCount": "Курсов: {{count}}",
+    "singleCourse": "1 курс",
     "completedCount": "Пройдено уроков: {{count}} из {{total}}",
     "inProgress": "В процессе",
     "awaitingApproval": "План ожидает утверждения",

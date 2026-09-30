@@ -1631,6 +1631,7 @@
     "title": "Un parcours clair, à votre rythme",
     "allCourses": "Mes cours",
     "courseCount": "{{count}} cours",
+    "singleCourse": "1 cours",
     "completedCount": "{{count}} leçons effectuées sur {{total}}",
     "inProgress": "En cours",
     "awaitingApproval": "Programme en attente d'approbation",
