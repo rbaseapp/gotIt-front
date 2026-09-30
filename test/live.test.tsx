@@ -1154,10 +1154,15 @@ describe("live server-backed flows", () => {
     ).toHaveLength(1);
     let releaseSignal: AbortSignal | undefined;
     let finishRecording: ((audio: string) => void) | undefined;
-    vi.mocked(recordVoice).mockImplementation(async (_cancel, release) => {
+    let cancelSignal: AbortSignal | undefined;
+    vi.mocked(recordVoice).mockImplementation(async (cancel, release) => {
+      cancelSignal = cancel;
       releaseSignal = release;
-      return new Promise<string>((resolve) => {
+      return new Promise<string>((resolve, reject) => {
         finishRecording = resolve;
+        cancel.addEventListener("abort", () => reject(new Error("cancelled")), {
+          once: true,
+        });
       });
     });
     const holdButton = screen.getByRole("button", {
@@ -1168,8 +1173,25 @@ describe("live server-backed flows", () => {
       "exercise-skip-action",
     );
     Object.assign(holdButton, { setPointerCapture: vi.fn() });
-    fireEvent.pointerDown(holdButton, { button: 0, pointerId: 7 });
+    fireEvent.pointerDown(holdButton, {
+      button: 0,
+      pointerId: 7,
+      isPrimary: true,
+    });
     await waitFor(() => expect(recordVoice).toHaveBeenCalledOnce());
+    fireEvent.pointerCancel(holdButton, { pointerId: 7 });
+    expect(cancelSignal?.aborted).toBe(true);
+    await waitFor(() =>
+      expect(holdButton).toHaveAttribute("aria-pressed", "false"),
+    );
+    fireEvent.pointerDown(holdButton, {
+      button: 0,
+      pointerId: 7,
+      isPrimary: true,
+    });
+    await waitFor(() => expect(recordVoice).toHaveBeenCalledTimes(2));
+    expect(releaseSignal?.aborted).toBe(false);
+    fireEvent.pointerUp(holdButton, { button: 0, pointerId: 8 });
     expect(releaseSignal?.aborted).toBe(false);
     fireEvent.pointerUp(holdButton, { button: 0, pointerId: 7 });
     expect(releaseSignal?.aborted).toBe(true);

@@ -2241,6 +2241,15 @@ progress::-webkit-progress-value {
   padding: 40px 24px;
   margin: auto;
 }
+.live-session-main.provider-active {
+  position: relative;
+}
+.live-session-main.provider-active > .form-error {
+  position: absolute;
+  z-index: 4;
+  top: 70px;
+  inset-inline: 10px;
+}
 .live-session-progress {
   margin: 14px 0 24px;
 }

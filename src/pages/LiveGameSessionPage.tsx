@@ -164,6 +164,7 @@ export function LiveGameSessionPage() {
   const mounted = useRef(true);
   const recordingController = useRef<AbortController | undefined>(undefined);
   const recordingRelease = useRef<AbortController | undefined>(undefined);
+  const recordingPointer = useRef<number | null>(null);
   const audio = useRef<HTMLAudioElement | undefined>(undefined);
   const audioUrl = useRef<string | undefined>(undefined);
   const shownAt = useRef(performance.now());
@@ -215,6 +216,7 @@ export function LiveGameSessionPage() {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      recordingPointer.current = null;
       recordingController.current?.abort();
       if (momentTimer.current) clearTimeout(momentTimer.current);
       if (celebrationTimer.current) clearTimeout(celebrationTimer.current);
@@ -573,6 +575,7 @@ export function LiveGameSessionPage() {
     setBusy(true);
     setError("");
     recordingController.current?.abort();
+    recordingPointer.current = null;
     try {
       const result = await product(
         z.object({ session: sessionSchema }),
@@ -721,7 +724,7 @@ export function LiveGameSessionPage() {
     }
   };
   const record = async () => {
-    if (recording || pending || busy) return;
+    if (recordingController.current || pending || busy) return;
     const controller = new AbortController();
     const release = new AbortController();
     recordingController.current = controller;
@@ -746,7 +749,10 @@ export function LiveGameSessionPage() {
     }
   };
   const releaseRecording = () => recordingRelease.current?.abort();
-  const cancelRecording = () => recordingController.current?.abort();
+  const cancelRecording = () => {
+    recordingPointer.current = null;
+    recordingController.current?.abort();
+  };
   const submitRef = useRef(submit);
   const playRef = useRef(play);
   submitRef.current = submit;
@@ -861,7 +867,7 @@ export function LiveGameSessionPage() {
         />
       )}
       <main
-        className={`live-session-main${exercise || studyCard ? " session-active" : ""}`}
+        className={`live-session-main${exercise || studyCard ? " session-active" : ""}${exercise?.kind === "provider" ? " provider-active" : ""}`}
       >
         {error && (
           <div role="alert" className="form-error">
@@ -1290,18 +1296,35 @@ export function LiveGameSessionPage() {
                             disabled={busy || !!pending}
                             aria-pressed={recording}
                             onPointerDown={(event) => {
-                              if (event.button !== 0) return;
+                              if (
+                                event.button !== 0 ||
+                                !event.isPrimary ||
+                                recordingPointer.current !== null ||
+                                recordingController.current
+                              )
+                                return;
                               event.preventDefault();
+                              recordingPointer.current = event.pointerId;
                               event.currentTarget.setPointerCapture(
                                 event.pointerId,
                               );
                               void record();
                             }}
                             onPointerUp={(event) => {
+                              if (recordingPointer.current !== event.pointerId)
+                                return;
                               event.preventDefault();
+                              recordingPointer.current = null;
                               releaseRecording();
                             }}
-                            onPointerCancel={cancelRecording}
+                            onPointerCancel={(event) => {
+                              if (recordingPointer.current === event.pointerId)
+                                cancelRecording();
+                            }}
+                            onLostPointerCapture={(event) => {
+                              if (recordingPointer.current === event.pointerId)
+                                cancelRecording();
+                            }}
                             onKeyDown={(event) => {
                               if (
                                 (event.key === " " || event.key === "Enter") &&
@@ -1324,14 +1347,14 @@ export function LiveGameSessionPage() {
                               ? t("game.releaseToSend")
                               : t("game.holdToTalk")}
                           </button>
-                          {recording && (
-                            <button
-                              className="button ghost"
-                              onClick={cancelRecording}
-                            >
-                              {t("game.cancelRecording")}
-                            </button>
-                          )}
+                          <button
+                            className={`button ghost hold-to-talk-cancel${recording ? "" : " is-inactive"}`}
+                            disabled={!recording}
+                            aria-hidden={!recording}
+                            onClick={cancelRecording}
+                          >
+                            {t("game.cancelRecording")}
+                          </button>
                         </>
                       ) : (
                         <form

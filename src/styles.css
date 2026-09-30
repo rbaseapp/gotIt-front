@@ -2235,13 +2235,28 @@ select:focus-visible {
   animation: pulse 1.2s infinite;
 }
 .hold-to-talk {
-  min-width: 230px;
+  width: min(100%, 260px);
+  min-width: 0;
+  height: 56px;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
+.hold-to-talk:hover,
+.hold-to-talk:active {
+  transform: none;
+}
 .hold-to-talk.recording {
-  animation: pulse 1.2s infinite;
+  animation: talk-glow 1.2s infinite;
+}
+.hold-to-talk-cancel.is-inactive {
+  visibility: hidden;
+  pointer-events: none;
+}
+@keyframes talk-glow {
+  50% {
+    box-shadow: 0 0 0 7px rgba(44, 122, 98, 0.18);
+  }
 }
 .record-button i {
   position: absolute;
