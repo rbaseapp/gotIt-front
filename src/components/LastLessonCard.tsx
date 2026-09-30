@@ -94,8 +94,8 @@ export function LastLessonCard() {
             <Play size={17} /> {t("dashboard.practiceLastLesson")}
           </Link>
         )}
-        <Link className="button secondary" to="/private-lesson">
-          {t("dashboard.viewLastLesson")}
+        <Link className="button secondary" to="/private-lesson?practice=free">
+          {t("dashboard.viewLessonJournal")}
         </Link>
       </div>
     </section>

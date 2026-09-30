@@ -57,6 +57,10 @@ it("shows a concise teaching recap and links to available lesson review", async 
   expect(
     screen.getByRole("link", { name: "תרגול מהשיעור האחרון" }),
   ).toHaveAttribute("href", `/learn/session/smart?items=${itemId}`);
+  expect(screen.getByRole("link", { name: "יומן השיעורים" })).toHaveAttribute(
+    "href",
+    "/private-lesson?practice=free",
+  );
 });
 
 it("hides the practice action when no review was recommended", async () => {
