@@ -35,12 +35,14 @@ export function CourseContinueCard() {
       live = false;
     };
   }, []);
-  if (!data) return null;
+  if (!data || (!data.course && !data.homework)) return null;
   const assignment = data.homework;
   return (
     <section
       className="course-homework-links"
-      aria-label={t("courses.yourCourse")}
+      aria-label={t(
+        assignment ? "dashboard.lessonHomework" : "dashboard.lessonCourse",
+      )}
     >
       <Link
         to={
@@ -56,7 +58,11 @@ export function CourseContinueCard() {
         </span>
         <span>
           <small>
-            {t(assignment ? "courses.homework" : "courses.yourCourse")}
+            {t(
+              assignment
+                ? "dashboard.lessonHomework"
+                : "dashboard.lessonCourse",
+            )}
           </small>
           <strong dir="auto">
             {assignment?.title ??
@@ -67,10 +73,8 @@ export function CourseContinueCard() {
         <span className="course-homework-action">
           {t(
             assignment
-              ? "courses.resumeHomework"
-              : data.course
-                ? "courses.continueCourse"
-                : "courses.buildWithTeacher",
+              ? "dashboard.resumeLessonHomework"
+              : "dashboard.continueLessonCourse",
           )}
           <ArrowRight size={17} className="directional-arrow" />
         </span>

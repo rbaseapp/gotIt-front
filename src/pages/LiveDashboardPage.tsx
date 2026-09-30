@@ -4,15 +4,18 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
-  Flame,
+  MessageCircle,
   Play,
-  Sparkles,
   Trophy,
   Zap,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { RemoteState } from "../components/RemoteState";
 import { CourseContinueCard } from "../components/CourseContinueCard";
+import { RemoteState } from "../components/RemoteState";
+import {
+  WordPreviewModal,
+  type WordPreview,
+} from "../components/WordPreviewModal";
 import {
   dashboardSchema,
   itemSchema,
@@ -22,10 +25,7 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { useTranslation } from "react-i18next";
-import {
-  WordPreviewModal,
-  type WordPreview,
-} from "../components/WordPreviewModal";
+
 export function LiveDashboardPage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
@@ -53,22 +53,59 @@ export function LiveDashboardPage() {
   );
   const d = resource.data;
   const weakItems = weakest.data?.items.filter(needsStrengthening);
+
   return (
     <div className="dashboard-page live-page page-enter">
-      <section className="page-heading-row">
+      <section className="page-heading-row dashboard-heading">
         <div>
           <p className="eyebrow">{t("dashboard.eyebrow")}</p>
-          <h1>
-            {t("dashboard.greeting", { name: profile.name })}{" "}
-            <span aria-hidden="true">☀</span>
-          </h1>
-          <p>{t("dashboard.tagline")}</p>
+          <h1>{t("dashboard.greeting", { name: profile.name })}</h1>
+          <p>{t("dashboard.choosePath")}</p>
         </div>
-        <Link className="button primary" to="/learn/session/smart">
-          <Play size={18} />
-          {t("dashboard.startReview")}
-        </Link>
       </section>
+
+      <section
+        className="dashboard-paths"
+        aria-label={t("dashboard.choosePath")}
+      >
+        <article className="dashboard-path dashboard-path-words">
+          <span className="dashboard-path-icon">
+            <Brain size={28} />
+          </span>
+          <div>
+            <p className="dashboard-path-kicker">{t("dashboard.wordsPath")}</p>
+            <h2>{t("dashboard.wordsPathTitle")}</h2>
+            <p>{t("dashboard.wordsPathDescription")}</p>
+            {d && d.counts.due > 0 && (
+              <small>{t("dashboard.dueCount", { count: d.counts.due })}</small>
+            )}
+          </div>
+          <Link
+            className="button primary"
+            to={d?.counts.total === 0 ? "/vocabulary" : "/learn/session/smart"}
+          >
+            <Play size={18} />
+            {d?.counts.total === 0
+              ? t("dashboard.addWordsAction")
+              : t("dashboard.startWordsAction")}
+          </Link>
+        </article>
+        <article className="dashboard-path dashboard-path-lesson">
+          <span className="dashboard-path-icon">
+            <MessageCircle size={28} />
+          </span>
+          <div>
+            <p className="dashboard-path-kicker">{t("dashboard.lessonPath")}</p>
+            <h2>{t("dashboard.lessonPathTitle")}</h2>
+            <p>{t("dashboard.lessonPathDescription")}</p>
+          </div>
+          <Link className="button secondary" to="/private-lesson">
+            {t("dashboard.openLessonAction")}
+            <ChevronLeft size={18} />
+          </Link>
+        </article>
+      </section>
+
       <CourseContinueCard />
       <RemoteState
         loading={resource.loading}
@@ -77,351 +114,276 @@ export function LiveDashboardPage() {
       />
       {d && (
         <>
-          <div className="live-stats-grid">
-            <div>
+          <section
+            className="dashboard-today"
+            aria-label={t("dashboard.todaySummary")}
+          >
+            <div className="dashboard-today-stat">
+              <Brain size={21} />
               <span>
-                <Zap size={18} />
-                {t("dashboard.serverXp")}
+                <strong>{d.counts.due}</strong>
+                <small>{t("dashboard.dueNow")}</small>
               </span>
-              <b>{d.gamification.totalXp.toLocaleString()}</b>
-              <small>
-                {t("dashboard.level", {
-                  level: d.gamification.level,
-                  next: d.gamification.nextLevelXp,
-                })}
-              </small>
-              <small>
-                {d.gamification.dailyXpCapReached
-                  ? t("dashboard.capReached", {
-                      cap: d.gamification.dailyXpCap,
-                      percent: d.gamification.postDailyCapPercent,
-                      timezone: d.weeklyActivity.timezone,
-                    })
-                  : t("dashboard.todayXp", {
-                      current: d.gamification.todayXp,
-                      cap: d.gamification.dailyXpCap,
-                    })}
-              </small>
             </div>
-            <div>
+            <div className="dashboard-today-stat">
+              <Trophy size={21} />
               <span>
-                <Flame size={18} />
-                {t("dashboard.streak")}
+                <strong>{d.counts.mastered}</strong>
+                <small>{t("dashboard.masteredWords")}</small>
               </span>
-              <b>{d.gamification.currentStreakDays}</b>
-              <small>
-                {t("dashboard.streakRecord", {
-                  count: d.gamification.longestStreakDays,
-                })}
-              </small>
             </div>
-            <div>
-              <span>
-                <Trophy size={18} />
-                {t("dashboard.masteredWords")}
-              </span>
-              <b>{d.counts.mastered}</b>
-              <small>{t("dashboard.masteredHelp")}</small>
-            </div>
-            <div>
-              <span>
-                <Brain size={18} />
-                {t("dashboard.dueNow")}
-              </span>
-              <b>{d.counts.due}</b>
-              <small>{t("dashboard.dueHelp")}</small>
-            </div>
-            <div>
-              <span>
-                <Sparkles size={18} />
-                {t("dashboard.awaitingTitle")}
-              </span>
-              <b>{d.counts.awaitingRecall}</b>
-              <small>{t("dashboard.awaitingHelp")}</small>
-            </div>
-          </div>
-          <section className="smart-session-card">
-            <div className="smart-visual">
-              <Brain size={48} />
-            </div>
-            <div className="smart-copy">
-              <span className="pill light">
-                <Sparkles size={15} />
-                {t("dashboard.serverChooses")}
-              </span>
-              <h2>{t("dashboard.smallStep")}</h2>
-              <p>
-                {d.counts.total === 0
-                  ? t("dashboard.addFirstWord")
-                  : t("dashboard.libraryReview", { count: d.counts.total })}
-              </p>
-            </div>
-            <Link
-              className="button smart-start"
-              to={d.counts.total ? "/learn/session/smart" : "/vocabulary"}
-            >
-              {d.counts.total
-                ? t("dashboard.smartPractice")
-                : t("dashboard.toVocabulary")}
-            </Link>
-          </section>
-          <div className="live-two-columns">
-            <section className="live-panel">
-              <h2>{t("dashboard.dailyGoal")}</h2>
-              <p>
-                {t("dashboard.goalProgress", {
-                  current: d.dailyGoal.current,
-                  value: d.dailyGoal.value,
-                  unit: t(
-                    `settings.${d.dailyGoal.type === "items" ? "uniqueWords" : d.dailyGoal.type}`,
-                  ),
-                })}
-              </p>
+            <div className="dashboard-today-goal">
+              <div>
+                <strong>{t("dashboard.dailyGoal")}</strong>
+                <span>
+                  {t("dashboard.goalProgress", {
+                    current: d.dailyGoal.current,
+                    value: d.dailyGoal.value,
+                    unit: t(
+                      `settings.${d.dailyGoal.type === "items" ? "uniqueWords" : d.dailyGoal.type}`,
+                    ),
+                  })}
+                </span>
+              </div>
               <progress
                 max={d.dailyGoal.value || 1}
                 value={Math.min(d.dailyGoal.current, d.dailyGoal.value)}
                 aria-label={t("dashboard.dailyGoalAria")}
               />
-              <p>
-                {d.dailyGoal.completed
-                  ? t("dashboard.goalCompleted")
-                  : t("dashboard.goalEncouragement")}
-              </p>
-              <small>
-                {t("dashboard.goalDate", { date: d.dailyGoal.date })}
-              </small>
-            </section>
-            <section className="live-panel">
-              <h2>{t("dashboard.librarySnapshot")}</h2>
-              <div className="live-count-list">
-                {["new", "learning", "reviewing", "mastered"].map((s) => (
-                  <span key={s}>
-                    {t(`labels.${s}`)} <b>{d.counts[s as "new"]}</b>
-                  </span>
-                ))}
-                <span>
-                  {t("dashboard.difficult")} <b>{d.counts.difficult}</b>
-                </span>
-                <span>
-                  {t("dashboard.highPriority")} <b>{d.counts.highPriority}</b>
-                </span>
-                <span>
-                  {t("dashboard.awaitingRecall")}{" "}
-                  <b>{d.counts.awaitingRecall}</b>
-                </span>
-              </div>
-              <small>{t("dashboard.libraryCountHelp")}</small>
-            </section>
-          </div>
-          <section className="live-panel">
-            <h2>{t("dashboard.fiveSkills")}</h2>
-            <div className="live-skill-grid">
-              {[
-                "recognition",
-                "recall",
-                "listening",
-                "spelling",
-                "pronunciation",
-              ].map((s) => {
-                const value = d.skills.find((v) => v.skill === s);
-                return (
-                  <div key={s}>
-                    <b>{t(`labels.${s}`)}</b>
-                    {value ? (
-                      <>
-                        <progress value={value.masteryScore} max={100} />
-                        <span>
-                          {Math.round(value.masteryScore)}% ·{" "}
-                          {t("dashboard.skillAttempts", {
-                            count: value.evidenceAttempts,
-                          })}
-                        </span>
-                      </>
-                    ) : (
-                      <span>{t("dashboard.noSkillData")}</span>
-                    )}
-                  </div>
-                );
-              })}
             </div>
           </section>
-          <div className="live-two-columns">
-            <section className="live-panel">
-              <h2>{t("dashboard.yourWeek")}</h2>
-              <p>
-                {t("dashboard.weekSummary", {
-                  minutes: Math.floor(
-                    d.weeklyActivity.days.reduce(
-                      (sum, day) => sum + day.practiceSeconds,
-                      0,
-                    ) / 60,
-                  ),
-                  mastered: d.weeklyActivity.days.reduce(
-                    (sum, day) => sum + day.itemsMastered,
-                    0,
-                  ),
-                })}
-              </p>
-              <div className="live-activity">
-                {d.weeklyActivity.days.length ? (
-                  d.weeklyActivity.days.map((day) => (
-                    <div key={day.date}>
-                      <time>{day.date}</time>
-                      <progress
-                        max={Math.max(
-                          ...d.weeklyActivity.days.map((v) => v.attempts),
-                          1,
-                        )}
-                        value={day.attempts}
-                      />
-                      <small>
-                        {t("dashboard.dayActivity", {
-                          count: day.attempts,
-                          xp: day.xpEarned,
-                        })}
-                      </small>
-                    </div>
-                  ))
-                ) : (
-                  <p>{t("dashboard.noActivity")}</p>
-                )}
-              </div>
-              <small>{d.weeklyActivity.timezone}</small>
-            </section>
-            <section className="live-panel">
+
+          {weakItems && weakItems.length > 0 && (
+            <section className="live-panel dashboard-weak-panel">
               <h2>{t("dashboard.strengthen")}</h2>
-              <RemoteState
-                loading={weakest.loading}
-                error={weakest.error}
-                retry={() => void weakest.reload()}
-              />
-              {weakItems?.map((i) => (
+              {weakItems.map((item) => (
                 <button
                   type="button"
                   className="live-weak-word"
-                  key={i.id}
+                  key={item.id}
                   onClick={() =>
                     setSelectedWord({
-                      sourceText: i.sourceText,
-                      translationText: i.primaryTranslation,
+                      sourceText: item.sourceText,
+                      translationText: item.primaryTranslation,
                     })
                   }
                 >
-                  <b dir="auto">{i.sourceText}</b>
-                  <span dir="auto">{i.primaryTranslation}</span>
-                  <small>{Math.round(i.overallMasteryScore)}%</small>
+                  <b dir="auto">{item.sourceText}</b>
+                  <span dir="auto">{item.primaryTranslation}</span>
                 </button>
               ))}
-              {weakItems && !weakItems.length && (
-                <p>{t("dashboard.noWeakWords")}</p>
-              )}
             </section>
-          </div>
-          <section className="live-panel recent-practice-panel">
-            <div className="recent-practice-heading">
-              <div>
-                <h2>{t("dashboard.recentPractice")}</h2>
-                <p>{t("dashboard.recentPracticeHelp")}</p>
+          )}
+
+          <details className="dashboard-more">
+            <summary>{t("dashboard.moreProgress")}</summary>
+            <div className="dashboard-more-content">
+              <div className="live-two-columns">
+                <section className="live-panel">
+                  <h2>{t("dashboard.librarySnapshot")}</h2>
+                  <div className="live-count-list">
+                    {["new", "learning", "reviewing", "mastered"].map(
+                      (status) => (
+                        <span key={status}>
+                          {t(`labels.${status}`)}{" "}
+                          <b>{d.counts[status as "new"]}</b>
+                        </span>
+                      ),
+                    )}
+                  </div>
+                  <small>{t("dashboard.libraryCountHelp")}</small>
+                </section>
+                <section className="live-panel">
+                  <h2>{t("dashboard.fiveSkills")}</h2>
+                  <div className="live-skill-grid">
+                    {[
+                      "recognition",
+                      "recall",
+                      "listening",
+                      "spelling",
+                      "pronunciation",
+                    ].map((skill) => {
+                      const value = d.skills.find(
+                        (entry) => entry.skill === skill,
+                      );
+                      return (
+                        <div key={skill}>
+                          <b>{t(`labels.${skill}`)}</b>
+                          {value ? (
+                            <>
+                              <progress value={value.masteryScore} max={100} />
+                              <span>
+                                {Math.round(value.masteryScore)}% ·{" "}
+                                {t("dashboard.skillAttempts", {
+                                  count: value.evidenceAttempts,
+                                })}
+                              </span>
+                            </>
+                          ) : (
+                            <span>{t("dashboard.noSkillData")}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
               </div>
-              <span className="pill">
-                {t("dashboard.practiceCount", {
-                  count: d.recentActivityPagination.totalCount,
-                })}
-              </span>
-            </div>
-            <div className="live-count-list">
-              {d.modes.map((m) => (
-                <span key={m.exerciseType}>
-                  {t(`labels.${m.exerciseType}`, {
-                    defaultValue: m.exerciseType,
-                  })}
-                  :{" "}
-                  {t("dashboard.modeSummary", {
-                    count: m.attempts,
-                    score:
-                      m.averageScore === null
-                        ? "—"
-                        : Math.round(m.averageScore),
-                  })}
-                </span>
-              ))}
-            </div>
-            <div className="recent-practice-list">
-              {d.recentActivity.map((a) => (
-                <article className="recent-practice-row" key={a.id}>
-                  <button
-                    type="button"
-                    className="recent-practice-word"
-                    onClick={() =>
-                      setSelectedWord({
-                        sourceText: a.sourceText,
-                        translationText: a.primaryTranslation,
-                      })
-                    }
-                  >
-                    <b dir="auto">{a.sourceText}</b>
-                    <span dir="auto">
-                      {a.primaryTranslation || t("vocabulary.noMeaning")}
+              <div className="live-two-columns">
+                <section className="live-panel">
+                  <h2>{t("dashboard.yourWeek")}</h2>
+                  <p>
+                    {t("dashboard.weekSummary", {
+                      minutes: Math.floor(
+                        d.weeklyActivity.days.reduce(
+                          (sum, day) => sum + day.practiceSeconds,
+                          0,
+                        ) / 60,
+                      ),
+                      mastered: d.weeklyActivity.days.reduce(
+                        (sum, day) => sum + day.itemsMastered,
+                        0,
+                      ),
+                    })}
+                  </p>
+                  <div className="live-activity">
+                    {d.weeklyActivity.days.length ? (
+                      d.weeklyActivity.days.map((day) => (
+                        <div key={day.date}>
+                          <time>{day.date}</time>
+                          <progress
+                            max={Math.max(
+                              ...d.weeklyActivity.days.map(
+                                (entry) => entry.attempts,
+                              ),
+                              1,
+                            )}
+                            value={day.attempts}
+                          />
+                          <small>
+                            {t("dashboard.dayActivity", {
+                              count: day.attempts,
+                              xp: day.xpEarned,
+                            })}
+                          </small>
+                        </div>
+                      ))
+                    ) : (
+                      <p>{t("dashboard.noActivity")}</p>
+                    )}
+                  </div>
+                </section>
+                <section className="live-panel">
+                  <h2>{t("dashboard.pointsAndStreak")}</h2>
+                  <div className="live-count-list">
+                    <span>
+                      <span>
+                        <Zap size={17} /> {t("dashboard.serverXp")}
+                      </span>
+                      <b>{d.gamification.totalXp.toLocaleString()}</b>
                     </span>
-                  </button>
-                  <div className="recent-practice-type">
-                    <span className="pill">
-                      {t(`labels.${a.exerciseType}`, {
-                        defaultValue: a.exerciseType,
+                    <span>
+                      {t("dashboard.streak")}{" "}
+                      <b>{d.gamification.currentStreakDays}</b>
+                    </span>
+                  </div>
+                </section>
+              </div>
+              <section className="live-panel recent-practice-panel">
+                <div className="recent-practice-heading">
+                  <div>
+                    <h2>{t("dashboard.recentPractice")}</h2>
+                    <p>{t("dashboard.recentPracticeHelp")}</p>
+                  </div>
+                </div>
+                <div className="recent-practice-list">
+                  {d.recentActivity.map((attempt) => (
+                    <article className="recent-practice-row" key={attempt.id}>
+                      <button
+                        type="button"
+                        className="recent-practice-word"
+                        onClick={() =>
+                          setSelectedWord({
+                            sourceText: attempt.sourceText,
+                            translationText: attempt.primaryTranslation,
+                          })
+                        }
+                      >
+                        <b dir="auto">{attempt.sourceText}</b>
+                        <span dir="auto">
+                          {attempt.primaryTranslation ||
+                            t("vocabulary.noMeaning")}
+                        </span>
+                      </button>
+                      <div className="recent-practice-type">
+                        <span className="pill">
+                          {t(`labels.${attempt.exerciseType}`, {
+                            defaultValue: attempt.exerciseType,
+                          })}
+                        </span>
+                        <span className={`practice-result ${attempt.result}`}>
+                          {t(`labels.${attempt.result}`, {
+                            defaultValue: attempt.result,
+                          })}
+                        </span>
+                      </div>
+                      <div className="recent-practice-score">
+                        <b>
+                          {attempt.score === null
+                            ? t("game.noScore")
+                            : t("dashboard.score", {
+                                score: Math.round(attempt.score),
+                              })}
+                        </b>
+                        <time dateTime={attempt.createdAt}>
+                          {new Date(attempt.createdAt).toLocaleString(
+                            i18n.resolvedLanguage,
+                          )}
+                        </time>
+                      </div>
+                    </article>
+                  ))}
+                  {!d.recentActivity.length && (
+                    <p className="live-empty">
+                      {t("dashboard.noRecentPractice")}
+                    </p>
+                  )}
+                </div>
+                {d.recentActivityPagination.pageCount > 1 && (
+                  <nav
+                    className="live-pagination compact"
+                    aria-label={t("dashboard.recentPaginationAria")}
+                  >
+                    <button
+                      className="button ghost pagination-arrow"
+                      disabled={recentPage <= 1}
+                      aria-label={t("dashboard.previousPage")}
+                      onClick={() =>
+                        setRecentPage((current) => Math.max(1, current - 1))
+                      }
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                    <span>
+                      {t("dashboard.pageSummary", {
+                        page: d.recentActivityPagination.page,
+                        pages: d.recentActivityPagination.pageCount,
                       })}
                     </span>
-                    <span className={`practice-result ${a.result}`}>
-                      {t(`labels.${a.result}`, { defaultValue: a.result })}
-                    </span>
-                  </div>
-                  <div className="recent-practice-score">
-                    <b>
-                      {a.score === null
-                        ? t("game.noScore")
-                        : t("dashboard.score", { score: Math.round(a.score) })}
-                    </b>
-                    <time dateTime={a.createdAt}>
-                      {new Date(a.createdAt).toLocaleString(
-                        i18n.resolvedLanguage,
-                      )}
-                    </time>
-                  </div>
-                </article>
-              ))}
-              {!d.recentActivity.length && (
-                <p className="live-empty">{t("dashboard.noRecentPractice")}</p>
-              )}
+                    <button
+                      className="button secondary pagination-arrow"
+                      disabled={
+                        recentPage >= d.recentActivityPagination.pageCount
+                      }
+                      aria-label={t("dashboard.nextPage")}
+                      onClick={() => setRecentPage((current) => current + 1)}
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                  </nav>
+                )}
+              </section>
             </div>
-            {d.recentActivityPagination.pageCount > 1 && (
-              <nav
-                className="live-pagination compact"
-                aria-label={t("dashboard.recentPaginationAria")}
-              >
-                <button
-                  className="button ghost pagination-arrow"
-                  disabled={recentPage <= 1}
-                  aria-label={t("dashboard.previousPage")}
-                  onClick={() => setRecentPage((page) => Math.max(1, page - 1))}
-                >
-                  <ChevronRight size={18} />
-                </button>
-                <span>
-                  {t("dashboard.pageSummary", {
-                    page: d.recentActivityPagination.page,
-                    pages: d.recentActivityPagination.pageCount,
-                  })}
-                </span>
-                <button
-                  className="button secondary pagination-arrow"
-                  disabled={recentPage >= d.recentActivityPagination.pageCount}
-                  aria-label={t("dashboard.nextPage")}
-                  onClick={() => setRecentPage((page) => page + 1)}
-                >
-                  <ChevronLeft size={18} />
-                </button>
-              </nav>
-            )}
-          </section>
+          </details>
           <WordPreviewModal
             word={selectedWord}
             onClose={() => setSelectedWord(null)}

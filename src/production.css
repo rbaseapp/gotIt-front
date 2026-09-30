@@ -4324,47 +4324,141 @@ html[dir="ltr"] .pack-search input {
   }
 }
 
-/* Mobile dashboard: keep the primary action prominent and make the odd
-   number of summary cards feel deliberate instead of leaving a visual hole. */
-@media (max-width: 560px) {
-  .dashboard-page .page-heading-row {
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
+/* Home: a clear choice of learning activity, followed by useful progress. */
+.dashboard-heading {
+  margin-bottom: 22px;
+}
+.dashboard-paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.dashboard-path {
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+}
+.dashboard-path-words {
+  background: linear-gradient(130deg, #275f4e, #357963);
+  color: #fff;
+  border-color: transparent;
+}
+.dashboard-path-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8f3ee;
+  color: #2b7258;
+}
+.dashboard-path-words .dashboard-path-icon {
+  background: #ffffff24;
+  color: #ffdc8e;
+}
+.dashboard-path h2 {
+  font-size: 24px;
+  margin: 4px 0 8px;
+}
+.dashboard-path p {
+  margin: 0;
+  line-height: 1.6;
+}
+.dashboard-path-kicker {
+  font-size: 12px;
+  font-weight: 700;
+}
+.dashboard-path small {
+  display: block;
+  margin-top: 9px;
+}
+.dashboard-path .button {
+  margin-top: auto;
+  min-height: 44px;
+  font-size: 14px;
+  gap: 9px;
+}
+.dashboard-path-words .button {
+  color: #205b48;
+  background: #ffdc8e;
+}
+.dashboard-path-lesson .button {
+  border-color: #2b7258;
+  color: #205b48;
+}
+.dashboard-today {
+  display: grid;
+  grid-template-columns: 1fr 1fr minmax(230px, 1.5fr);
+  gap: 14px;
+  margin-block: 22px;
+}
+.dashboard-today > div {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+.dashboard-today-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.dashboard-today-stat > svg {
+  color: #2b7258;
+}
+.dashboard-today-stat span,
+.dashboard-today-goal > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dashboard-today-stat strong {
+  font-size: 27px;
+}
+.dashboard-today-stat small,
+.dashboard-today-goal span {
+  color: var(--muted);
+}
+.dashboard-today-goal progress {
+  margin-top: 12px;
+}
+.dashboard-weak-panel {
+  margin-block: 22px;
+}
+.dashboard-more {
+  margin-block: 22px;
+}
+.dashboard-more > summary {
+  cursor: pointer;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: #205b48;
+  font-weight: 700;
+}
+.dashboard-more > summary:focus-visible {
+  outline: 3px solid #ffdc8e;
+  outline-offset: 2px;
+}
+.dashboard-more-content {
+  display: grid;
+  gap: 20px;
+  padding-top: 20px;
+}
+@media (max-width: 760px) {
+  .dashboard-paths,
+  .dashboard-today {
+    grid-template-columns: 1fr;
   }
-  .dashboard-page .page-heading-row > div {
-    width: 100%;
-  }
-  .dashboard-page .page-heading-row > .button {
-    width: min(100%, 280px);
-    min-height: 54px;
-    margin-inline: auto;
-    padding-inline: 24px;
-    justify-content: center;
-    gap: 10px;
-    border-radius: 15px;
-    font-size: 15px;
-    box-shadow: 0 10px 24px rgba(35, 109, 80, 0.2);
-  }
-  .dashboard-page .page-heading-row > .button svg {
-    width: 22px;
-    height: 22px;
-    margin: 0;
-  }
-  .dashboard-page > .live-stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: minmax(168px, auto);
-  }
-  .dashboard-page > .live-stats-grid > div {
-    height: 100%;
-    align-content: start;
-    padding: 16px;
-  }
-  .dashboard-page > .live-stats-grid > div:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-    width: calc(50% - 5px);
-    min-width: 145px;
-    justify-self: center;
+  .dashboard-path {
+    padding: 21px;
   }
 }
 

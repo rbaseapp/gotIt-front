@@ -1326,6 +1326,20 @@ describe("live server-backed flows", () => {
       throw new Error("Unexpected route");
     });
     const user = userEvent.setup();
+    expect(
+      await screen.findByRole("link", { name: "התחלת תרגול מילים" }),
+    ).toHaveAttribute("href", "/learn/session/smart");
+    expect(
+      screen.getByRole("link", { name: "מעבר לשיעור פרטי" }),
+    ).toHaveAttribute("href", "/private-lesson");
+    expect(
+      screen.getAllByRole("link", { name: "התחלת תרגול מילים" }),
+    ).toHaveLength(1);
+    const moreSummary = await screen.findByText("נתוני התקדמות נוספים במילים");
+    const more = moreSummary.closest("details");
+    expect(more).not.toHaveAttribute("open");
+    await user.click(moreSummary);
+    expect(more).toHaveAttribute("open");
     const wordButton = await screen.findByRole("button", {
       name: /subscription/u,
     });
@@ -1336,6 +1350,66 @@ describe("live server-backed flows", () => {
     expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/word-packs")),
     ).toBe(false);
+  });
+  it("sends a user with no saved words to vocabulary while keeping private lessons available", async () => {
+    mount("/dashboard", async (url) => {
+      if (url.includes("/dashboard?"))
+        return json({
+          counts: {
+            total: 0,
+            new: 0,
+            learning: 0,
+            reviewing: 0,
+            mastered: 0,
+            due: 0,
+            difficult: 0,
+            highPriority: 0,
+            awaitingRecall: 0,
+          },
+          skills: [],
+          modes: [],
+          recentActivity: [],
+          recentActivityPagination: {
+            page: 1,
+            pageCount: 1,
+            totalCount: 0,
+            pageSize: 6,
+          },
+          dailyGoal: {
+            type: "items",
+            value: 5,
+            current: 0,
+            completed: false,
+            date: "2026-09-15",
+          },
+          gamification: {
+            totalXp: 0,
+            level: 1,
+            nextLevelXp: 100,
+            todayXp: 0,
+            dailyXpCap: 100,
+            dailyXpRemaining: 100,
+            dailyXpCapReached: false,
+            postDailyCapPercent: 20,
+            currentStreakDays: 0,
+            longestStreakDays: 0,
+            lastActivityDate: null,
+          },
+          weeklyActivity: { timezone: "Asia/Jerusalem", days: [] },
+        });
+      if (url.includes("/learning-items?"))
+        return json({ items: [], nextCursor: null });
+      throw new Error("Unexpected route");
+    });
+    expect(
+      await screen.findByRole("link", { name: "הוספת מילים לתרגול" }),
+    ).toHaveAttribute("href", "/vocabulary");
+    expect(
+      screen.getByRole("link", { name: "מעבר לשיעור פרטי" }),
+    ).toHaveAttribute("href", "/private-lesson");
+    expect(
+      screen.queryByText("מסלול השיעורים הפרטיים שלך"),
+    ).not.toBeInTheDocument();
   });
   it("shows a recoverable API failure instead of displaying demo words", async () => {
     mount("/vocabulary", async (url) =>
