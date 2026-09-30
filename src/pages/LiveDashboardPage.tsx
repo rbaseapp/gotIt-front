@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { RemoteState } from "../components/RemoteState";
+import { CourseContinueCard } from "../components/CourseContinueCard";
 import {
   dashboardSchema,
   itemSchema,
@@ -74,6 +75,7 @@ export function LiveDashboardPage() {
           {t("dashboard.startReview")}
         </Link>
       </section>
+      <CourseContinueCard />
       <RemoteState
         loading={resource.loading}
         error={resource.error}

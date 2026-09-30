@@ -1,0 +1,142 @@
+import { expect, test, type Page } from "@playwright/test";
+import {
+  courseWithPlan,
+  fixtureCourse,
+  fixtureHomework,
+} from "../course-fixtures";
+
+async function signedIn(
+  page: Page,
+  screen: "welcome" | "intake" | "preferences" | "plan" | "active" | "homework",
+  language = "he",
+) {
+  await page.addInitScript((locale) => {
+    localStorage.removeItem("gotit.mode");
+    localStorage.setItem("gotit.uiLocale.v1", locale);
+    sessionStorage.setItem("gotit.refresh", "browser-fixture-refresh");
+  }, language);
+  const course =
+    screen === "plan"
+      ? courseWithPlan()
+      : screen === "active"
+        ? courseWithPlan(true)
+        : { ...structuredClone(fixtureCourse), ready: screen !== "intake" };
+  await page.route("**/api/v1/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    const payload = path.endsWith("/auth/refresh")
+      ? {
+          accessToken: "browser-fixture-access",
+          refreshToken: "browser-fixture-refresh",
+          expiresIn: 3600,
+        }
+      : path.endsWith("/auth/me")
+        ? {
+            user: {
+              id: fixtureCourse.id,
+              applicationId: "30000000-0000-4000-8000-000000000001",
+              email: "learner@example.test",
+              emailVerified: true,
+              status: "active",
+              role: "user",
+            },
+          }
+        : path.endsWith("/profile")
+          ? {
+              profile: {
+                defaultSourceLanguage: "en",
+                defaultTranslationLanguage: "he",
+                timezone: "Asia/Jerusalem",
+                dailyGoal: { type: "minutes", value: 10 },
+                defaultNewItemsPerDay: 5,
+                translationMethodPreference: "auto",
+                languages: [{ languageCode: "en", selfAssessedLevel: "A1" }],
+                interests: [],
+              },
+            }
+          : path.endsWith("/billing/status")
+            ? {
+                tier: "paid",
+                access: true,
+                plan: { key: "paid", name: "Paid", kind: "paid" },
+                entitlements: ["practice.play"],
+                subscription: null,
+                trial: null,
+              }
+            : path.endsWith("/courses")
+              ? {
+                  courses: screen === "welcome" ? [] : [course],
+                  homework: screen === "active" ? [fixtureHomework] : [],
+                  available: true,
+                }
+              : path.endsWith(`/courses/${fixtureCourse.id}`)
+                ? { course }
+                : path.endsWith(`/homework/${fixtureHomework.id}`)
+                  ? { homework: fixtureHomework }
+                  : null;
+    if (payload) await route.fulfill({ json: payload });
+    else
+      await route.fulfill({
+        status: 404,
+        json: { error: { code: "TEST_UNHANDLED_ROUTE" } },
+      });
+  });
+  await page.goto(
+    screen === "homework"
+      ? `/homework/${fixtureHomework.id}`
+      : screen === "welcome"
+        ? "/courses"
+        : `/courses/${fixtureCourse.id}`,
+  );
+  await expect(page.locator(".course-page")).toBeVisible();
+  await expect(page.locator(".course-loading")).toHaveCount(0);
+}
+
+for (const language of ["he", "en"])
+  for (const viewport of [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 },
+    { width: 1440, height: 1000 },
+  ]) {
+    for (const screen of [
+      "welcome",
+      "intake",
+      "preferences",
+      "plan",
+      "active",
+      "homework",
+    ] as const) {
+      test(`${language} ${viewport.width} ${screen} stays readable and within the viewport`, async ({
+        page,
+      }) => {
+        const errors: string[] = [];
+        page.on("pageerror", (err) => errors.push(err.message));
+        await page.setViewportSize(viewport);
+        await signedIn(page, screen, language);
+        if (screen === "plan")
+          await page.locator(".course-unit").last().locator("summary").click();
+        if (screen === "homework")
+          await page.getByRole("button", { name: "is", exact: true }).click();
+        const overflow = await page.evaluate(() => ({
+          actual: document.documentElement.scrollWidth,
+          viewport: innerWidth,
+        }));
+        expect(overflow.actual).toBeLessThanOrEqual(overflow.viewport + 1);
+        expect(errors).toEqual([]);
+        await expect(page.locator(".course-page h1")).toBeVisible();
+        if (language === "he" && [390, 1440].includes(viewport.width))
+          await page.screenshot({
+            path: `test-results/course-${screen}-${viewport.width}.png`,
+            fullPage: true,
+          });
+      });
+    }
+  }
+test("keyboard can expand a future unit and move through the homework choices", async ({
+  page,
+}) => {
+  await signedIn(page, "plan");
+  const summary = page.locator(".course-unit").last().locator("summary");
+  await summary.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".course-unit").last()).toHaveAttribute("open", "");
+});

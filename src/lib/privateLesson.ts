@@ -197,6 +197,7 @@ export const privateLessonSessionSchema = z.object({
 export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
 export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15;
 export type PrivateLessonInput = {
+  courseId?: string;
   targetLanguageCode: string;
   supportLanguageCode?: string | null;
   lessonMode?: PrivateLessonMode;

@@ -76,6 +76,12 @@ const PrivateLessonPage = lazy(() =>
     default: m.PrivateLessonPage,
   })),
 );
+const CoursePage = lazy(() =>
+  import("./pages/CoursePage").then((m) => ({ default: m.CoursePage })),
+);
+const HomeworkPage = lazy(() =>
+  import("./pages/HomeworkPage").then((m) => ({ default: m.HomeworkPage })),
+);
 
 export default function App() {
   const { t } = useTranslation();
@@ -189,7 +195,49 @@ export default function App() {
                     element={
                       mode === "live" ? (
                         <LiveGameAccess>
-                          <PrivateLessonPage />
+                          {location.search.includes("course=") ||
+                          location.search.includes("practice=free") ||
+                          location.search.includes("view=") ? (
+                            <PrivateLessonPage />
+                          ) : (
+                            <CoursePage />
+                          )}
+                        </LiveGameAccess>
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/courses"
+                    element={
+                      mode === "live" ? (
+                        <LiveGameAccess>
+                          <CoursePage />
+                        </LiveGameAccess>
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/courses/:courseId"
+                    element={
+                      mode === "live" ? (
+                        <LiveGameAccess>
+                          <CoursePage />
+                        </LiveGameAccess>
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/homework/:homeworkId"
+                    element={
+                      mode === "live" ? (
+                        <LiveGameAccess>
+                          <HomeworkPage />
                         </LiveGameAccess>
                       ) : (
                         <Navigate to="/learn" replace />

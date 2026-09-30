@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { PrivateLessonPage } from "../src/pages/PrivateLessonPage";
 import { privateLessonSessionSchema } from "../src/lib/privateLesson";
+import { ApiError } from "../src/lib/api";
 
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
@@ -50,6 +51,22 @@ vi.mock("../src/lib/privateLesson", async (importOriginal) => {
 vi.mock("../src/lib/product", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/lib/product")>();
   return { ...original, product: mocks.capture };
+});
+vi.mock("../src/lib/courses", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/lib/courses")>();
+  return {
+    ...original,
+    courseApi: {
+      ...original.courseApi,
+      homework: vi.fn(async () => {
+        throw new ApiError(
+          404,
+          "LEARNING_DOCUMENT_NOT_FOUND",
+          "No homework for legacy report",
+        );
+      }),
+    },
+  };
 });
 
 function renderPage(initialEntry = "/private-lesson") {
@@ -574,13 +591,17 @@ describe("private voice lesson", () => {
     await user.click(
       await screen.findByRole("button", { name: /technology/u }),
     );
-    const summary = screen.getByRole("heading", {
-      name: "You spoke clearly about technology.",
-    });
+    await user.click(screen.getByText("פירוט, תיקונים ואוצר מילים"));
+    const summary = within(screen.getByRole("dialog")).getByText(
+      "You spoke clearly about technology.",
+    );
     expect(summary.closest('[role="dialog"]')).toBeInTheDocument();
     expect(summary).toHaveAttribute("dir", "auto");
     expect(summary).toHaveAttribute("lang", "he");
-    expect(screen.getByText("Clear answers")).toHaveAttribute("dir", "auto");
+    expect(screen.getAllByText("Clear answers")[0]).toHaveAttribute(
+      "dir",
+      "auto",
+    );
     expect(
       screen.getByRole("button", { name: "תרגול המילים המומלצות עכשיו" }),
     ).toBeInTheDocument();

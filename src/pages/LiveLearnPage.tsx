@@ -13,6 +13,7 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import { RemoteState } from "../components/RemoteState";
+import { CourseContinueCard } from "../components/CourseContinueCard";
 import {
   capabilitiesSchema,
   page,
@@ -155,6 +156,7 @@ export function LiveLearnPage() {
           {t("learn.startSession")}
         </Link>
       </section>
+      <CourseContinueCard />
       <div className="game-grid">
         {gameOrder
           .map((id) => games.find((game) => game.id === id)!)

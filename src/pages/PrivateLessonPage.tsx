@@ -35,6 +35,9 @@ import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TeacherAvatar } from "../components/TeacherAvatar";
 import { Modal } from "../components/Modal";
+import { courseApi, type Course } from "../lib/courses";
+import { LessonHomeworkCard } from "./HomeworkPage";
+import "../courses.css";
 import { useApp } from "../context/AppContext";
 import { getBilingualLanguageOptions } from "../lib/languages";
 import { captureReceipt, errorMessage, product } from "../lib/product";
@@ -95,14 +98,17 @@ export function PrivateLessonPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const courseId = searchParams.get("course");
+  const [courseData, setCourseData] = useState<Course | null>(null);
   const { profile, retryProfile } = useApp();
   const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
-    getSavedPrivateLessonLanguage(
-      profile.languages[0]?.languageCode ||
-        profile.defaultSourceLanguage ||
-        "en",
-    ),
+    searchParams.get("language") ||
+      getSavedPrivateLessonLanguage(
+        profile.languages[0]?.languageCode ||
+          profile.defaultSourceLanguage ||
+          "en",
+      ),
   );
   const [supportLanguage, setSupportLanguage] = useState(
     profile.defaultTranslationLanguage || "",
@@ -126,6 +132,21 @@ export function PrivateLessonPage() {
   const [vocabularyMode, setVocabularyMode] =
     useState<PrivateLessonVocabularyMode>("learned");
   const [phase, setPhase] = useState<Phase>("setup");
+  useEffect(() => {
+    if (!courseId) return;
+    let live = true;
+    courseApi
+      .get(courseId)
+      .then((result) => {
+        if (live) setCourseData(result.course);
+      })
+      .catch(() => {
+        if (live) setCourseData(null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [courseId]);
   const phaseRef = useRef<Phase>(phase);
   phaseRef.current = phase;
   const [status, setStatus] = useState(t("privateLesson.ready"));
@@ -499,6 +520,7 @@ export function PrivateLessonPage() {
     abortRef.current = controller;
     try {
       const created = await createPrivateLessonSession({
+        ...(courseId ? { courseId } : {}),
         targetLanguageCode: targetLanguage.trim(),
         supportLanguageCode: supportLanguage.trim() || null,
         lessonMode,
@@ -512,6 +534,27 @@ export function PrivateLessonPage() {
         customFocus: customFocus.trim() || null,
         correctionMode,
         vocabularyMode,
+        ...(courseData
+          ? {
+              targetLanguageCode: (
+                courseData.versions.find(
+                  (v) => v.version === courseData.activeVersion,
+                )?.preferences ?? courseData.preferences
+              ).targetLanguageCode,
+              supportLanguageCode: (
+                courseData.versions.find(
+                  (v) => v.version === courseData.activeVersion,
+                )?.preferences ?? courseData.preferences
+              ).supportLanguageCode,
+              lessonMode: (
+                courseData.versions.find(
+                  (v) => v.version === courseData.activeVersion,
+                )?.preferences ?? courseData.preferences
+              ).absoluteBeginner
+                ? ("absolute_beginner" as const)
+                : ("standard" as const),
+            }
+          : {}),
       });
       if (controller.signal.aborted) return;
       setSession(created);
@@ -775,586 +818,257 @@ export function PrivateLessonPage() {
 
       {phase === "setup" || phase === "preparing" ? (
         <>
-          <section className="private-lesson-setup live-panel">
-            <div className="private-lesson-intro">
-              <span className="private-lesson-orb" aria-hidden="true">
-                <MessageCircleMore size={34} />
-              </span>
-              <div>
-                <h2>{t("privateLesson.setupTitle")}</h2>
-              </div>
-            </div>
-            <div className="private-lesson-clean-content">
-              <fieldset className="private-lesson-mode-field">
-                <legend>{t("privateLesson.mode.title")}</legend>
-                <div className="private-lesson-mode-options">
-                  {(["standard", "absolute_beginner"] as const).map((mode) => (
-                    <label
-                      key={mode}
-                      className={lessonMode === mode ? "selected" : ""}
-                    >
-                      <input
-                        type="radio"
-                        name="lesson-mode"
-                        value={mode}
-                        checked={lessonMode === mode}
-                        onChange={() => chooseLessonMode(mode)}
-                      />
-                      <span>
-                        <strong>
-                          {t(`privateLesson.mode.options.${mode}.title`)}
-                        </strong>
-                        <small>
-                          {t(`privateLesson.mode.options.${mode}.description`)}
-                        </small>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              {lessonMode === "absolute_beginner" && (
-                <div className="private-lesson-beginner-language">
-                  <label className="field">
-                    <span>{t("privateLesson.mode.teachingLanguage")}</span>
-                    <select
-                      value={supportLanguage}
-                      onChange={(event) =>
-                        setSupportLanguage(event.target.value)
-                      }
-                      dir="auto"
-                      required
-                    >
-                      <option value="" disabled>
-                        {t("privateLesson.mode.chooseTeachingLanguage")}
-                      </option>
-                      {languageOptions
-                        .filter(
-                          ([code]) => !sameBaseLanguage(code, targetLanguage),
-                        )
-                        .map(([code, label]) => (
-                          <option key={code} value={code}>
-                            {label}
-                          </option>
-                        ))}
-                    </select>
-                  </label>
-                  <p>{t("privateLesson.mode.beginnerHint")}</p>
-                </div>
-              )}
-              {setupLoading ? (
-                <div className="private-lesson-roadmap-loading">
-                  <LoaderCircle className="spin" size={20} />
-                  {t("privateLesson.preparingRecommendation", {
-                    defaultValue: "Preparing a lesson for you…",
-                  })}
-                </div>
-              ) : (
-                <article className="private-lesson-recommendation">
-                  <div
-                    className="private-lesson-recommendation-icon"
-                    aria-hidden="true"
-                  >
-                    <Sparkles size={24} />
-                  </div>
-                  <div className="private-lesson-recommendation-copy">
-                    <small>
-                      {t("privateLesson.recommendedForYou", {
-                        defaultValue: "Recommended for you",
-                      })}
-                    </small>
-                    <h3 dir="auto">{lessonTitle}</h3>
-                    <p dir="auto">
-                      {currentMilestone?.communicationObjective ||
-                        latestAssessmentLesson?.report?.nextLessonPlan ||
-                        t("privateLesson.recommendedFallbackDescription", {
-                          defaultValue:
-                            "A focused conversation matched to your current level.",
-                        })}
-                    </p>
-                    <div className="private-lesson-summary-chips">
-                      <span>
-                        <Languages size={15} /> {targetLanguageLabel}
-                      </span>
-                      <span>
-                        {t(`privateLesson.mode.options.${lessonMode}.title`)}
-                      </span>
-                      <span>
-                        <Clock3 size={15} />{" "}
-                        {t(
-                          `privateLesson.durationOptions.${lessonDurationMinutes}`,
-                        )}
-                      </span>
-                      {focusAreas.slice(0, 2).map((area) => (
-                        <span key={area}>
-                          {t(`privateLesson.focus.options.${area}`)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              )}
-
+          {courseId ? (
+            <section className="course-hero">
+              <p className="course-kicker">
+                {courseData?.nextLesson?.unitTitle ?? t("courses.loading")}
+              </p>
+              <h2 dir="auto">{courseData?.nextLesson?.title}</h2>
+              <p dir="auto">{courseData?.nextLesson?.objective}</p>
               <form onSubmit={(event) => void startLesson(event)}>
                 <button
-                  className="button primary private-lesson-start"
+                  className="button primary"
+                  disabled={!courseData?.nextLesson || phase === "preparing"}
                   type="submit"
-                  disabled={
-                    !targetLanguage.trim() ||
-                    (lessonMode === "absolute_beginner" &&
-                      !supportLanguage.trim()) ||
-                    phase === "preparing" ||
-                    setupLoading
-                  }
                 >
                   {phase === "preparing" ? (
-                    <LoaderCircle className="spin" size={19} />
+                    <LoaderCircle className="spin" size={18} />
                   ) : (
-                    <Sparkles size={19} />
+                    <Mic2 size={18} />
                   )}
-                  {phase === "preparing"
-                    ? t("privateLesson.preparing")
-                    : t("privateLesson.start")}
+                  {t("privateLesson.start")}
                 </button>
               </form>
-
               <button
-                type="button"
-                className="button ghost private-lesson-customize"
-                onClick={() => setShowLessonOptions(true)}
+                className="course-text-link"
+                onClick={() => navigate(`/courses/${courseId}`)}
               >
-                <Settings2 size={17} />
-                {t("privateLesson.chooseAnotherFocus", {
-                  defaultValue: "Choose another topic or focus",
-                })}
+                {t("courses.backToCourse")}
               </button>
-
-              <div className="private-lesson-quick-links">
-                <button type="button" onClick={() => setShowLevelDetails(true)}>
-                  <span className="private-lesson-quick-icon">
-                    <TrendingUp size={19} />
-                  </span>
-                  <span>
-                    <small>
-                      {t("privateLesson.yourLevel", {
-                        defaultValue: "Your level",
-                      })}{" "}
-                      · {targetLanguageLabel}
-                    </small>
-                    <strong>{effectiveLevel}</strong>
-                  </span>
-                  <em>
-                    {t("privateLesson.viewDetails", {
-                      defaultValue: "View details",
-                    })}
-                  </em>
-                  <ChevronRight size={18} />
-                </button>
-                <button type="button" onClick={() => setShowRoadmap(true)}>
-                  <span className="private-lesson-quick-icon">
-                    <Map size={19} />
-                  </span>
-                  <span>
-                    <small>
-                      {t("privateLesson.learningPath", {
-                        defaultValue: "Learning path",
-                      })}
-                    </small>
-                    <strong>
-                      {lessonSetup?.roadmap
-                        ? t("privateLesson.roadmapCurrentStage", {
-                            defaultValue: "Current stage",
-                          })
-                        : t("privateLesson.roadmapCreatePath", {
-                            defaultValue: "Create a path",
-                          })}
-                    </strong>
-                  </span>
-                  <em>{t("privateLesson.open", { defaultValue: "Open" })}</em>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-
-              <button
-                type="button"
-                className="private-lesson-settings-link"
-                onClick={() => navigate("/settings#private-lessons")}
-              >
-                <Settings2 size={16} />
-                {t("privateLesson.managePreferences", {
-                  defaultValue:
-                    "Manage language and lesson preferences in Settings",
-                })}
-              </button>
-              <p className="private-lesson-privacy">
-                <Headphones size={17} /> {t("privateLesson.privacy")}
-              </p>
               {error && (
                 <p className="form-error" role="alert">
                   {error}
                 </p>
               )}
-            </div>
-            {showLegacySetup && (
-              <div className="private-lesson-legacy-setup" aria-hidden="true">
-                {latestAssessmentLesson?.report && (
-                  <section
-                    className="private-lesson-latest-assessment"
-                    aria-label={t("privateLesson.assessment.latest")}
-                  >
-                    <div className="private-lesson-assessment-heading">
-                      <span>
-                        <TrendingUp size={22} />
-                      </span>
-                      <div>
-                        <p className="eyebrow">
-                          {t("privateLesson.assessment.latest")}
-                        </p>
-                        <strong>
-                          {
-                            latestAssessmentLesson.report.assessment
-                              .overallLevel
-                          }
-                        </strong>
-                        <small>
-                          {t(
-                            `privateLesson.assessment.confidence.${latestAssessmentLesson.report.assessment.confidence}`,
-                          )}
-                        </small>
-                      </div>
-                    </div>
-                    <SkillAssessment
-                      assessment={latestAssessmentLesson.report.assessment}
-                      compact
-                      t={t}
-                    />
-                    <p className="private-lesson-continuity-note">
-                      <Target size={16} />
-                      <span>
-                        <strong>{t("privateLesson.continuity.title")}</strong>{" "}
-                        {latestAssessmentLesson.report.nextLessonPlan}
-                      </span>
-                    </p>
-                  </section>
+            </section>
+          ) : (
+            <section className="private-lesson-setup live-panel">
+              <div className="private-lesson-intro">
+                <span className="private-lesson-orb" aria-hidden="true">
+                  <MessageCircleMore size={34} />
+                </span>
+                <div>
+                  <h2>{t("privateLesson.setupTitle")}</h2>
+                </div>
+              </div>
+              <div className="private-lesson-clean-content">
+                <fieldset className="private-lesson-mode-field">
+                  <legend>{t("privateLesson.mode.title")}</legend>
+                  <div className="private-lesson-mode-options">
+                    {(["standard", "absolute_beginner"] as const).map(
+                      (mode) => (
+                        <label
+                          key={mode}
+                          className={lessonMode === mode ? "selected" : ""}
+                        >
+                          <input
+                            type="radio"
+                            name="lesson-mode"
+                            value={mode}
+                            checked={lessonMode === mode}
+                            onChange={() => chooseLessonMode(mode)}
+                          />
+                          <span>
+                            <strong>
+                              {t(`privateLesson.mode.options.${mode}.title`)}
+                            </strong>
+                            <small>
+                              {t(
+                                `privateLesson.mode.options.${mode}.description`,
+                              )}
+                            </small>
+                          </span>
+                        </label>
+                      ),
+                    )}
+                  </div>
+                </fieldset>
+                {lessonMode === "absolute_beginner" && (
+                  <div className="private-lesson-beginner-language">
+                    <label className="field">
+                      <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                      <select
+                        value={supportLanguage}
+                        onChange={(event) =>
+                          setSupportLanguage(event.target.value)
+                        }
+                        dir="auto"
+                        required
+                      >
+                        <option value="" disabled>
+                          {t("privateLesson.mode.chooseTeachingLanguage")}
+                        </option>
+                        {languageOptions
+                          .filter(
+                            ([code]) => !sameBaseLanguage(code, targetLanguage),
+                          )
+                          .map(([code, label]) => (
+                            <option key={code} value={code}>
+                              {label}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                    <p>{t("privateLesson.mode.beginnerHint")}</p>
+                  </div>
                 )}
                 {setupLoading ? (
                   <div className="private-lesson-roadmap-loading">
                     <LoaderCircle className="spin" size={20} />
-                    {t("privateLesson.roadmap.loading", {
-                      defaultValue: "Preparing your learning path…",
+                    {t("privateLesson.preparingRecommendation", {
+                      defaultValue: "Preparing a lesson for you…",
                     })}
                   </div>
-                ) : lessonSetup ? (
-                  <RoadmapPanel
-                    setup={lessonSetup}
-                    choosing={showGoalChooser || !lessonSetup.roadmap}
-                    creating={roadmapCreating}
-                    onShowChooser={() => setShowGoalChooser(true)}
-                    onChoose={(kind, key) => void chooseRoadmap(kind, key)}
-                    t={t}
-                  />
-                ) : null}
-                <form
-                  className="form-stack"
-                  onSubmit={(event) => void startLesson(event)}
-                >
-                  <fieldset
-                    className="plain-fieldset form-stack"
-                    disabled={phase === "preparing"}
-                  >
-                    <div className="live-form-grid">
-                      <label className="field">
-                        <span>{t("privateLesson.targetLanguage")}</span>
-                        <select
-                          value={targetLanguage}
-                          onChange={(event) =>
-                            setTargetLanguage(event.target.value)
-                          }
-                          dir="auto"
-                          required
-                        >
-                          {languageOptions.map(([code, label]) => (
-                            <option key={code} value={code}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="field">
-                        <span>{t("privateLesson.supportLanguage")}</span>
-                        <select
-                          value={supportLanguage}
-                          onChange={(event) =>
-                            setSupportLanguage(event.target.value)
-                          }
-                          dir="auto"
-                        >
-                          <option value="">
-                            {t("privateLesson.noSupport")}
-                          </option>
-                          {languageOptions.map(([code, label]) => (
-                            <option key={code} value={code}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="field">
-                        <span>{t("privateLesson.duration")}</span>
-                        <select
-                          value={lessonDurationMinutes}
-                          onChange={(event) =>
-                            setLessonDurationMinutes(
-                              Number(
-                                event.target.value,
-                              ) as PrivateLessonDurationMinutes,
-                            )
-                          }
-                        >
-                          {([1, 5, 10, 15] as const).map((value) => (
-                            <option key={value} value={value}>
-                              {t(`privateLesson.durationOptions.${value}`)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                    <details className="private-lesson-advanced">
-                      <summary>
-                        <span>
-                          <strong>
-                            {t("privateLesson.preferences.title", {
-                              defaultValue: "Lesson preferences",
-                            })}
-                          </strong>
-                          <small>
-                            {t("privateLesson.preferences.saved", {
-                              defaultValue:
-                                "Saved automatically for this language",
-                            })}
-                          </small>
-                        </span>
-                        <Gauge size={20} />
-                      </summary>
-                      <div className="live-form-grid">
-                        <label className="field">
-                          <span>{t("privateLesson.teacherVoice")}</span>
-                          <select
-                            value={teacherVoice}
-                            onChange={(event) =>
-                              setTeacherVoice(
-                                event.target.value as TeacherVoice,
-                              )
-                            }
-                          >
-                            <option value="female">
-                              {t("privateLesson.voiceOptions.female")}
-                            </option>
-                            <option value="male">
-                              {t("privateLesson.voiceOptions.male")}
-                            </option>
-                          </select>
-                        </label>
-                        <label className="field">
-                          <span>{t("privateLesson.speechRate")}</span>
-                          <select
-                            value={speechRate}
-                            onChange={(event) =>
-                              setSpeechRate(
-                                event.target.value as PrivateLessonSpeechRate,
-                              )
-                            }
-                          >
-                            {privateLessonSpeechRates.map((value) => (
-                              <option key={value} value={value}>
-                                {t(`privateLesson.speedOptions.${value}`)}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-                      <div className="live-form-grid">
-                        <label className="field">
-                          <span>{t("privateLesson.level")}</span>
-                          <select
-                            value={level}
-                            onChange={(event) =>
-                              setLevel(event.target.value as "" | CefrLevel)
-                            }
-                          >
-                            <option value="">
-                              {t("privateLesson.automaticLevel")}
-                            </option>
-                            {(
-                              ["A1", "A2", "B1", "B2", "C1", "C2"] as const
-                            ).map((value) => (
-                              <option key={value} value={value}>
-                                {t(`privateLesson.levelOptions.${value}`)}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="field">
-                          <span>{t("privateLesson.topic")}</span>
-                          <input
-                            value={topic}
-                            onChange={(event) => {
-                              personalizationTouched.current = true;
-                              setTopic(event.target.value);
-                            }}
-                            maxLength={120}
-                            placeholder={t("privateLesson.topicPlaceholder")}
-                          />
-                        </label>
-                      </div>
-                      <div className="field private-lesson-focus-field">
-                        <span>{t("privateLesson.focus.title")}</span>
-                        <small>{t("privateLesson.focus.description")}</small>
-                        <div className="private-lesson-focus-options">
-                          {privateLessonFocusAreas.map((area) => (
-                            <label
-                              key={area}
-                              className={
-                                focusAreas.includes(area) ? "selected" : ""
-                              }
-                            >
-                              <input
-                                type="checkbox"
-                                checked={focusAreas.includes(area)}
-                                onChange={() => toggleFocusArea(area)}
-                              />
-                              <span>
-                                {t(`privateLesson.focus.options.${area}`)}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                      <fieldset className="private-lesson-correction-field">
-                        <legend>
-                          {t("privateLesson.vocabularyMode.title")}
-                        </legend>
-                        <small>
-                          {t("privateLesson.vocabularyMode.description")}
-                        </small>
-                        <div className="private-lesson-correction-options private-lesson-vocabulary-options">
-                          {privateLessonVocabularyModes.map((mode) => (
-                            <label
-                              key={mode}
-                              className={
-                                vocabularyMode === mode ? "selected" : ""
-                              }
-                            >
-                              <input
-                                type="radio"
-                                name="vocabulary-mode"
-                                value={mode}
-                                checked={vocabularyMode === mode}
-                                onChange={() => {
-                                  personalizationTouched.current = true;
-                                  setVocabularyMode(mode);
-                                }}
-                              />
-                              <span>
-                                <strong>
-                                  {t(
-                                    `privateLesson.vocabularyMode.options.${mode}.title`,
-                                  )}
-                                </strong>
-                                <small>
-                                  {t(
-                                    `privateLesson.vocabularyMode.options.${mode}.description`,
-                                  )}
-                                </small>
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </fieldset>
-                      <fieldset className="private-lesson-correction-field">
-                        <legend>
-                          {t("privateLesson.correctionMode.title")}
-                        </legend>
-                        <small>
-                          {t("privateLesson.correctionMode.description")}
-                        </small>
-                        <div className="private-lesson-correction-options">
-                          {privateLessonCorrectionModes.map((mode) => (
-                            <label
-                              key={mode}
-                              className={
-                                correctionMode === mode ? "selected" : ""
-                              }
-                            >
-                              <input
-                                type="radio"
-                                name="correction-mode"
-                                value={mode}
-                                checked={correctionMode === mode}
-                                onChange={() => {
-                                  personalizationTouched.current = true;
-                                  setCorrectionMode(mode);
-                                }}
-                              />
-                              <span>
-                                <strong>
-                                  {t(
-                                    `privateLesson.correctionMode.options.${mode}.title`,
-                                  )}
-                                </strong>
-                                <small>
-                                  {t(
-                                    `privateLesson.correctionMode.options.${mode}.description`,
-                                  )}
-                                </small>
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </fieldset>
-                      <label className="field">
-                        <span>{t("privateLesson.customFocus")}</span>
-                        <textarea
-                          value={customFocus}
-                          onChange={(event) => {
-                            personalizationTouched.current = true;
-                            setCustomFocus(event.target.value);
-                          }}
-                          maxLength={300}
-                          rows={3}
-                          placeholder={t(
-                            "privateLesson.customFocusPlaceholder",
-                          )}
-                        />
-                      </label>
-                      <label className="field">
-                        <span>{t("privateLesson.grammarFocus")}</span>
-                        <input
-                          value={grammarFocus}
-                          onChange={(event) => {
-                            personalizationTouched.current = true;
-                            setGrammarFocus(event.target.value);
-                          }}
-                          maxLength={160}
-                          placeholder={t("privateLesson.grammarPlaceholder")}
-                        />
-                      </label>
-                    </details>
-                    <button
-                      className="button primary private-lesson-start"
-                      type="submit"
-                      disabled={!targetLanguage.trim() || phase === "preparing"}
+                ) : (
+                  <article className="private-lesson-recommendation">
+                    <div
+                      className="private-lesson-recommendation-icon"
+                      aria-hidden="true"
                     >
-                      {phase === "preparing" ? (
-                        <LoaderCircle className="spin" size={19} />
-                      ) : (
-                        <Sparkles size={19} />
-                      )}
-                      {phase === "preparing"
-                        ? t("privateLesson.preparing")
-                        : t("privateLesson.start")}
-                    </button>
-                  </fieldset>
+                      <Sparkles size={24} />
+                    </div>
+                    <div className="private-lesson-recommendation-copy">
+                      <small>
+                        {t("privateLesson.recommendedForYou", {
+                          defaultValue: "Recommended for you",
+                        })}
+                      </small>
+                      <h3 dir="auto">{lessonTitle}</h3>
+                      <p dir="auto">
+                        {currentMilestone?.communicationObjective ||
+                          latestAssessmentLesson?.report?.nextLessonPlan ||
+                          t("privateLesson.recommendedFallbackDescription", {
+                            defaultValue:
+                              "A focused conversation matched to your current level.",
+                          })}
+                      </p>
+                      <div className="private-lesson-summary-chips">
+                        <span>
+                          <Languages size={15} /> {targetLanguageLabel}
+                        </span>
+                        <span>
+                          {t(`privateLesson.mode.options.${lessonMode}.title`)}
+                        </span>
+                        <span>
+                          <Clock3 size={15} />{" "}
+                          {t(
+                            `privateLesson.durationOptions.${lessonDurationMinutes}`,
+                          )}
+                        </span>
+                        {focusAreas.slice(0, 2).map((area) => (
+                          <span key={area}>
+                            {t(`privateLesson.focus.options.${area}`)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                )}
+
+                <form onSubmit={(event) => void startLesson(event)}>
+                  <button
+                    className="button primary private-lesson-start"
+                    type="submit"
+                    disabled={
+                      !targetLanguage.trim() ||
+                      (lessonMode === "absolute_beginner" &&
+                        !supportLanguage.trim()) ||
+                      phase === "preparing" ||
+                      setupLoading
+                    }
+                  >
+                    {phase === "preparing" ? (
+                      <LoaderCircle className="spin" size={19} />
+                    ) : (
+                      <Sparkles size={19} />
+                    )}
+                    {phase === "preparing"
+                      ? t("privateLesson.preparing")
+                      : t("privateLesson.start")}
+                  </button>
                 </form>
+
+                <button
+                  type="button"
+                  className="button ghost private-lesson-customize"
+                  onClick={() => setShowLessonOptions(true)}
+                >
+                  <Settings2 size={17} />
+                  {t("privateLesson.chooseAnotherFocus", {
+                    defaultValue: "Choose another topic or focus",
+                  })}
+                </button>
+
+                <div className="private-lesson-quick-links">
+                  <button
+                    type="button"
+                    onClick={() => setShowLevelDetails(true)}
+                  >
+                    <span className="private-lesson-quick-icon">
+                      <TrendingUp size={19} />
+                    </span>
+                    <span>
+                      <small>
+                        {t("privateLesson.yourLevel", {
+                          defaultValue: "Your level",
+                        })}{" "}
+                        · {targetLanguageLabel}
+                      </small>
+                      <strong>{effectiveLevel}</strong>
+                    </span>
+                    <em>
+                      {t("privateLesson.viewDetails", {
+                        defaultValue: "View details",
+                      })}
+                    </em>
+                    <ChevronRight size={18} />
+                  </button>
+                  <button type="button" onClick={() => setShowRoadmap(true)}>
+                    <span className="private-lesson-quick-icon">
+                      <Map size={19} />
+                    </span>
+                    <span>
+                      <small>
+                        {t("privateLesson.learningPath", {
+                          defaultValue: "Learning path",
+                        })}
+                      </small>
+                      <strong>
+                        {lessonSetup?.roadmap
+                          ? t("privateLesson.roadmapCurrentStage", {
+                              defaultValue: "Current stage",
+                            })
+                          : t("privateLesson.roadmapCreatePath", {
+                              defaultValue: "Create a path",
+                            })}
+                      </strong>
+                    </span>
+                    <em>{t("privateLesson.open", { defaultValue: "Open" })}</em>
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  className="private-lesson-settings-link"
+                  onClick={() => navigate("/settings#private-lessons")}
+                >
+                  <Settings2 size={16} />
+                  {t("privateLesson.managePreferences", {
+                    defaultValue:
+                      "Manage language and lesson preferences in Settings",
+                  })}
+                </button>
                 <p className="private-lesson-privacy">
                   <Headphones size={17} /> {t("privateLesson.privacy")}
                 </p>
@@ -1364,8 +1078,381 @@ export function PrivateLessonPage() {
                   </p>
                 )}
               </div>
-            )}
-          </section>
+              {showLegacySetup && (
+                <div className="private-lesson-legacy-setup" aria-hidden="true">
+                  {latestAssessmentLesson?.report && (
+                    <section
+                      className="private-lesson-latest-assessment"
+                      aria-label={t("privateLesson.assessment.latest")}
+                    >
+                      <div className="private-lesson-assessment-heading">
+                        <span>
+                          <TrendingUp size={22} />
+                        </span>
+                        <div>
+                          <p className="eyebrow">
+                            {t("privateLesson.assessment.latest")}
+                          </p>
+                          <strong>
+                            {
+                              latestAssessmentLesson.report.assessment
+                                .overallLevel
+                            }
+                          </strong>
+                          <small>
+                            {t(
+                              `privateLesson.assessment.confidence.${latestAssessmentLesson.report.assessment.confidence}`,
+                            )}
+                          </small>
+                        </div>
+                      </div>
+                      <SkillAssessment
+                        assessment={latestAssessmentLesson.report.assessment}
+                        compact
+                        t={t}
+                      />
+                      <p className="private-lesson-continuity-note">
+                        <Target size={16} />
+                        <span>
+                          <strong>{t("privateLesson.continuity.title")}</strong>{" "}
+                          {latestAssessmentLesson.report.nextLessonPlan}
+                        </span>
+                      </p>
+                    </section>
+                  )}
+                  {setupLoading ? (
+                    <div className="private-lesson-roadmap-loading">
+                      <LoaderCircle className="spin" size={20} />
+                      {t("privateLesson.roadmap.loading", {
+                        defaultValue: "Preparing your learning path…",
+                      })}
+                    </div>
+                  ) : lessonSetup ? (
+                    <RoadmapPanel
+                      setup={lessonSetup}
+                      choosing={showGoalChooser || !lessonSetup.roadmap}
+                      creating={roadmapCreating}
+                      onShowChooser={() => setShowGoalChooser(true)}
+                      onChoose={(kind, key) => void chooseRoadmap(kind, key)}
+                      t={t}
+                    />
+                  ) : null}
+                  <form
+                    className="form-stack"
+                    onSubmit={(event) => void startLesson(event)}
+                  >
+                    <fieldset
+                      className="plain-fieldset form-stack"
+                      disabled={phase === "preparing"}
+                    >
+                      <div className="live-form-grid">
+                        <label className="field">
+                          <span>{t("privateLesson.targetLanguage")}</span>
+                          <select
+                            value={targetLanguage}
+                            onChange={(event) =>
+                              setTargetLanguage(event.target.value)
+                            }
+                            dir="auto"
+                            required
+                          >
+                            {languageOptions.map(([code, label]) => (
+                              <option key={code} value={code}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span>{t("privateLesson.supportLanguage")}</span>
+                          <select
+                            value={supportLanguage}
+                            onChange={(event) =>
+                              setSupportLanguage(event.target.value)
+                            }
+                            dir="auto"
+                          >
+                            <option value="">
+                              {t("privateLesson.noSupport")}
+                            </option>
+                            {languageOptions.map(([code, label]) => (
+                              <option key={code} value={code}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span>{t("privateLesson.duration")}</span>
+                          <select
+                            value={lessonDurationMinutes}
+                            onChange={(event) =>
+                              setLessonDurationMinutes(
+                                Number(
+                                  event.target.value,
+                                ) as PrivateLessonDurationMinutes,
+                              )
+                            }
+                          >
+                            {([1, 5, 10, 15] as const).map((value) => (
+                              <option key={value} value={value}>
+                                {t(`privateLesson.durationOptions.${value}`)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                      <details className="private-lesson-advanced">
+                        <summary>
+                          <span>
+                            <strong>
+                              {t("privateLesson.preferences.title", {
+                                defaultValue: "Lesson preferences",
+                              })}
+                            </strong>
+                            <small>
+                              {t("privateLesson.preferences.saved", {
+                                defaultValue:
+                                  "Saved automatically for this language",
+                              })}
+                            </small>
+                          </span>
+                          <Gauge size={20} />
+                        </summary>
+                        <div className="live-form-grid">
+                          <label className="field">
+                            <span>{t("privateLesson.teacherVoice")}</span>
+                            <select
+                              value={teacherVoice}
+                              onChange={(event) =>
+                                setTeacherVoice(
+                                  event.target.value as TeacherVoice,
+                                )
+                              }
+                            >
+                              <option value="female">
+                                {t("privateLesson.voiceOptions.female")}
+                              </option>
+                              <option value="male">
+                                {t("privateLesson.voiceOptions.male")}
+                              </option>
+                            </select>
+                          </label>
+                          <label className="field">
+                            <span>{t("privateLesson.speechRate")}</span>
+                            <select
+                              value={speechRate}
+                              onChange={(event) =>
+                                setSpeechRate(
+                                  event.target.value as PrivateLessonSpeechRate,
+                                )
+                              }
+                            >
+                              {privateLessonSpeechRates.map((value) => (
+                                <option key={value} value={value}>
+                                  {t(`privateLesson.speedOptions.${value}`)}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                        <div className="live-form-grid">
+                          <label className="field">
+                            <span>{t("privateLesson.level")}</span>
+                            <select
+                              value={level}
+                              onChange={(event) =>
+                                setLevel(event.target.value as "" | CefrLevel)
+                              }
+                            >
+                              <option value="">
+                                {t("privateLesson.automaticLevel")}
+                              </option>
+                              {(
+                                ["A1", "A2", "B1", "B2", "C1", "C2"] as const
+                              ).map((value) => (
+                                <option key={value} value={value}>
+                                  {t(`privateLesson.levelOptions.${value}`)}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="field">
+                            <span>{t("privateLesson.topic")}</span>
+                            <input
+                              value={topic}
+                              onChange={(event) => {
+                                personalizationTouched.current = true;
+                                setTopic(event.target.value);
+                              }}
+                              maxLength={120}
+                              placeholder={t("privateLesson.topicPlaceholder")}
+                            />
+                          </label>
+                        </div>
+                        <div className="field private-lesson-focus-field">
+                          <span>{t("privateLesson.focus.title")}</span>
+                          <small>{t("privateLesson.focus.description")}</small>
+                          <div className="private-lesson-focus-options">
+                            {privateLessonFocusAreas.map((area) => (
+                              <label
+                                key={area}
+                                className={
+                                  focusAreas.includes(area) ? "selected" : ""
+                                }
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={focusAreas.includes(area)}
+                                  onChange={() => toggleFocusArea(area)}
+                                />
+                                <span>
+                                  {t(`privateLesson.focus.options.${area}`)}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <fieldset className="private-lesson-correction-field">
+                          <legend>
+                            {t("privateLesson.vocabularyMode.title")}
+                          </legend>
+                          <small>
+                            {t("privateLesson.vocabularyMode.description")}
+                          </small>
+                          <div className="private-lesson-correction-options private-lesson-vocabulary-options">
+                            {privateLessonVocabularyModes.map((mode) => (
+                              <label
+                                key={mode}
+                                className={
+                                  vocabularyMode === mode ? "selected" : ""
+                                }
+                              >
+                                <input
+                                  type="radio"
+                                  name="vocabulary-mode"
+                                  value={mode}
+                                  checked={vocabularyMode === mode}
+                                  onChange={() => {
+                                    personalizationTouched.current = true;
+                                    setVocabularyMode(mode);
+                                  }}
+                                />
+                                <span>
+                                  <strong>
+                                    {t(
+                                      `privateLesson.vocabularyMode.options.${mode}.title`,
+                                    )}
+                                  </strong>
+                                  <small>
+                                    {t(
+                                      `privateLesson.vocabularyMode.options.${mode}.description`,
+                                    )}
+                                  </small>
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
+                        <fieldset className="private-lesson-correction-field">
+                          <legend>
+                            {t("privateLesson.correctionMode.title")}
+                          </legend>
+                          <small>
+                            {t("privateLesson.correctionMode.description")}
+                          </small>
+                          <div className="private-lesson-correction-options">
+                            {privateLessonCorrectionModes.map((mode) => (
+                              <label
+                                key={mode}
+                                className={
+                                  correctionMode === mode ? "selected" : ""
+                                }
+                              >
+                                <input
+                                  type="radio"
+                                  name="correction-mode"
+                                  value={mode}
+                                  checked={correctionMode === mode}
+                                  onChange={() => {
+                                    personalizationTouched.current = true;
+                                    setCorrectionMode(mode);
+                                  }}
+                                />
+                                <span>
+                                  <strong>
+                                    {t(
+                                      `privateLesson.correctionMode.options.${mode}.title`,
+                                    )}
+                                  </strong>
+                                  <small>
+                                    {t(
+                                      `privateLesson.correctionMode.options.${mode}.description`,
+                                    )}
+                                  </small>
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
+                        <label className="field">
+                          <span>{t("privateLesson.customFocus")}</span>
+                          <textarea
+                            value={customFocus}
+                            onChange={(event) => {
+                              personalizationTouched.current = true;
+                              setCustomFocus(event.target.value);
+                            }}
+                            maxLength={300}
+                            rows={3}
+                            placeholder={t(
+                              "privateLesson.customFocusPlaceholder",
+                            )}
+                          />
+                        </label>
+                        <label className="field">
+                          <span>{t("privateLesson.grammarFocus")}</span>
+                          <input
+                            value={grammarFocus}
+                            onChange={(event) => {
+                              personalizationTouched.current = true;
+                              setGrammarFocus(event.target.value);
+                            }}
+                            maxLength={160}
+                            placeholder={t("privateLesson.grammarPlaceholder")}
+                          />
+                        </label>
+                      </details>
+                      <button
+                        className="button primary private-lesson-start"
+                        type="submit"
+                        disabled={
+                          !targetLanguage.trim() || phase === "preparing"
+                        }
+                      >
+                        {phase === "preparing" ? (
+                          <LoaderCircle className="spin" size={19} />
+                        ) : (
+                          <Sparkles size={19} />
+                        )}
+                        {phase === "preparing"
+                          ? t("privateLesson.preparing")
+                          : t("privateLesson.start")}
+                      </button>
+                    </fieldset>
+                  </form>
+                  <p className="private-lesson-privacy">
+                    <Headphones size={17} /> {t("privateLesson.privacy")}
+                  </p>
+                  {error && (
+                    <p className="form-error" role="alert">
+                      {error}
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
           <Modal
             open={levelDetailsOpen}
             onClose={closeLevelDetails}
@@ -2222,9 +2309,22 @@ function LessonReportView({
     <div className="private-lesson-report">
       <section className="private-lesson-report-summary">
         <p className="eyebrow">{t("privateLesson.report.title")}</p>
-        <h3 dir="auto" lang={reportLanguageCode}>
-          {report.summary}
-        </h3>
+        <ul className="lesson-report-highlights">
+          {report.strengths.slice(0, 2).map((item) => (
+            <li key={item}>
+              <Check size={17} />
+              <span dir="auto" lang={reportLanguageCode}>
+                {item}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {report.corrections[0] && (
+          <p>
+            <strong>{t("courses.oneFocus")}</strong>{" "}
+            <span dir="auto">{report.corrections[0].explanation}</span>
+          </p>
+        )}
         <p>
           <strong>{t("privateLesson.report.next")}</strong>{" "}
           <span dir="auto" lang={reportLanguageCode}>
@@ -2232,145 +2332,152 @@ function LessonReportView({
           </span>
         </p>
       </section>
-      <SkillAssessment assessment={report.assessment} t={t} />
-      <div className="private-lesson-report-grid">
-        <section>
-          <h4>{t("privateLesson.report.strengths")}</h4>
-          {report.strengths.length ? (
-            <ul>
-              {report.strengths.map((item) => (
-                <li key={item} dir="auto" lang={reportLanguageCode}>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>{t("privateLesson.report.noEvidence")}</p>
-          )}
-        </section>
-        <section>
-          <h4>{t("privateLesson.report.corrections")}</h4>
-          {report.corrections.length ? (
-            report.corrections.map((item, index) => (
-              <article key={`${item.original}:${index}`}>
-                <div dir="auto" lang={lesson.targetLanguageCode}>
-                  <del>{item.original}</del> <strong>{item.corrected}</strong>
-                </div>
-                <p dir="auto" lang={reportLanguageCode}>
-                  {item.explanation}
-                </p>
-              </article>
-            ))
-          ) : (
-            <p>{t("privateLesson.report.noCorrections")}</p>
-          )}
-        </section>
-        <section>
-          <h4>{t("privateLesson.report.grammar")}</h4>
-          {report.grammarPoints.length ? (
-            report.grammarPoints.map((item) => (
-              <article key={item.topic}>
-                <strong dir="auto">{item.topic}</strong>
-                <p dir="auto" lang={reportLanguageCode}>
-                  {item.explanation}
-                </p>
-                {item.example && (
-                  <small dir="auto" lang={lesson.targetLanguageCode}>
-                    {item.example}
-                  </small>
-                )}
-              </article>
-            ))
-          ) : (
-            <p>{t("privateLesson.report.noGrammar")}</p>
-          )}
-        </section>
-        <section>
-          <h4>{t("privateLesson.report.vocabulary")}</h4>
-          {report.vocabulary.length ? (
-            report.vocabulary.map((item) => (
-              <article key={item.learningItemId}>
-                <strong>
-                  <span dir="auto" lang={lesson.targetLanguageCode}>
-                    {item.sourceText}
-                  </span>
-                  {" · "}
-                  <span dir="auto" lang={reportLanguageCode}>
-                    {item.translationText}
-                  </span>
-                </strong>
-                <p dir="auto" lang={reportLanguageCode}>
-                  {item.note}
-                </p>
-              </article>
-            ))
-          ) : (
-            <p>{t("privateLesson.report.noVocabulary")}</p>
-          )}
-        </section>
-      </div>
-      {report.newWordSuggestions.length > 0 && (
-        <section className="private-lesson-report-suggestions">
-          <h4>{t("privateLesson.report.suggestions")}</h4>
-          <div>
-            {report.newWordSuggestions.map((suggestion) => {
-              const key = `${lesson.id}:${suggestion.sourceText}:${suggestion.translationText}`;
-              const saved = savedSuggestions.has(key);
-              const saving = savingSuggestions.has(key);
-              return (
-                <article key={key}>
-                  <span>
-                    <strong dir="auto" lang={lesson.targetLanguageCode}>
-                      {suggestion.sourceText}
-                    </strong>
-                    {" · "}
-                    <span dir="auto" lang={reportLanguageCode}>
-                      {suggestion.translationText}
-                    </span>
-                  </span>
-                  {lesson.supportLanguageCode && (
-                    <button
-                      className="button secondary"
-                      type="button"
-                      disabled={saved || saving}
-                      onClick={() => onSaveSuggestion(suggestion)}
-                    >
-                      {saving ? (
-                        <LoaderCircle className="spin" size={15} />
-                      ) : saved ? (
-                        <Check size={15} />
-                      ) : (
-                        <Plus size={15} />
-                      )}
-                      {saving
-                        ? t("capture.saving")
-                        : t(
-                            saved
-                              ? "privateLesson.report.saved"
-                              : "privateLesson.report.saveWord",
-                          )}
-                    </button>
+      <LessonHomeworkCard lessonId={lesson.id} />
+      <details className="lesson-report-details">
+        <summary>{t("courses.reportDetails")}</summary>
+        <p dir="auto" lang={reportLanguageCode}>
+          {report.summary}
+        </p>
+        <SkillAssessment assessment={report.assessment} t={t} />
+        <div className="private-lesson-report-grid">
+          <section>
+            <h4>{t("privateLesson.report.strengths")}</h4>
+            {report.strengths.length ? (
+              <ul>
+                {report.strengths.map((item) => (
+                  <li key={item} dir="auto" lang={reportLanguageCode}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>{t("privateLesson.report.noEvidence")}</p>
+            )}
+          </section>
+          <section>
+            <h4>{t("privateLesson.report.corrections")}</h4>
+            {report.corrections.length ? (
+              report.corrections.map((item, index) => (
+                <article key={`${item.original}:${index}`}>
+                  <div dir="auto" lang={lesson.targetLanguageCode}>
+                    <del>{item.original}</del> <strong>{item.corrected}</strong>
+                  </div>
+                  <p dir="auto" lang={reportLanguageCode}>
+                    {item.explanation}
+                  </p>
+                </article>
+              ))
+            ) : (
+              <p>{t("privateLesson.report.noCorrections")}</p>
+            )}
+          </section>
+          <section>
+            <h4>{t("privateLesson.report.grammar")}</h4>
+            {report.grammarPoints.length ? (
+              report.grammarPoints.map((item) => (
+                <article key={item.topic}>
+                  <strong dir="auto">{item.topic}</strong>
+                  <p dir="auto" lang={reportLanguageCode}>
+                    {item.explanation}
+                  </p>
+                  {item.example && (
+                    <small dir="auto" lang={lesson.targetLanguageCode}>
+                      {item.example}
+                    </small>
                   )}
                 </article>
-              );
-            })}
-          </div>
-          {saveError && (
-            <p className="form-error" role="alert">
-              {saveError}
-            </p>
-          )}
-        </section>
-      )}
-      {report.recommendedReviewItemIds.length > 0 && (
-        <button
-          className="button primary private-lesson-review"
-          type="button"
-          onClick={onReview}
-        >
-          <BookOpen size={17} /> {t("privateLesson.report.reviewNow")}
-        </button>
-      )}
+              ))
+            ) : (
+              <p>{t("privateLesson.report.noGrammar")}</p>
+            )}
+          </section>
+          <section>
+            <h4>{t("privateLesson.report.vocabulary")}</h4>
+            {report.vocabulary.length ? (
+              report.vocabulary.map((item) => (
+                <article key={item.learningItemId}>
+                  <strong>
+                    <span dir="auto" lang={lesson.targetLanguageCode}>
+                      {item.sourceText}
+                    </span>
+                    {" · "}
+                    <span dir="auto" lang={reportLanguageCode}>
+                      {item.translationText}
+                    </span>
+                  </strong>
+                  <p dir="auto" lang={reportLanguageCode}>
+                    {item.note}
+                  </p>
+                </article>
+              ))
+            ) : (
+              <p>{t("privateLesson.report.noVocabulary")}</p>
+            )}
+          </section>
+        </div>
+        {report.newWordSuggestions.length > 0 && (
+          <section className="private-lesson-report-suggestions">
+            <h4>{t("privateLesson.report.suggestions")}</h4>
+            <div>
+              {report.newWordSuggestions.map((suggestion) => {
+                const key = `${lesson.id}:${suggestion.sourceText}:${suggestion.translationText}`;
+                const saved = savedSuggestions.has(key);
+                const saving = savingSuggestions.has(key);
+                return (
+                  <article key={key}>
+                    <span>
+                      <strong dir="auto" lang={lesson.targetLanguageCode}>
+                        {suggestion.sourceText}
+                      </strong>
+                      {" · "}
+                      <span dir="auto" lang={reportLanguageCode}>
+                        {suggestion.translationText}
+                      </span>
+                    </span>
+                    {lesson.supportLanguageCode && (
+                      <button
+                        className="button secondary"
+                        type="button"
+                        disabled={saved || saving}
+                        onClick={() => onSaveSuggestion(suggestion)}
+                      >
+                        {saving ? (
+                          <LoaderCircle className="spin" size={15} />
+                        ) : saved ? (
+                          <Check size={15} />
+                        ) : (
+                          <Plus size={15} />
+                        )}
+                        {saving
+                          ? t("capture.saving")
+                          : t(
+                              saved
+                                ? "privateLesson.report.saved"
+                                : "privateLesson.report.saveWord",
+                            )}
+                      </button>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+            {saveError && (
+              <p className="form-error" role="alert">
+                {saveError}
+              </p>
+            )}
+          </section>
+        )}
+        {report.recommendedReviewItemIds.length > 0 && (
+          <button
+            className="button primary private-lesson-review"
+            type="button"
+            onClick={onReview}
+          >
+            <BookOpen size={17} /> {t("privateLesson.report.reviewNow")}
+          </button>
+        )}
+      </details>
     </div>
   );
 }

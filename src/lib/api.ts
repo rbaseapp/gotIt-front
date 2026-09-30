@@ -58,6 +58,11 @@ const messageCodes = new Set([
 ]);
 
 function localizedMessage(code: string): string {
+  if (code === "COURSE_SUPPORT_LANGUAGE_REQUIRED")
+    return i18n.t("courses.supportLanguageError");
+  if (code === "COURSE_TARGET_CHANGE_NEW" || code === "COURSE_REVISION_LIMIT")
+    return i18n.t("courses.separateCourseError");
+  if (code === "COURSE_AI_UNAVAILABLE") return i18n.t("courses.unavailable");
   return messageCodes.has(code) ? i18n.t(`apiErrors.${code}`) : "";
 }
 
@@ -77,7 +82,10 @@ async function request(
         ? 60000
         : path.includes("/study/") && path.endsWith("/image")
           ? 120000
-          : path.startsWith("reading") || path === "import"
+          : path.startsWith("reading") ||
+              path.startsWith("courses") ||
+              path.endsWith("/complete") ||
+              path === "import"
             ? 75000
             : 20000;
   const timeoutSignal = AbortSignal.timeout(timeoutMs);

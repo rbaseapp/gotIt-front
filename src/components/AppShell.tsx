@@ -80,13 +80,14 @@ export function AppShell({
   const { profile, stats, items, mode, user, profileError, retryProfile } =
     useApp();
   const location = useLocation();
+  const focusedLearning =
+    /^\/(courses|homework)(\/|$)/.test(location.pathname) ||
+    location.pathname === "/private-lesson";
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
   const canWriteVocabulary = hasEntitlement("vocabulary.write");
   const defaultLessonLanguage =
-    profile.languages[0]?.languageCode ||
-    profile.defaultSourceLanguage ||
-    "en";
+    profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en";
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -145,9 +146,9 @@ export function AppShell({
       );
     };
   }, [defaultLessonLanguage, mode]);
-  const pageTitle = navItems.find((item) =>
-    location.pathname.startsWith(item.to),
-  )?.labelKey;
+  const pageTitle = focusedLearning
+    ? "nav.privateLesson"
+    : navItems.find((item) => location.pathname.startsWith(item.to))?.labelKey;
   const latestAssessment = latestLessonAssessment?.report?.assessment;
   const latestLevelLabel = latestAssessment?.overallLevel
     ? latestAssessment.overallLevel
@@ -194,7 +195,9 @@ export function AppShell({
                 to={to}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
+                  isActive || (to === "/private-lesson" && focusedLearning)
+                    ? "nav-link active"
+                    : "nav-link"
                 }
               >
                 <Icon size={20} />
@@ -341,20 +344,26 @@ export function AppShell({
           </div>
         </header>
         <div className="page-content">
-          {mode === "live" && user?.role !== "admin" && <SubscriptionBanner />}
-          <div
-            className={
-              mode === "demo" ? "mode-banner demo" : "mode-banner live"
-            }
-          >
-            {mode === "demo"
-              ? t("shell.demoBanner")
-              : user?.role === "admin"
-                ? t("shell.liveBanner")
-                : status?.tier === "free"
-                  ? t("shell.readOnlyBanner")
-                  : t("shell.liveBanner")}
-          </div>
+          {mode === "live" &&
+            user?.role !== "admin" &&
+            (!focusedLearning || status?.tier !== "paid") && (
+              <SubscriptionBanner />
+            )}
+          {(!focusedLearning || mode === "demo") && (
+            <div
+              className={
+                mode === "demo" ? "mode-banner demo" : "mode-banner live"
+              }
+            >
+              {mode === "demo"
+                ? t("shell.demoBanner")
+                : user?.role === "admin"
+                  ? t("shell.liveBanner")
+                  : status?.tier === "free"
+                    ? t("shell.readOnlyBanner")
+                    : t("shell.liveBanner")}
+            </div>
+          )}
           {profileError && (
             <div className="form-error" role="alert">
               {profileError}
