@@ -544,6 +544,10 @@ export function PrivateLessonPage() {
   }, [targetLanguage]);
 
   const sessionFullscreen = phase !== "setup" && phase !== "preparing";
+  const childCourse =
+    (courseData?.versions.find(
+      (version) => version.version === courseData.activeVersion,
+    )?.preferences ?? courseData?.preferences)?.ageGroup === "child";
   usePrivateLessonViewport(sessionFullscreen);
   useEffect(() => {
     const transcript = transcriptRef.current;
@@ -892,6 +896,17 @@ export function PrivateLessonPage() {
         <>
           {courseId ? (
             <section className="course-hero">
+              {childCourse && (
+                <div className="course-teacher">
+                  <TeacherAvatar
+                    variant="female"
+                    activity="idle"
+                    audioLevel={0}
+                    active={false}
+                    label={t("privateLesson.voiceOptions.female")}
+                  />
+                </div>
+              )}
               <p className="course-kicker">
                 {courseData?.nextLesson?.unitTitle ??
                   (courseData
