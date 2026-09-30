@@ -1650,6 +1650,18 @@
       "plan": "Kursplan"
     },
     "teacher": "KI-Lehrer",
+    "startLiveInterview": "Live-Gespräch starten",
+    "stopLiveInterview": "Gespräch beenden",
+    "typeInstead": "Lieber schriftlich antworten?",
+    "liveDisconnected": "Die Verbindung wurde unterbrochen. Verbinde dich erneut oder schreibe weiter.",
+    "liveBusy": "Die Lehrkraft verarbeitet deine vorige Antwort.",
+    "liveStatus": {
+      "idle": "Deine Lehrkraft ist bereit. Starte einmal und sprich dann frei.",
+      "connecting": "Mikrofon und Lehrkraft werden verbunden…",
+      "listening": "Deine Lehrkraft hört zu — sprich einfach.",
+      "thinking": "Deine Lehrkraft denkt über deine Antwort nach…",
+      "speaking": "Deine Lehrkraft spricht…"
+    },
     "you": "Du",
     "saved": "Gespeichert",
     "conversationHistory": "Unser bisheriges Gespräch",

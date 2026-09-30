@@ -1650,6 +1650,18 @@
       "plan": "Programa"
     },
     "teacher": "Profesor de IA",
+    "startLiveInterview": "Iniciar entrevista en vivo",
+    "stopLiveInterview": "Terminar conversación",
+    "typeInstead": "¿Prefieres responder por escrito?",
+    "liveDisconnected": "Se interrumpió la conversación. Vuelve a conectarte o continúa escribiendo.",
+    "liveBusy": "El profesor está procesando tu respuesta anterior.",
+    "liveStatus": {
+      "idle": "Tu profesor está listo. Inicia una vez y habla libremente.",
+      "connecting": "Conectando el micrófono y al profesor…",
+      "listening": "Tu profesor te escucha; solo habla.",
+      "thinking": "Tu profesor está pensando en tu respuesta…",
+      "speaking": "Tu profesor está hablando…"
+    },
     "you": "Tú",
     "saved": "Guardado",
     "conversationHistory": "Nuestra conversación hasta ahora",

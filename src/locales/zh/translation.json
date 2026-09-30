@@ -1650,6 +1650,18 @@
       "plan": "课程计划"
     },
     "teacher": "AI老师",
+    "startLiveInterview": "开始实时访谈",
+    "stopLiveInterview": "结束对话",
+    "typeInstead": "更想打字回答？",
+    "liveDisconnected": "对话已断开。请重新连接或打字继续。",
+    "liveBusy": "老师正在处理上一条回答。",
+    "liveStatus": {
+      "idle": "老师已准备好。开始后就可以自由说话。",
+      "connecting": "正在连接麦克风和老师…",
+      "listening": "老师正在听，请直接说话。",
+      "thinking": "老师正在思考你的回答…",
+      "speaking": "老师正在说话…"
+    },
     "you": "你",
     "saved": "已保存",
     "conversationHistory": "之前的对话",

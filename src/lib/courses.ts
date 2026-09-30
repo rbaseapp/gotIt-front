@@ -171,6 +171,18 @@ export type Homework = z.infer<typeof homeworkSchema>;
 export type HomeworkSummary = z.infer<typeof homeworkSummarySchema>;
 const courseResponse = z.object({ course: courseSchema });
 const homeworkResponse = z.object({ homework: homeworkSchema });
+const realtimeResponse = z.object({
+  realtime: z.object({
+    clientSecret: z.string(),
+    expiresAt: z.string().nullable(),
+    model: z.string(),
+    connectionUrl: z.literal("https://api.openai.com/v1/realtime/calls"),
+    openingEvent: z.object({
+      type: z.literal("response.create"),
+      response: z.object({ instructions: z.string() }),
+    }),
+  }),
+});
 export const courseApi = {
   list: () =>
     product(
@@ -182,6 +194,8 @@ export const courseApi = {
       "courses",
     ),
   get: (id: string) => product(courseResponse, `courses/${id}`),
+  realtimeSession: (id: string) =>
+    product(realtimeResponse, `courses/${id}/realtime-session`, "POST"),
   start: (input: {
     targetLanguageCode: string;
     supportLanguageCode: string;

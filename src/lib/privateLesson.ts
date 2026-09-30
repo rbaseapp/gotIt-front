@@ -540,7 +540,12 @@ type RealtimeHandlers = {
 };
 
 export async function connectPrivateLesson(
-  session: PrivateLessonSession,
+  session: {
+    realtime: Pick<
+      PrivateLessonSession["realtime"],
+      "openingEvent" | "connectionUrl" | "clientSecret"
+    >;
+  },
   audioElement: HTMLAudioElement,
   handlers: RealtimeHandlers,
   signal: AbortSignal,

@@ -1650,6 +1650,18 @@
       "plan": "Programme"
     },
     "teacher": "Professeur IA",
+    "startLiveInterview": "Commencer l'entretien en direct",
+    "stopLiveInterview": "Terminer la conversation",
+    "typeInstead": "Vous préférez répondre par écrit ?",
+    "liveDisconnected": "La conversation a été interrompue. Reconnectez-vous ou continuez par écrit.",
+    "liveBusy": "Le professeur traite votre réponse précédente.",
+    "liveStatus": {
+      "idle": "Votre professeur est prêt. Lancez l'entretien, puis parlez librement.",
+      "connecting": "Connexion du micro et du professeur…",
+      "listening": "Votre professeur vous écoute : parlez simplement.",
+      "thinking": "Votre professeur réfléchit à votre réponse…",
+      "speaking": "Votre professeur parle…"
+    },
     "you": "Vous",
     "saved": "Enregistré",
     "conversationHistory": "Notre échange jusqu’ici",

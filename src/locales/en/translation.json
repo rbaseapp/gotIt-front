@@ -1649,6 +1649,18 @@
       "plan": "Your course"
     },
     "teacher": "AI teacher",
+    "startLiveInterview": "Start live interview",
+    "stopLiveInterview": "End conversation",
+    "typeInstead": "Prefer to type an answer?",
+    "liveDisconnected": "The conversation disconnected. Reconnect or continue by typing.",
+    "liveBusy": "The teacher is processing your previous answer.",
+    "liveStatus": {
+      "idle": "Your teacher is ready. Start once, then speak freely.",
+      "connecting": "Connecting your microphone and teacher…",
+      "listening": "Your teacher is listening — just speak.",
+      "thinking": "Your teacher is thinking about your answer…",
+      "speaking": "Your teacher is speaking…"
+    },
     "you": "You",
     "saved": "Saved",
     "conversationHistory": "Our conversation so far",

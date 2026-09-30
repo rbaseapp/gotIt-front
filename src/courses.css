@@ -203,6 +203,35 @@
   height: 46px;
   margin: 0;
 }
+.course-live-interview {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 8px 12px 26px;
+  text-align: center;
+}
+.course-live-interview .teacher-avatar {
+  width: min(56vw, 220px);
+  height: min(56vw, 220px);
+  margin: 0;
+}
+.course-live-interview p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.course-live-interview small {
+  color: #a33;
+}
+.course-text-fallback {
+  margin-block: 16px;
+}
+.course-text-fallback summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 10px 0;
+}
 .course-intake-progress {
   margin-block-end: 20px;
 }

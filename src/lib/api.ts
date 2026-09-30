@@ -63,6 +63,7 @@ function localizedMessage(code: string): string {
   if (code === "COURSE_TARGET_CHANGE_NEW" || code === "COURSE_REVISION_LIMIT")
     return i18n.t("courses.separateCourseError");
   if (code === "COURSE_AI_UNAVAILABLE") return i18n.t("courses.unavailable");
+  if (code === "COURSE_VOICE_UNAVAILABLE") return i18n.t("courses.liveDisconnected");
   return messageCodes.has(code) ? i18n.t(`apiErrors.${code}`) : "";
 }
 

@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { TeacherAvatar } from "../components/TeacherAvatar";
-import { CourseComposer, ReadAloud } from "../components/CourseComposer";
+import { CourseComposer } from "../components/CourseComposer";
+import { CourseLiveInterview } from "../components/CourseLiveInterview";
 import {
   courseApi,
   lessonLink,
@@ -45,6 +46,7 @@ export function CoursePage() {
     [showReview, setShowReview] = useState(false),
     [resumeConversation, setResumeConversation] = useState(false),
     [editingPlan, setEditingPlan] = useState(false);
+  const [voiceActive, setVoiceActive] = useState(false);
   const [message, setMessage] = useState("");
   const [editAnswerIndex, setEditAnswerIndex] = useState<number | null>(null);
   const [target, setTarget] = useState(
@@ -167,6 +169,28 @@ export function CoursePage() {
         await command("plan", {}, updated);
     });
   }
+  async function sendLiveAnswer(answer: string) {
+    if (lock.current || !course) throw new Error(t("courses.liveBusy"));
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const updated = await command(
+        "turns",
+        {
+          message: answer,
+          channel: "voice",
+          mode: "preferences",
+        },
+        course,
+      );
+      pending.current = null;
+      return updated;
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
   const draft = course?.versions.find((v) => v.version === course.draftVersion);
   const active = course?.versions.find(
     (v) => v.version === course.activeVersion,
@@ -175,11 +199,12 @@ export function CoursePage() {
   const reviewing = Boolean(
     course &&
     !resumeConversation &&
+    !voiceActive &&
     (showReview ||
       (!course.approvedPreferences && course.ready) ||
       (!displayed && course.ready)),
   );
-  const intake = Boolean(course && !displayed && !reviewing);
+  const intake = Boolean(course && !displayed && (!reviewing || voiceActive));
   const step = displayed ? 3 : reviewing ? 2 : 1;
   const recentCourse = courses.find((item) => item.activeVersion) ?? courses[0];
   const openHomework = homework.filter(
@@ -335,34 +360,20 @@ export function CoursePage() {
           {intake && (
             <section className="course-chat-card">
               <div className="course-teacher-heading">
-                <span className="course-intake-avatar">
-                  <TeacherAvatar
-                    variant="female"
-                    activity={busy ? "thinking" : "idle"}
-                    audioLevel={0}
-                    active={false}
-                    label={t("courses.teacher")}
-                  />
-                </span>
                 <span>{t("courses.teacher")}</span>
                 <small>{t("courses.saved")}</small>
               </div>
-              {course.intakeProgress && (
-                <div className="course-intake-progress">
-                  <div>
-                    <span>
-                      {t("courses.steps.conversation")} ·{" "}
-                      {course.intakeProgress.current}/
-                      {course.intakeProgress.total}
-                    </span>
-                    <small>{t("courses.estimatedMinutes", { count: 4 })}</small>
-                  </div>
-                  <progress
-                    aria-label={t("courses.steps.conversation")}
-                    value={course.intakeProgress.answered}
-                    max={course.intakeProgress.total}
-                  />
-                </div>
+              {(!course.ready || voiceActive) && editAnswerIndex === null && (
+                <CourseLiveInterview
+                  course={course}
+                  onAnswer={sendLiveAnswer}
+                  onActiveChange={setVoiceActive}
+                  onTranscript={setMessage}
+                  onFinish={() => {
+                    setVoiceActive(false);
+                    setShowReview(true);
+                  }}
+                />
               )}
               <div
                 className="course-intake-thread"
@@ -393,7 +404,7 @@ export function CoursePage() {
                         <button
                           type="button"
                           className="course-text-link"
-                          disabled={busy}
+                          disabled={busy || voiceActive}
                           onClick={() => {
                             setEditAnswerIndex(
                               course.messages
@@ -408,47 +419,47 @@ export function CoursePage() {
                           {t("courses.correctAnswer")}
                         </button>
                       )}
-                    {turn.role === "tutor" &&
-                      index === course.messages.length - 1 && (
-                        <ReadAloud
-                          text={turn.text}
-                          language={course.preferences.supportLanguageCode}
-                          autoPlay
-                        />
-                      )}
                   </div>
                 ))}
               </div>
-              <div className="course-suggestions">
-                {course.suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
+              {!voiceActive && (
+                <details
+                  className="course-text-fallback"
+                  open={editAnswerIndex !== null ? true : undefined}
+                >
+                  <summary>{t("courses.typeInstead")}</summary>
+                  <div className="course-suggestions">
+                    {course.suggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        disabled={busy}
+                        onClick={() => send("text", suggestion)}
+                        dir="auto"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                  <CourseComposer
+                    value={message}
+                    onChange={setMessage}
+                    onSubmit={send}
+                    language={course.preferences.supportLanguageCode}
                     disabled={busy}
-                    onClick={() => send("text", suggestion)}
-                    dir="auto"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-              <CourseComposer
-                value={message}
-                onChange={setMessage}
-                onSubmit={send}
-                language={course.preferences.supportLanguageCode}
-                disabled={busy}
-                label={
-                  editAnswerIndex === null
-                    ? undefined
-                    : t("courses.correctAnswer")
-                }
-                submitLabel={
-                  editAnswerIndex === null
-                    ? undefined
-                    : t("courses.saveCorrection")
-                }
-                replaceVoice={editAnswerIndex !== null}
-              />
+                    label={
+                      editAnswerIndex === null
+                        ? undefined
+                        : t("courses.correctAnswer")
+                    }
+                    submitLabel={
+                      editAnswerIndex === null
+                        ? undefined
+                        : t("courses.saveCorrection")
+                    }
+                    replaceVoice={editAnswerIndex !== null}
+                  />
+                </details>
+              )}
               {editAnswerIndex !== null && (
                 <button
                   type="button"

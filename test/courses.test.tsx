@@ -17,6 +17,8 @@ const mocks = vi.hoisted(() => ({
   homeworkCommand: vi.fn(),
   start: vi.fn(),
   transcribe: vi.fn(),
+  realtimeSession: vi.fn(),
+  connectRealtime: vi.fn(),
   translationLanguage: "he",
 }));
 vi.mock("../src/context/AppContext", () => ({
@@ -34,6 +36,10 @@ vi.mock("../src/lib/courses", async (importOriginal) => {
 });
 vi.mock("../src/lib/voice", () => ({
   recordVoice: vi.fn().mockResolvedValue("recorded-wav"),
+}));
+vi.mock("../src/lib/privateLesson", () => ({
+  connectPrivateLesson: mocks.connectRealtime,
+  PrivateLessonConnectionError: class extends Error {},
 }));
 function renderRoute(path: string) {
   return render(
@@ -53,12 +59,110 @@ beforeEach(() => {
   mocks.list.mockResolvedValue({ courses: [], homework: [], available: true });
   mocks.get.mockResolvedValue({ course: structuredClone(fixtureCourse) });
   mocks.transcribe.mockResolvedValue({ text: "I want to speak at work" });
+  mocks.realtimeSession.mockResolvedValue({
+    realtime: {
+      clientSecret: "ephemeral",
+      connectionUrl: "https://api.openai.com/v1/realtime/calls",
+      openingEvent: {
+        type: "response.create",
+        response: { instructions: "Ask the question" },
+      },
+    },
+  });
   mocks.homework.mockResolvedValue({
     homework: structuredClone(fixtureHomework),
   });
 });
 
 describe("personal course experience", () => {
+  it("runs a hands-free interview, saves speech as a voice turn, and plays the server reply", async () => {
+    const intake = {
+      ...structuredClone(fixtureCourse),
+      ready: false,
+      intakeAnswers: [],
+    };
+    mocks.get.mockResolvedValue({ course: intake });
+    const updated = {
+      ...intake,
+      revision: intake.revision + 1,
+      messages: [
+        ...intake.messages,
+        { role: "learner", text: "I want a work course", channel: "voice" },
+        { role: "tutor", text: "What do you know already?", channel: "text" },
+      ],
+    };
+    mocks.command.mockResolvedValue({ course: updated });
+    const send = vi.fn().mockReturnValue(true);
+    const mute = vi.fn().mockReturnValue(true);
+    let emit: ((event: Record<string, unknown>) => void) | undefined;
+    mocks.connectRealtime.mockImplementation(
+      async (_session, _audio, handlers) => {
+        emit = handlers.onEvent;
+        handlers.onOpen();
+        return { send, setMicrophoneMuted: mute, close: vi.fn() };
+      },
+    );
+    const user = userEvent.setup();
+    renderRoute(`/courses/${intake.id}`);
+    await user.click(
+      await screen.findByRole("button", { name: "מתחילים ראיון חי" }),
+    );
+    await waitFor(() => expect(mocks.connectRealtime).toHaveBeenCalledOnce());
+    emit?.({ type: "response.done" });
+    emit?.({ type: "output_audio_buffer.stopped" });
+    expect(
+      await screen.findByText("המורה מקשיבה לך — פשוט לדבר."),
+    ).toBeInTheDocument();
+    emit?.({
+      type: "conversation.item.input_audio_transcription.completed",
+      transcript: "I want a work course",
+    });
+    await waitFor(() =>
+      expect(mocks.command).toHaveBeenCalledWith(
+        intake.id,
+        "turns",
+        expect.objectContaining({
+          message: "I want a work course",
+          channel: "voice",
+        }),
+      ),
+    );
+    await waitFor(() =>
+      expect(send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "response.create",
+          response: expect.objectContaining({
+            instructions: expect.stringContaining("What do you know already?"),
+          }),
+        }),
+      ),
+    );
+    expect(mute).toHaveBeenCalledWith(true);
+    emit?.({ type: "response.done" });
+    emit?.({ type: "output_audio_buffer.stopped" });
+    expect(mute).toHaveBeenLastCalledWith(false);
+    mocks.command.mockResolvedValue({
+      course: {
+        ...updated,
+        revision: updated.revision + 1,
+        ready: true,
+        messages: [
+          ...updated.messages,
+          { role: "learner", text: "Some basics", channel: "voice" },
+          { role: "tutor", text: "Let's review your plan", channel: "text" },
+        ],
+      },
+    });
+    emit?.({
+      type: "conversation.item.input_audio_transcription.completed",
+      transcript: "Some basics",
+    });
+    await waitFor(() => expect(send).toHaveBeenCalledTimes(2));
+    emit?.({ type: "response.done" });
+    expect(screen.queryByText("זה מה שהבנתי ממך")).not.toBeInTheDocument();
+    emit?.({ type: "output_audio_buffer.stopped" });
+    expect(await screen.findByText("זה מה שהבנתי ממך")).toBeInTheDocument();
+  });
   it("sends a transcribed voice answer through the same conversation route as typed text", async () => {
     const intake = structuredClone(fixtureCourse);
     intake.ready = false;
@@ -70,6 +174,7 @@ describe("personal course experience", () => {
     });
     const user = userEvent.setup();
     renderRoute(`/courses/${intake.id}`);
+    await user.click(await screen.findByText("מעדיפים לכתוב תשובה?"));
     await user.click(await screen.findByRole("button", { name: "תשובה בקול" }));
     expect(await screen.findByRole("textbox")).toHaveValue(
       "I want to speak at work",
@@ -106,6 +211,7 @@ describe("personal course experience", () => {
     renderRoute(`/courses/${intake.id}`);
     await user.click(await screen.findByRole("button", { name: "חזרה לשיחה" }));
     expect(screen.getByRole("log")).toHaveTextContent("Old goal");
+    await user.click(screen.getByText("מעדיפים לכתוב תשובה?"));
     await user.click(screen.getByRole("button", { name: "תיקון התשובה" }));
     await user.clear(screen.getByRole("textbox"));
     await user.type(screen.getByRole("textbox"), "New goal");
@@ -161,10 +267,12 @@ describe("personal course experience", () => {
     expect(thread).toHaveTextContent("מה תרצה ללמוד?");
     expect(thread).toHaveTextContent("לדבר בעבודה");
     expect(thread).toHaveTextContent("מה כבר למדת?");
-    expect(screen.getByText(/2\/6/)).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("progressbar", { name: "מכירים אותך" }),
-    ).toHaveAttribute("value", "1");
+      screen.getByRole("button", { name: "מתחילים ראיון חי" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("textbox")).not.toBeVisible();
+    await userEvent.setup().click(screen.getByText("מעדיפים לכתוב תשובה?"));
     expect(screen.getByRole("textbox")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "תשובה בקול" }),
@@ -255,6 +363,7 @@ describe("personal course experience", () => {
     mocks.command.mockRejectedValue(new Error("offline"));
     const user = userEvent.setup();
     renderRoute(`/courses/${fixtureCourse.id}`);
+    await user.click(await screen.findByText("מעדיפים לכתוב תשובה?"));
     const input = await screen.findByRole("textbox");
     await user.type(input, "רוצה ללמוד מההתחלה");
     await user.click(screen.getByRole("button", { name: "שליחה" }));
