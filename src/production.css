@@ -1940,6 +1940,14 @@ html[dir="ltr"] .pagination-arrow svg {
 .live-word-button strong {
   font-size: 19px;
 }
+.live-word-reading {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  min-width: 0;
+  direction: ltr;
+  text-align: left;
+}
 .live-word-transliteration {
   color: #486052;
   font-size: 13px;

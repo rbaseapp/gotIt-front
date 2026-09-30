@@ -1525,6 +1525,8 @@ describe("live server-backed flows", () => {
     }, seedProfile, [{ code: "en", count: 2 }]);
     const guide = await screen.findByText("דוֹג");
     expect(guide).toHaveAttribute("lang", "he");
+    expect(guide.parentElement).toHaveClass("live-word-reading");
+    expect(guide.parentElement).toHaveAttribute("dir", "ltr");
     expect(guide.parentElement?.querySelector("strong")?.textContent).toBe("dog");
     expect(screen.queryByText("קָט")).not.toBeInTheDocument();
   });

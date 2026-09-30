@@ -613,17 +613,19 @@ export function LiveVocabularyPage() {
                   disabled={filters.userStatus === "deleted"}
                   onClick={() => setSearchParams({ item: item.id })}
                 >
-                  <strong dir="auto">{item.sourceText}</strong>
-                  {item.phoneticScheme?.startsWith("transliteration:") &&
-                    item.phoneticText && (
-                      <span
-                        className="live-word-transliteration"
-                        lang={item.phoneticScheme.slice(16)}
-                        dir="auto"
-                      >
-                        {item.phoneticText}
-                      </span>
-                    )}
+                  <span className="live-word-reading" dir="ltr">
+                    <strong dir="auto">{item.sourceText}</strong>
+                    {item.phoneticScheme?.startsWith("transliteration:") &&
+                      item.phoneticText && (
+                        <span
+                          className="live-word-transliteration"
+                          lang={item.phoneticScheme.slice(16)}
+                          dir="auto"
+                        >
+                          {item.phoneticText}
+                        </span>
+                      )}
+                  </span>
                   <span dir="auto">
                     {item.primaryTranslation || t("vocabulary.noMeaning")}
                   </span>
@@ -922,17 +924,19 @@ function DetailForm({
   return (
     <>
       <div className="live-detail-title">
-        <h2 dir="auto">{item.sourceText}</h2>
-        {item.phoneticScheme?.startsWith("transliteration:") &&
-          item.phoneticText && (
-            <p
-              className="live-word-transliteration"
-              lang={item.phoneticScheme.slice(16)}
-              dir="auto"
-            >
-              {item.phoneticText}
-            </p>
-          )}
+        <div className="live-word-reading" dir="ltr">
+          <h2 dir="auto">{item.sourceText}</h2>
+          {item.phoneticScheme?.startsWith("transliteration:") &&
+            item.phoneticText && (
+              <p
+                className="live-word-transliteration"
+                lang={item.phoneticScheme.slice(16)}
+                dir="auto"
+              >
+                {item.phoneticText}
+              </p>
+            )}
+        </div>
         <p dir="auto">{primary}</p>
         <span className="pill">
           {labels[item.learningStatus]} ·{" "}
