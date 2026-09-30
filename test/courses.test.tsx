@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   homework: vi.fn(),
   homeworkCommand: vi.fn(),
   start: vi.fn(),
+  transcribe: vi.fn(),
   translationLanguage: "he",
 }));
 vi.mock("../src/context/AppContext", () => ({
@@ -31,6 +32,9 @@ vi.mock("../src/lib/courses", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/lib/courses")>();
   return { ...original, courseApi: { ...original.courseApi, ...mocks } };
 });
+vi.mock("../src/lib/voice", () => ({
+  recordVoice: vi.fn().mockResolvedValue("recorded-wav"),
+}));
 function renderRoute(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -48,17 +52,99 @@ beforeEach(() => {
   sessionStorage.clear();
   mocks.list.mockResolvedValue({ courses: [], homework: [], available: true });
   mocks.get.mockResolvedValue({ course: structuredClone(fixtureCourse) });
+  mocks.transcribe.mockResolvedValue({ text: "I want to speak at work" });
   mocks.homework.mockResolvedValue({
     homework: structuredClone(fixtureHomework),
   });
 });
 
 describe("personal course experience", () => {
+  it("sends a transcribed voice answer through the same conversation route as typed text", async () => {
+    const intake = structuredClone(fixtureCourse);
+    intake.ready = false;
+    intake.intakeAnswers = [];
+    intake.intakeProgress = { current: 1, answered: 0, total: 6 };
+    mocks.get.mockResolvedValue({ course: intake });
+    mocks.command.mockResolvedValue({
+      course: { ...intake, revision: intake.revision + 1 },
+    });
+    const user = userEvent.setup();
+    renderRoute(`/courses/${intake.id}`);
+    await user.click(await screen.findByRole("button", { name: "תשובה בקול" }));
+    expect(await screen.findByRole("textbox")).toHaveValue(
+      "I want to speak at work",
+    );
+    await user.click(screen.getByRole("button", { name: "שליחה" }));
+    await waitFor(() =>
+      expect(mocks.command).toHaveBeenCalledWith(
+        intake.id,
+        "turns",
+        expect.objectContaining({
+          message: "I want to speak at work",
+          channel: "voice",
+          mode: "preferences",
+        }),
+      ),
+    );
+    expect(mocks.transcribe).toHaveBeenCalledWith("recorded-wav", "he");
+  });
+  it("returns from review to correct a saved answer without dropping the conversation", async () => {
+    const intake = structuredClone(fixtureCourse);
+    intake.intakeAnswers = [
+      { topic: "goal", text: "Old goal", channel: "voice" },
+    ];
+    intake.messages = [
+      { role: "tutor", text: "What is your goal?", channel: "text" },
+      { role: "learner", text: "Old goal", channel: "voice" },
+      { role: "tutor", text: "Review your answers", channel: "text" },
+    ];
+    mocks.get.mockResolvedValue({ course: intake });
+    mocks.command.mockResolvedValue({
+      course: { ...intake, revision: intake.revision + 1 },
+    });
+    const user = userEvent.setup();
+    renderRoute(`/courses/${intake.id}`);
+    await user.click(await screen.findByRole("button", { name: "חזרה לשיחה" }));
+    expect(screen.getByRole("log")).toHaveTextContent("Old goal");
+    await user.click(screen.getByRole("button", { name: "תיקון התשובה" }));
+    await user.clear(screen.getByRole("textbox"));
+    await user.type(screen.getByRole("textbox"), "New goal");
+    await user.click(screen.getByRole("button", { name: "שמירת התיקון" }));
+    await waitFor(() =>
+      expect(mocks.command).toHaveBeenCalledWith(
+        intake.id,
+        "turns",
+        expect.objectContaining({
+          message: "New goal",
+          channel: "text",
+          mode: "preferences",
+          answerIndex: 0,
+        }),
+      ),
+    );
+    await user.click(screen.getByRole("button", { name: "תיקון התשובה" }));
+    await user.click(screen.getByRole("button", { name: "תשובה בקול" }));
+    expect(await screen.findByRole("textbox")).toHaveValue(
+      "I want to speak at work",
+    );
+    await user.click(screen.getByRole("button", { name: "שמירת התיקון" }));
+    await waitFor(() =>
+      expect(mocks.command).toHaveBeenLastCalledWith(
+        intake.id,
+        "turns",
+        expect.objectContaining({
+          message: "I want to speak at work",
+          channel: "voice",
+          answerIndex: 0,
+        }),
+      ),
+    );
+  });
   it("defaults the teacher's conversation to the interface language", async () => {
     mocks.translationLanguage = "en";
     renderRoute("/courses");
     const choices = await screen.findAllByRole("combobox");
-    expect(choices[1]).toHaveValue("he");
+    expect(choices[1]).toHaveValue("Hebrew — עברית");
   });
   it("shows the bounded interview as visible chat bubbles with text and voice replies", async () => {
     const intake = structuredClone(fixtureCourse);
