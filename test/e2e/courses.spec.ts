@@ -103,6 +103,26 @@ test("language combobox searches native names and fits RTL mobile layout", async
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test("multiple courses in two languages stay grouped on a narrow screen", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await signedIn(page, "active", "he");
+  const first = courseWithPlan(true);
+  const second = courseWithPlan(true);
+  second.id = "10000000-0000-4000-8000-000000000002";
+  second.versions[0]!.plan.title = "English for travel";
+  const spanish = courseWithPlan(true);
+  spanish.id = "10000000-0000-4000-8000-000000000003";
+  spanish.preferences.targetLanguageCode = "es";
+  spanish.versions[0]!.plan.title = "Spanish for work";
+  await page.route("**/api/v1/courses", (route) => route.fulfill({
+    json: { courses: [first, second, spanish], homework: [], available: true },
+  }));
+  await page.goto("/courses");
+  await expect(page.getByRole("region", { name: /English/ }).getByRole("link")).toHaveCount(2);
+  await expect(page.getByRole("region", { name: /Spanish/ }).getByRole("link")).toHaveCount(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 for (const language of ["he", "en"])
   for (const viewport of [
     { width: 320, height: 720 },

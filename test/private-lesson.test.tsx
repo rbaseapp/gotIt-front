@@ -969,6 +969,22 @@ describe("private voice lesson", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows only lessons from the selected course, even when another course uses the same language", async () => {
+    const course = courseWithPlan(true);
+    mocks.course.mockResolvedValue({ course });
+    mocks.list.mockResolvedValue([
+      { ...savedLesson, topic: "Selected course lesson", course: { courseId: course.id } },
+      { ...savedLesson, id: "99999999-9999-4999-8999-999999999998", topic: "Other English course", course: { courseId: "10000000-0000-4000-8000-000000000002" } },
+      { ...savedLesson, id: "99999999-9999-4999-8999-999999999997", topic: "Free English lesson", course: null },
+    ]);
+    renderPage(`/private-lesson?course=${course.id}`);
+    expect(await screen.findByRole("heading", { name: "השיעורים בקורס הזה" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Selected course lesson/ })).toBeInTheDocument();
+    expect(screen.queryByText("Other English course")).not.toBeInTheDocument();
+    expect(screen.queryByText("Free English lesson")).not.toBeInTheDocument();
+    expect(mocks.list).toHaveBeenCalledWith(50, course.id);
+  });
+
   it("saves a suggested word from the lesson report", async () => {
     mocks.list.mockResolvedValue([lessonWithSuggestion]);
     const libraryChanged = vi.fn();

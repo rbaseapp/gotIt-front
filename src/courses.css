@@ -542,6 +542,26 @@
   font-size: 12px;
   padding-block-start: 2px;
 }
+.course-lesson-list li.course-lesson-nextInPlan,
+.course-lesson-list li.course-lesson-repeatLesson {
+  background: var(--green-soft);
+  border-radius: 12px;
+  padding: 12px;
+  margin-inline: -12px;
+}
+.course-lesson-list li.course-lesson-lessonDone .course-lesson-number,
+.course-lesson-list li.course-lesson-repeatLesson .course-lesson-number {
+  color: var(--green);
+}
+.course-lesson-status {
+  display: block;
+  margin-block-start: 6px;
+  color: var(--green-dark);
+  font-size: 12px;
+}
+.course-lesson-upcomingLesson .course-lesson-status {
+  color: var(--muted);
+}
 .course-lesson-list strong {
   font-weight: 500;
 }
@@ -629,20 +649,46 @@
   background: var(--green-soft);
   border-color: transparent;
 }
-.course-list {
-  margin-block: 20px;
+.course-heading-language {
+  margin-block: 8px 0;
+  color: var(--muted);
+  font-size: 14px;
 }
+.course-language-groups {
+  display: grid;
+  gap: 28px;
+  margin-block: 24px;
+}
+.course-language-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 10px;
+}
+.course-language-heading h2 { margin: 0; font-size: 21px; }
+.course-language-heading span { color: var(--muted); font-size: 13px; }
+.course-list { display: grid; gap: 10px; }
 .course-list a {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 0;
-  border-block-end: 1px solid var(--line);
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
   font-size: 14px;
 }
-.course-list a > span {
+.course-list a:hover, .course-list a:focus-visible { border-color: var(--green); }
+.course-list-card-main {
   flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 7px;
 }
+.course-list-card-main strong { font-weight: 600; overflow-wrap: anywhere; }
+.course-list-card-main small { color: var(--muted); line-height: 1.5; }
+.course-list-card > svg { flex-shrink: 0; }
 .course-busy {
   display: flex;
   justify-content: center;

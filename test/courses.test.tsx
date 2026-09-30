@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -357,6 +357,45 @@ describe("personal course experience", () => {
     expect(
       screen.getAllByRole("link", { name: /מתחילים את השיעור הבא/ }),
     ).toHaveLength(1);
+  });
+  it("groups multiple courses by language and shows each course's own progress", async () => {
+    const first = courseWithPlan(true);
+    first.progress.covered = 1;
+    const second = courseWithPlan(true);
+    second.id = "10000000-0000-4000-8000-000000000002";
+    second.versions[0]!.plan.title = "English for travel";
+    const spanish = courseWithPlan(true);
+    spanish.id = "10000000-0000-4000-8000-000000000003";
+    spanish.preferences.targetLanguageCode = "es";
+    spanish.versions[0]!.plan.title = "Spanish for work";
+    mocks.list.mockResolvedValue({ courses: [first, second, spanish], homework: [], available: true });
+
+    renderRoute("/courses");
+    const groups = await screen.findAllByRole("region");
+    const english = groups.find((group) => within(group).queryByRole("heading", { name: /English/ }));
+    const spanishGroup = groups.find((group) => within(group).queryByRole("heading", { name: /Spanish/ }));
+    expect(english).toBeDefined();
+    expect(spanishGroup).toBeDefined();
+    expect(within(english!).getAllByRole("link")).toHaveLength(2);
+    expect(within(spanishGroup!).getAllByRole("link")).toHaveLength(1);
+    expect(within(english!).getByRole("link", { name: /1 מתוך 12 שיעורים בוצעו/ })).toHaveAttribute("href", `/courses/${first.id}`);
+    expect(within(spanishGroup!).queryByText("English for travel")).not.toBeInTheDocument();
+  });
+  it("marks done, next, and later lessons only from the selected course", async () => {
+    const selected = courseWithPlan(true);
+    selected.evidence = [{
+      lessonId: "30000000-0000-4000-8000-000000000001",
+      version: 1, unitKey: "unit-1", lessonIndex: 0,
+      covered: true, independent: true, recordedAt: "2026-09-29T10:00:00.000Z",
+    }];
+    selected.nextLesson = { ...selected.nextLesson!, lessonIndex: 1, title: selected.versions[0]!.plan.units[0]!.lessons[1]!.title };
+    mocks.get.mockResolvedValue({ course: selected });
+    renderRoute(`/courses/${selected.id}`);
+    await screen.findByText("כל מה שנלמד בקורס");
+    const firstUnit = screen.getByText("מציגים את עצמנו").closest("details")!;
+    expect(within(firstUnit).getByText(/השיעור בוצע/)).toBeInTheDocument();
+    expect(within(firstUnit).getByText("השיעור הבא")).toBeInTheDocument();
+    expect(screen.getAllByText("בהמשך התוכנית").length).toBeGreaterThan(0);
   });
   it("keeps the typed answer after a network failure and reuses its event ID on retry", async () => {
     mocks.get.mockResolvedValue({ course: { ...fixtureCourse, ready: false } });

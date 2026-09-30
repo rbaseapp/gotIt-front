@@ -524,13 +524,13 @@ export function PrivateLessonPage() {
 
   useEffect(() => {
     let active = true;
-    void listPrivateLessons(50)
+    void listPrivateLessons(50, courseId ?? undefined)
       .then((lessons) => active && setHistory(lessons))
       .catch((reason) => active && setHistoryError(errorMessage(reason)));
     return () => {
       active = false;
     };
-  }, []);
+  }, [courseId]);
 
   useEffect(() => {
     let active = true;
@@ -860,7 +860,10 @@ export function PrivateLessonPage() {
   });
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
-  const latestAssessmentLesson = history.find(
+  const visibleHistory = courseId
+    ? history.filter((lesson) => lesson.course?.courseId === courseId)
+    : history;
+  const latestAssessmentLesson = visibleHistory.find(
     (lesson) =>
       lesson.status === "completed" &&
       lesson.report?.assessment &&
@@ -889,7 +892,7 @@ export function PrivateLessonPage() {
       sameBaseLanguage(code, targetLanguage),
     )?.[1] || targetLanguage;
   const historyGroups = Array.from(
-    history.reduce((groups, lesson) => {
+    visibleHistory.reduce((groups, lesson) => {
       const languageCode =
         languageOptions.find(([code]) =>
           sameBaseLanguage(code, lesson.targetLanguageCode),
@@ -1980,7 +1983,7 @@ export function PrivateLessonPage() {
             <div className="private-lesson-history-heading">
               <div>
                 <p className="eyebrow">{t("privateLesson.history.eyebrow")}</p>
-                <h2>{t("privateLesson.history.title")}</h2>
+                <h2>{t(courseId ? "courses.courseHistory" : "privateLesson.history.title")}</h2>
               </div>
               <BookOpen size={24} aria-hidden="true" />
             </div>
@@ -1988,7 +1991,7 @@ export function PrivateLessonPage() {
               <p className="form-error" role="alert">
                 {historyError}
               </p>
-            ) : history.length ? (
+            ) : visibleHistory.length ? (
               <div className="private-lesson-history-groups">
                 {historyGroups.map(([languageCode, lessons]) => (
                   <section
@@ -2047,7 +2050,7 @@ export function PrivateLessonPage() {
                 ))}
               </div>
             ) : (
-              <p>{t("privateLesson.history.empty")}</p>
+              <p>{t(courseId ? "courses.noCourseHistory" : "privateLesson.history.empty")}</p>
             )}
           </section>
           <Modal
