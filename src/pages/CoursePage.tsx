@@ -42,8 +42,10 @@ export function CoursePage() {
   const [available, setAvailable] = useState(true),
     [creating, setCreating] = useState(false),
     [showReview, setShowReview] = useState(false),
+    [resumeConversation, setResumeConversation] = useState(false),
     [editingPlan, setEditingPlan] = useState(false);
   const [message, setMessage] = useState("");
+  const [editAnswerIndex, setEditAnswerIndex] = useState<number | null>(null);
   const [target, setTarget] = useState(
     profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
   );
@@ -73,6 +75,8 @@ export function CoursePage() {
     setLoading(true);
     setError("");
     setShowReview(false);
+    setResumeConversation(false);
+    setEditAnswerIndex(null);
     setEditingPlan(false);
     setMessage("");
     Promise.all([
@@ -152,8 +156,11 @@ export function CoursePage() {
         message: value,
         channel,
         mode: editingPlan ? "plan" : "preferences",
+        ...(editAnswerIndex === null ? {} : { answerIndex: editAnswerIndex }),
       });
       setMessage("");
+      setEditAnswerIndex(null);
+      if (editAnswerIndex === null) setResumeConversation(false);
       setEditingPlan(false);
       if (editingPlan && updated.approvedPreferences)
         await command("plan", {}, updated);
@@ -166,6 +173,7 @@ export function CoursePage() {
   const displayed = draft ?? active;
   const reviewing = Boolean(
     course &&
+    !resumeConversation &&
     (showReview ||
       (!course.approvedPreferences && course.ready) ||
       (!displayed && course.ready)),
@@ -385,6 +393,30 @@ export function CoursePage() {
                       )}
                     </strong>
                     <span>{turn.text}</span>
+                    {turn.role === "learner" &&
+                      course.intakeAnswers &&
+                      course.messages
+                        .slice(0, index)
+                        .filter((item) => item.role === "learner").length <
+                        course.intakeAnswers.length && (
+                        <button
+                          type="button"
+                          className="course-text-link"
+                          disabled={busy}
+                          onClick={() => {
+                            setEditAnswerIndex(
+                              course.messages
+                                .slice(0, index)
+                                .filter((item) => item.role === "learner")
+                                .length,
+                            );
+                            setMessage(turn.text);
+                          }}
+                        >
+                          <Pencil size={14} />
+                          {t("courses.correctAnswer")}
+                        </button>
+                      )}
                     {turn.role === "tutor" &&
                       index === course.messages.length - 1 && (
                         <ReadAloud
@@ -414,14 +446,40 @@ export function CoursePage() {
                 onSubmit={send}
                 language={course.preferences.supportLanguageCode}
                 disabled={busy}
+                label={
+                  editAnswerIndex === null
+                    ? undefined
+                    : t("courses.correctAnswer")
+                }
+                submitLabel={
+                  editAnswerIndex === null
+                    ? undefined
+                    : t("courses.saveCorrection")
+                }
+                replaceVoice={editAnswerIndex !== null}
               />
+              {editAnswerIndex !== null && (
+                <button
+                  type="button"
+                  className="course-text-link"
+                  onClick={() => {
+                    setEditAnswerIndex(null);
+                    setMessage("");
+                  }}
+                >
+                  {t("courses.cancelCorrection")}
+                </button>
+              )}
               {course.messages.length > 1 &&
                 (!course.intakeProgress ||
                   course.intakeProgress.answered >= 6) && (
                   <button
                     className="course-text-link"
                     disabled={busy}
-                    onClick={() => setShowReview(true)}
+                    onClick={() => {
+                      setResumeConversation(false);
+                      setShowReview(true);
+                    }}
                   >
                     {t("courses.reviewNow")}
                   </button>
@@ -433,6 +491,17 @@ export function CoursePage() {
               <span className="course-kicker">{t("courses.reviewKicker")}</span>
               <h2>{t("courses.reviewTitle")}</h2>
               <p>{t("courses.reviewBody")}</p>
+              {!displayed && course.intakeAnswers && (
+                <button
+                  type="button"
+                  className="course-text-link"
+                  disabled={busy}
+                  onClick={() => setResumeConversation(true)}
+                >
+                  <MessageCircle size={16} />
+                  {t("courses.backToConversation")}
+                </button>
+              )}
               <PreferenceReview
                 course={course}
                 disabled={busy}

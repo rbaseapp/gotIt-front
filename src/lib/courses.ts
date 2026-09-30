@@ -55,6 +55,15 @@ export const courseSchema = z.object({
     }),
   ),
   suggestions: z.array(z.string()),
+  intakeAnswers: z
+    .array(
+      z.object({
+        topic: z.string(),
+        text: z.string(),
+        channel: z.enum(["text", "voice"]),
+      }),
+    )
+    .optional(),
   reportedAvailability: z.string().optional(),
   intakeProgress: z
     .object({
