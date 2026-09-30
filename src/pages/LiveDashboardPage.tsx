@@ -26,34 +26,54 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { useTranslation } from "react-i18next";
+import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
 
 export function LiveDashboardPage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
   const [recentPage, setRecentPage] = useState(1);
   const [selectedWord, setSelectedWord] = useState<WordPreview | null>(null);
+  const language = useLearningLanguage();
   const resource = useResource(
     useCallback(
-      () =>
-        product(
+      async () => ({
+        ...(await product(
           dashboardSchema,
-          `dashboard?recentPage=${recentPage}&recentLimit=6`,
-        ),
-      [recentPage],
+          `dashboard?recentPage=${recentPage}&recentLimit=6${language.code ? `&sourceLanguageCode=${encodeURIComponent(language.code)}` : ""}`,
+        )),
+        languageCode: language.code,
+      }),
+      [recentPage, language.code],
     ),
   );
   const weakest = useResource(
     useCallback(
-      () =>
-        product(
+      async () => ({
+        ...(await product(
           page(itemSchema),
-          "learning-items?userStatus=active&practiced=true&sort=weakest&limit=3",
-        ),
-      [],
+          `learning-items?userStatus=active&practiced=true&sort=weakest&limit=3${language.code ? `&sourceLanguageCode=${encodeURIComponent(language.code)}` : ""}`,
+        )),
+        languageCode: language.code,
+      }),
+      [language.code],
     ),
   );
-  const d = resource.data;
-  const weakItems = weakest.data?.items.filter(needsStrengthening);
+  const d =
+    resource.data?.languageCode === language.code ? resource.data : undefined;
+  const weakItems =
+    weakest.data?.languageCode === language.code
+      ? weakest.data.items.filter(needsStrengthening)
+      : undefined;
+
+  if (language.loading || language.error)
+    return (
+      <RemoteState
+        loading={language.loading}
+        error={language.error}
+        retry={() => void language.reload()}
+      />
+    );
 
   return (
     <div className="dashboard-page live-page page-enter">
@@ -64,6 +84,14 @@ export function LiveDashboardPage() {
           <p>{t("dashboard.choosePath")}</p>
         </div>
       </section>
+      <LearningLanguageSelect
+        code={language.code}
+        languages={language.languages}
+        onChange={(code) => {
+          language.setCode(code);
+          setRecentPage(1);
+        }}
+      />
 
       <section
         className="dashboard-paths"
@@ -83,7 +111,11 @@ export function LiveDashboardPage() {
           </div>
           <Link
             className="button primary"
-            to={d?.counts.total === 0 ? "/vocabulary" : "/learn/session/smart"}
+            to={
+              d?.counts.total === 0
+                ? "/vocabulary"
+                : `/learn/session/smart?language=${encodeURIComponent(language.code)}`
+            }
           >
             <Play size={18} />
             {d?.counts.total === 0
@@ -136,7 +168,12 @@ export function LiveDashboardPage() {
             </div>
             <div className="dashboard-today-goal">
               <div>
-                <strong>{t("dashboard.dailyGoal")}</strong>
+                <strong>
+                  {t("dashboard.dailyGoal")}
+                  {d.dailyGoal.type === "minutes"
+                    ? ` · ${t("dashboard.accountTotals", { defaultValue: i18n.language.startsWith("he") ? "כל השפות" : "All languages" })}`
+                    : ""}
+                </strong>
                 <span>
                   {t("dashboard.goalProgress", {
                     current: d.dailyGoal.current,
@@ -275,7 +312,14 @@ export function LiveDashboardPage() {
                   </div>
                 </section>
                 <section className="live-panel">
-                  <h2>{t("dashboard.pointsAndStreak")}</h2>
+                  <h2>
+                    {t("dashboard.pointsAndStreak")} ·{" "}
+                    {t("dashboard.accountTotals", {
+                      defaultValue: i18n.language.startsWith("he")
+                        ? "כל השפות"
+                        : "All languages",
+                    })}
+                  </h2>
                   <div className="live-count-list">
                     <span>
                       <span>

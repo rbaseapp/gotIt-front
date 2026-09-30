@@ -86,6 +86,7 @@ function mount(
   path: string,
   handler: (url: string, init?: RequestInit) => Promise<Response>,
   profile = seedProfile,
+  languages: Array<{ code: string; count: number }> = [],
 ) {
   clearTokens();
   vi.stubEnv("VITE_DEMO_MODE", "false");
@@ -94,6 +95,7 @@ function mount(
     if (url.endsWith("/auth/me")) return json({ user: identity });
     if (url.endsWith("/profile") && (!init?.method || init.method === "GET"))
       return json({ profile });
+    if (url.endsWith("/dashboard/languages")) return json({ languages });
     return handler(url, init);
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -226,11 +228,55 @@ describe("live server-backed flows", () => {
     });
     await waitFor(() =>
       expect(
-        document.querySelector('a[href="/learn/session/listening"]'),
+        document.querySelector(
+          'a[href="/learn/session/listening?language=en"]',
+        ),
       ).toBeInTheDocument(),
     );
     expect(
-      document.querySelector('a[href="/learn/session/pronunciation"]'),
+      document.querySelector(
+        'a[href="/learn/session/pronunciation?language=en"]',
+      ),
+    ).toBeInTheDocument();
+  });
+  it("keeps the learning queue and practice history on the selected language", async () => {
+    const fetchMock = mount(
+      "/learn",
+      async (url) => {
+        if (url.endsWith("/capabilities"))
+          return json({ configured: { speech: true }, learningLanguages: [] });
+        if (url.includes("/learning/queue"))
+          return json({ items: [], algorithmVersion: "server-v1" });
+        if (url.includes("/practice/sessions"))
+          return json({ items: [], nextCursor: null });
+        throw new Error("Unexpected route");
+      },
+      seedProfile,
+      [
+        { code: "en", count: 2 },
+        { code: "fr", count: 1 },
+      ],
+    );
+    const user = userEvent.setup();
+    await user.selectOptions(await screen.findByRole("combobox"), "fr");
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url]) =>
+            url.includes("/learning/queue?") &&
+            url.includes("sourceLanguageCode=fr"),
+        ),
+      ).toBe(true),
+    );
+    expect(
+      fetchMock.mock.calls.some(
+        ([url]) =>
+          url.includes("/practice/sessions?") &&
+          url.includes("sourceLanguageCode=fr"),
+      ),
+    ).toBe(true);
+    expect(
+      document.querySelector('a[href="/learn/session/smart?language=fr"]'),
     ).toBeInTheDocument();
   });
   it("does not hydrate a persisted demo when production demo mode is disabled", async () => {
@@ -1328,7 +1374,7 @@ describe("live server-backed flows", () => {
     const user = userEvent.setup();
     expect(
       await screen.findByRole("link", { name: "התחלת תרגול מילים" }),
-    ).toHaveAttribute("href", "/learn/session/smart");
+    ).toHaveAttribute("href", "/learn/session/smart?language=en");
     expect(
       screen.getByRole("link", { name: "מעבר לשיעור פרטי" }),
     ).toHaveAttribute("href", "/private-lesson");

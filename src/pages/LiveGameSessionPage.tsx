@@ -57,6 +57,7 @@ import { useTranslation } from "react-i18next";
 import { LiveMatchingBoard } from "../components/LiveMatchingBoard";
 import { LiveDragDropBoard } from "../components/LiveDragDropBoard";
 import { useGameViewport } from "../hooks/useGameViewport";
+import { useLearningLanguage } from "../lib/useLearningLanguage";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -120,6 +121,7 @@ export function LiveGameSessionPage() {
   const { t, i18n } = useTranslation();
   const { type = "" } = useParams();
   const [params] = useSearchParams();
+  const language = useLearningLanguage();
   const navigate = useNavigate();
   const { profile, updateProfile } = useApp();
   const { confirm, toast } = useFeedback();
@@ -373,6 +375,10 @@ export function LiveGameSessionPage() {
             throw new Error(t("game.openReadingFirst"));
           creation.current ??= intent({
             sessionType: modes[type],
+            ...(params.get("language") ||
+            (!ids && !readingId && !packId && language.code)
+              ? { sourceLanguageCode: params.get("language") || language.code }
+              : {}),
             count: packId ? 100 : count,
             ...(ids ? { learningItemIds: ids } : {}),
             ...(readingId && type === "article_quiz" ? { readingId } : {}),
@@ -1406,7 +1412,10 @@ export function LiveGameSessionPage() {
                         <>
                           {busy && !error ? (
                             <div className="answer-pending" role="status">
-                              <span className="answer-pending-spinner" aria-hidden="true">
+                              <span
+                                className="answer-pending-spinner"
+                                aria-hidden="true"
+                              >
                                 <Brain size={24} strokeWidth={1.8} />
                               </span>
                               <span>{t("game.checkingAnswer")}</span>

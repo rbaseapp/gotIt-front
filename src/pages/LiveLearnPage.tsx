@@ -25,6 +25,8 @@ import {
 import { useResource } from "../lib/useResource";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useTranslation } from "react-i18next";
+import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
 const games = [
   {
     id: "flashcards",
@@ -76,8 +78,18 @@ const smartPath = [
 export function LiveLearnPage() {
   const { t, i18n } = useTranslation();
   const { status, loading, hasEntitlement } = useSubscription();
+  const language = useLearningLanguage();
   const queue = useResource(
-    useCallback(() => product(queueSchema, "learning/queue?limit=10"), []),
+    useCallback(
+      async () => ({
+        ...(await product(
+          queueSchema,
+          `learning/queue?limit=10${language.code ? `&sourceLanguageCode=${encodeURIComponent(language.code)}` : ""}`,
+        )),
+        languageCode: language.code,
+      }),
+      [language.code],
+    ),
   );
   const capabilities = useResource(
     useCallback(() => product(capabilitiesSchema, "capabilities"), []),
@@ -86,10 +98,33 @@ export function LiveLearnPage() {
   const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>(
     [],
   );
-  const sessionsUrl = `practice/sessions${query({ limit: "10", cursor })}`;
+  const sessionsUrl = `practice/sessions${query({ limit: "10", cursor, sourceLanguageCode: language.code || undefined })}`;
   const sessions = useResource(
-    useCallback(() => product(page(sessionSchema), sessionsUrl), [sessionsUrl]),
+    useCallback(
+      async () => ({
+        ...(await product(page(sessionSchema), sessionsUrl)),
+        languageCode: language.code,
+      }),
+      [sessionsUrl, language.code],
+    ),
   );
+  if (
+    language.loading ||
+    language.error ||
+    (queue.data && queue.data.languageCode !== language.code) ||
+    (sessions.data && sessions.data.languageCode !== language.code)
+  )
+    return (
+      <RemoteState
+        loading={
+          language.loading ||
+          Boolean(queue.data && queue.data.languageCode !== language.code) ||
+          Boolean(sessions.data && sessions.data.languageCode !== language.code)
+        }
+        error={language.error}
+        retry={() => void language.reload()}
+      />
+    );
   if (!loading && status && !hasEntitlement("practice.play"))
     return (
       <div className="learn-page live-page page-enter">
@@ -115,6 +150,15 @@ export function LiveLearnPage() {
           <p>{t("learn.description")}</p>
         </div>
       </section>
+      <LearningLanguageSelect
+        code={language.code}
+        languages={language.languages}
+        onChange={(code) => {
+          language.setCode(code);
+          setCursor(undefined);
+          setCursorHistory([]);
+        }}
+      />
       <RemoteState
         loading={capabilities.loading}
         error={capabilities.error}
@@ -152,7 +196,10 @@ export function LiveLearnPage() {
             {t("learn.learningPathHelp")}
           </small>
         </div>
-        <Link className="button smart-start" to="/learn/session/smart">
+        <Link
+          className="button smart-start"
+          to={`/learn/session/smart?language=${encodeURIComponent(language.code)}`}
+        >
           {t("learn.startSession")}
         </Link>
       </section>
@@ -169,7 +216,7 @@ export function LiveLearnPage() {
             return available ? (
               <Link
                 className="game-card"
-                to={`/learn/session/${game.id}`}
+                to={`/learn/session/${game.id}?language=${encodeURIComponent(language.code)}`}
                 key={game.id}
               >
                 <span className={`game-icon ${game.tone}`}>

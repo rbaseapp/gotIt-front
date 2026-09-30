@@ -310,6 +310,8 @@ describe("complete frontend flows", () => {
         );
       if (url.includes("/learning-items?"))
         return new Response(JSON.stringify({ items: [], nextCursor: null }));
+      if (url.endsWith("/dashboard/languages"))
+        return new Response(JSON.stringify({ languages: [] }));
       if (url.includes("/tags"))
         return new Response(JSON.stringify({ tags: [] }));
       throw new Error("Unexpected API route");
@@ -338,7 +340,9 @@ describe("complete frontend flows", () => {
     const patch = fetchMock.mock.calls.find(
       ([, init]) => init?.method === "PATCH",
     )!;
-    expect(JSON.parse(patch[1]!.body as string).languages[0].languageCode).toBe("he");
+    expect(JSON.parse(patch[1]!.body as string).languages[0].languageCode).toBe(
+      "he",
+    );
     expect(JSON.parse(patch[1]!.body as string)).not.toHaveProperty("email");
     expect(JSON.parse(patch[1]!.body as string)).not.toHaveProperty("name");
     expect(sessionStorage.getItem("gotit.refresh")).toBe("refresh-test");

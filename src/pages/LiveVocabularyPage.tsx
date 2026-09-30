@@ -41,6 +41,8 @@ import {
 import { useResource } from "../lib/useResource";
 import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
 
 const actions = [
   "pause",
@@ -73,6 +75,7 @@ export function LiveVocabularyPage() {
   const { hasEntitlement } = useSubscription();
   const canWrite = hasEntitlement("vocabulary.write");
   const [searchParams, setSearchParams] = useSearchParams();
+  const language = useLearningLanguage();
   const itemId = searchParams.get("item");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({
@@ -95,11 +98,18 @@ export function LiveVocabularyPage() {
   const [error, setError] = useState("");
   const url = `learning-items${query({
     ...filters,
+    sourceLanguageCode: language.code || undefined,
     limit: filters.packIds ? "100" : String(PAGE_SIZE),
     page: String(pageNumber),
   })}`;
   const resource = useResource(
-    useCallback(() => product(page(itemSchema), url), [url]),
+    useCallback(
+      async () => ({
+        ...(await product(page(itemSchema), url)),
+        languageCode: language.code,
+      }),
+      [url, language.code],
+    ),
   );
   const tags = useResource(
     useCallback(
@@ -123,7 +133,8 @@ export function LiveVocabularyPage() {
       { id: string; title: string; packIds: string[]; wordCount: number }
     >();
     for (const pack of packs.data?.packs || []) {
-      if (!pack.installed) continue;
+      if (!pack.installed || pack.track.sourceLanguageCode !== language.code)
+        continue;
       const current = topics.get(pack.topic.id) || {
         id: pack.topic.id,
         title: pack.topic.title,
@@ -137,7 +148,7 @@ export function LiveVocabularyPage() {
     return [...topics.values()].sort((left, right) =>
       left.title.localeCompare(right.title),
     );
-  }, [packs.data]);
+  }, [packs.data, language.code]);
   const reloadLibrary = resource.reload;
   useEffect(() => {
     if (resource.data?.pageCount && pageNumber > resource.data.pageCount)
@@ -156,6 +167,12 @@ export function LiveVocabularyPage() {
     setPageNumber(1);
     setSelected([]);
   };
+  const chooseLanguage = (code: string) => {
+    language.setCode(code);
+    setPageNumber(1);
+    setSelected([]);
+    setFilters((current) => ({ ...current, packIds: "" }));
+  };
   const toggleTopic = (packIds: string[]) => {
     const current = new Set((filters.packIds || "").split(",").filter(Boolean));
     const selected = packIds.every((id) => current.has(id));
@@ -169,7 +186,6 @@ export function LiveVocabularyPage() {
     filters.userStatus !== "all" ? filters.userStatus : "",
     filters.learningStatus,
     filters.tagId,
-    filters.sourceLanguageCode,
     filters.translationLanguageCode,
     filters.difficult,
     filters.highPriority,
@@ -223,6 +239,21 @@ export function LiveVocabularyPage() {
       setBusy(false);
     }
   };
+  if (
+    language.loading ||
+    language.error ||
+    (resource.data && resource.data.languageCode !== language.code)
+  )
+    return (
+      <RemoteState
+        loading={
+          language.loading ||
+          Boolean(resource.data && resource.data.languageCode !== language.code)
+        }
+        error={language.error}
+        retry={() => void language.reload()}
+      />
+    );
   return (
     <div className="vocabulary-page page-enter live-page">
       <section className="page-heading-row">
@@ -242,6 +273,11 @@ export function LiveVocabularyPage() {
           </Link>
         )}
       </section>
+      <LearningLanguageSelect
+        code={language.code}
+        languages={language.languages}
+        onChange={chooseLanguage}
+      />
       <section className="live-panel">
         <form
           className="live-search"
@@ -431,14 +467,6 @@ export function LiveVocabularyPage() {
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="field">
-              <span>{t("vocabulary.sourceLanguage")}</span>
-              <LanguageCombobox
-                value={filters.sourceLanguageCode || ""}
-                onChange={(code) => change("sourceLanguageCode", code)}
-                emptyLabel={t("demoVocabulary.allLanguages")}
-              />
             </label>
             <label className="field">
               <span>{t("vocabulary.translationLanguage")}</span>
