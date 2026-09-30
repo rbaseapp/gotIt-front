@@ -4,6 +4,8 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type KeyboardEvent,
+  type PointerEvent,
 } from "react";
 import {
   BookOpen,
@@ -188,11 +190,13 @@ export function PrivateLessonPage() {
   );
   const [suggestionSaveError, setSuggestionSaveError] = useState("");
   const [responding, setResponding] = useState(false);
-  const [microphoneMuted, setMicrophoneMuted] = useState(false);
+  const [microphoneMuted, setMicrophoneMuted] = useState(true);
   const [microphoneReady, setMicrophoneReady] = useState(false);
   const [needsContinue, setNeedsContinue] = useState(false);
   const flowRef = useRef<PrivateLessonFlow | undefined>(undefined);
-  const microphoneMutedRef = useRef(false);
+  const microphoneMutedRef = useRef(true);
+  const talkPointerId = useRef<number | null>(null);
+  const talkKey = useRef<string | null>(null);
   const turnId = useRef(0);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -233,13 +237,15 @@ export function PrivateLessonPage() {
   const dispose = () => {
     clearTimers();
     flowRef.current = undefined;
-    microphoneMutedRef.current = false;
+    microphoneMutedRef.current = true;
+    talkPointerId.current = null;
+    talkKey.current = null;
     setNeedsContinue(false);
     abortRef.current?.abort();
     abortRef.current = undefined;
     connectionRef.current?.close();
     connectionRef.current = undefined;
-    setMicrophoneMuted(false);
+    setMicrophoneMuted(true);
     setMicrophoneReady(false);
     activeResponse.current = false;
     setResponding(false);
@@ -307,6 +313,7 @@ export function PrivateLessonPage() {
     reason: "completed" | "stopped" = "completed",
   ) => {
     if (wrapSent.current) return;
+    stopTalking();
     completionReason.current = reason;
     setPhase("wrapping");
     phaseRef.current = "wrapping";
@@ -382,7 +389,7 @@ export function PrivateLessonPage() {
     if (!flow || !activeSession.realtime.continuationEvent) return;
     flow.setPaused(
       phaseRef.current !== "active" ||
-        microphoneMutedRef.current ||
+        !microphoneMutedRef.current ||
         document.hidden ||
         !navigator.onLine ||
         !connectionRef.current,
@@ -688,6 +695,7 @@ export function PrivateLessonPage() {
           },
         },
         controller.signal,
+        true,
       );
       if (controller.signal.aborted) connection.close();
       else {
@@ -785,15 +793,54 @@ export function PrivateLessonPage() {
     window.dispatchEvent(new Event("gotit:lesson-assessment-updated"));
     if (selectedHistory?.id === lesson.id) setSelectedHistory(undefined);
   };
-  const toggleMicrophone = () => {
-    const nextMuted = !microphoneMuted;
+  const setTalking = (talking: boolean) => {
+    const nextMuted = !talking;
+    if (microphoneMutedRef.current === nextMuted) return;
     if (connectionRef.current?.setMicrophoneMuted(nextMuted)) {
       microphoneMutedRef.current = nextMuted;
       if (nextMuted) flowRef.current?.microphoneMuted();
-      flowRef.current?.setPaused(nextMuted);
+      flowRef.current?.setPaused(talking);
       setMicrophoneMuted(nextMuted);
     }
   };
+  const stopTalking = () => {
+    talkPointerId.current = null;
+    talkKey.current = null;
+    setTalking(false);
+  };
+  const startTalkPointer = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0 || talkPointerId.current !== null || talkKey.current) return;
+    talkPointerId.current = event.pointerId;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setTalking(true);
+  };
+  const stopTalkPointer = (event: PointerEvent<HTMLButtonElement>) => {
+    if (talkPointerId.current === event.pointerId) stopTalking();
+  };
+  const startTalkKey = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if ((event.key !== " " && event.key !== "Enter") || event.repeat) return;
+    event.preventDefault();
+    if (talkPointerId.current !== null || talkKey.current) return;
+    talkKey.current = event.key;
+    setTalking(true);
+  };
+  const stopTalkKey = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (talkKey.current !== event.key) return;
+    event.preventDefault();
+    stopTalking();
+  };
+  useEffect(() => {
+    const stop = () => stopTalking();
+    const stopIfHidden = () => {
+      if (document.hidden) stopTalking();
+    };
+    window.addEventListener("blur", stop);
+    document.addEventListener("visibilitychange", stopIfHidden);
+    return () => {
+      window.removeEventListener("blur", stop);
+      document.removeEventListener("visibilitychange", stopIfHidden);
+    };
+  });
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
   const latestAssessmentLesson = history.find(
@@ -2045,23 +2092,21 @@ export function PrivateLessonPage() {
                   <Menu size={20} />
                 </button>
                 <button
-                  className={`private-lesson-mute${microphoneMuted ? " muted" : ""}`}
+                  className={`private-lesson-mute${microphoneMuted ? "" : " talking"}`}
                   type="button"
-                  aria-label={
-                    microphoneMuted
-                      ? t("privateLesson.unmuteMicrophone")
-                      : t("privateLesson.muteMicrophone")
-                  }
-                  aria-pressed={microphoneMuted}
+                  aria-label={t("game.holdToTalk")}
+                  aria-pressed={!microphoneMuted}
                   disabled={!microphoneReady || phase === "wrapping"}
-                  onClick={toggleMicrophone}
+                  onPointerDown={startTalkPointer}
+                  onPointerUp={stopTalkPointer}
+                  onPointerCancel={stopTalkPointer}
+                  onLostPointerCapture={stopTalkPointer}
+                  onKeyDown={startTalkKey}
+                  onKeyUp={stopTalkKey}
+                  onBlur={stopTalking}
                 >
                   {microphoneMuted ? <MicOff size={19} /> : <Mic2 size={19} />}
-                  <span>
-                    {microphoneMuted
-                      ? t("privateLesson.unmuteMicrophone")
-                      : t("privateLesson.muteMicrophone")}
-                  </span>
+                  <span>{t("game.holdToTalk")}</span>
                 </button>
                 <div
                   className="private-lesson-timer"
@@ -2243,7 +2288,7 @@ export function PrivateLessonPage() {
                     <button
                       className="button secondary private-lesson-continue"
                       type="button"
-                      disabled={responding || microphoneMuted}
+                      disabled={responding}
                       onClick={() => continueLesson(session, true)}
                     >
                       <MessageCircleMore size={17} />{" "}

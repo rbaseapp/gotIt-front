@@ -589,11 +589,56 @@ describe("private voice lesson", () => {
     await user.click(screen.getByRole("button", { name: "פתיחת תפריט" }));
     expect(openSidebar).toHaveBeenCalledOnce();
 
-    await user.click(screen.getByRole("button", { name: "השתקת המיקרופון" }));
-    expect(mocks.setMicrophoneMuted).toHaveBeenCalledWith(true);
-    expect(
-      screen.getByRole("button", { name: "הפעלת המיקרופון" }),
-    ).toHaveAttribute("aria-pressed", "true");
+    const talk = screen.getByRole("button", { name: "לחצו והחזיקו כדי לדבר" });
+    expect(mocks.connect.mock.calls[0][4]).toBe(true);
+    expect(talk).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(talk);
+    expect(mocks.setMicrophoneMuted).not.toHaveBeenCalled();
+    fireEvent.pointerDown(talk, { pointerId: 1, button: 0 });
+    expect(mocks.setMicrophoneMuted).toHaveBeenLastCalledWith(false);
+    expect(talk).toHaveAttribute("aria-pressed", "true");
+    fireEvent.pointerUp(talk, { pointerId: 1 });
+    expect(mocks.setMicrophoneMuted).toHaveBeenLastCalledWith(true);
+    expect(talk).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("stops talking on pointer cancellation, keyboard release, and lost focus", async () => {
+    mocks.create.mockResolvedValue(session);
+    mocks.connect.mockImplementation(async (_session, _audio, handlers) => {
+      handlers.onOpen();
+      return {
+        close: mocks.close,
+        send: mocks.send,
+        setMicrophoneMuted: mocks.setMicrophoneMuted,
+      };
+    });
+    const user = userEvent.setup();
+    renderPage();
+    const start = await screen.findByRole("button", { name: "התחלת השיעור" });
+    await waitFor(() => expect(start).toBeEnabled());
+    await user.click(start);
+    const talk = await screen.findByRole("button", {
+      name: "לחצו והחזיקו כדי לדבר",
+    });
+    await waitFor(() => expect(talk).toBeEnabled());
+
+    fireEvent.pointerDown(talk, { pointerId: 3, button: 0 });
+    fireEvent.pointerCancel(talk, { pointerId: 3 });
+    expect(mocks.setMicrophoneMuted.mock.calls.slice(-2)).toEqual([
+      [false],
+      [true],
+    ]);
+
+    fireEvent.keyDown(talk, { key: " " });
+    fireEvent.keyDown(talk, { key: " ", repeat: true });
+    expect(mocks.setMicrophoneMuted).toHaveBeenLastCalledWith(false);
+    fireEvent.keyUp(talk, { key: " " });
+    expect(mocks.setMicrophoneMuted).toHaveBeenLastCalledWith(true);
+
+    fireEvent.pointerDown(talk, { pointerId: 4, button: 0 });
+    fireEvent.blur(window);
+    expect(mocks.setMicrophoneMuted).toHaveBeenLastCalledWith(true);
+    expect(talk).toHaveAttribute("aria-pressed", "false");
   });
 
   it("explicitly disables the help language when none is selected", async () => {
@@ -840,11 +885,15 @@ describe("private voice lesson", () => {
       act(() => {
         onEvent({ type: "response.done" });
       });
-      fireEvent.click(screen.getByRole("button", { name: /השתקת המיקרופון/u }));
+      const talk = screen.getByRole("button", {
+        name: "לחצו והחזיקו כדי לדבר",
+      });
+      fireEvent.pointerDown(talk, { pointerId: 7, button: 0 });
       await act(async () => {
         await vi.advanceTimersByTimeAsync(30_000);
       });
       expect(mocks.send).toHaveBeenCalledTimes(3);
+      fireEvent.pointerUp(talk, { pointerId: 7 });
       fireEvent.click(screen.getByRole("button", { name: "סיום השיעור" }));
       const sendsAtClosing = mocks.send.mock.calls.length;
       await act(async () => {

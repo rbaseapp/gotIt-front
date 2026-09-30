@@ -549,6 +549,7 @@
   display: none;
 }
 .private-lesson-mute {
+  touch-action: none;
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid #d9e5df;
@@ -565,7 +566,7 @@
 .private-lesson-mute:hover:not(:disabled) {
   background: #eef7f2;
 }
-.private-lesson-mute.muted {
+.private-lesson-mute.talking {
   border-color: #e8b9b3;
   color: #a54136;
   background: #fff0ed;
