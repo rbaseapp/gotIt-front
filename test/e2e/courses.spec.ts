@@ -92,6 +92,17 @@ async function signedIn(
   await expect(page.locator(".course-loading")).toHaveCount(0);
 }
 
+test("language combobox searches native names and fits RTL mobile layout", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signedIn(page, "welcome", "he");
+  const choice = page.locator(".course-language-pair").getByRole("combobox").first();
+  await choice.fill("עברית");
+  await expect(page.getByRole("listbox").getByRole("option")).toHaveCount(1);
+  await choice.press("Enter");
+  await expect(choice).toHaveValue("Hebrew — עברית");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 for (const language of ["he", "en"])
   for (const viewport of [
     { width: 320, height: 720 },

@@ -325,6 +325,9 @@ describe("complete frontend flows", () => {
     const form = screen.getByLabelText("סיסמה").closest("form")!;
     fireEvent.submit(form);
     await screen.findByRole("heading", { name: "הגדרות" });
+    const learningLanguage = screen.getByRole("combobox", { name: "שפה 1" });
+    await user.clear(learningLanguage);
+    await user.type(learningLanguage, "עברית{Enter}");
     await waitFor(() =>
       expect(
         screen.getByRole("button", { name: "שמירת שינויים" }),
@@ -335,6 +338,7 @@ describe("complete frontend flows", () => {
     const patch = fetchMock.mock.calls.find(
       ([, init]) => init?.method === "PATCH",
     )!;
+    expect(JSON.parse(patch[1]!.body as string).languages[0].languageCode).toBe("he");
     expect(JSON.parse(patch[1]!.body as string)).not.toHaveProperty("email");
     expect(JSON.parse(patch[1]!.body as string)).not.toHaveProperty("name");
     expect(sessionStorage.getItem("gotit.refresh")).toBe("refresh-test");

@@ -144,7 +144,7 @@ describe("personal course experience", () => {
     mocks.translationLanguage = "en";
     renderRoute("/courses");
     const choices = await screen.findAllByRole("combobox");
-    expect(choices[1]).toHaveValue("he");
+    expect(choices[1]).toHaveValue("Hebrew — עברית");
   });
   it("shows the bounded interview as visible chat bubbles with text and voice replies", async () => {
     const intake = structuredClone(fixtureCourse);

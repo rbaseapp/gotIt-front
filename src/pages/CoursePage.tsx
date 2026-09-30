@@ -24,6 +24,7 @@ import {
   type HomeworkSummary,
 } from "../lib/courses";
 import { getBilingualLanguageOptions } from "../lib/languages";
+import { LanguageCombobox } from "../components/LanguageCombobox";
 import { errorMessage } from "../lib/product";
 import { ApiError } from "../lib/api";
 import "../courses.css";
@@ -284,29 +285,19 @@ export function CoursePage() {
           <div className="course-language-pair">
             <label>
               {t("courses.targetLanguage")}
-              <select
+              <LanguageCombobox
                 value={target}
-                onChange={(e) => setTarget(e.target.value)}
-              >
-                {languageOptions.map(([code, label]) => (
-                  <option key={code} value={code}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+                onChange={setTarget}
+                options={languageOptions}
+              />
             </label>
             <label>
               {t("courses.supportLanguage")}
-              <select
+              <LanguageCombobox
                 value={support}
-                onChange={(e) => setSupport(e.target.value)}
-              >
-                {languageOptions.map(([code, label]) => (
-                  <option key={code} value={code}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+                onChange={setSupport}
+                options={languageOptions}
+              />
             </label>
           </div>
           <button

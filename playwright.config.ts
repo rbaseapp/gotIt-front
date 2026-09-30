@@ -1,5 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
+const port = process.env.E2E_PORT ?? "4174";
+
 export default defineConfig({
   testDir: "./test/e2e",
   fullyParallel: true,
@@ -8,16 +10,16 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: [["list"]],
   use: {
-    baseURL: "http://127.0.0.1:4174",
+    baseURL: `http://127.0.0.1:${port}`,
     channel: "chrome",
     locale: "he-IL",
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 4174",
+    command: `npm run dev -- --host 127.0.0.1 --port ${port}`,
     env: { VITE_DEMO_MODE: "true" },
-    url: "http://127.0.0.1:4174",
+    url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
