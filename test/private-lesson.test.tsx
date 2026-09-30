@@ -344,6 +344,25 @@ describe("private voice lesson", () => {
     );
   });
 
+  it("shows the existing Rachel portrait for a child course and leaves adult setup unchanged", async () => {
+    mocks.course.mockReset();
+    const child = courseWithPlan(true);
+    child.preferences.ageGroup = "child";
+    child.versions[0]!.preferences.ageGroup = "child";
+    mocks.course.mockResolvedValueOnce({ course: child });
+    const childPage = renderPage(`/private-lesson?course=${child.id}`);
+    expect(await screen.findByRole("img", { name: /רייצ/u })).toHaveClass(
+      "female",
+    );
+    childPage.unmount();
+
+    const adult = courseWithPlan(true);
+    mocks.course.mockResolvedValueOnce({ course: adult });
+    renderPage(`/private-lesson?course=${adult.id}`);
+    await screen.findByText(adult.nextLesson!.title);
+    expect(screen.queryByRole("img", { name: /רייצ/u })).not.toBeInTheDocument();
+  });
+
   it("opens level details when the shell level action targets the page", async () => {
     const user = userEvent.setup();
     renderPage("/private-lesson?view=level");
