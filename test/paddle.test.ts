@@ -13,6 +13,6 @@ describe("Paddle checkout links", () => {
   it("rejects links without a valid Paddle transaction", () => {
     expect(() =>
       transactionIdFromCheckoutUrl("https://app.example.com/billing/checkout"),
-    ).toThrow(/מזהה עסקה/u);
+    ).toThrow(/לא ניתן לפתוח את התשלום/u);
   });
 });
