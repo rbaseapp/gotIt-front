@@ -9,6 +9,7 @@ async function signedIn(
   page: Page,
   screen: "welcome" | "intake" | "preferences" | "plan" | "active" | "homework",
   language = "he",
+  oralFirst = false,
 ) {
   await page.addInitScript((locale) => {
     localStorage.removeItem("gotit.mode");
@@ -71,7 +72,7 @@ async function signedIn(
               : path.endsWith(`/courses/${fixtureCourse.id}`)
                 ? { course }
                 : path.endsWith(`/homework/${fixtureHomework.id}`)
-                  ? { homework: fixtureHomework }
+                  ? { homework: { ...fixtureHomework, oralFirst } }
                   : null;
     if (payload) await route.fulfill({ json: payload });
     else
@@ -139,4 +140,45 @@ test("keyboard can expand a future unit and move through the homework choices", 
   await summary.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".course-unit").last()).toHaveAttribute("open", "");
+});
+
+test("a learner who needs oral support can hear each choice before selecting it", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.SpeechSynthesisUtterance = class extends window.SpeechSynthesisUtterance {
+      constructor(text?: string) {
+        super(text);
+        Object.defineProperty(this, "voice", { value: null, writable: true });
+      }
+    };
+    window.speechSynthesis.getVoices = () => [
+      {
+        name: "Test English",
+        lang: "en-US",
+        default: true,
+        localService: true,
+        voiceURI: "test",
+      },
+    ];
+    window.speechSynthesis.speak = (utterance) => {
+      document.documentElement.dataset.spokenChoice = utterance.text;
+    };
+  });
+  await page.setViewportSize({ width: 320, height: 720 });
+  await signedIn(page, "homework", "he", true);
+  await page
+    .locator(".homework-choice-option .course-icon-button")
+    .nth(1)
+    .click();
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-spoken-choice",
+    "is",
+  );
+  await page.getByRole("button", { name: "is", exact: true }).click();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
 });

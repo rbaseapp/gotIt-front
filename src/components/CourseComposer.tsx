@@ -8,9 +8,11 @@ import { errorMessage } from "../lib/product";
 export function ReadAloud({
   text,
   language,
+  label,
 }: {
   text: string;
   language: string;
+  label?: string;
 }) {
   const { t } = useTranslation();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -36,7 +38,7 @@ export function ReadAloud({
     <button
       type="button"
       className="course-icon-button"
-      aria-label={t(speaking ? "courses.stopAudio" : "courses.readAloud")}
+      aria-label={`${t(speaking ? "courses.stopAudio" : "courses.readAloud")}${label ? `: ${label}` : ""}`}
       onClick={() => {
         window.speechSynthesis.cancel();
         if (speaking) {

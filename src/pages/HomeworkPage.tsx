@@ -264,16 +264,24 @@ export function HomeworkPage() {
             {task.kind === "choice" ? (
               <div className="homework-choices">
                 {task.choices.map((choice) => (
-                  <button
-                    className={answer === choice ? "selected" : ""}
-                    type="button"
-                    key={choice}
-                    disabled={busy || task.done}
-                    onClick={() => changeAnswer(choice)}
-                    dir="auto"
-                  >
-                    {choice}
-                  </button>
+                  <div className="homework-choice-option" key={choice}>
+                    <button
+                      className={answer === choice ? "selected" : ""}
+                      type="button"
+                      disabled={busy || task.done}
+                      onClick={() => changeAnswer(choice)}
+                      dir="auto"
+                    >
+                      {choice}
+                    </button>
+                    {homework.oralFirst && (
+                      <ReadAloud
+                        text={choice}
+                        label={choice}
+                        language={homework.targetLanguageCode}
+                      />
+                    )}
+                  </div>
                 ))}
               </div>
             ) : null}

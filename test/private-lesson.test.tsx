@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { PrivateLessonPage } from "../src/pages/PrivateLessonPage";
 import { privateLessonSessionSchema } from "../src/lib/privateLesson";
 import { ApiError } from "../src/lib/api";
+import { courseWithPlan } from "./course-fixtures";
 
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
@@ -18,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   capture: vi.fn(),
   setup: vi.fn(),
   createRoadmap: vi.fn(),
+  course: vi.fn(),
 }));
 const legacySetupControls = false;
 
@@ -58,6 +60,7 @@ vi.mock("../src/lib/courses", async (importOriginal) => {
     ...original,
     courseApi: {
       ...original.courseApi,
+      get: mocks.course,
       homework: vi.fn(async () => {
         throw new ApiError(
           404,
@@ -298,6 +301,40 @@ describe("private voice lesson", () => {
       goalKind: "recommended",
       goalKey: "modal-verbs",
     });
+  });
+
+  it("recovers a failed course load and starts with the approved course language pair", async () => {
+    const course = courseWithPlan(true);
+    mocks.course.mockReset();
+    mocks.course
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({ course });
+    mocks.create.mockResolvedValueOnce(session);
+    mocks.connect.mockImplementationOnce(async () => ({
+      close: mocks.close,
+      send: mocks.send,
+      setMicrophoneMuted: mocks.setMicrophoneMuted,
+    }));
+    const user = userEvent.setup();
+    renderPage(`/private-lesson?course=${course.id}&language=de`);
+    expect(await screen.findByRole("alert")).toHaveTextContent("offline");
+    expect(screen.getByRole("button", { name: "התחלת השיעור" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "ניסיון נוסף" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "התחלת השיעור" }),
+      ).toBeEnabled(),
+    );
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          courseId: course.id,
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+        }),
+      ),
+    );
   });
 
   it("opens level details when the shell level action targets the page", async () => {

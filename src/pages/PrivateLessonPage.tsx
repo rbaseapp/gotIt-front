@@ -100,6 +100,8 @@ export function PrivateLessonPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("course");
   const [courseData, setCourseData] = useState<Course | null>(null);
+  const [courseError, setCourseError] = useState("");
+  const [courseRetry, setCourseRetry] = useState(0);
   const { profile, retryProfile } = useApp();
   const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
@@ -135,18 +137,20 @@ export function PrivateLessonPage() {
   useEffect(() => {
     if (!courseId) return;
     let live = true;
+    setCourseError("");
+    setCourseData(null);
     courseApi
       .get(courseId)
       .then((result) => {
         if (live) setCourseData(result.course);
       })
-      .catch(() => {
-        if (live) setCourseData(null);
+      .catch((reason) => {
+        if (live) setCourseError(errorMessage(reason));
       });
     return () => {
       live = false;
     };
-  }, [courseId]);
+  }, [courseId, courseRetry]);
   const phaseRef = useRef<Phase>(phase);
   phaseRef.current = phase;
   const [status, setStatus] = useState(t("privateLesson.ready"));
@@ -821,10 +825,26 @@ export function PrivateLessonPage() {
           {courseId ? (
             <section className="course-hero">
               <p className="course-kicker">
-                {courseData?.nextLesson?.unitTitle ?? t("courses.loading")}
+                {courseData?.nextLesson?.unitTitle ??
+                  (courseData
+                    ? t("courses.courseComplete")
+                    : courseError
+                      ? t("courses.yourCourse")
+                      : t("courses.loading"))}
               </p>
               <h2 dir="auto">{courseData?.nextLesson?.title}</h2>
               <p dir="auto">{courseData?.nextLesson?.objective}</p>
+              {courseError && (
+                <div className="course-error" role="alert">
+                  <p>{courseError}</p>
+                  <button
+                    className="button secondary"
+                    onClick={() => setCourseRetry((value) => value + 1)}
+                  >
+                    {t("courses.tryAgain")}
+                  </button>
+                </div>
+              )}
               <form onSubmit={(event) => void startLesson(event)}>
                 <button
                   className="button primary"
