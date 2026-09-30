@@ -1,4 +1,11 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
+
+const styles = readFileSync(new URL("../../src/styles.css", import.meta.url), "utf8");
+const productionStyles = readFileSync(
+  new URL("../../src/production.css", import.meta.url),
+  "utf8",
+);
 
 const viewports = [
   { width: 320, height: 568 },
@@ -21,8 +28,8 @@ for (const viewport of viewports) {
         route.fulfill({
           contentType: "text/html",
           body: `<html><head>
-            <link rel="stylesheet" href="/src/styles.css?direct">
-            <link rel="stylesheet" href="/src/production.css?direct">
+            <style>${styles}</style>
+            <style>${productionStyles}</style>
             <style>.practice-card { animation: none; }</style>
           </head><body>
           <section class="memorization-card live-panel practice-card">
