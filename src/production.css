@@ -4774,16 +4774,30 @@ html[dir="ltr"] .pack-search input {
 }
 
 @media (max-width: 700px) {
-  .live-session .session-topbar {
-    padding-bottom: max(7px, env(safe-area-inset-bottom));
+  .live-session-main:not(.session-active) {
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+    align-items: stretch;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .live-session-main:not(.session-active) > .session-launch,
+  .live-session-main:not(.session-active) > .session-results {
+    width: 100%;
+    margin: 0 auto;
+    flex: none;
   }
   .live-session-main {
     padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
   .live-exercise:not(.matching-panel):not(.drag-drop-panel) {
-    overflow: hidden;
-    align-content: center;
-    touch-action: manipulation;
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-content: safe center;
+    touch-action: pan-y;
   }
   .live-exercise.has-feedback > .eyebrow,
   .live-exercise.has-feedback > blockquote,
@@ -4795,9 +4809,14 @@ html[dir="ltr"] .pack-search input {
   }
   .live-exercise.has-feedback > .live-feedback {
     width: 100%;
-    max-height: 100%;
     align-self: center;
-    overflow: hidden;
+  }
+  .memorization-card {
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-content: safe center;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

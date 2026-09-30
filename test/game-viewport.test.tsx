@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useGameViewport } from "../src/hooks/useGameViewport";
 
@@ -28,5 +28,40 @@ describe("useGameViewport", () => {
       "game-viewport-short",
       "game-viewport-compact",
     );
+  });
+
+  it("tracks visible-height changes as browser chrome moves", async () => {
+    const viewport = Object.assign(new EventTarget(), {
+      height: 900,
+    }) as VisualViewport;
+    vi.stubGlobal("visualViewport", viewport);
+
+    const { unmount } = renderHook(() => useGameViewport());
+    expect(document.documentElement.style.getPropertyValue("--game-viewport-height"))
+      .toBe("900px");
+
+    Object.assign(viewport, { height: 590 });
+    viewport.dispatchEvent(new Event("resize"));
+    await waitFor(() => {
+      expect(document.documentElement.style.getPropertyValue("--game-viewport-height"))
+        .toBe("590px");
+    });
+    expect(document.body).toHaveClass(
+      "game-viewport-short",
+      "game-viewport-compact",
+    );
+
+    Object.assign(viewport, { height: 810 });
+    viewport.dispatchEvent(new Event("scroll"));
+    await waitFor(() => {
+      expect(document.documentElement.style.getPropertyValue("--game-viewport-height"))
+        .toBe("810px");
+    });
+    expect(document.body).not.toHaveClass(
+      "game-viewport-short",
+      "game-viewport-compact",
+    );
+
+    unmount();
   });
 });

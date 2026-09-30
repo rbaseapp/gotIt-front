@@ -4185,13 +4185,16 @@ body.game-session-open {
   .session-page:not(.live-session) .session-main {
     height: 100%;
     min-height: 0;
-    padding: 14px;
-    overflow: hidden;
+    padding: 14px 14px max(14px, env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-items: safe center;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   .session-page:not(.live-session) .session-main > div,
   .session-page:not(.live-session) .exercise-area {
     min-height: 0;
-    max-height: 100%;
   }
   .session-page:not(.live-session) .session-footer {
     display: none;
