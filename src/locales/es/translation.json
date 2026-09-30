@@ -1008,7 +1008,7 @@
     "cancelRecording": "Cancelar grabación",
     "yourAnswer": "Tu respuesta",
     "checkAnswer": "Verificar respuesta",
-    "answerLocked": "La respuesta está bloqueada hasta que el servidor la confirme. No se grabó progreso local.",
+    "checkingAnswer": "Comprobando tu respuesta…",
     "retryAnswer": "Reintentar la misma respuesta",
     "skip": "Saltar",
     "expectedAnswer": "Respuesta: {{answer}}",

@@ -1008,7 +1008,7 @@
     "cancelRecording": "Annuler l'enregistrement",
     "yourAnswer": "Votre réponse",
     "checkAnswer": "Vérifier la réponse",
-    "answerLocked": "La réponse est verrouillée jusqu'à ce que le serveur la confirme. Aucune progression locale n'a été enregistrée.",
+    "checkingAnswer": "Vérification de votre réponse…",
     "retryAnswer": "Réessayer la même réponse",
     "skip": "Passer",
     "expectedAnswer": "Réponse : {{answer}}",

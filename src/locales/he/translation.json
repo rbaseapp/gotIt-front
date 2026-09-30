@@ -1007,7 +1007,7 @@
     "cancelRecording": "ביטול הקלטה",
     "yourAnswer": "התשובה שלך",
     "checkAnswer": "בדיקת תשובה",
-    "answerLocked": "התשובה נעולה עד אישור השרת. לא נרשמה התקדמות מקומית.",
+    "checkingAnswer": "בודקים את התשובה…",
     "retryAnswer": "ניסיון נוסף לאותה תשובה",
     "skip": "דילוג",
     "expectedAnswer": "תשובה: {{answer}}",

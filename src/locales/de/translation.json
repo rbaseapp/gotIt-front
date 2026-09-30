@@ -1008,7 +1008,7 @@
     "cancelRecording": "Aufnahme abbrechen",
     "yourAnswer": "Deine Antwort",
     "checkAnswer": "Antwort überprüfen",
-    "answerLocked": "Die Antwort ist gesperrt, bis der Server sie bestätigt. Kein lokaler Fortschritt wurde aufgezeichnet.",
+    "checkingAnswer": "Deine Antwort wird geprüft…",
     "retryAnswer": "Gleiche Antwort wiederholen",
     "skip": "Überspringen",
     "expectedAnswer": "Antwort: {{answer}}",

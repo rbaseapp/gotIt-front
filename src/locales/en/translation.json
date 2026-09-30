@@ -1007,7 +1007,7 @@
     "cancelRecording": "Cancel recording",
     "yourAnswer": "Your answer",
     "checkAnswer": "Check answer",
-    "answerLocked": "The answer is locked until the server confirms it. No local progress was recorded.",
+    "checkingAnswer": "Checking your answer…",
     "retryAnswer": "Retry the same answer",
     "skip": "Skip",
     "expectedAnswer": "Answer: {{answer}}",

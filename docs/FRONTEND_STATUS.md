@@ -1,5 +1,9 @@
 # Frontend production status
 
+## Trello o98bNWAW: practice answer loading asset
+
+The brain-shaped spinner attributed to Shay was not found in the GotIt frontend, backend, Chrome extension, or local project asset directories. The practice answer pending state therefore uses a Lucide brain inside a rotating ring styled with GotIt's green palette. If Shay's original asset becomes available, it can replace the visual in `src/pages/LiveGameSessionPage.tsx` without changing the loading, error, or retry behavior.
+
 עודכן: 2026-09-16. מקור האמת: כל המסמכים ב־`rbaseapp_project_docs_updated`, ובפרט חוזה ההשלמה V1, מול קוד Core ו־GotIt הנוכחי. השינויים מוגבלים ל־`gotIt-front`.
 
 ## כיסוי חוזים
