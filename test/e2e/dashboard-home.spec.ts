@@ -44,7 +44,9 @@ for (const viewport of [
                   interests: [],
                 },
               }
-            : path.endsWith("/dashboard")
+            : path.endsWith("/dashboard/languages")
+              ? { languages: [{ code: "en", count: 20 }] }
+              : path.endsWith("/dashboard")
               ? {
                   counts: {
                     total: 20,
@@ -108,7 +110,7 @@ for (const viewport of [
     await page.goto("/dashboard");
     const words = page.getByRole("link", { name: "התחלת תרגול מילים" });
     const lesson = page.getByRole("link", { name: "מעבר לשיעור פרטי" });
-    await expect(words).toHaveAttribute("href", "/learn/session/smart");
+    await expect(words).toHaveAttribute("href", "/learn/session/smart?language=en");
     await expect(lesson).toHaveAttribute("href", "/private-lesson");
     await expect(page.locator(".dashboard-today")).toBeVisible();
     await expect(page.locator(".dashboard-more")).not.toHaveAttribute("open");
