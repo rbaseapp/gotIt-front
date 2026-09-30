@@ -30,6 +30,8 @@ let renderFailuresRemaining = 0;
 let renderRetryRequests = 0;
 let renderStartingResponsesRemaining = 0;
 let googleAuthRequests = 0;
+let homeworkFailuresRemaining = 0;
+let homeworkPrepareRequests = 0;
 const listen = (server) =>
   new Promise((resolve) =>
     server.listen(0, "127.0.0.1", () => resolve(server.address().port)),
@@ -74,6 +76,14 @@ before(async () => {
       return;
     }
     if (req.url === "/api/v1/auth/google") googleAuthRequests++;
+    if (/^\/api\/v1\/courses\/homework\/[0-9a-f-]+\/prepare$/i.test(req.url)) {
+      homeworkPrepareRequests++;
+      if (homeworkFailuresRemaining-- > 0) {
+        res.writeHead(503, { "Content-Type": "text/html; charset=utf-8" });
+        res.end("<!doctype html><title>Starting service</title>");
+        return;
+      }
+    }
     if (req.url === "/api/v1/realtime/connect") {
       res.writeHead(200, { "Content-Type": "application/sdp" });
       res.end(
@@ -302,6 +312,36 @@ describe("production frontend gateway", () => {
     assert.equal(body.applicationKey, null);
     assert.equal(body.origin, "http://localhost:10000");
     assert.equal(response.headers.get("idempotency-replayed"), "true");
+  });
+  it("retries a replayable homework preparation after an infrastructure response", async () => {
+    const path =
+      "/gotit-api/api/v1/courses/homework/11111111-1111-4111-8111-111111111111/prepare";
+    const command = {
+      revision: 0,
+      eventId: "22222222-2222-4222-8222-222222222222",
+    };
+    homeworkPrepareRequests = 0;
+    homeworkFailuresRemaining = 1;
+    const response = await fetch(`${gatewayOrigin}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(command),
+    });
+    assert.equal(response.status, 200);
+    assert.equal(homeworkPrepareRequests, 2);
+    assert.deepEqual(JSON.parse((await response.json()).body), command);
+
+    homeworkPrepareRequests = 0;
+    homeworkFailuresRemaining = 1;
+    const invalid = await fetch(`${gatewayOrigin}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ revision: 0 }),
+    });
+    assert.equal(invalid.status, 503);
+    assert.equal((await invalid.json()).error.code, "UPSTREAM_UNAVAILABLE");
+    assert.equal(homeworkPrepareRequests, 1);
+    homeworkFailuresRemaining = 0;
   });
   it("allowlists authenticated billing routes and forwards checkout idempotency", async () => {
     const response = await fetch(

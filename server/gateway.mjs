@@ -105,6 +105,28 @@ export function upstreamTimeoutMs(prefix, apiPath) {
     ? 220000
     : 80000;
 }
+function replayableHomeworkPreparation(prefix, apiPath, method, body) {
+  if (
+    prefix !== "/gotit-api" ||
+    method !== "POST" ||
+    !/^\/api\/v1\/courses\/homework\/[0-9a-f-]+\/prepare$/i.test(apiPath) ||
+    !body
+  )
+    return false;
+  try {
+    const command = JSON.parse(body.toString("utf8"));
+    return (
+      Number.isSafeInteger(command.revision) &&
+      command.revision >= 0 &&
+      typeof command.eventId === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        command.eventId,
+      )
+    );
+  } catch {
+    return false;
+  }
+}
 export function createGateway(config) {
   let draining = false;
   let startupPrewarmTriggered = false;
@@ -336,6 +358,12 @@ export function createGateway(config) {
           }
         }
         const controller = new AbortController();
+        const replayablePrepare = replayableHomeworkPreparation(
+          prefix,
+          apiPath,
+          req.method,
+          body,
+        );
         const timer = setTimeout(
           () => controller.abort(),
           upstreamTimeoutMs(prefix, apiPath),
@@ -346,9 +374,10 @@ export function createGateway(config) {
         res.on("close", cancel);
         try {
           const upstreamUrl = `${prefix === "/core-api" ? config.core : config.gotit}${apiPath}${url.search}`;
-          const retryDelays =
-            ["GET", "HEAD"].includes(req.method) ||
-            req.headers["idempotency-key"]
+          const retryDelays = replayablePrepare
+            ? [0]
+            : ["GET", "HEAD"].includes(req.method) ||
+                req.headers["idempotency-key"]
               ? config.upstreamRetryDelays
               : [];
           let response;
@@ -388,9 +417,22 @@ export function createGateway(config) {
               fail(503, "UPSTREAM_UNAVAILABLE");
               return;
             }
-            await delay(retryDelays[attempt], undefined, {
-              signal: controller.signal,
-            });
+            if (replayablePrepare) {
+              try {
+                await waitForUpstream(
+                  config.gotit,
+                  config.upstreamWarmupRetryDelays,
+                  controller.signal,
+                );
+              } catch {
+                res.setHeader("Retry-After", "2");
+                fail(503, "UPSTREAM_UNAVAILABLE");
+                return;
+              }
+            } else
+              await delay(retryDelays[attempt], undefined, {
+                signal: controller.signal,
+              });
           }
           for (const header of [
             "content-type",
@@ -471,9 +513,12 @@ export function createGateway(config) {
   return server;
 }
 
-async function waitForUpstream(origin, retryDelays) {
+async function waitForUpstream(origin, retryDelays, parentSignal) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 85000);
+  const signal = parentSignal
+    ? AbortSignal.any([controller.signal, parentSignal])
+    : controller.signal;
   try {
     for (let attempt = 0; ; attempt++) {
       let retryable = false;
@@ -482,7 +527,7 @@ async function waitForUpstream(origin, retryDelays) {
           method: "GET",
           headers: { "X-Request-ID": crypto.randomUUID() },
           redirect: "manual",
-          signal: controller.signal,
+          signal,
         });
         const contentType = response.headers.get("content-type") || "";
         const content = await response.text();
@@ -505,12 +550,12 @@ async function waitForUpstream(origin, retryDelays) {
             contentType.startsWith("text/html")) ||
           response.status === 200;
       } catch {
-        retryable = !controller.signal.aborted;
+        retryable = !signal.aborted;
       }
       if (!retryable || attempt === retryDelays.length)
         throw new Error("Upstream readiness check failed");
       await delay(retryDelays[attempt], undefined, {
-        signal: controller.signal,
+        signal,
       });
     }
   } finally {
