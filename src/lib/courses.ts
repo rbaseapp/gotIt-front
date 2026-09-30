@@ -55,6 +55,15 @@ export const courseSchema = z.object({
     }),
   ),
   suggestions: z.array(z.string()),
+  reportedAvailability: z.string().optional(),
+  intakeProgress: z
+    .object({
+      current: z.number().int(),
+      answered: z.number().int(),
+      total: z.number().int(),
+    })
+    .nullable()
+    .default(null),
   versions: z.array(
     z.object({
       version: z.number(),

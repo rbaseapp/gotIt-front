@@ -233,6 +233,41 @@ for (const language of ["he", "en"])
       });
       await expect(resume).toBeVisible();
       await expect(resume).toBeInViewport();
+      await expect(
+        page.locator(".private-lesson-turn").last().locator("p"),
+      ).toBeInViewport({ ratio: 1 });
+      const layout = await page.evaluate(() => {
+        const boxes = [
+          ".private-lesson-session-header",
+          ".private-lesson-words",
+          ".private-lesson-tutor-stage",
+          ".private-lesson-transcript",
+          ".private-lesson-actions",
+        ].map((selector) =>
+          document.querySelector(selector)!.getBoundingClientRect(),
+        );
+        return {
+          contained: boxes.every(
+            (box) =>
+              box.left >= -1 &&
+              box.top >= -1 &&
+              box.right <= innerWidth + 1 &&
+              box.bottom <= innerHeight + 1,
+          ),
+          overlapping: boxes.some((box, index) =>
+            boxes
+              .slice(index + 1)
+              .some(
+                (other) =>
+                  box.left < other.right - 1 &&
+                  box.right > other.left + 1 &&
+                  box.top < other.bottom - 1 &&
+                  box.bottom > other.top + 1,
+              ),
+          ),
+        };
+      });
+      expect(layout).toEqual({ contained: true, overlapping: false });
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth + 1,

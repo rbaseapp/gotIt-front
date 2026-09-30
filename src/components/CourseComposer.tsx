@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, Square, Volume2, Send, LoaderCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { recordVoice } from "../lib/voice";
@@ -9,14 +9,17 @@ export function ReadAloud({
   text,
   language,
   label,
+  autoPlay = false,
 }: {
   text: string;
   language: string;
   label?: string;
+  autoPlay?: boolean;
 }) {
   const { t } = useTranslation();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speaking, setSpeaking] = useState(false);
+  const autoPlayed = useRef("");
   useEffect(() => {
     const synth = window.speechSynthesis;
     if (!synth) return;
@@ -33,7 +36,28 @@ export function ReadAloud({
       v.lang.split("-")[0].toLowerCase() ===
       language.split("-")[0].toLowerCase(),
   );
-  if (!voice) return null;
+  const play = useCallback(() => {
+    const synth = window.speechSynthesis;
+    if (!synth || !text) return;
+    synth.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language;
+    if (voice) utterance.voice = voice;
+    utterance.rate = 0.9;
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    setSpeaking(true);
+    synth.speak(utterance);
+  }, [text, language, voice]);
+  useEffect(() => {
+    if (!autoPlay || !text || !window.speechSynthesis) return;
+    const key = `${language}:${text}`;
+    if (autoPlayed.current === key) return;
+    autoPlayed.current = key;
+    const timer = window.setTimeout(play, 0);
+    return () => window.clearTimeout(timer);
+  }, [autoPlay, text, language, play]);
+  if (!window.speechSynthesis) return null;
   return (
     <button
       type="button"
@@ -45,14 +69,7 @@ export function ReadAloud({
           setSpeaking(false);
           return;
         }
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = language;
-        utterance.voice = voice;
-        utterance.rate = 0.9;
-        utterance.onend = () => setSpeaking(false);
-        utterance.onerror = () => setSpeaking(false);
-        setSpeaking(true);
-        window.speechSynthesis.speak(utterance);
+        play();
       }}
     >
       {speaking ? <Square size={17} /> : <Volume2 size={17} />}
@@ -106,6 +123,7 @@ export function CourseComposer({
     controller.current = abort;
     release.current = stop;
     setError("");
+    window.speechSynthesis?.cancel();
     setRecording(true);
     try {
       const audio = await recordVoice(abort.signal, stop.signal, 15);

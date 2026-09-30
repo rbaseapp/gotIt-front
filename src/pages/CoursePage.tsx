@@ -12,7 +12,6 @@ import {
   MessageCircle,
   Pencil,
   Plus,
-  Sparkles,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { TeacherAvatar } from "../components/TeacherAvatar";
@@ -48,11 +47,19 @@ export function CoursePage() {
   const [target, setTarget] = useState(
     profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
   );
-  const [support, setSupport] = useState(
-    profile.defaultTranslationLanguage || i18n.resolvedLanguage || "en",
-  );
+  const [support, setSupport] = useState(() => {
+    const uiLanguage = i18n.resolvedLanguage?.split("-")[0];
+    return getBilingualLanguageOptions().some(([code]) => code === uiLanguage)
+      ? uiLanguage!
+      : profile.defaultTranslationLanguage || "en";
+  });
   const lock = useRef(false),
-    pending = useRef<{ key: string; eventId: string } | null>(null);
+    pending = useRef<{ key: string; eventId: string } | null>(null),
+    intakeThread = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (intakeThread.current)
+      intakeThread.current.scrollTop = intakeThread.current.scrollHeight;
+  }, [course?.messages.length]);
   const languageOptions = getBilingualLanguageOptions();
   const languageName = (code: string) =>
     languageOptions.find(([value]) => value === code)?.[1] ?? code;
@@ -329,39 +336,65 @@ export function CoursePage() {
           {intake && (
             <section className="course-chat-card">
               <div className="course-teacher-heading">
-                <span className="course-teacher-dot">
-                  <Sparkles size={18} />
+                <span className="course-intake-avatar">
+                  <TeacherAvatar
+                    variant="female"
+                    activity={busy ? "thinking" : "idle"}
+                    audioLevel={0}
+                    active={false}
+                    label={t("courses.teacher")}
+                  />
                 </span>
                 <span>{t("courses.teacher")}</span>
                 <small>{t("courses.saved")}</small>
               </div>
-              {course.messages.length > 1 && (
-                <details className="course-history">
-                  <summary>{t("courses.conversationHistory")}</summary>
-                  {course.messages.slice(0, -1).map((turn, index) => (
-                    <p
-                      key={index}
-                      className={`course-message ${turn.role}`}
-                      dir="auto"
-                    >
-                      <strong>
-                        {t(
-                          turn.role === "tutor"
-                            ? "courses.teacher"
-                            : "courses.you",
-                        )}
-                      </strong>
-                      {turn.text}
-                    </p>
-                  ))}
-                </details>
+              {course.intakeProgress && (
+                <div className="course-intake-progress">
+                  <div>
+                    <span>
+                      {t("courses.steps.conversation")} ·{" "}
+                      {course.intakeProgress.current}/
+                      {course.intakeProgress.total}
+                    </span>
+                    <small>{t("courses.estimatedMinutes", { count: 4 })}</small>
+                  </div>
+                  <progress
+                    aria-label={t("courses.steps.conversation")}
+                    value={course.intakeProgress.answered}
+                    max={course.intakeProgress.total}
+                  />
+                </div>
               )}
-              <div className="course-current-question">
-                <h2 dir="auto">{course.messages.at(-1)?.text}</h2>
-                <ReadAloud
-                  text={course.messages.at(-1)?.text ?? ""}
-                  language={course.preferences.supportLanguageCode}
-                />
+              <div
+                className="course-intake-thread"
+                role="log"
+                aria-live="polite"
+                ref={intakeThread}
+              >
+                {course.messages.map((turn, index) => (
+                  <div
+                    className={`course-message ${turn.role}`}
+                    key={index}
+                    dir="auto"
+                  >
+                    <strong>
+                      {t(
+                        turn.role === "tutor"
+                          ? "courses.teacher"
+                          : "courses.you",
+                      )}
+                    </strong>
+                    <span>{turn.text}</span>
+                    {turn.role === "tutor" &&
+                      index === course.messages.length - 1 && (
+                        <ReadAloud
+                          text={turn.text}
+                          language={course.preferences.supportLanguageCode}
+                          autoPlay
+                        />
+                      )}
+                  </div>
+                ))}
               </div>
               <div className="course-suggestions">
                 {course.suggestions.map((suggestion) => (
@@ -382,15 +415,17 @@ export function CoursePage() {
                 language={course.preferences.supportLanguageCode}
                 disabled={busy}
               />
-              {course.messages.length > 1 && (
-                <button
-                  className="course-text-link"
-                  disabled={busy}
-                  onClick={() => setShowReview(true)}
-                >
-                  {t("courses.reviewNow")}
-                </button>
-              )}
+              {course.messages.length > 1 &&
+                (!course.intakeProgress ||
+                  course.intakeProgress.answered >= 6) && (
+                  <button
+                    className="course-text-link"
+                    disabled={busy}
+                    onClick={() => setShowReview(true)}
+                  >
+                    {t("courses.reviewNow")}
+                  </button>
+                )}
             </section>
           )}
           {reviewing && (
@@ -805,11 +840,13 @@ function PreferenceReview({
         </div>
         <div>
           <span>{t("courses.pace")}</span>
-          <strong>
-            {t("courses.paceValue", {
-              minutes: p.minutesPerLesson,
-              days: p.daysPerWeek,
-            })}
+          <strong dir="auto">
+            {!disabled && course.reportedAvailability
+              ? course.reportedAvailability
+              : t("courses.paceValue", {
+                  minutes: p.minutesPerLesson,
+                  days: p.daysPerWeek,
+                })}
           </strong>
         </div>
         <div>

@@ -548,7 +548,7 @@ export function PrivateLessonPage() {
   useEffect(() => {
     const transcript = transcriptRef.current;
     if (transcript) transcript.scrollTop = transcript.scrollHeight;
-  }, [phase, status, turns]);
+  }, [phase, status, turns, needsContinue]);
 
   const startLesson = async (event: FormEvent) => {
     event.preventDefault();

@@ -30,6 +30,7 @@ export const fixtureCourse: Course = {
     },
   ],
   suggestions: ["בטיולים", "בעבודה", "מההתחלה"],
+  intakeProgress: null,
   versions: [],
   draftVersion: null,
   activeVersion: null,

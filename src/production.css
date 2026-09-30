@@ -1191,7 +1191,7 @@ body.private-lesson-session-open .private-lesson-session.live-panel {
   max-height: none;
   margin: 0;
   overflow: hidden;
-  grid-template-columns: minmax(300px, 0.68fr) minmax(520px, 1.5fr);
+  grid-template-columns: minmax(0, 0.68fr) minmax(0, 1.5fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
     "header header"
@@ -1523,10 +1523,11 @@ body.private-lesson-session-open .private-lesson-session > .button {
   }
 }
 
-body.private-lesson-viewport-compact .private-lesson-session.live-panel {
-  grid-template-rows: auto minmax(0, 1fr) auto;
+body.private-lesson-viewport-compact .private-lesson-session.live-panel:not(.has-report) {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
-    "header words"
+    "header header"
+    "tutor words"
     "tutor transcript"
     "tutor actions";
 }
@@ -1540,7 +1541,7 @@ body.private-lesson-viewport-compact .private-lesson-meta {
       auto auto minmax(90px, 0.52fr) auto minmax(110px, 1fr)
       auto;
   }
-  body.private-lesson-viewport-compact .private-lesson-session.live-panel {
+  body.private-lesson-viewport-compact .private-lesson-session.live-panel:not(.has-report) {
     grid-template-rows: auto minmax(82px, 0.48fr) auto minmax(100px, 1fr) auto;
     grid-template-areas:
       "header"

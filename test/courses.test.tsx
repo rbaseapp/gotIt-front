@@ -16,13 +16,14 @@ const mocks = vi.hoisted(() => ({
   homework: vi.fn(),
   homeworkCommand: vi.fn(),
   start: vi.fn(),
+  translationLanguage: "he",
 }));
 vi.mock("../src/context/AppContext", () => ({
   useApp: () => ({
     user: { id: "test-user" },
     profile: {
       languages: [{ languageCode: "en" }],
-      defaultTranslationLanguage: "he",
+      defaultTranslationLanguage: mocks.translationLanguage,
     },
   }),
 }));
@@ -43,6 +44,7 @@ function renderRoute(path: string) {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.translationLanguage = "he";
   sessionStorage.clear();
   mocks.list.mockResolvedValue({ courses: [], homework: [], available: true });
   mocks.get.mockResolvedValue({ course: structuredClone(fixtureCourse) });
@@ -52,6 +54,47 @@ beforeEach(() => {
 });
 
 describe("personal course experience", () => {
+  it("defaults the teacher's conversation to the interface language", async () => {
+    mocks.translationLanguage = "en";
+    renderRoute("/courses");
+    const choices = await screen.findAllByRole("combobox");
+    expect(choices[1]).toHaveValue("he");
+  });
+  it("shows the bounded interview as visible chat bubbles with text and voice replies", async () => {
+    const intake = structuredClone(fixtureCourse);
+    intake.ready = false;
+    intake.intakeProgress = { current: 2, answered: 1, total: 6 };
+    intake.messages = [
+      { role: "tutor", text: "מה תרצה ללמוד?", channel: "text" },
+      { role: "learner", text: "לדבר בעבודה", channel: "voice" },
+      { role: "tutor", text: "מה כבר למדת?", channel: "text" },
+    ];
+    mocks.get.mockResolvedValue({ course: intake });
+    renderRoute(`/courses/${intake.id}`);
+    const thread = await screen.findByRole("log");
+    expect(thread).toHaveTextContent("מה תרצה ללמוד?");
+    expect(thread).toHaveTextContent("לדבר בעבודה");
+    expect(thread).toHaveTextContent("מה כבר למדת?");
+    expect(screen.getByText(/2\/6/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("progressbar", { name: "מכירים אותך" }),
+    ).toHaveAttribute("value", "1");
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "תשובה בקול" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("השיחה שלנו עד עכשיו")).not.toBeInTheDocument();
+  });
+  it("shows the learner's stated weekly range during review", async () => {
+    const course = structuredClone(fixtureCourse);
+    course.reportedAvailability = "10 דקות, 1-2 פעמים בשבוע";
+    course.preferences.daysPerWeek = 2;
+    mocks.get.mockResolvedValue({ course });
+    renderRoute(`/courses/${course.id}`);
+    expect(
+      await screen.findByText(course.reportedAvailability),
+    ).toBeInTheDocument();
+  });
   it("starts with only a language pair and an invitation to talk, not a preferences form", async () => {
     renderRoute("/courses");
     await screen.findByRole("button", { name: "בונים תוכנית עם המורה" });
