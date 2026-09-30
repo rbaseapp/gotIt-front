@@ -654,16 +654,30 @@
 .teacher-avatar-speaking-wide,
 .teacher-avatar-blink {
   opacity: 0;
-  transition: opacity 70ms linear;
+}
+.teacher-avatar-speaking,
+.teacher-avatar-speaking-wide {
+  /* Existing full portraits differ outside the mouth. Feather the blend there. */
+  -webkit-mask-image: radial-gradient(
+    ellipse 19% 10% at 50% 46%,
+    #000 48%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 19% 10% at 50% 46%,
+    #000 48%,
+    transparent 100%
+  );
+  transition: opacity 80ms linear;
 }
 .teacher-avatar.thinking .teacher-avatar-thinking-frame {
   animation: teacher-avatar-thinking-glance 9.5s ease-in-out 2.5s infinite;
 }
-.teacher-avatar.speaking-soft .teacher-avatar-speaking {
-  opacity: 1;
+.teacher-avatar .teacher-avatar-speaking {
+  opacity: var(--tutor-mouth-soft);
 }
-.teacher-avatar.speaking-strong .teacher-avatar-speaking-wide {
-  opacity: 1;
+.teacher-avatar .teacher-avatar-speaking-wide {
+  opacity: var(--tutor-mouth-wide);
 }
 .teacher-avatar.speaking .teacher-avatar-portrait {
   animation: teacher-avatar-talk 420ms ease-in-out infinite alternate;
@@ -1596,16 +1610,32 @@ body.private-lesson-viewport-compact .private-lesson-meta {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .teacher-avatar-portrait,
-  .teacher-avatar-ring,
-  .teacher-avatar-blink,
-  .teacher-avatar-thinking-frame,
-  .teacher-avatar-thinking i {
+  .teacher-avatar .teacher-avatar-portrait,
+  .teacher-avatar.speaking .teacher-avatar-portrait,
+  .teacher-avatar .teacher-avatar-ring,
+  .teacher-avatar.listening .teacher-avatar-ring,
+  .teacher-avatar.thinking .teacher-avatar-ring,
+  .teacher-avatar .teacher-avatar-blink,
+  .teacher-avatar.thinking .teacher-avatar-thinking-frame,
+  .teacher-avatar .teacher-avatar-thinking i {
     animation: none;
+  }
+  .teacher-avatar .teacher-avatar-ring {
+    transform: none;
+    transition: none;
+  }
+  .teacher-avatar .teacher-avatar-level i {
+    height: 12px;
+    transition: none;
   }
   .teacher-avatar-blink,
   .teacher-avatar-thinking {
     display: none;
+  }
+  .teacher-avatar .teacher-avatar-speaking,
+  .teacher-avatar .teacher-avatar-speaking-wide {
+    opacity: 0;
+    transition: none;
   }
 }
 .live-panel {

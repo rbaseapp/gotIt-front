@@ -460,6 +460,22 @@ describe("private voice lesson", () => {
     expect(document.body).toHaveClass("private-lesson-session-open");
     expect(mocks.connect).toHaveBeenCalledOnce();
 
+    const { onAudioLevel } = mocks.connect.mock.calls[0][2] as {
+      onAudioLevel: (level: number) => void;
+    };
+    const avatar = within(fullscreenLesson).getByRole("img");
+    act(() => onAudioLevel(0.3));
+    expect(avatar).toHaveClass("speaking");
+    expect(
+      Number(avatar.style.getPropertyValue("--tutor-mouth-soft")),
+    ).toBeGreaterThan(0);
+    expect(
+      Number(avatar.style.getPropertyValue("--tutor-mouth-wide")),
+    ).toBeGreaterThan(0);
+    act(() => onAudioLevel(0));
+    expect(avatar).toHaveClass("listening");
+    expect(Number(avatar.style.getPropertyValue("--tutor-mouth-soft"))).toBe(0);
+
     const openSidebar = vi.fn();
     window.addEventListener("gotit:open-sidebar", openSidebar, { once: true });
     await user.click(screen.getByRole("button", { name: "פתיחת תפריט" }));
