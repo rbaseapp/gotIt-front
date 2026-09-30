@@ -501,7 +501,7 @@ describe("private voice lesson", () => {
     );
     const user = userEvent.setup();
     renderPage();
-    await screen.findByText("English — English");
+    await screen.findByText("English");
     await user.click(
       screen.getByRole("button", { name: "בחירת נושא או מיקוד אחר" }),
     );
@@ -520,7 +520,7 @@ describe("private voice lesson", () => {
       expect(screen.queryByLabelText(/אסימון/u)).not.toBeInTheDocument();
       expect(screen.getByLabelText("השפה לתרגול")).toHaveValue("en");
       expect(screen.getByLabelText("השפה לתרגול")).toHaveDisplayValue(
-        "English — English",
+        "English",
       );
       expect(
         within(screen.getByLabelText("השפה לתרגול")).getByRole("option", {
