@@ -32,9 +32,92 @@
     "billing": "Abonnement"
   },
   "privateLesson": {
+    "mode": {
+      "title": "Type de cours",
+      "teachingLanguage": "Langue des explications",
+      "chooseTeachingLanguage": "Choisissez une langue d’explication",
+      "explainInTarget": "Expliquer en {{language}}",
+      "explainInSupport": "Expliquer en {{language}}",
+      "supportHint": "Les consignes et les explications utilisent cette langue. Les mots et phrases à pratiquer restent dans la langue étudiée.",
+      "beginnerHint": "Le professeur expliquera dans cette langue et introduira progressivement 3 à 5 phrases utiles.",
+      "options": {
+        "standard": {
+          "title": "Cours standard",
+          "description": "Le cours se déroule principalement dans la langue pratiquée, avec de l’aide si nécessaire."
+        },
+        "absolute_beginner": {
+          "title": "Partir de zéro",
+          "description": "Aucune connaissance préalable requise. Le professeur explique dans votre langue et pratique vos premières phrases."
+        }
+      }
+    },
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
+    "preferences": {
+      "title": "Lesson preferences",
+      "saved": "Saved automatically for this language"
+    },
+    "roadmap": {
+      "eyebrow": "Your learning roadmap",
+      "loading": "Preparing your learning path…",
+      "chooseTitle": "Choose one direction — we’ll build the path",
+      "chooseDescription": "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
+      "recommended": "Recommended for you",
+      "recommendedReason": "Based on your current level and the most useful next skill",
+      "change": "Change goal",
+      "communicationTitle": "Choose a communication goal",
+      "grammarTitle": "Explore English skills",
+      "currentHint": "This lesson revisits the current milestone and advances only after the target task is completed consistently.",
+      "evidence_one": "{{count}}/2 completed task · {{score}}/75 task score",
+      "evidence_other": "{{count}}/2 completed tasks · {{score}}/75 task score",
+      "goals": {
+        "everyday-conversation": "Everyday conversation",
+        "workplace-communication": "Workplace communication",
+        "travel-confidence": "Travel confidence",
+        "job-interviews": "Job interviews",
+        "presentations": "Presentations"
+      },
+      "topics": {
+        "articles": "Articles (a, an, the)",
+        "present-simple-continuous": "Present Simple / Continuous",
+        "past-simple-continuous": "Past Simple / Continuous",
+        "verb-forms-v1-v2-v3": "Verb forms V1 / V2 / V3",
+        "prepositions": "Prepositions",
+        "future-forms": "Future forms",
+        "modal-verbs": "Modal verbs",
+        "gerund-infinitive": "Gerund / Infinitive",
+        "conditionals": "Conditionals",
+        "passive-voice": "Passive Voice",
+        "advanced-sentence-structure": "Advanced sentence structure"
+      },
+      "stages": {
+        "foundation": "Foundation",
+        "guided-use": "Guided use",
+        "controlled-conversation": "Controlled conversation",
+        "free-conversation": "Free conversation",
+        "independent-mastery": "Independent use"
+      }
+    },
     "eyebrow": "GotIt Voice",
     "title": "Votre cours vocal particulier",
-    "description": "Cinq minutes de conversation ciblée, adaptées à votre niveau, vos centres d’intérêt et votre vocabulaire enregistré.",
+    "description": "Une conversation ciblée de la durée choisie, adaptée à votre niveau, vos centres d’intérêt et votre vocabulaire enregistré.",
     "setupTitle": "Personnalisez ce cours",
     "setupDescription": "Choisissez la langue et l’objectif. Votre session GotIt actuelle est utilisée automatiquement — aucun jeton n’est requis.",
     "targetLanguage": "Langue à pratiquer",
@@ -42,22 +125,85 @@
     "noSupport": "Sans langue d’aide",
     "level": "Niveau",
     "automaticLevel": "Utiliser le niveau de mon profil",
-    "teacherVoice": "Voix du professeur",
+    "levelOptions": {
+      "A1": "Débutant",
+      "A2": "Élémentaire",
+      "B1": "Intermédiaire",
+      "B2": "Intermédiaire avancé",
+      "C1": "Avancé",
+      "C2": "Maîtrise complète"
+    },
+    "teacherVoice": "Professeur",
     "voiceOptions": {
-      "female": "Voix féminine",
-      "male": "Voix masculine"
+      "female": "Rachel",
+      "male": "Mike"
     },
     "speechRate": "Vitesse d’élocution",
     "speedOptions": {
+      "very_slow": "Très lente",
       "slow": "Lente",
       "normal": "Normale",
-      "fast": "Rapide"
+      "fast": "Rapide",
+      "very_fast": "Très rapide"
     },
     "topic": "Sujet",
     "topicPlaceholder": "Par exemple : voyages ou entretiens d’embauche",
     "grammarFocus": "Objectif grammatical",
     "grammarPlaceholder": "Par exemple : passé simple",
-    "start": "Commencer le cours de cinq minutes",
+    "focus": {
+      "title": "Que voulez-vous améliorer ?",
+      "description": "Choisissez un ou plusieurs domaines. Le professeur leur consacrera plus de temps.",
+      "options": {
+        "speaking": "Expression orale",
+        "vocabulary": "Vocabulaire",
+        "grammar": "Grammaire",
+        "fluency": "Fluidité",
+        "pronunciation": "Prononciation",
+        "listening": "Compréhension orale"
+      }
+    },
+    "vocabularyMode": {
+      "title": "Utiliser votre vocabulaire enregistré ?",
+      "description": "La conversation est une étape avancée : seuls les mots déjà appris peuvent être intégrés.",
+      "options": {
+        "learned": {
+          "title": "Utiliser les mots appris",
+          "description": "Le professeur intègre naturellement les mots déjà appris. Les mots en cours d'acquisition sont exclus."
+        },
+        "none": {
+          "title": "Cours libre",
+          "description": "Le cours suit le sujet et vos objectifs sans utiliser le vocabulaire enregistré."
+        }
+      }
+    },
+    "correctionMode": {
+      "title": "Comment souhaitez-vous être corrigé ?",
+      "description": "Choisissez dans quelle mesure le professeur doit interrompre la conversation pour corriger et expliquer.",
+      "options": {
+        "critical_only": {
+          "title": "Conversation libre",
+          "description": "Garder une conversation fluide et corriger uniquement les erreurs critiques qui affectent le sens."
+        },
+        "recast": {
+          "title": "Corriger ma phrase",
+          "description": "Proposer une formulation naturelle et correcte, puis me laisser la répéter."
+        },
+        "deep_explanation": {
+          "title": "Expliquer en profondeur",
+          "description": "Corriger la phrase et expliquer la règle grammaticale et la raison de l'erreur."
+        }
+      }
+    },
+    "customFocus": "Mon objectif personnel",
+    "customFocusPlaceholder": "Par exemple : parler avec assurance lors de réunions clients",
+    "duration": "Durée du cours",
+    "durationOptions": {
+      "1": "1 minute",
+      "5": "5 minutes",
+      "10": "10 minutes",
+      "15": "15 minutes"
+    },
+    "start": "Commencer le cours",
     "preparing": "Préparation de votre cours…",
     "privacy": "L’audio du microphone est utilisé en direct et n’est pas stocké par GotIt dans ce POC.",
     "ready": "Prêt quand vous l’êtes.",
@@ -75,12 +221,39 @@
     "stopped": "Vous avez terminé le cours.",
     "connectionClosed": "La connexion vocale a été fermée.",
     "communicationError": "Une erreur de communication est survenue pendant le cours vocal.",
-    "timeFinished": "Le cours de cinq minutes est terminé.",
+    "timeFinished": "Le temps du cours est écoulé.",
+    "muteMicrophone": "Couper le microphone",
+    "unmuteMicrophone": "Réactiver le microphone",
     "transcriptTitle": "Transcription en direct",
     "finish": "Terminer le cours",
     "finishing": "Résumé et au revoir…",
-    "translateLast": "Traduire la dernière phrase",
+    "continueLesson": "Continuer la leçon",
+    "continuing": "On continue avec le professeur…",
+    "translateLast": "Traduire la dernière prise de parole",
     "restart": "Commencer un autre cours",
+    "continuity": {
+      "title": "Votre prochain cours reprendra ici :"
+    },
+    "assessment": {
+      "latest": "Votre estimation de niveau actuelle",
+      "title": "Évaluation du niveau pour ce cours",
+      "overall": "Estimation globale : {{level}}",
+      "provisional": "Plage d’indices de la leçon : {{range}}",
+      "insufficient": "Pas assez d’indices",
+      "collecting": "Collecte des indices",
+      "confidence": {
+        "low": "Première estimation · plus de pratique nécessaire",
+        "medium": "Estimation fondée sur vos résultats",
+        "high": "Données solides issues de ce cours"
+      },
+      "skills": {
+        "speaking": "Expression orale",
+        "vocabulary": "Vocabulaire",
+        "grammar": "Grammaire",
+        "fluency": "Fluidité",
+        "comprehension": "Compréhension"
+      }
+    },
     "history": {
       "eyebrow": "Journal des cours",
       "title": "Cours particuliers précédents",
@@ -112,7 +285,11 @@
       "saveWord": "Enregistrer",
       "saved": "Enregistré"
     },
-    "roles": { "learner": "Vous", "tutor": "Professeur", "system": "Cours" },
+    "roles": {
+      "learner": "Vous",
+      "tutor": "Professeur",
+      "system": "Cours"
+    },
     "errors": {
       "BROWSER_UNSUPPORTED": "Ce navigateur ne peut pas lancer un cours vocal en direct. Utilisez une version récente de Chrome, Edge ou Safari via HTTPS.",
       "MICROPHONE_UNAVAILABLE": "L’accès au microphone n’a pas été accordé. Autorisez-le puis réessayez.",
@@ -121,6 +298,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Évaluation de votre niveau de langue",
     "closeMenu": "Fermer le menu",
     "openMenu": "Ouvrir le menu",
     "upgradePro": "Passer à PRO",
@@ -206,6 +384,10 @@
     "retry": "Réessayer"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "Interface",
     "interfaceDescription": "Choisissez la langue utilisée par les menus et écrans de GotIt.",
     "savedLocally": "La préférence d'interface est enregistrée dans ce navigateur et ne modifie pas vos langues d'apprentissage ou de traduction.",
@@ -692,6 +874,13 @@
     "wordCount": "{{count}} mots",
     "selectedCount": "{{count}} sélectionnés",
     "masteredCount": "{{count}} complétés",
+    "progressStates": {
+      "completed": "Pack terminé",
+      "inProgress": "En cours",
+      "notStarted": "Pas commencé"
+    },
+    "progressCount": "{{mastered}} mots maîtrisés sur {{total}}",
+    "progressLabel": "Progression dans {{title}}",
     "showWords": "Afficher les mots",
     "updateSelection": "Mettre à jour et choisir les mots",
     "editSelection": "Modifier la sélection des mots",
@@ -822,7 +1011,7 @@
     "cancelRecording": "Annuler l'enregistrement",
     "yourAnswer": "Votre réponse",
     "checkAnswer": "Vérifier la réponse",
-    "answerLocked": "La réponse est verrouillée jusqu'à ce que le serveur la confirme. Aucune progression locale n'a été enregistrée.",
+    "checkingAnswer": "Vérification de votre réponse…",
     "retryAnswer": "Réessayer la même réponse",
     "skip": "Passer",
     "expectedAnswer": "Réponse : {{answer}}",
@@ -1289,16 +1478,16 @@
     "SPEECH_UNAVAILABLE": "Le service audio est temporairement indisponible. Réessayez dans quelques instants.",
     "AUDIO_INVALID": "L'enregistrement n'a pas été capturé clairement. Réessayez dans un endroit calme.",
     "SKILL_UNAVAILABLE": "Cet exercice n'est pas actuellement activé dans vos préférences d'apprentissage.",
-    "READING_PROVIDER_AUTHENTICATION": "Anthropic a rejeté la clé API configurée sur le serveur. Remplacez ANTHROPIC_API_KEY et redéployez.",
-    "READING_PROVIDER_BILLING": "Le compte Anthropic a besoin de facturation ou de crédit API actif.",
-    "READING_PROVIDER_PERMISSION": "La clé Anthropic n'a pas accès à l'espace de travail ou au modèle sélectionné.",
-    "READING_PROVIDER_WORKSPACE": "L'espace de travail Anthropic configuré ne correspond pas à la clé API. Supprimez ou corrigez ANTHROPIC_WORKSPACE_ID.",
-    "READING_PROVIDER_MODEL_ACCESS": "Le modèle configuré n'est pas disponible pour la clé Anthropic. Vérifiez AI_READING_MODEL.",
-    "READING_PROVIDER_RATE_LIMIT": "La limite de requêtes Anthropic est actuellement épuisée. Réessayez dans quelques instants.",
-    "READING_PROVIDER_REQUEST_INVALID": "Anthropic a rejeté le format de la requête. Vérifiez la configuration du modèle du serveur.",
-    "READING_PROVIDER_TIMEOUT": "Anthropic n'a pas répondu dans les 30 secondes. Réessayez ou vérifiez les temps de réponse dans Render.",
-    "READING_PROVIDER_RESPONSE_INVALID": "Anthropic a renvoyé une réponse que le serveur n'a pas pu traiter. Vérifiez le modèle et la sortie structurée.",
-    "READING_PROVIDER_UPSTREAM": "La requête Anthropic a échoué avant de recevoir une réponse valide.",
+    "READING_PROVIDER_AUTHENTICATION": "OpenAI a rejeté la clé API configurée sur le serveur. Remplacez OPENAI_API_KEY et redéployez.",
+    "READING_PROVIDER_BILLING": "Le compte OpenAI a besoin de facturation ou de crédit API actif.",
+    "READING_PROVIDER_PERMISSION": "La clé OpenAI n'a pas accès au projet ou au modèle sélectionné.",
+    "READING_PROVIDER_WORKSPACE": "Le projet ou l'espace de travail OpenAI configuré ne correspond pas à la clé API.",
+    "READING_PROVIDER_MODEL_ACCESS": "Le modèle configuré n'est pas disponible pour la clé OpenAI. Vérifiez AI_READING_MODEL.",
+    "READING_PROVIDER_RATE_LIMIT": "La limite de requêtes OpenAI est actuellement épuisée. Réessayez dans quelques instants.",
+    "READING_PROVIDER_REQUEST_INVALID": "OpenAI a rejeté le format de la requête. Vérifiez la configuration du modèle du serveur.",
+    "READING_PROVIDER_TIMEOUT": "OpenAI n'a pas répondu avant l'expiration du délai de génération. Réessayez ou vérifiez les temps de réponse dans Render.",
+    "READING_PROVIDER_RESPONSE_INVALID": "OpenAI a renvoyé une réponse que le serveur n'a pas pu traiter. Vérifiez le modèle et la sortie structurée.",
+    "READING_PROVIDER_UPSTREAM": "La requête OpenAI a échoué avant de recevoir une réponse valide.",
     "network": "Le service n'a pas pu être atteint. Vérifiez votre connexion et réessayez.",
     "timeout": "Le traitement de la requête a pris plus de temps que prévu. Réessayez ; vous pouvez renvoyer la même réponse sans risque.",
     "serverUnavailable": "Le service est temporairement indisponible. Réessayez.",
@@ -1428,5 +1617,156 @@
     "storageUnavailable": "Le stockage du navigateur est bloqué ou plein. Les modifications seront conservées uniquement pour cette session.",
     "logoutServerFailed": "Vous vous êtes déconnecté sur cet appareil. La session serveur n'a pas pu être révoquée ; elle expirera selon la politique rbase Core.",
     "loadBeforeSave": "Charger le profil avant d'enregistrer les modifications"
+  },
+  "courses": {
+    "eyebrow": "VOTRE PROFESSEUR PARTICULIER",
+    "title": "Un parcours clair, à votre rythme",
+    "allCourses": "Mes cours",
+    "freePractice": "Conversation libre",
+    "welcomeKicker": "Commençons par une conversation",
+    "welcomeTitle": "Que voulez-vous savoir dire ?",
+    "welcomeBody": "Un court échange avec votre professeur dans votre langue : six questions en quatre minutes environ. Répondez par écrit ou à l’oral, puis vérifiez vos informations avant la création du programme.",
+    "welcomeHint": "Vérifiez vos préférences et le programme complet avant de commencer.",
+    "targetLanguage": "Je veux apprendre",
+    "supportLanguage": "Langue de la conversation avec le professeur",
+    "buildWithTeacher": "Créer mon parcours avec le professeur",
+    "yourCourse": "VOTRE PARCOURS",
+    "continueCourse": "Reprendre mon cours",
+    "intakeInProgress": "Faisons connaissance",
+    "newCourse": "Créer un autre cours",
+    "loading": "Ouverture de votre travail enregistré…",
+    "unavailable": "Le professeur est momentanément indisponible. Vos cours restent enregistrés.",
+    "stepsLabel": "Création du cours",
+    "steps": {
+      "conversation": "Échange",
+      "preferences": "Préférences",
+      "plan": "Programme"
+    },
+    "teacher": "Professeur IA",
+    "you": "Vous",
+    "saved": "Enregistré",
+    "conversationHistory": "Notre échange jusqu’ici",
+    "answerLabel": "Votre réponse",
+    "answerPlaceholder": "Écrivez une courte réponse ou utilisez le micro…",
+    "send": "Envoyer",
+    "voiceAnswer": "Répondre à voix haute",
+    "stopRecording": "Terminer",
+    "transcribing": "Transcription…",
+    "recordingHint": "Enregistrement de 15 secondes maximum. Terminez quand vous le souhaitez.",
+    "checkTranscript": "Vérifiez ou corrigez la transcription avant de l’envoyer.",
+    "typeFallback": "Vous pouvez continuer par écrit.",
+    "readAloud": "Lire à voix haute",
+    "stopAudio": "Arrêter la lecture",
+    "reviewNow": "Vérifier ce que nous avons",
+    "correctAnswer": "Corriger cette réponse",
+    "saveCorrection": "Enregistrer la correction",
+    "cancelCorrection": "Annuler la correction",
+    "backToConversation": "Retour à la conversation",
+    "reviewKicker": "AVANT DE CRÉER LE COURS",
+    "reviewTitle": "Voici ce que j’ai compris",
+    "reviewBody": "Vérifiez que cela vous correspond. Modifiez un détail ou dites au professeur ce qu’il faut changer.",
+    "approvePreferences": "Ces préférences me conviennent — créer le cours",
+    "retryPlan": "Créer mon programme",
+    "changeWithTeacher": "Demander une modification au professeur",
+    "goal": "Votre objectif",
+    "editGoal": "Modifier l’objectif",
+    "save": "Enregistrer",
+    "path": "Type de parcours",
+    "paths": {
+      "comprehensive": "Apprentissage complet",
+      "grammar": "Grammaire systématique",
+      "goal": "Objectif pratique"
+    },
+    "pace": "Votre rythme",
+    "paceValue": "{{minutes}} minutes · {{days}} jours par semaine",
+    "experience": "Point de départ",
+    "learningStyle": "Approche pédagogique",
+    "interests": "Vos centres d’intérêt",
+    "age": {
+      "child": "Enfant",
+      "teen": "Adolescent",
+      "adult": "Adulte",
+      "unspecified": "Âge non précisé"
+    },
+    "literacy": {
+      "not_yet": "Activités orales",
+      "developing": "Lecture accompagnée",
+      "independent": "Lecture autonome",
+      "unspecified": "Aisance en lecture non précisée"
+    },
+    "youSaid": "Ce que vous m’avez dit",
+    "teacherSuggests": "Mes recommandations",
+    "provisionalLevel": "Le niveau de départ est une estimation pédagogique, à préciser grâce à votre travail en cours.",
+    "previewKicker": "VOTRE PROGRAMME · À VÉRIFIER",
+    "previewBody": "{{count}} unités, chacune avec un objectif clair. Ouvrez une unité pour découvrir son contenu.",
+    "approvePlan": "Approuver ce programme",
+    "requestChanges": "Demander un changement",
+    "nextLesson": "VOTRE PROCHAINE LEÇON",
+    "startNextLesson": "Commencer la prochaine leçon",
+    "courseComplete": "VOUS AVEZ TERMINÉ CE PARCOURS",
+    "completeBody": "Revenez sur les unités, continuez à pratiquer ou créez votre prochain parcours.",
+    "progressLabel": "{{count}} objectifs démontrés sur {{total}}",
+    "progressDetail": "{{covered}} objectifs abordés · {{demonstrated}} démontrés de manière autonome.",
+    "retentionNote": "La mémorisation durable nécessite une révision ultérieure. Terminer une activité ne prouve pas la maîtrise.",
+    "whatToChange": "Comment adapter votre parcours ?",
+    "changeHint": "Par exemple : davantage de grammaire, des leçons plus courtes ou des conversations professionnelles. Vous validerez le nouveau programme avant son activation.",
+    "syllabus": "Tout le programme",
+    "unitCount": "{{count}} unités",
+    "lessonCount": "{{count}} leçons",
+    "youAreHere": "Vous êtes ici",
+    "grammar": "Grammaire et structures",
+    "vocabulary": "Vocabulaire et situations",
+    "unitSuccess": "À la fin, vous saurez…",
+    "homeworkExample": "Un aperçu de la pratique",
+    "estimatedMinutes": "Environ {{count}} minutes",
+    "prerequisites": "S’appuie sur",
+    "savedPreferences": "Préférences enregistrées",
+    "buildingPlan": "Préparation du programme. Vos préférences sont enregistrées…",
+    "teacherThinking": "Votre professeur prépare sa réponse…",
+    "changed": "Votre travail a changé dans une autre session. La dernière version est chargée ; vérifiez-la avant de continuer.",
+    "reload": "Recharger",
+    "tryAgain": "Réessayer",
+    "homework": "Pratique après la leçon",
+    "homeworkCompleted": "Pratique terminée",
+    "viewResults": "Voir les résultats",
+    "resumeHomework": "Reprendre la pratique",
+    "practiceNow": "Commencer à pratiquer",
+    "homeworkTitle": "Un peu de pratique, des progrès durables",
+    "backToCourse": "Retour à mon cours",
+    "preparingHomework": "Préparation des activités",
+    "preparingHomeworkBody": "Quelques activités ciblées sur ce que vous avez réellement appris.",
+    "homeworkDone": "Votre pratique est terminée",
+    "independentSuccess": "Vous avez répondu à {{count}} activités de manière autonome.",
+    "practiceSuccess": "Vous avez pratiqué et fait un pas de plus.",
+    "nextReview": "À revoir",
+    "homeworkContinuation": "Votre professeur utilisera ces réponses pour préparer la suite. Vous pouvez continuer les leçons même sans avoir terminé les exercices.",
+    "independent": "Démontré de manière autonome",
+    "withSupport": "Pratiqué avec aide ou reconnaissance",
+    "forReview": "À pratiquer de nouveau",
+    "taskProgress": "Activité {{current}} sur {{total}}",
+    "taskProgressLabel": "Progression des activités",
+    "readInstead": "Lire au lieu d’écouter",
+    "clearAnswer": "Effacer la réponse",
+    "checkAnswer": "Vérifier ma réponse",
+    "yourAnswer": "Votre réponse",
+    "feedback": {
+      "correct": "Cela convient",
+      "retry": "Encore un essai",
+      "uncertain": "Précisons votre réponse",
+      "skipped": "À reprendre plus tard"
+    },
+    "finishPractice": "Voir mes progrès",
+    "nextTask": "Activité suivante",
+    "hint": "Un peu d’aide",
+    "skipTask": "Passer cette activité",
+    "pauseHomework": "Enregistrer pour plus tard",
+    "draftNotice": "Le texte non envoyé reste dans cette session du navigateur. Enregistrez pour reprendre sur un autre appareil.",
+    "progressSaved": "Vos réponses envoyées sont enregistrées.",
+    "lessonHomeworkTitle": "Prolongez les progrès d’aujourd’hui",
+    "lessonHomeworkBody": "Une courte pratique liée à cette leçon, accessible en un clic.",
+    "oneFocus": "Un point à renforcer :",
+    "reportDetails": "Détails, corrections et vocabulaire",
+    "supportLanguageError": "Pour débuter, choisissez une langue d’explication familière différente de la langue étudiée.",
+    "separateCourseError": "Créez un nouveau cours pour une autre langue ou pour poursuivre les modifications. Votre cours actuel est conservé."
   }
 }

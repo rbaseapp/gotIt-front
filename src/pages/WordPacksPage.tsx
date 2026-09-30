@@ -3,6 +3,9 @@ import {
   BookOpenCheck,
   BriefcaseBusiness,
   Check,
+  CheckCircle2,
+  Circle,
+  CircleDashed,
   Compass,
   Eye,
   Layers3,
@@ -35,6 +38,23 @@ type PackDialog = {
   selected: string[];
   selectable: boolean;
 };
+
+function packLearningState(pack: WordPack) {
+  if (
+    pack.installed &&
+    pack.wordCount > 0 &&
+    pack.progress.linked === pack.wordCount &&
+    pack.progress.mastered === pack.wordCount
+  )
+    return "completed";
+  if (
+    pack.installed &&
+    pack.progress.mastered + pack.progress.learning + pack.progress.reviewing >
+      0
+  )
+    return "inProgress";
+  return "notStarted";
+}
 
 export function WordPacksPage() {
   const { t } = useTranslation();
@@ -382,104 +402,133 @@ export function WordPacksPage() {
             </div>
           </div>
           <div className="pack-grid">
-            {group.packs.map((pack) => (
-              <article
-                className={`pack-card ${pack.installed ? "installed" : ""}`}
-                key={pack.id}
-              >
-                <div className="pack-card-top">
-                  <span className="pack-module">
-                    <Layers3 size={16} />{" "}
-                    {t("packs.module", { number: pack.moduleNumber })}
-                  </span>
-                  {pack.installed && (
-                    <span className="pack-installed">
-                      <BookOpenCheck size={15} />
-                      {pack.installedVersion !== pack.version
-                        ? t("packs.updateAvailable")
-                        : t("packs.installed")}
-                    </span>
-                  )}
-                </div>
-                <div className="pack-card-context">
-                  <span>{pack.topic.title}</span>
-                  <span>
-                    {t(`packs.levels.${pack.track.levelCode}`)} ·{" "}
-                    {pack.track.cefrFrom}–{pack.track.cefrTo}
-                  </span>
-                </div>
-                <h3>{pack.title}</h3>
-                <p>{pack.description}</p>
-                <div className="pack-counts">
-                  <span>{t("packs.wordCount", { count: pack.wordCount })}</span>
-                  {pack.installed && (
-                    <>
-                      <span>
-                        {t("packs.selectedCount", {
-                          count: pack.progress.linked,
-                        })}
-                      </span>
-                      <span>
-                        {t("packs.masteredCount", {
-                          count: pack.progress.mastered,
-                        })}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <button
-                  className="button ghost"
-                  disabled={busy === pack.id || detailLoading}
-                  onClick={() => void openWords(pack, false)}
+            {group.packs.map((pack) => {
+              const learningState = packLearningState(pack);
+              const StatusIcon =
+                learningState === "completed"
+                  ? CheckCircle2
+                  : learningState === "inProgress"
+                    ? CircleDashed
+                    : Circle;
+              return (
+                <article
+                  className={`pack-card ${pack.installed ? "installed" : ""} ${learningState === "completed" ? "completed" : ""}`}
+                  key={pack.id}
                 >
-                  <Eye size={17} /> {t("packs.showWords")}
-                </button>
-                {pack.installed ? (
-                  <div className="pack-actions">
+                  <div className="pack-card-top">
+                    <span className="pack-module">
+                      <Layers3 size={16} />{" "}
+                      {t("packs.module", { number: pack.moduleNumber })}
+                    </span>
+                    {pack.installed && (
+                      <span className="pack-installed">
+                        <BookOpenCheck size={15} />
+                        {pack.installedVersion !== pack.version
+                          ? t("packs.updateAvailable")
+                          : t("packs.installed")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="pack-card-context">
+                    <span>{pack.topic.title}</span>
+                    <span>
+                      {t(`packs.levels.${pack.track.levelCode}`)} ·{" "}
+                      {pack.track.cefrFrom}–{pack.track.cefrTo}
+                    </span>
+                  </div>
+                  <h3>{pack.title}</h3>
+                  <p>{pack.description}</p>
+                  <div className="pack-counts">
+                    <span>
+                      {t("packs.wordCount", { count: pack.wordCount })}
+                    </span>
+                    {pack.installed && (
+                      <>
+                        <span>
+                          {t("packs.selectedCount", {
+                            count: pack.progress.linked,
+                          })}
+                        </span>
+                        <span>
+                          {t("packs.masteredCount", {
+                            count: pack.progress.mastered,
+                          })}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className={`pack-learning-state ${learningState}`}>
+                    <span className="pack-learning-label">
+                      <StatusIcon size={17} aria-hidden="true" />
+                      {t(`packs.progressStates.${learningState}`)}
+                    </span>
+                    <span>
+                      {t("packs.progressCount", {
+                        mastered: pack.progress.mastered,
+                        total: pack.wordCount,
+                      })}
+                    </span>
+                  </div>
+                  <progress
+                    className="pack-learning-progress"
+                    max={pack.wordCount || 1}
+                    value={Math.min(pack.progress.mastered, pack.wordCount)}
+                    aria-label={t("packs.progressLabel", { title: pack.title })}
+                  />
+                  <button
+                    className="button ghost"
+                    disabled={busy === pack.id || detailLoading}
+                    onClick={() => void openWords(pack, false)}
+                  >
+                    <Eye size={17} /> {t("packs.showWords")}
+                  </button>
+                  {pack.installed ? (
+                    <div className="pack-actions">
+                      <button
+                        className="button secondary"
+                        disabled={busy === pack.id}
+                        onClick={() => void openWords(pack, true)}
+                      >
+                        {pack.installedVersion !== pack.version
+                          ? t("packs.updateSelection")
+                          : t("packs.editSelection")}
+                      </button>
+                      <Link
+                        className="button primary"
+                        to={`/learn/session/smart?pack=${pack.id}`}
+                      >
+                        <Play size={17} /> {t("packs.learnAll")}
+                      </Link>
+                      <details className="pack-manage">
+                        <summary>{t("packs.manage")}</summary>
+                        <button
+                          className="button ghost"
+                          disabled={busy === pack.id}
+                          onClick={() => void remove(pack, true)}
+                        >
+                          {t("packs.unlinkKeep")}
+                        </button>
+                        <button
+                          className="button danger"
+                          disabled={busy === pack.id}
+                          onClick={() => void remove(pack, false)}
+                        >
+                          <Trash2 size={16} /> {t("packs.removeExclusive")}
+                        </button>
+                      </details>
+                    </div>
+                  ) : (
                     <button
-                      className="button secondary"
+                      className="button primary"
                       disabled={busy === pack.id}
                       onClick={() => void openWords(pack, true)}
                     >
-                      {pack.installedVersion !== pack.version
-                        ? t("packs.updateSelection")
-                        : t("packs.editSelection")}
+                      {t("packs.chooseAdd")}
                     </button>
-                    <Link
-                      className="button primary"
-                      to={`/learn/session/smart?pack=${pack.id}`}
-                    >
-                      <Play size={17} /> {t("packs.learnAll")}
-                    </Link>
-                    <details className="pack-manage">
-                      <summary>{t("packs.manage")}</summary>
-                      <button
-                        className="button ghost"
-                        disabled={busy === pack.id}
-                        onClick={() => void remove(pack, true)}
-                      >
-                        {t("packs.unlinkKeep")}
-                      </button>
-                      <button
-                        className="button danger"
-                        disabled={busy === pack.id}
-                        onClick={() => void remove(pack, false)}
-                      >
-                        <Trash2 size={16} /> {t("packs.removeExclusive")}
-                      </button>
-                    </details>
-                  </div>
-                ) : (
-                  <button
-                    className="button primary"
-                    disabled={busy === pack.id}
-                    onClick={() => void openWords(pack, true)}
-                  >
-                    {t("packs.chooseAdd")}
-                  </button>
-                )}
-              </article>
-            ))}
+                  )}
+                </article>
+              );
+            })}
           </div>
         </section>
       ))}

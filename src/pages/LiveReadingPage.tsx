@@ -22,6 +22,7 @@ import { textSegments } from "../lib/reading";
 import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useTranslation } from "react-i18next";
+import { LanguageCombobox } from "../components/LanguageCombobox";
 import {
   WordPreviewModal,
   type WordPreview,
@@ -192,11 +193,9 @@ export function LiveReadingPage() {
             </label>
             <label className="field">
               <span>{t("reading.language")}</span>
-              <input
-                maxLength={64}
-                dir="ltr"
+              <LanguageCombobox
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+                onChange={setLanguage}
               />
             </label>
             <div className="live-form-grid">

@@ -32,9 +32,92 @@
     "billing": "Abonnement"
   },
   "privateLesson": {
+    "mode": {
+      "title": "Unterrichtsart",
+      "teachingLanguage": "Sprache für Erklärungen",
+      "chooseTeachingLanguage": "Erklärungssprache wählen",
+      "explainInTarget": "Auf {{language}} erklären",
+      "explainInSupport": "Auf {{language}} erklären",
+      "supportHint": "Anweisungen und Erklärungen erfolgen in dieser Sprache. Übungswörter und -sätze bleiben in der Zielsprache.",
+      "beginnerHint": "Die Lehrkraft erklärt in dieser Sprache und führt schrittweise 3–5 nützliche Sätze ein.",
+      "options": {
+        "standard": {
+          "title": "Standardunterricht",
+          "description": "Der Unterricht findet hauptsächlich in der Übungssprache statt, mit Hilfe bei Bedarf."
+        },
+        "absolute_beginner": {
+          "title": "Bei null anfangen",
+          "description": "Keine Vorkenntnisse nötig. Die Lehrkraft erklärt in deiner Sprache und übt deine ersten Sätze."
+        }
+      }
+    },
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
+    "preferences": {
+      "title": "Lesson preferences",
+      "saved": "Saved automatically for this language"
+    },
+    "roadmap": {
+      "eyebrow": "Your learning roadmap",
+      "loading": "Preparing your learning path…",
+      "chooseTitle": "Choose one direction — we’ll build the path",
+      "chooseDescription": "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
+      "recommended": "Recommended for you",
+      "recommendedReason": "Based on your current level and the most useful next skill",
+      "change": "Change goal",
+      "communicationTitle": "Choose a communication goal",
+      "grammarTitle": "Explore English skills",
+      "currentHint": "This lesson revisits the current milestone and advances only after the target task is completed consistently.",
+      "evidence_one": "{{count}}/2 completed task · {{score}}/75 task score",
+      "evidence_other": "{{count}}/2 completed tasks · {{score}}/75 task score",
+      "goals": {
+        "everyday-conversation": "Everyday conversation",
+        "workplace-communication": "Workplace communication",
+        "travel-confidence": "Travel confidence",
+        "job-interviews": "Job interviews",
+        "presentations": "Presentations"
+      },
+      "topics": {
+        "articles": "Artikel (a, an, the)",
+        "present-simple-continuous": "Present Simple / Continuous",
+        "past-simple-continuous": "Past Simple / Continuous",
+        "verb-forms-v1-v2-v3": "Verb forms V1 / V2 / V3",
+        "prepositions": "Prepositions",
+        "future-forms": "Future forms",
+        "modal-verbs": "Modal verbs",
+        "gerund-infinitive": "Gerund / Infinitive",
+        "conditionals": "Conditionals",
+        "passive-voice": "Passive Voice",
+        "advanced-sentence-structure": "Advanced sentence structure"
+      },
+      "stages": {
+        "foundation": "Foundation",
+        "guided-use": "Guided use",
+        "controlled-conversation": "Controlled conversation",
+        "free-conversation": "Free conversation",
+        "independent-mastery": "Independent use"
+      }
+    },
     "eyebrow": "GotIt Voice",
     "title": "Deine private Sprachstunde",
-    "description": "Fünf konzentrierte Gesprächsminuten, abgestimmt auf dein Niveau, deine Interessen und gespeicherten Wörter.",
+    "description": "Ein konzentriertes Gespräch in der gewählten Länge, abgestimmt auf dein Niveau, deine Interessen und gespeicherten Wörter.",
     "setupTitle": "Stunde anpassen",
     "setupDescription": "Wähle Sprache und Schwerpunkt. Deine bestehende GotIt-Sitzung wird automatisch verwendet — kein Token nötig.",
     "targetLanguage": "Übungssprache",
@@ -42,22 +125,85 @@
     "noSupport": "Keine Hilfssprache",
     "level": "Niveau",
     "automaticLevel": "Niveau aus meinem Profil",
-    "teacherVoice": "Stimme der Lehrkraft",
+    "levelOptions": {
+      "A1": "Anfänger",
+      "A2": "Grundkenntnisse",
+      "B1": "Mittelstufe",
+      "B2": "Gute Mittelstufe",
+      "C1": "Fortgeschritten",
+      "C2": "Nahezu muttersprachlich"
+    },
+    "teacherVoice": "Lehrkraft",
     "voiceOptions": {
-      "female": "Weibliche Stimme",
-      "male": "Männliche Stimme"
+      "female": "Rachel",
+      "male": "Mike"
     },
     "speechRate": "Sprechgeschwindigkeit",
     "speedOptions": {
+      "very_slow": "Sehr langsam",
       "slow": "Langsam",
       "normal": "Normal",
-      "fast": "Schnell"
+      "fast": "Schnell",
+      "very_fast": "Sehr schnell"
     },
     "topic": "Thema",
     "topicPlaceholder": "Zum Beispiel Reisen oder Bewerbungsgespräche",
     "grammarFocus": "Grammatikschwerpunkt",
     "grammarPlaceholder": "Zum Beispiel: einfache Vergangenheit",
-    "start": "Fünfminütige Stunde starten",
+    "focus": {
+      "title": "Was möchtest du verbessern?",
+      "description": "Wähle einen oder mehrere Bereiche. Der Tutor gibt ihnen zusätzliche Übungszeit.",
+      "options": {
+        "speaking": "Sprechen",
+        "vocabulary": "Wortschatz",
+        "grammar": "Grammatik",
+        "fluency": "Sprachfluss",
+        "pronunciation": "Aussprache",
+        "listening": "Hörverstehen"
+      }
+    },
+    "vocabularyMode": {
+      "title": "Gespeicherten Wortschatz verwenden?",
+      "description": "Gespräche sind eine fortgeschrittene Übungsstufe. Daher werden nur bereits gelernte Wörter verwendet.",
+      "options": {
+        "learned": {
+          "title": "Gelernte Wörter verwenden",
+          "description": "Der Lehrer baut bereits gelernte Wörter natürlich ein. Wörter im Lernprozess bleiben außen vor."
+        },
+        "none": {
+          "title": "Freie Unterrichtsstunde",
+          "description": "Die Stunde folgt dem Thema und deinen Zielen, ohne gespeicherten Wortschatz zu verwenden."
+        }
+      }
+    },
+    "correctionMode": {
+      "title": "Wie soll ich dich korrigieren?",
+      "description": "Wähle, wie stark der Lehrer das Gespräch für Korrekturen und Erklärungen unterbrechen soll.",
+      "options": {
+        "critical_only": {
+          "title": "Freies Gespräch",
+          "description": "Das Gespräch fließen lassen und nur bedeutungsverändernde kritische Fehler korrigieren."
+        },
+        "recast": {
+          "title": "Meinen Satz korrigieren",
+          "description": "Eine natürliche, korrekte Formulierung geben und mich noch einmal versuchen lassen."
+        },
+        "deep_explanation": {
+          "title": "Ausführlich erklären",
+          "description": "Den Satz korrigieren und die Grammatikregel sowie den Grund für den Fehler erklären."
+        }
+      }
+    },
+    "customFocus": "Mein persönliches Ziel",
+    "customFocusPlaceholder": "Zum Beispiel: sicher in Kundenterminen sprechen",
+    "duration": "Unterrichtsdauer",
+    "durationOptions": {
+      "1": "1 Minute",
+      "5": "5 Minuten",
+      "10": "10 Minuten",
+      "15": "15 Minuten"
+    },
+    "start": "Unterricht starten",
     "preparing": "Deine Stunde wird vorbereitet…",
     "privacy": "Mikrofonton wird live verwendet und in diesem POC nicht von GotIt gespeichert.",
     "ready": "Bereit, wenn du es bist.",
@@ -75,12 +221,39 @@
     "stopped": "Du hast die Stunde beendet.",
     "connectionClosed": "Die Sprachverbindung wurde geschlossen.",
     "communicationError": "In der Sprachstunde ist ein Verbindungsfehler aufgetreten.",
-    "timeFinished": "Die fünfminütige Stunde ist abgeschlossen.",
+    "timeFinished": "Die Unterrichtszeit ist abgelaufen.",
+    "muteMicrophone": "Mikrofon stummschalten",
+    "unmuteMicrophone": "Mikrofon einschalten",
     "transcriptTitle": "Live-Transkript",
     "finish": "Stunde beenden",
     "finishing": "Zusammenfassung und Verabschiedung…",
-    "translateLast": "Letzten Satz übersetzen",
+    "continueLesson": "Lektion fortsetzen",
+    "continuing": "Weiter mit der Lehrkraft…",
+    "translateLast": "Letzten Redebeitrag übersetzen",
     "restart": "Weitere Stunde starten",
+    "continuity": {
+      "title": "Deine nächste Stunde macht hier weiter:"
+    },
+    "assessment": {
+      "latest": "Deine aktuelle Niveauschätzung",
+      "title": "Niveaubewertung aus dieser Stunde",
+      "overall": "Gesamtschätzung: {{level}}",
+      "provisional": "Evidenzbereich dieser Lektion: {{range}}",
+      "insufficient": "Nicht genügend Nachweise",
+      "collecting": "Nachweise werden gesammelt",
+      "confidence": {
+        "low": "Erste Schätzung · mehr Übung nötig",
+        "medium": "Leistungsbasierte Schätzung",
+        "high": "Starke Belege aus dieser Stunde"
+      },
+      "skills": {
+        "speaking": "Sprechen",
+        "vocabulary": "Wortschatz",
+        "grammar": "Grammatik",
+        "fluency": "Sprachfluss",
+        "comprehension": "Verständnis"
+      }
+    },
     "history": {
       "eyebrow": "Lerntagebuch",
       "title": "Frühere Privatstunden",
@@ -112,7 +285,11 @@
       "saveWord": "Wort speichern",
       "saved": "Gespeichert"
     },
-    "roles": { "learner": "Du", "tutor": "Lehrkraft", "system": "Stunde" },
+    "roles": {
+      "learner": "Du",
+      "tutor": "Lehrkraft",
+      "system": "Stunde"
+    },
     "errors": {
       "BROWSER_UNSUPPORTED": "Dieser Browser unterstützt keine Live-Sprachstunde. Verwende Chrome, Edge oder Safari in einer aktuellen Version über HTTPS.",
       "MICROPHONE_UNAVAILABLE": "Der Mikrofonzugriff wurde nicht erlaubt. Erlaube den Zugriff und versuche es erneut.",
@@ -121,6 +298,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Einschätzung deines Sprachniveaus",
     "closeMenu": "Menü schließen",
     "openMenu": "Menü öffnen",
     "upgradePro": "Upgrade zu PRO",
@@ -206,6 +384,10 @@
     "retry": "Versuchen Sie es erneut"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "Oberfläche",
     "interfaceDescription": "Wähle die Sprache, die von GotIt-Menüs und -Bildschirmen verwendet wird.",
     "savedLocally": "Die Schnittstelleneinstellung wird in diesem Browser gespeichert und ändert nicht deine Lern- oder Übersetzungssprachen.",
@@ -692,6 +874,13 @@
     "wordCount": "{{count}} Wörter",
     "selectedCount": "{{count}} ausgewählt",
     "masteredCount": "{{count}} abgeschlossen",
+    "progressStates": {
+      "completed": "Wortpaket abgeschlossen",
+      "inProgress": "In Bearbeitung",
+      "notStarted": "Noch nicht begonnen"
+    },
+    "progressCount": "{{mastered}} von {{total}} Wörtern gemeistert",
+    "progressLabel": "Fortschritt in {{title}}",
     "showWords": "Wörter anzeigen",
     "updateSelection": "Aktualisieren und Wörter wählen",
     "editSelection": "Wortauswahl bearbeiten",
@@ -822,7 +1011,7 @@
     "cancelRecording": "Aufnahme abbrechen",
     "yourAnswer": "Deine Antwort",
     "checkAnswer": "Antwort überprüfen",
-    "answerLocked": "Die Antwort ist gesperrt, bis der Server sie bestätigt. Kein lokaler Fortschritt wurde aufgezeichnet.",
+    "checkingAnswer": "Deine Antwort wird geprüft…",
     "retryAnswer": "Gleiche Antwort wiederholen",
     "skip": "Überspringen",
     "expectedAnswer": "Antwort: {{answer}}",
@@ -1289,16 +1478,16 @@
     "SPEECH_UNAVAILABLE": "Der Audiodienst ist vorübergehend nicht verfügbar. Versuchen Sie es in Kürze erneut.",
     "AUDIO_INVALID": "Die Aufnahme wurde nicht klar erfasst. Versuchen Sie es an einem ruhigen Ort erneut.",
     "SKILL_UNAVAILABLE": "Diese Übung ist in Ihren Lerneinstellungen derzeit nicht aktiviert.",
-    "READING_PROVIDER_AUTHENTICATION": "Anthropic hat den auf dem Server konfigurierten API-Schlüssel abgelehnt. Ersetzen Sie ANTHROPIC_API_KEY und stellen Sie erneut bereit.",
-    "READING_PROVIDER_BILLING": "Das Anthropic-Konto benötigt Abrechnung oder aktives API-Guthaben.",
-    "READING_PROVIDER_PERMISSION": "Der Anthropic-Schlüssel hat keinen Zugriff auf den ausgewählten Arbeitsbereich oder das Modell.",
-    "READING_PROVIDER_WORKSPACE": "Der konfigurierte Anthropic-Arbeitsbereich stimmt nicht mit dem API-Schlüssel überein. Entfernen oder korrigieren Sie ANTHROPIC_WORKSPACE_ID.",
-    "READING_PROVIDER_MODEL_ACCESS": "Das konfigurierte Modell ist für den Anthropic-Schlüssel nicht verfügbar. Überprüfen Sie AI_READING_MODEL.",
-    "READING_PROVIDER_RATE_LIMIT": "Das Anthropic-Anfragelimit ist derzeit erschöpft. Versuchen Sie es in Kürze erneut.",
-    "READING_PROVIDER_REQUEST_INVALID": "Anthropic hat das Anforderungsformat abgelehnt. Überprüfen Sie die Modellkonfiguration des Servers.",
-    "READING_PROVIDER_TIMEOUT": "Anthropic hat nicht innerhalb von 30 Sekunden geantwortet. Versuchen Sie es erneut oder überprüfen Sie die Antwortzeiten in Render.",
-    "READING_PROVIDER_RESPONSE_INVALID": "Anthropic hat eine Antwort zurückgegeben, die der Server nicht verarbeiten konnte. Überprüfen Sie das Modell und die strukturierte Ausgabe.",
-    "READING_PROVIDER_UPSTREAM": "Die Anthropic-Anfrage ist fehlgeschlagen, bevor eine gültige Antwort empfangen wurde.",
+    "READING_PROVIDER_AUTHENTICATION": "OpenAI hat den auf dem Server konfigurierten API-Schlüssel abgelehnt. Ersetzen Sie OPENAI_API_KEY und stellen Sie erneut bereit.",
+    "READING_PROVIDER_BILLING": "Das OpenAI-Konto benötigt Abrechnung oder aktives API-Guthaben.",
+    "READING_PROVIDER_PERMISSION": "Der OpenAI-Schlüssel hat keinen Zugriff auf das ausgewählte Projekt oder Modell.",
+    "READING_PROVIDER_WORKSPACE": "Das konfigurierte OpenAI-Projekt oder der Arbeitsbereich stimmt nicht mit dem API-Schlüssel überein.",
+    "READING_PROVIDER_MODEL_ACCESS": "Das konfigurierte Modell ist für den OpenAI-Schlüssel nicht verfügbar. Überprüfen Sie AI_READING_MODEL.",
+    "READING_PROVIDER_RATE_LIMIT": "Das OpenAI-Anfragelimit ist derzeit erschöpft. Versuchen Sie es in Kürze erneut.",
+    "READING_PROVIDER_REQUEST_INVALID": "OpenAI hat das Anforderungsformat abgelehnt. Überprüfen Sie die Modellkonfiguration des Servers.",
+    "READING_PROVIDER_TIMEOUT": "OpenAI hat nicht vor Ablauf der Generierungsfrist geantwortet. Versuchen Sie es erneut oder überprüfen Sie die Antwortzeiten in Render.",
+    "READING_PROVIDER_RESPONSE_INVALID": "OpenAI hat eine Antwort zurückgegeben, die der Server nicht verarbeiten konnte. Überprüfen Sie das Modell und die strukturierte Ausgabe.",
+    "READING_PROVIDER_UPSTREAM": "Die OpenAI-Anfrage ist fehlgeschlagen, bevor eine gültige Antwort empfangen wurde.",
     "network": "Der Dienst konnte nicht erreicht werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "timeout": "Die Verarbeitung der Anfrage dauerte länger als erwartet. Versuchen Sie es erneut; dieselbe Antwort kann sicher erneut gesendet werden.",
     "serverUnavailable": "Der Dienst ist vorübergehend nicht verfügbar. Versuchen Sie es erneut.",
@@ -1428,5 +1617,156 @@
     "storageUnavailable": "Der Browserspeicher ist blockiert oder voll. Änderungen werden nur für diese Sitzung beibehalten.",
     "logoutServerFailed": "Du hast dich auf diesem Gerät abgemeldet. Die Serversitzung konnte nicht widerrufen werden; sie läuft nach der Core-Richtlinie ab.",
     "loadBeforeSave": "Lade das Profil, bevor du Änderungen speicherst"
+  },
+  "courses": {
+    "eyebrow": "DEIN PRIVATLEHRER",
+    "title": "Ein klarer Lernweg in deinem Tempo",
+    "allCourses": "Meine Kurse",
+    "freePractice": "Freies Gespräch",
+    "welcomeKicker": "Beginnen wir mit einem Gespräch",
+    "welcomeTitle": "Was möchtest du sagen können?",
+    "welcomeBody": "Ein kurzes Gespräch mit deiner Lehrkraft in deiner Sprache: sechs Fragen in etwa vier Minuten. Antworte per Text oder Sprache und prüfe danach deine Angaben vor der Planung.",
+    "welcomeHint": "Prüfe deine Wünsche und den gesamten Kurs, bevor du startest.",
+    "targetLanguage": "Ich möchte lernen",
+    "supportLanguage": "Gesprächssprache mit der Lehrkraft",
+    "buildWithTeacher": "Meinen Kurs mit dem Lehrer erstellen",
+    "yourCourse": "DEIN LERNWEG",
+    "continueCourse": "Meinen Kurs fortsetzen",
+    "intakeInProgress": "Wir lernen dich kennen",
+    "newCourse": "Weiteren Kurs erstellen",
+    "loading": "Gespeicherten Stand öffnen…",
+    "unavailable": "Der Lehrer ist gerade nicht verfügbar. Deine Kurse bleiben gespeichert.",
+    "stepsLabel": "Kurserstellung",
+    "steps": {
+      "conversation": "Gespräch",
+      "preferences": "Lernwünsche",
+      "plan": "Kursplan"
+    },
+    "teacher": "KI-Lehrer",
+    "you": "Du",
+    "saved": "Gespeichert",
+    "conversationHistory": "Unser bisheriges Gespräch",
+    "answerLabel": "Deine Antwort",
+    "answerPlaceholder": "Schreibe kurz oder nutze das Mikrofon…",
+    "send": "Senden",
+    "voiceAnswer": "Per Sprache antworten",
+    "stopRecording": "Aufnahme beenden",
+    "transcribing": "Wird transkribiert…",
+    "recordingHint": "Bis zu 15 Sekunden Aufnahme. Du kannst jederzeit beenden.",
+    "checkTranscript": "Prüfe oder bearbeite den erkannten Text vor dem Senden.",
+    "typeFallback": "Du kannst schriftlich weitermachen.",
+    "readAloud": "Vorlesen",
+    "stopAudio": "Vorlesen stoppen",
+    "reviewNow": "Bisherige Angaben prüfen",
+    "correctAnswer": "Antwort korrigieren",
+    "saveCorrection": "Korrektur speichern",
+    "cancelCorrection": "Korrektur abbrechen",
+    "backToConversation": "Zurück zum Gespräch",
+    "reviewKicker": "BEVOR WIR DEINEN KURS ERSTELLEN",
+    "reviewTitle": "Das habe ich verstanden",
+    "reviewBody": "Prüfe, ob das zu dir passt. Bearbeite ein Detail oder sage dem Lehrer, was sich ändern soll.",
+    "approvePreferences": "Diese Wünsche passen — Kurs erstellen",
+    "retryPlan": "Meinen Kursplan erstellen",
+    "changeWithTeacher": "Dem Lehrer einen Änderungswunsch sagen",
+    "goal": "Dein Ziel",
+    "editGoal": "Ziel bearbeiten",
+    "save": "Speichern",
+    "path": "Kursart",
+    "paths": {
+      "comprehensive": "Umfassendes Lernen",
+      "grammar": "Systematische Grammatik",
+      "goal": "Praktisches Ziel"
+    },
+    "pace": "Dein Tempo",
+    "paceValue": "{{minutes}} Minuten · {{days}} Tage pro Woche",
+    "experience": "Ausgangspunkt",
+    "learningStyle": "Lernansatz",
+    "interests": "Deine Interessen",
+    "age": {
+      "child": "Kind",
+      "teen": "Jugendliche",
+      "adult": "Erwachsene",
+      "unspecified": "Alter nicht angegeben"
+    },
+    "literacy": {
+      "not_yet": "Mündliche Aktivitäten",
+      "developing": "Lesen mit Unterstützung",
+      "independent": "Selbstständiges Lesen",
+      "unspecified": "Lesefähigkeit nicht angegeben"
+    },
+    "youSaid": "Was du mir gesagt hast",
+    "teacherSuggests": "Meine Empfehlungen",
+    "provisionalLevel": "Das Einstiegsniveau ist eine Schätzung für den Unterricht. Wir passen es anhand deiner Leistungen an.",
+    "previewKicker": "DEIN KURSPLAN · ZUR PRÜFUNG",
+    "previewBody": "{{count}} Einheiten mit jeweils einem klaren Ziel. Öffne eine Einheit, um die Inhalte zu sehen.",
+    "approvePlan": "Diesen Kurs bestätigen",
+    "requestChanges": "Änderung anfragen",
+    "nextLesson": "DEINE NÄCHSTE LEKTION",
+    "startNextLesson": "Nächste Lektion starten",
+    "courseComplete": "DU HAST DIESEN KURS ABGESCHLOSSEN",
+    "completeBody": "Wiederhole Einheiten, übe weiter oder erstelle deinen nächsten Kurs.",
+    "progressLabel": "{{count}} von {{total}} Lernzielen nachgewiesen",
+    "progressDetail": "{{covered}} Lernziele behandelt · {{demonstrated}} selbstständig nachgewiesen.",
+    "retentionNote": "Langfristiges Behalten wird durch spätere Wiederholung geprüft. Eine abgeschlossene Aufgabe bedeutet noch keine sichere Beherrschung.",
+    "whatToChange": "Wie möchtest du den Kurs anpassen?",
+    "changeHint": "Zum Beispiel mehr Grammatik, kürzere Lektionen oder Gespräche über die Arbeit. Du prüfst den geänderten Plan vor der Aktivierung.",
+    "syllabus": "Dein vollständiger Kurs",
+    "unitCount": "{{count}} Einheiten",
+    "lessonCount": "{{count}} Lektionen",
+    "youAreHere": "Hier bist du",
+    "grammar": "Grammatik und Struktur",
+    "vocabulary": "Wortschatz und Situationen",
+    "unitSuccess": "Am Ende kannst du…",
+    "homeworkExample": "Ein Beispiel aus deiner Übung",
+    "estimatedMinutes": "Etwa {{count}} Minuten",
+    "prerequisites": "Baut auf auf",
+    "savedPreferences": "Gespeicherte Lernwünsche",
+    "buildingPlan": "Dein Kurs wird vorbereitet. Deine Wünsche sind gespeichert…",
+    "teacherThinking": "Dein Lehrer bereitet eine Antwort vor…",
+    "changed": "Dein Stand wurde in einer anderen Sitzung geändert. Wir haben die aktuelle Version geladen. Bitte prüfe sie vor dem Fortfahren.",
+    "reload": "Neu laden",
+    "tryAgain": "Erneut versuchen",
+    "homework": "Übung zu deiner Lektion",
+    "homeworkCompleted": "Übung abgeschlossen",
+    "viewResults": "Ergebnisse ansehen",
+    "resumeHomework": "Übung fortsetzen",
+    "practiceNow": "Jetzt üben",
+    "homeworkTitle": "Etwas Übung, bleibender Fortschritt",
+    "backToCourse": "Zurück zu meinem Kurs",
+    "preparingHomework": "Deine Übung wird vorbereitet",
+    "preparingHomeworkBody": "Ein paar gezielte Aufgaben zu dem, was du tatsächlich gelernt hast.",
+    "homeworkDone": "Deine Übung ist abgeschlossen",
+    "independentSuccess": "Du hast {{count}} Aufgaben selbstständig beantwortet.",
+    "practiceSuccess": "Du hast den Stoff geübt und einen weiteren Schritt gemacht.",
+    "nextReview": "Noch einmal üben",
+    "homeworkContinuation": "Dein Lehrer nutzt die Antworten für die nächste Lektion. Du kannst auch mit unvollständigen Hausaufgaben weiterlernen.",
+    "independent": "Selbstständig nachgewiesen",
+    "withSupport": "Mit Hilfe oder Wiedererkennen geübt",
+    "forReview": "Noch einmal üben",
+    "taskProgress": "Aufgabe {{current}} von {{total}}",
+    "taskProgressLabel": "Übungsfortschritt",
+    "readInstead": "Lesen statt hören",
+    "clearAnswer": "Antwort löschen",
+    "checkAnswer": "Antwort prüfen",
+    "yourAnswer": "Deine Antwort",
+    "feedback": {
+      "correct": "Das passt",
+      "retry": "Noch ein Versuch",
+      "uncertain": "Lass uns das klären",
+      "skipped": "Für späteres Üben gespeichert"
+    },
+    "finishPractice": "Meinen Fortschritt ansehen",
+    "nextTask": "Nächste Aufgabe",
+    "hint": "Etwas Hilfe",
+    "skipTask": "Aufgabe überspringen",
+    "pauseHomework": "Speichern und später fortsetzen",
+    "draftNotice": "Nicht gesendeter Text bleibt in dieser Browsersitzung. Speichere, um auf einem anderen Gerät weiterzumachen.",
+    "progressSaved": "Deine gesendeten Antworten sind gespeichert.",
+    "lessonHomeworkTitle": "Den heutigen Fortschritt festigen",
+    "lessonHomeworkBody": "Eine kurze Übung zu dieser Lektion. Mit einem Klick starten.",
+    "oneFocus": "Ein Punkt zum Festigen:",
+    "reportDetails": "Details, Korrekturen und Wortschatz",
+    "supportLanguageError": "Wähle für den Einstieg eine vertraute Erklärungssprache, die sich von der Lernsprache unterscheidet.",
+    "separateCourseError": "Erstelle für eine andere Sprache oder weitere Änderungen einen neuen Kurs. Dein bestehender Kurs bleibt gespeichert."
   }
 }

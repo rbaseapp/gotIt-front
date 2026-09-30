@@ -33,6 +33,7 @@ export function encodeWav(samples: Float32Array): Uint8Array {
 export async function recordVoice(
   signal: AbortSignal,
   releaseSignal: AbortSignal,
+  maximumSeconds = 6,
 ): Promise<string> {
   if (
     !window.isSecureContext ||
@@ -66,9 +67,12 @@ export async function recordVoice(
       const release = () => {
         if (recorder.state !== "inactive") recorder.stop();
       };
-      const timer = setTimeout(() => {
-        if (recorder.state !== "inactive") recorder.stop();
-      }, 6000);
+      const timer = setTimeout(
+        () => {
+          if (recorder.state !== "inactive") recorder.stop();
+        },
+        Math.min(15, maximumSeconds) * 1000,
+      );
       const clean = () => {
         clearTimeout(timer);
         signal.removeEventListener("abort", abort);
@@ -103,7 +107,7 @@ export async function recordVoice(
     const decoded = await audioContext.decodeAudioData(
       await blob.arrayBuffer(),
     );
-    const duration = Math.min(decoded.duration, 6);
+    const duration = Math.min(decoded.duration, Math.min(15, maximumSeconds));
     if (duration < 0.1) throw new Error(i18n.t("voiceErrors.tooShort"));
     const offline = new OfflineAudioContext(
       1,

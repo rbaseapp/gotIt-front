@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
+import { LanguageCombobox } from "../components/LanguageCombobox";
 import { Modal } from "../components/Modal";
 import { RemoteState } from "../components/RemoteState";
 import {
@@ -433,24 +434,18 @@ export function LiveVocabularyPage() {
             </label>
             <label className="field">
               <span>{t("vocabulary.sourceLanguage")}</span>
-              <input
-                dir="ltr"
-                maxLength={64}
+              <LanguageCombobox
                 value={filters.sourceLanguageCode || ""}
-                onChange={(e) => change("sourceLanguageCode", e.target.value)}
-                placeholder="en / fr"
+                onChange={(code) => change("sourceLanguageCode", code)}
+                emptyLabel={t("demoVocabulary.allLanguages")}
               />
             </label>
             <label className="field">
               <span>{t("vocabulary.translationLanguage")}</span>
-              <input
-                dir="ltr"
-                maxLength={64}
+              <LanguageCombobox
                 value={filters.translationLanguageCode || ""}
-                onChange={(e) =>
-                  change("translationLanguageCode", e.target.value)
-                }
-                placeholder="he / en"
+                onChange={(code) => change("translationLanguageCode", code)}
+                emptyLabel={t("demoVocabulary.allLanguages")}
               />
             </label>
           </div>
@@ -953,18 +948,16 @@ function DetailForm({
           <div className="live-form-grid">
             <label className="field">
               <span>{t("vocabulary.sourceLanguage")}</span>
-              <input
-                maxLength={64}
+              <LanguageCombobox
                 value={sourceLanguage}
-                onChange={(e) => setSourceLanguage(e.target.value)}
+                onChange={setSourceLanguage}
               />
             </label>
             <label className="field">
               <span>{t("vocabulary.translationLanguage")}</span>
-              <input
-                maxLength={64}
+              <LanguageCombobox
                 value={targetLanguage}
-                onChange={(e) => setTargetLanguage(e.target.value)}
+                onChange={setTargetLanguage}
               />
             </label>
           </div>

@@ -42,10 +42,13 @@ VITE_DEMO_MODE=true
 
 ```powershell
 npm run check
+npm run test:responsive
 npm audit --omit=dev --audit-level=high
 ```
 
-`check` מריץ typecheck, ESLint, 42 בדיקות React/חוזים, build ועוד 6 בדיקות gateway. הבדיקות אינן יוצרות משתמש חיצוני ואינן כותבות למסד אמיתי.
+`check` מריץ typecheck, ESLint, 94 בדיקות React/חוזים, build ועוד 13 בדיקות gateway. הבדיקות אינן יוצרות משתמש חיצוני ואינן כותבות למסד אמיתי.
+
+`test:responsive` מריץ 276 בדיקות Playwright במטריצה של מסכי מובייל, טאבלט ודסקטופ מול נתיבי הדמו, כולל תפריט צד, מודאלים ובדיקות regression ייעודיות לשיעור הפרטי. הבדיקה משתמשת ב־Chrome המותקן ואינה פונה למסד אמיתי.
 
 ## Billing / Paddle
 

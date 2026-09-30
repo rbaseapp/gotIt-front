@@ -1,5 +1,12 @@
 import { StrictMode } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -247,6 +254,52 @@ describe("live server-backed flows", () => {
     ).not.toBeInTheDocument();
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
   });
+  it("shows a spinner while checking an answer, then an error and retry after failure", async () => {
+    let rejectAttempt!: (reason: Error) => void;
+    const firstAttempt = new Promise<Response>((_resolve, reject) => {
+      rejectAttempt = reject;
+    });
+    let attempts = 0;
+    mount("/learn/session/recall?items=" + itemId, async (url) => {
+      if (url.endsWith("/practice/sessions")) return json({ session });
+      if (url.endsWith("/exercises"))
+        return json(
+          { exercises: [exercise], algorithmVersion: "server-v1" },
+          201,
+        );
+      if (url.endsWith("/practice/attempts"))
+        return ++attempts === 1 ? firstAttempt : json(receipt, 201);
+      throw new Error("Unexpected route");
+    });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "מתחילים" }));
+    await user.type(await screen.findByLabelText("התשובה שלך"), "remember");
+    await user.click(screen.getByRole("button", { name: "בדיקת תשובה" }));
+
+    const status = await screen.findByText("בודקים את התשובה…");
+    expect(status.closest('[role="status"]')).toHaveClass("answer-pending");
+    expect(
+      document.querySelector(".answer-pending-spinner svg"),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "ניסיון נוסף לאותה תשובה" }),
+    ).not.toBeInTheDocument();
+
+    await act(async () => rejectAttempt(new Error("lost response")));
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.queryByText("בודקים את התשובה…")).not.toBeInTheDocument();
+    const retry = screen.getByRole("button", {
+      name: "ניסיון נוסף לאותה תשובה",
+    });
+    expect(retry).toBeEnabled();
+    await user.click(retry);
+    expect(
+      await screen.findByRole("heading", { name: "נכון חלקית" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(attempts).toBe(2);
+  });
   it("uses server-issued exercises, freezes attempt retries, and trusts only the server projection", async () => {
     let attempts = 0;
     let exerciseBatches = 0;
@@ -365,6 +418,9 @@ describe("live server-backed flows", () => {
       screen.getByRole("button", { name: "סיום ושמירת הסיכום" }),
     );
     await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
+    expect(document.querySelector(".live-session-main")).not.toHaveClass(
+      "session-active",
+    );
     expect(screen.getAllByText("13").length).toBeGreaterThan(0);
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
   });
@@ -573,6 +629,9 @@ describe("live server-backed flows", () => {
     await user.click(screen.getByRole("button", { name: "apple" }));
     await user.click(screen.getByRole("button", { name: "תפוח" }));
     await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
+    expect(document.querySelector(".live-session-main")).not.toHaveClass(
+      "session-active",
+    );
     expect(submitted).toEqual([
       expect.objectContaining({ exerciseId, choiceId: choiceA }),
       expect.objectContaining({
@@ -1101,10 +1160,15 @@ describe("live server-backed flows", () => {
     ).toHaveLength(1);
     let releaseSignal: AbortSignal | undefined;
     let finishRecording: ((audio: string) => void) | undefined;
-    vi.mocked(recordVoice).mockImplementation(async (_cancel, release) => {
+    let cancelSignal: AbortSignal | undefined;
+    vi.mocked(recordVoice).mockImplementation(async (cancel, release) => {
+      cancelSignal = cancel;
       releaseSignal = release;
-      return new Promise<string>((resolve) => {
+      return new Promise<string>((resolve, reject) => {
         finishRecording = resolve;
+        cancel.addEventListener("abort", () => reject(new Error("cancelled")), {
+          once: true,
+        });
       });
     });
     const holdButton = screen.getByRole("button", {
@@ -1115,8 +1179,25 @@ describe("live server-backed flows", () => {
       "exercise-skip-action",
     );
     Object.assign(holdButton, { setPointerCapture: vi.fn() });
-    fireEvent.pointerDown(holdButton, { button: 0, pointerId: 7 });
+    fireEvent.pointerDown(holdButton, {
+      button: 0,
+      pointerId: 7,
+      isPrimary: true,
+    });
     await waitFor(() => expect(recordVoice).toHaveBeenCalledOnce());
+    fireEvent.pointerCancel(holdButton, { pointerId: 7 });
+    expect(cancelSignal?.aborted).toBe(true);
+    await waitFor(() =>
+      expect(holdButton).toHaveAttribute("aria-pressed", "false"),
+    );
+    fireEvent.pointerDown(holdButton, {
+      button: 0,
+      pointerId: 7,
+      isPrimary: true,
+    });
+    await waitFor(() => expect(recordVoice).toHaveBeenCalledTimes(2));
+    expect(releaseSignal?.aborted).toBe(false);
+    fireEvent.pointerUp(holdButton, { button: 0, pointerId: 8 });
     expect(releaseSignal?.aborted).toBe(false);
     fireEvent.pointerUp(holdButton, { button: 0, pointerId: 7 });
     expect(releaseSignal?.aborted).toBe(true);
@@ -1184,7 +1265,7 @@ describe("live server-backed flows", () => {
     ).toHaveLength(0);
   });
   it("opens recent dashboard words in place without navigating to vocabulary", async () => {
-    mount("/dashboard", async (url) => {
+    const fetchMock = mount("/dashboard", async (url) => {
       if (url.includes("/dashboard?"))
         return json({
           counts: {
@@ -1242,7 +1323,6 @@ describe("live server-backed flows", () => {
         });
       if (url.includes("/learning-items?"))
         return json({ items: [], nextCursor: null });
-      if (url.endsWith("/word-packs")) return json({ packs: [] });
       throw new Error("Unexpected route");
     });
     const user = userEvent.setup();
@@ -1253,6 +1333,9 @@ describe("live server-backed flows", () => {
     expect(screen.getByRole("dialog")).toHaveTextContent("subscription");
     expect(screen.getByRole("dialog")).toHaveTextContent("מנוי");
     expect(screen.getByRole("heading", { name: /שלום/u })).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith("/word-packs")),
+    ).toBe(false);
   });
   it("shows a recoverable API failure instead of displaying demo words", async () => {
     mount("/vocabulary", async (url) =>
@@ -1297,6 +1380,102 @@ describe("live server-backed flows", () => {
     expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/practice/sessions")),
     ).toBe(false);
+  });
+  it("shows completed, partial, and not started packs from server progress", async () => {
+    const basePack = {
+      id: exerciseId,
+      slug: "test-pack",
+      title: "Completed pack",
+      description: "A test pack",
+      moduleNumber: 1,
+      version: 1,
+      wordCount: 4,
+      installed: true,
+      installedVersion: 1,
+      topic: { id: itemId, slug: "test", title: "Test topic" },
+      track: {
+        id: sessionId,
+        slug: "test-track",
+        title: "Test track",
+        levelCode: "beginner",
+        cefrFrom: "A1",
+        cefrTo: "A2",
+        sourceLanguageCode: "en",
+        translationLanguageCode: "he",
+      },
+      progress: {
+        linked: 4,
+        new: 0,
+        learning: 0,
+        reviewing: 0,
+        mastered: 4,
+        due: 0,
+      },
+    };
+    const packs = [
+      basePack,
+      {
+        ...basePack,
+        id: secondItemId,
+        title: "Partial pack",
+        progress: { ...basePack.progress, mastered: 2, learning: 2 },
+      },
+      {
+        ...basePack,
+        id: remedialExerciseId,
+        title: "Not started pack",
+        installed: false,
+        installedVersion: null,
+        progress: { ...basePack.progress, linked: 0, mastered: 0 },
+      },
+      {
+        ...basePack,
+        id: "77777777-7777-4777-8777-777777777777",
+        title: "Added but not started pack",
+        progress: { ...basePack.progress, new: 4, mastered: 0 },
+      },
+      {
+        ...basePack,
+        id: "66666666-6666-4666-8666-666666666666",
+        title: "Selected subset pack",
+        progress: { ...basePack.progress, linked: 2, mastered: 2 },
+      },
+    ];
+    mount("/word-packs", async (url) => {
+      if (url.endsWith("/word-packs")) return json({ packs });
+      throw new Error("Unexpected route");
+    });
+    const card = async (title: string) =>
+      (await screen.findByRole("heading", { name: title })).closest("article")!;
+    const completed = await card("Completed pack");
+    const partial = await card("Partial pack");
+    const notStarted = await card("Not started pack");
+    const addedNotStarted = await card("Added but not started pack");
+    const subset = await card("Selected subset pack");
+
+    expect(completed).toHaveClass("completed");
+    expect(within(completed).getByText("המאגר הושלם")).toBeInTheDocument();
+    expect(
+      within(completed).getByText("4 מתוך 4 מילים הושלמו"),
+    ).toBeInTheDocument();
+    expect(within(completed).getByRole("progressbar")).toHaveAttribute(
+      "value",
+      "4",
+    );
+    expect(partial).not.toHaveClass("completed");
+    expect(within(partial).getByText("בלמידה")).toBeInTheDocument();
+    expect(
+      within(partial).getByText("2 מתוך 4 מילים הושלמו"),
+    ).toBeInTheDocument();
+    expect(notStarted).not.toHaveClass("completed");
+    expect(within(notStarted).getByText("טרם התחיל")).toBeInTheDocument();
+    expect(within(notStarted).getByRole("progressbar")).toHaveAttribute(
+      "value",
+      "0",
+    );
+    expect(within(addedNotStarted).getByText("טרם התחיל")).toBeInTheDocument();
+    expect(subset).not.toHaveClass("completed");
+    expect(within(subset).getByText("בלמידה")).toBeInTheDocument();
   });
   it("shows leveled word packs and adds a selected unit", async () => {
     const pack = {

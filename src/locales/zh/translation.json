@@ -32,9 +32,92 @@
     "billing": "订阅"
   },
   "privateLesson": {
+    "mode": {
+      "title": "课程类型",
+      "teachingLanguage": "讲解所用语言",
+      "chooseTeachingLanguage": "选择讲解语言",
+      "explainInTarget": "用{{language}}讲解",
+      "explainInSupport": "用{{language}}讲解",
+      "supportHint": "说明和讲解使用所选语言，练习的词语和句子仍使用目标语言。",
+      "beginnerHint": "老师会用这种语言讲解，并逐步加入 3–5 个实用的新语言短句。",
+      "options": {
+        "standard": {
+          "title": "常规课程",
+          "description": "课程主要使用练习语言，必要时提供帮助。"
+        },
+        "absolute_beginner": {
+          "title": "从零开始",
+          "description": "无需任何基础。老师会用你的语言讲解并练习最初的短句。"
+        }
+      }
+    },
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
+    "preferences": {
+      "title": "Lesson preferences",
+      "saved": "Saved automatically for this language"
+    },
+    "roadmap": {
+      "eyebrow": "Your learning roadmap",
+      "loading": "Preparing your learning path…",
+      "chooseTitle": "Choose one direction — we’ll build the path",
+      "chooseDescription": "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
+      "recommended": "Recommended for you",
+      "recommendedReason": "Based on your current level and the most useful next skill",
+      "change": "Change goal",
+      "communicationTitle": "Choose a communication goal",
+      "grammarTitle": "Explore English skills",
+      "currentHint": "This lesson revisits the current milestone and advances only after the target task is completed consistently.",
+      "evidence_one": "{{count}}/2 completed task · {{score}}/75 task score",
+      "evidence_other": "{{count}}/2 completed tasks · {{score}}/75 task score",
+      "goals": {
+        "everyday-conversation": "Everyday conversation",
+        "workplace-communication": "Workplace communication",
+        "travel-confidence": "Travel confidence",
+        "job-interviews": "Job interviews",
+        "presentations": "Presentations"
+      },
+      "topics": {
+        "articles": "Articles (a, an, the)",
+        "present-simple-continuous": "Present Simple / Continuous",
+        "past-simple-continuous": "Past Simple / Continuous",
+        "verb-forms-v1-v2-v3": "Verb forms V1 / V2 / V3",
+        "prepositions": "Prepositions",
+        "future-forms": "Future forms",
+        "modal-verbs": "Modal verbs",
+        "gerund-infinitive": "Gerund / Infinitive",
+        "conditionals": "Conditionals",
+        "passive-voice": "Passive Voice",
+        "advanced-sentence-structure": "Advanced sentence structure"
+      },
+      "stages": {
+        "foundation": "Foundation",
+        "guided-use": "Guided use",
+        "controlled-conversation": "Controlled conversation",
+        "free-conversation": "Free conversation",
+        "independent-mastery": "Independent use"
+      }
+    },
     "eyebrow": "GotIt Voice",
     "title": "您的私人语音课",
-    "description": "五分钟专注对话，根据您的水平、兴趣和已保存词汇量身定制。",
+    "description": "按您选择的时长进行专注对话，并根据您的水平、兴趣和已保存词汇量身定制。",
     "setupTitle": "定制本次课程",
     "setupDescription": "选择语言和重点。系统会自动使用您当前的 GotIt 登录，无需令牌。",
     "targetLanguage": "练习语言",
@@ -42,22 +125,85 @@
     "noSupport": "不使用辅助语言",
     "level": "水平",
     "automaticLevel": "使用个人资料中的水平",
-    "teacherVoice": "教师声音",
+    "levelOptions": {
+      "A1": "初学者",
+      "A2": "基础",
+      "B1": "中级",
+      "B2": "中高级",
+      "C1": "高级",
+      "C2": "精通"
+    },
+    "teacherVoice": "老师",
     "voiceOptions": {
-      "female": "女声",
-      "male": "男声"
+      "female": "瑞秋",
+      "male": "迈克"
     },
     "speechRate": "语速",
     "speedOptions": {
+      "very_slow": "很慢",
       "slow": "慢",
       "normal": "正常",
-      "fast": "快"
+      "fast": "快",
+      "very_fast": "很快"
     },
     "topic": "主题",
     "topicPlaceholder": "例如：旅行或求职面试",
     "grammarFocus": "语法重点",
     "grammarPlaceholder": "例如：一般过去时",
-    "start": "开始五分钟课程",
+    "focus": {
+      "title": "你想提高什么？",
+      "description": "可选择一个或多个领域，导师会安排更多练习时间。",
+      "options": {
+        "speaking": "口语",
+        "vocabulary": "词汇",
+        "grammar": "语法",
+        "fluency": "流利度",
+        "pronunciation": "发音",
+        "listening": "听力"
+      }
+    },
+    "vocabularyMode": {
+      "title": "使用已保存的词汇吗？",
+      "description": "口语对话属于进阶练习，因此只会使用已经达到“已学会”状态的词。",
+      "options": {
+        "learned": {
+          "title": "使用已学会的词",
+          "description": "老师会自然融入已经学会的词，仍在学习中的词不会加入。"
+        },
+        "none": {
+          "title": "自由课程",
+          "description": "围绕主题和你的目标上课，不使用已保存的词汇。"
+        }
+      }
+    },
+    "correctionMode": {
+      "title": "老师应该怎样纠正你？",
+      "description": "选择老师在对话中暂停并进行纠正与讲解的程度。",
+      "options": {
+        "critical_only": {
+          "title": "自由对话",
+          "description": "保持对话流畅，只纠正严重影响意思的关键错误。"
+        },
+        "recast": {
+          "title": "纠正我的句子",
+          "description": "给出更自然、正确的表达，并让我再说一遍。"
+        },
+        "deep_explanation": {
+          "title": "深入纠正与讲解",
+          "description": "纠正句子，解释语法规则以及原表达错误的原因。"
+        }
+      }
+    },
+    "customFocus": "我的个人目标",
+    "customFocusPlaceholder": "例如：在客户会议中自信表达",
+    "duration": "课程时长",
+    "durationOptions": {
+      "1": "1 分钟",
+      "5": "5 分钟",
+      "10": "10 分钟",
+      "15": "15 分钟"
+    },
+    "start": "开始课程",
     "preparing": "正在准备课程…",
     "privacy": "麦克风音频仅用于实时对话，本 POC 不会在 GotIt 中存储音频。",
     "ready": "准备好后即可开始。",
@@ -75,12 +221,39 @@
     "stopped": "您已结束课程。",
     "connectionClosed": "语音连接已关闭。",
     "communicationError": "语音课程发生通信错误。",
-    "timeFinished": "五分钟课程已完成。",
+    "timeFinished": "课程时间已结束。",
+    "muteMicrophone": "关闭麦克风",
+    "unmuteMicrophone": "打开麦克风",
     "transcriptTitle": "实时转录",
     "finish": "结束课程",
     "finishing": "正在总结并道别…",
-    "translateLast": "翻译上一句话",
+    "continueLesson": "继续课程",
+    "continuing": "继续跟老师学习…",
+    "translateLast": "翻译上一段发言",
     "restart": "开始另一节课",
+    "continuity": {
+      "title": "下一节课将从这里继续："
+    },
+    "assessment": {
+      "latest": "你当前的等级评估",
+      "title": "本节课的等级评估",
+      "overall": "综合评估：{{level}}",
+      "provisional": "本课证据范围：{{range}}",
+      "insufficient": "证据不足",
+      "collecting": "正在收集证据",
+      "confidence": {
+        "low": "初步评估 · 需要更多练习",
+        "medium": "基于表现的评估",
+        "high": "本节课有充分依据"
+      },
+      "skills": {
+        "speaking": "口语",
+        "vocabulary": "词汇",
+        "grammar": "语法",
+        "fluency": "流利度",
+        "comprehension": "理解"
+      }
+    },
     "history": {
       "eyebrow": "课程日志",
       "title": "以往私人课程",
@@ -112,7 +285,11 @@
       "saveWord": "保存单词",
       "saved": "已保存"
     },
-    "roles": { "learner": "您", "tutor": "导师", "system": "课程" },
+    "roles": {
+      "learner": "您",
+      "tutor": "导师",
+      "system": "课程"
+    },
     "errors": {
       "BROWSER_UNSUPPORTED": "此浏览器无法运行实时语音课程。请通过 HTTPS 使用最新版 Chrome、Edge 或 Safari。",
       "MICROPHONE_UNAVAILABLE": "未授予麦克风权限。请允许麦克风访问后重试。",
@@ -121,6 +298,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "语言水平评估",
     "closeMenu": "关闭菜单",
     "openMenu": "打开菜单",
     "upgradePro": "升级到专业版",
@@ -197,6 +375,10 @@
     "retry": "再试一次"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "接口",
     "interfaceDescription": "选择 GotIt 菜单和屏幕使用的语言。",
     "savedLocally": "界面首选项保存在此浏览器中，不会更改您的学习或翻译语言。",
@@ -683,6 +865,13 @@
     "wordCount": "{{count}}字",
     "selectedCount": "{{count}} 已选择",
     "masteredCount": "{{count}} 已完成",
+    "progressStates": {
+      "completed": "词包已完成",
+      "inProgress": "学习中",
+      "notStarted": "尚未开始"
+    },
+    "progressCount": "已掌握 {{mastered}} / {{total}} 个单词",
+    "progressLabel": "{{title}} 的学习进度",
     "showWords": "显示单词",
     "updateSelection": "更新并选择单词",
     "editSelection": "编辑单词选择",
@@ -813,7 +1002,7 @@
     "cancelRecording": "取消录音",
     "yourAnswer": "你的答案",
     "checkAnswer": "检查答案",
-    "answerLocked": "答案被锁定，直到服务器确认为止。没有记录到当地的进展。",
+    "checkingAnswer": "正在检查你的答案…",
     "retryAnswer": "重试相同的答案",
     "skip": "跳过",
     "expectedAnswer": "答案：{{answer}}",
@@ -1277,16 +1466,16 @@
     "SPEECH_UNAVAILABLE": "音频服务暂时不可用。稍后再试。",
     "AUDIO_INVALID": "录音没有清晰地捕捉到。在安静的地方再试一次。",
     "SKILL_UNAVAILABLE": "您的学习偏好设置中当前未启用此练习。",
-    "READING_PROVIDER_AUTHENTICATION": "Anthropic 拒绝了服务器上配置的 API 密钥。替换 ANTHROPIC_API_KEY 并再次部署。",
-    "READING_PROVIDER_BILLING": "Anthropic 帐户需要计费或有效的 API 积分。",
-    "READING_PROVIDER_PERMISSION": "Anthropic 键无权访问选定的工作区或模型。",
-    "READING_PROVIDER_WORKSPACE": "配置的 Anthropic 工作区与 API 密钥不匹配。删除或更正 ANTHROPIC_WORKSPACE_ID。",
-    "READING_PROVIDER_MODEL_ACCESS": "配置的模型对于 Anthropic key 不可用。检查 AI_READING_MODEL。",
-    "READING_PROVIDER_RATE_LIMIT": "目前人为请求限制已用完。稍后再试。",
-    "READING_PROVIDER_REQUEST_INVALID": "Anthropic 拒绝了请求格式。检查服务器型号配置。",
-    "READING_PROVIDER_TIMEOUT": "Anthropic 在 30 秒内没有做出回应。重试或检查渲染中的响应时间。",
-    "READING_PROVIDER_RESPONSE_INVALID": "Anthropic 返回了服务器无法处理的响应。检查模型和结构化输出。",
-    "READING_PROVIDER_UPSTREAM": "在收到有效响应之前，人为请求失败。",
+    "READING_PROVIDER_AUTHENTICATION": "OpenAI 拒绝了服务器上配置的 API 密钥。替换 OPENAI_API_KEY 并再次部署。",
+    "READING_PROVIDER_BILLING": "OpenAI 帐户需要计费或有效的 API 积分。",
+    "READING_PROVIDER_PERMISSION": "OpenAI 密钥无权访问选定的项目或模型。",
+    "READING_PROVIDER_WORKSPACE": "配置的 OpenAI 项目或工作区与 API 密钥不匹配。",
+    "READING_PROVIDER_MODEL_ACCESS": "配置的模型对于 OpenAI 密钥不可用。检查 AI_READING_MODEL。",
+    "READING_PROVIDER_RATE_LIMIT": "OpenAI 请求限制当前已用尽。请稍后重试。",
+    "READING_PROVIDER_REQUEST_INVALID": "OpenAI 拒绝了请求格式。检查服务器模型配置。",
+    "READING_PROVIDER_TIMEOUT": "OpenAI 未在生成截止时间前响应。请重试或检查 Render 中的响应时间。",
+    "READING_PROVIDER_RESPONSE_INVALID": "OpenAI 返回了服务器无法处理的响应。检查模型和结构化输出。",
+    "READING_PROVIDER_UPSTREAM": "OpenAI 请求在收到有效响应之前失败。",
     "network": "无法访问该服务。请检查网络连接后重试。",
     "timeout": "请求处理用时超过预期。请重试；可以安全地重新提交同一答案。",
     "serverUnavailable": "该服务暂时不可用。再试一次。",
@@ -1428,5 +1617,156 @@
     "notConfigured": "此环境中未配置 Facebook 登录。",
     "cancelled": "Facebook 登录已取消，或未获得所需权限。",
     "retry": "重试"
+  },
+  "courses": {
+    "eyebrow": "你的私人老师",
+    "title": "清晰的学习路径，适合你的节奏",
+    "allCourses": "我的课程",
+    "freePractice": "自由对话",
+    "welcomeKicker": "从一次对话开始",
+    "welcomeTitle": "你希望学会表达什么？",
+    "welcomeBody": "用你的语言和老师简短聊一聊：约四分钟回答六个问题。你可以打字或语音回答，确认信息后再生成学习计划。",
+    "welcomeHint": "开始前，先确认你的偏好和完整课程计划。",
+    "targetLanguage": "我想学习",
+    "supportLanguage": "与老师对话的语言",
+    "buildWithTeacher": "和老师一起制定课程",
+    "yourCourse": "你的学习路径",
+    "continueCourse": "继续我的课程",
+    "intakeInProgress": "先了解你",
+    "newCourse": "创建另一门课程",
+    "loading": "正在打开已保存的内容…",
+    "unavailable": "老师暂时不可用。你的课程仍保存在这里。",
+    "stepsLabel": "创建课程",
+    "steps": {
+      "conversation": "交流",
+      "preferences": "学习偏好",
+      "plan": "课程计划"
+    },
+    "teacher": "AI老师",
+    "you": "你",
+    "saved": "已保存",
+    "conversationHistory": "之前的对话",
+    "answerLabel": "你的回答",
+    "answerPlaceholder": "写一句简短的回答，或使用麦克风…",
+    "send": "发送",
+    "voiceAnswer": "语音回答",
+    "stopRecording": "结束录音",
+    "transcribing": "正在转写…",
+    "recordingHint": "最多录制15秒，可随时点击结束。",
+    "checkTranscript": "发送前可以检查或修改转写文字。",
+    "typeFallback": "你也可以继续打字。",
+    "readAloud": "朗读",
+    "stopAudio": "停止朗读",
+    "reviewNow": "查看目前的信息",
+    "correctAnswer": "修改这条回答",
+    "saveCorrection": "保存修改",
+    "cancelCorrection": "取消修改",
+    "backToConversation": "返回对话",
+    "reviewKicker": "制定课程之前",
+    "reviewTitle": "这是我对你的了解",
+    "reviewBody": "看看这些是否适合你。你可以修改某个细节，或告诉老师想调整什么。",
+    "approvePreferences": "这些偏好适合我，制定课程",
+    "retryPlan": "制定我的课程",
+    "changeWithTeacher": "告诉老师想修改什么",
+    "goal": "你的目标",
+    "editGoal": "修改目标",
+    "save": "保存",
+    "path": "课程类型",
+    "paths": {
+      "comprehensive": "全面学习",
+      "grammar": "系统语法",
+      "goal": "实用目标"
+    },
+    "pace": "学习节奏",
+    "paceValue": "每次{{minutes}}分钟 · 每周{{days}}天",
+    "experience": "起点",
+    "learningStyle": "教学方式",
+    "interests": "你的兴趣",
+    "age": {
+      "child": "儿童",
+      "teen": "青少年",
+      "adult": "成人",
+      "unspecified": "尚未说明年龄"
+    },
+    "literacy": {
+      "not_yet": "口语活动",
+      "developing": "辅助阅读",
+      "independent": "独立阅读",
+      "unspecified": "尚未说明阅读能力"
+    },
+    "youSaid": "你告诉我的",
+    "teacherSuggests": "我的建议",
+    "provisionalLevel": "起始水平只是教学估计，我们会根据你在课堂上的表现逐步调整。",
+    "previewKicker": "你的课程计划 · 待确认",
+    "previewBody": "共{{count}}个单元，每个单元都有清晰目标。打开任意单元，看看将学习什么。",
+    "approvePlan": "确认这份课程计划",
+    "requestChanges": "请求修改",
+    "nextLesson": "你的下一课",
+    "startNextLesson": "开始下一课",
+    "courseComplete": "你已完成这门课程",
+    "completeBody": "你可以复习各单元、继续练习，或制定下一门课程。",
+    "progressLabel": "已展示{{count}}项能力，共{{total}}项课堂目标",
+    "progressDetail": "已学习{{covered}}项目标 · 已独立展示{{demonstrated}}项。",
+    "retentionNote": "长期记忆需要稍后复习来验证。完成任务并不等于熟练掌握。",
+    "whatToChange": "你想怎样调整课程？",
+    "changeHint": "例如：多学语法、缩短课时，或增加工作场景对话。修改后的课程会再次交给你确认。",
+    "syllabus": "完整课程内容",
+    "unitCount": "{{count}}个单元",
+    "lessonCount": "{{count}}课",
+    "youAreHere": "你在这里",
+    "grammar": "语法与结构",
+    "vocabulary": "词汇与情境",
+    "unitSuccess": "完成后，你将能够…",
+    "homeworkExample": "练习示例",
+    "estimatedMinutes": "约{{count}}分钟",
+    "prerequisites": "基于以下内容",
+    "savedPreferences": "已保存的偏好",
+    "buildingPlan": "正在制定课程，你的偏好已保存…",
+    "teacherThinking": "老师正在准备回答…",
+    "changed": "另一会话更新了你的内容。已载入最新版本，请确认后继续。",
+    "reload": "重新加载",
+    "tryAgain": "再试一次",
+    "homework": "本课练习",
+    "homeworkCompleted": "练习已完成",
+    "viewResults": "查看结果",
+    "resumeHomework": "继续练习",
+    "practiceNow": "开始练习",
+    "homeworkTitle": "少量练习，持续进步",
+    "backToCourse": "返回我的课程",
+    "preparingHomework": "正在准备练习",
+    "preparingHomeworkBody": "根据你实际学过的内容，准备几道有针对性的短练习。",
+    "homeworkDone": "你已完成练习",
+    "independentSuccess": "你独立回答了{{count}}道题。",
+    "practiceSuccess": "你练习了所学内容，又向前走了一步。",
+    "nextReview": "值得复习",
+    "homeworkContinuation": "老师会根据这些练习准备下一课。即使作业还未完成，也可以继续学习。",
+    "independent": "已独立展示",
+    "withSupport": "在帮助下或通过识别完成练习",
+    "forReview": "值得再次练习",
+    "taskProgress": "第{{current}}题，共{{total}}题",
+    "taskProgressLabel": "练习进度",
+    "readInstead": "改为阅读",
+    "clearAnswer": "清空回答",
+    "checkAnswer": "检查我的答案",
+    "yourAnswer": "你的答案",
+    "feedback": {
+      "correct": "这样可以",
+      "retry": "再试一次",
+      "uncertain": "我们再确认一下",
+      "skipped": "留待下次练习"
+    },
+    "finishPractice": "查看我的进步",
+    "nextTask": "下一题",
+    "hint": "一点帮助",
+    "skipTask": "跳过此题",
+    "pauseHomework": "保存并稍后继续",
+    "draftNotice": "未发送的文字保留在本次浏览器会话中。若要换设备继续，请先保存。",
+    "progressSaved": "已提交的答案已保存。",
+    "lessonHomeworkTitle": "巩固今天的进步",
+    "lessonHomeworkBody": "基于本课的简短练习，一键开始。",
+    "oneFocus": "一个值得加强的地方：",
+    "reportDetails": "详情、纠正与词汇",
+    "supportLanguageError": "从零开始时，请选择一种熟悉且不同于目标语言的讲解语言。",
+    "separateCourseError": "如需学习其他语言或继续调整，请创建新课程。现有课程已保存。"
   }
 }

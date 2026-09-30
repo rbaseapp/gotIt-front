@@ -15,6 +15,7 @@ import { z } from "zod";
 import {
   ArrowLeft,
   ArrowRight,
+  Brain,
   CheckCircle2,
   Flame,
   Gauge,
@@ -163,6 +164,7 @@ export function LiveGameSessionPage() {
   const mounted = useRef(true);
   const recordingController = useRef<AbortController | undefined>(undefined);
   const recordingRelease = useRef<AbortController | undefined>(undefined);
+  const recordingPointer = useRef<number | null>(null);
   const audio = useRef<HTMLAudioElement | undefined>(undefined);
   const audioUrl = useRef<string | undefined>(undefined);
   const shownAt = useRef(performance.now());
@@ -181,6 +183,10 @@ export function LiveGameSessionPage() {
   );
   const exercise = exercises[index];
   const studyCard = studyCards[studyIndex];
+  const sessionCompleted = session?.status === "completed";
+  // The last exercise is retained for results/restart. It must not keep the
+  // active-game layout (and its scroll lock) after the session has ended.
+  const activeCard = !sessionCompleted && Boolean(exercise || studyCard);
   const dragDropBoard =
     type === "drag_drop" || (type === "smart" && smartDragDropActive);
   const masteryRequirements = receipt?.progress.masteryRequirements;
@@ -214,6 +220,7 @@ export function LiveGameSessionPage() {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      recordingPointer.current = null;
       recordingController.current?.abort();
       if (momentTimer.current) clearTimeout(momentTimer.current);
       if (celebrationTimer.current) clearTimeout(celebrationTimer.current);
@@ -572,6 +579,7 @@ export function LiveGameSessionPage() {
     setBusy(true);
     setError("");
     recordingController.current?.abort();
+    recordingPointer.current = null;
     try {
       const result = await product(
         z.object({ session: sessionSchema }),
@@ -720,7 +728,7 @@ export function LiveGameSessionPage() {
     }
   };
   const record = async () => {
-    if (recording || pending || busy) return;
+    if (recordingController.current || pending || busy) return;
     const controller = new AbortController();
     const release = new AbortController();
     recordingController.current = controller;
@@ -745,7 +753,10 @@ export function LiveGameSessionPage() {
     }
   };
   const releaseRecording = () => recordingRelease.current?.abort();
-  const cancelRecording = () => recordingController.current?.abort();
+  const cancelRecording = () => {
+    recordingPointer.current = null;
+    recordingController.current?.abort();
+  };
   const submitRef = useRef(submit);
   const playRef = useRef(play);
   submitRef.current = submit;
@@ -860,14 +871,14 @@ export function LiveGameSessionPage() {
         />
       )}
       <main
-        className={`live-session-main${exercise || studyCard ? " session-active" : ""}`}
+        className={`live-session-main${activeCard ? " session-active" : ""}${activeCard && exercise?.kind === "provider" ? " provider-active" : ""}`}
       >
         {error && (
           <div role="alert" className="form-error">
             {error}
           </div>
         )}
-        {!exercise && !studyCard && session?.status !== "completed" && (
+        {!activeCard && !sessionCompleted && (
           <section className="live-panel session-launch">
             <span className="launch-icon" aria-hidden="true">
               <Sparkles size={30} />
@@ -959,7 +970,7 @@ export function LiveGameSessionPage() {
             )}
           </section>
         )}
-        {session?.status === "completed" ? (
+        {sessionCompleted ? (
           <section className="live-panel live-empty session-results">
             <span className="result-trophy" aria-hidden="true">
               <Trophy size={42} />
@@ -1289,18 +1300,35 @@ export function LiveGameSessionPage() {
                             disabled={busy || !!pending}
                             aria-pressed={recording}
                             onPointerDown={(event) => {
-                              if (event.button !== 0) return;
+                              if (
+                                event.button !== 0 ||
+                                !event.isPrimary ||
+                                recordingPointer.current !== null ||
+                                recordingController.current
+                              )
+                                return;
                               event.preventDefault();
+                              recordingPointer.current = event.pointerId;
                               event.currentTarget.setPointerCapture(
                                 event.pointerId,
                               );
                               void record();
                             }}
                             onPointerUp={(event) => {
+                              if (recordingPointer.current !== event.pointerId)
+                                return;
                               event.preventDefault();
+                              recordingPointer.current = null;
                               releaseRecording();
                             }}
-                            onPointerCancel={cancelRecording}
+                            onPointerCancel={(event) => {
+                              if (recordingPointer.current === event.pointerId)
+                                cancelRecording();
+                            }}
+                            onLostPointerCapture={(event) => {
+                              if (recordingPointer.current === event.pointerId)
+                                cancelRecording();
+                            }}
                             onKeyDown={(event) => {
                               if (
                                 (event.key === " " || event.key === "Enter") &&
@@ -1323,14 +1351,14 @@ export function LiveGameSessionPage() {
                               ? t("game.releaseToSend")
                               : t("game.holdToTalk")}
                           </button>
-                          {recording && (
-                            <button
-                              className="button ghost"
-                              onClick={cancelRecording}
-                            >
-                              {t("game.cancelRecording")}
-                            </button>
-                          )}
+                          <button
+                            className={`button ghost hold-to-talk-cancel${recording ? "" : " is-inactive"}`}
+                            disabled={!recording}
+                            aria-hidden={!recording}
+                            onClick={cancelRecording}
+                          >
+                            {t("game.cancelRecording")}
+                          </button>
                         </>
                       ) : (
                         <form
@@ -1376,14 +1404,22 @@ export function LiveGameSessionPage() {
                       )}
                       {pending ? (
                         <>
-                          <p>{t("game.answerLocked")}</p>
-                          <button
-                            className="button primary"
-                            disabled={busy}
-                            onClick={() => void submit({})}
-                          >
-                            {t("game.retryAnswer")}
-                          </button>
+                          {busy && !error ? (
+                            <div className="answer-pending" role="status">
+                              <span className="answer-pending-spinner" aria-hidden="true">
+                                <Brain size={24} strokeWidth={1.8} />
+                              </span>
+                              <span>{t("game.checkingAnswer")}</span>
+                            </div>
+                          ) : (
+                            <button
+                              className="button primary"
+                              disabled={busy}
+                              onClick={() => void submit({})}
+                            >
+                              {t("game.retryAnswer")}
+                            </button>
+                          )}
                         </>
                       ) : (
                         <button

@@ -104,7 +104,9 @@ describe("API token lifecycle and safe failures", () => {
   it("allows pronunciation assessment latency and reports a timeout distinctly", async () => {
     clearTokens();
     setTokens(tokens);
-    const aborted = AbortSignal.abort(new DOMException("Timed out", "TimeoutError"));
+    const aborted = AbortSignal.abort(
+      new DOMException("Timed out", "TimeoutError"),
+    );
     const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValue(aborted);
     vi.stubGlobal(
       "fetch",
@@ -114,12 +116,41 @@ describe("API token lifecycle and safe failures", () => {
     );
 
     await expect(
-      api.product("pronunciation/assessments", "POST", { audioBase64: "audio" }),
+      api.product("pronunciation/assessments", "POST", {
+        audioBase64: "audio",
+      }),
     ).rejects.toMatchObject({
       status: 0,
       code: "REQUEST_TIMEOUT",
     });
     expect(timeout).toHaveBeenCalledWith(60000);
+  });
+  it("allows Sol lesson preparation time and reports a timeout before opening a session", async () => {
+    clearTokens();
+    setTokens(tokens);
+    const aborted = AbortSignal.abort(
+      new DOMException("Timed out", "TimeoutError"),
+    );
+    const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValue(aborted);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new DOMException("Timed out", "TimeoutError");
+      }),
+    );
+
+    await expect(
+      api.product("private-lessons/realtime-sessions", "POST", {
+        targetLanguageCode: "en",
+      }),
+    ).rejects.toMatchObject({ code: "REQUEST_TIMEOUT" });
+    expect(timeout).toHaveBeenCalledWith(90000);
+    await expect(
+      api.product("courses/intake", "POST", {}),
+    ).rejects.toMatchObject({
+      code: "REQUEST_TIMEOUT",
+    });
+    expect(timeout).toHaveBeenCalledWith(120000);
   });
   it("never exposes raw internal server messages and rejects malformed success responses", async () => {
     clearTokens();

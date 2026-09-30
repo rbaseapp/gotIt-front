@@ -32,32 +32,178 @@
     "billing": "Subscription"
   },
   "privateLesson": {
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
     "eyebrow": "GotIt Voice",
     "title": "Your private voice lesson",
-    "description": "Five focused minutes of conversation, built around your level, interests, and saved vocabulary.",
-    "setupTitle": "Shape this lesson",
+    "description": "A focused lesson built around your level and progress.",
+    "setupTitle": "What would you like to learn today?",
+    "preferences": {
+      "title": "Lesson preferences",
+      "saved": "Saved automatically for this language"
+    },
+    "mode": {
+      "title": "Lesson type",
+      "teachingLanguage": "Language used for explanations",
+      "chooseTeachingLanguage": "Choose an explanation language",
+      "explainInTarget": "Explain in {{language}}",
+      "explainInSupport": "Explain in {{language}}",
+      "supportHint": "Directions and explanations use this language. Practice words and sentences stay in the target language.",
+      "beginnerHint": "The tutor will explain in this language and gradually introduce 3–5 useful phrases in the new language.",
+      "options": {
+        "standard": {
+          "title": "Standard lesson",
+          "description": "The lesson is mainly in the language you practice, with help when needed."
+        },
+        "absolute_beginner": {
+          "title": "Start from zero",
+          "description": "No prior knowledge needed. The tutor explains in your language and practices your first phrases."
+        }
+      }
+    },
+    "roadmap": {
+      "eyebrow": "Your learning roadmap",
+      "loading": "Preparing your learning path…",
+      "chooseTitle": "Choose one direction — we’ll build the path",
+      "chooseDescription": "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
+      "recommended": "Recommended for you",
+      "recommendedReason": "Based on your current level and the most useful next skill",
+      "change": "Change goal",
+      "communicationTitle": "Choose a communication goal",
+      "grammarTitle": "Explore English skills",
+      "currentHint": "This lesson revisits the current milestone and advances only after the target task is completed consistently.",
+      "evidence_one": "{{count}}/2 completed task · {{score}}/75 task score",
+      "evidence_other": "{{count}}/2 completed tasks · {{score}}/75 task score",
+      "goals": {
+        "everyday-conversation": "Everyday conversation",
+        "workplace-communication": "Workplace communication",
+        "travel-confidence": "Travel confidence",
+        "job-interviews": "Job interviews",
+        "presentations": "Presentations"
+      },
+      "topics": {
+        "articles": "Articles (a, an, the)",
+        "present-simple-continuous": "Present Simple / Continuous",
+        "past-simple-continuous": "Past Simple / Continuous",
+        "verb-forms-v1-v2-v3": "Verb forms V1 / V2 / V3",
+        "prepositions": "Prepositions",
+        "future-forms": "Future forms",
+        "modal-verbs": "Modal verbs",
+        "gerund-infinitive": "Gerund / Infinitive",
+        "conditionals": "Conditionals",
+        "passive-voice": "Passive Voice",
+        "advanced-sentence-structure": "Advanced sentence structure"
+      },
+      "stages": {
+        "foundation": "Foundation",
+        "guided-use": "Guided use",
+        "controlled-conversation": "Controlled conversation",
+        "free-conversation": "Free conversation",
+        "independent-mastery": "Independent use"
+      }
+    },
     "setupDescription": "Choose a language and a focus, then start your conversation.",
     "targetLanguage": "Language to practice",
     "supportLanguage": "Help language",
     "noSupport": "No help language",
     "level": "Level",
     "automaticLevel": "Use my profile level",
-    "teacherVoice": "Tutor voice",
+    "levelOptions": {
+      "A1": "Beginner",
+      "A2": "Elementary",
+      "B1": "Intermediate",
+      "B2": "Upper intermediate",
+      "C1": "Advanced",
+      "C2": "Proficient"
+    },
+    "teacherVoice": "Tutor",
     "voiceOptions": {
-      "female": "Female voice",
-      "male": "Male voice"
+      "female": "Rachel",
+      "male": "Mike"
     },
     "speechRate": "Speaking speed",
     "speedOptions": {
+      "very_slow": "Very slow",
       "slow": "Slow",
       "normal": "Normal",
-      "fast": "Fast"
+      "fast": "Fast",
+      "very_fast": "Very fast"
     },
     "topic": "Topic",
     "topicPlaceholder": "For example: travel or job interviews",
     "grammarFocus": "Grammar focus",
     "grammarPlaceholder": "For example: past simple",
-    "start": "Start five-minute lesson",
+    "focus": {
+      "title": "What do you want to improve?",
+      "description": "Choose one or more areas. The tutor will give them extra practice time.",
+      "options": {
+        "speaking": "Speaking",
+        "vocabulary": "Vocabulary",
+        "grammar": "Grammar",
+        "fluency": "Fluency",
+        "pronunciation": "Pronunciation",
+        "listening": "Listening"
+      }
+    },
+    "vocabularyMode": {
+      "title": "Use your saved vocabulary?",
+      "description": "Voice conversation is an advanced practice stage, so only words you have already learned can be included.",
+      "options": {
+        "learned": {
+          "title": "Use learned words",
+          "description": "Naturally include words that have already reached Learned status. Words still being acquired are excluded."
+        },
+        "none": {
+          "title": "Free lesson",
+          "description": "Run the lesson around the topic and your goals without using saved vocabulary."
+        }
+      }
+    },
+    "correctionMode": {
+      "title": "How should I correct you?",
+      "description": "Choose how much the teacher should pause the conversation to correct and explain.",
+      "options": {
+        "critical_only": {
+          "title": "Free conversation",
+          "description": "Keep the conversation flowing and correct only errors that seriously affect meaning."
+        },
+        "recast": {
+          "title": "Correct my sentence",
+          "description": "Give me a natural, correct version of what I said and let me try it again."
+        },
+        "deep_explanation": {
+          "title": "Explain it deeply",
+          "description": "Correct the sentence and explain the grammar rule and why my original was wrong."
+        }
+      }
+    },
+    "customFocus": "My personal goal",
+    "customFocusPlaceholder": "For example: I want to speak confidently in client meetings",
+    "duration": "Lesson duration",
+    "durationOptions": {
+      "1": "1 minute",
+      "5": "5 minutes",
+      "10": "10 minutes",
+      "15": "15 minutes"
+    },
+    "start": "Start lesson",
     "preparing": "Preparing your lesson…",
     "privacy": "Audio is used live and is not stored. The transcript creates your summary and is not retained.",
     "ready": "Ready when you are.",
@@ -75,12 +221,39 @@
     "stopped": "You ended the lesson.",
     "connectionClosed": "The voice connection closed.",
     "communicationError": "A voice-session communication error occurred.",
-    "timeFinished": "The five-minute lesson is complete.",
+    "timeFinished": "The lesson time is complete.",
+    "muteMicrophone": "Mute microphone",
+    "unmuteMicrophone": "Unmute microphone",
     "transcriptTitle": "Live transcript",
     "finish": "End lesson",
     "finishing": "Recapping and saying goodbye…",
-    "translateLast": "Translate last sentence",
+    "continueLesson": "Continue the lesson",
+    "continuing": "Continuing with the teacher…",
+    "translateLast": "Translate last speaking turn",
     "restart": "Start another lesson",
+    "continuity": {
+      "title": "Your next lesson continues here:"
+    },
+    "assessment": {
+      "latest": "Your current level estimate",
+      "title": "Level assessment from this lesson",
+      "overall": "Overall estimate: {{level}}",
+      "provisional": "Lesson evidence range: {{range}}",
+      "insufficient": "Not enough evidence",
+      "collecting": "Collecting evidence",
+      "confidence": {
+        "low": "Initial estimate · more practice needed",
+        "medium": "Evidence-based estimate",
+        "high": "Strong evidence from this lesson"
+      },
+      "skills": {
+        "speaking": "Speaking",
+        "vocabulary": "Vocabulary",
+        "grammar": "Grammar",
+        "fluency": "Fluency",
+        "comprehension": "Comprehension"
+      }
+    },
     "history": {
       "eyebrow": "Lesson journal",
       "title": "Previous private lessons",
@@ -125,6 +298,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Language level estimate",
     "closeMenu": "Close menu",
     "openMenu": "Open menu",
     "upgradePro": "Upgrade to PRO",
@@ -209,6 +383,10 @@
     "retry": "Try again"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "Interface",
     "interfaceDescription": "Choose the language used by GotIt menus and screens.",
     "savedLocally": "The interface preference is saved in this browser and does not change your learning or translation languages.",
@@ -695,6 +873,13 @@
     "wordCount": "{{count}} words",
     "selectedCount": "{{count}} selected",
     "masteredCount": "{{count}} completed",
+    "progressStates": {
+      "completed": "Pack completed",
+      "inProgress": "In progress",
+      "notStarted": "Not started"
+    },
+    "progressCount": "{{mastered}} of {{total}} words mastered",
+    "progressLabel": "Progress in {{title}}",
     "showWords": "Show words",
     "updateSelection": "Update and choose words",
     "editSelection": "Edit word selection",
@@ -825,7 +1010,7 @@
     "cancelRecording": "Cancel recording",
     "yourAnswer": "Your answer",
     "checkAnswer": "Check answer",
-    "answerLocked": "Your answer has not been confirmed yet. You can retry sending it; progress updates once it is confirmed.",
+    "checkingAnswer": "Checking your answer…",
     "retryAnswer": "Retry the same answer",
     "skip": "Skip",
     "expectedAnswer": "Answer: {{answer}}",
@@ -1431,5 +1616,156 @@
     "storageUnavailable": "Browser storage is blocked or full. Changes will be kept only for this session.",
     "logoutServerFailed": "You have signed out on this device, but we could not fully end the sign-in session. Try signing in and out again when connected.",
     "loadBeforeSave": "Load the profile before saving changes"
+  },
+  "courses": {
+    "eyebrow": "YOUR PRIVATE TEACHER",
+    "title": "A clear path, made for you",
+    "allCourses": "My courses",
+    "freePractice": "Free conversation",
+    "welcomeKicker": "Start with a conversation",
+    "welcomeTitle": "What would you like to be able to say?",
+    "welcomeBody": "A short conversation with your teacher in your language: six questions in about four minutes. Answer by text or voice, then review your details before the plan is built.",
+    "welcomeHint": "Review your preferences and the full course before starting.",
+    "targetLanguage": "I want to learn",
+    "supportLanguage": "Conversation language with the teacher",
+    "buildWithTeacher": "Build my course with the teacher",
+    "yourCourse": "YOUR LEARNING PATH",
+    "continueCourse": "Continue my course",
+    "intakeInProgress": "Getting to know you",
+    "newCourse": "Create another course",
+    "loading": "Opening your saved work…",
+    "unavailable": "The teacher is temporarily unavailable. Your saved courses remain here.",
+    "stepsLabel": "Course creation",
+    "steps": {
+      "conversation": "Conversation",
+      "preferences": "Your preferences",
+      "plan": "Your course"
+    },
+    "teacher": "AI teacher",
+    "you": "You",
+    "saved": "Saved",
+    "conversationHistory": "Our conversation so far",
+    "answerLabel": "Your reply",
+    "answerPlaceholder": "Write a short reply, or use the microphone…",
+    "send": "Send",
+    "voiceAnswer": "Answer by voice",
+    "stopRecording": "Finish recording",
+    "transcribing": "Transcribing…",
+    "recordingHint": "Recording up to 15 seconds. Press finish when you are ready.",
+    "checkTranscript": "Check or edit the transcript before sending.",
+    "typeFallback": "You can continue by typing.",
+    "readAloud": "Read aloud",
+    "stopAudio": "Stop audio",
+    "reviewNow": "Review what we have so far",
+    "correctAnswer": "Correct this answer",
+    "saveCorrection": "Save correction",
+    "cancelCorrection": "Cancel correction",
+    "backToConversation": "Back to the conversation",
+    "reviewKicker": "BEFORE WE BUILD YOUR COURSE",
+    "reviewTitle": "Here is what I understood",
+    "reviewBody": "Make sure this sounds like you. You can edit a detail or tell your teacher what to change.",
+    "approvePreferences": "These preferences fit — build my course",
+    "retryPlan": "Build my course",
+    "changeWithTeacher": "Tell the teacher what to change",
+    "goal": "Your goal",
+    "editGoal": "Edit your goal",
+    "save": "Save",
+    "path": "Course type",
+    "paths": {
+      "comprehensive": "Comprehensive learning",
+      "grammar": "Systematic grammar",
+      "goal": "A practical goal"
+    },
+    "pace": "Your pace",
+    "paceValue": "{{minutes}} minutes · {{days}} days a week",
+    "experience": "Starting point",
+    "learningStyle": "Teaching approach",
+    "interests": "Your interests",
+    "age": {
+      "child": "Child",
+      "teen": "Teen",
+      "adult": "Adult",
+      "unspecified": "Age not specified"
+    },
+    "literacy": {
+      "not_yet": "Oral activities",
+      "developing": "Supported reading",
+      "independent": "Independent reading",
+      "unspecified": "Reading comfort not specified"
+    },
+    "youSaid": "What you told me",
+    "teacherSuggests": "My recommendations",
+    "provisionalLevel": "The starting level is a teaching estimate. We will refine it from your work in lessons.",
+    "previewKicker": "YOUR COURSE · READY TO REVIEW",
+    "previewBody": "{{count}} units, with a clear goal for each. Open any unit to see what you will learn.",
+    "approvePlan": "Approve this course",
+    "requestChanges": "Request a change",
+    "nextLesson": "YOUR NEXT LESSON",
+    "startNextLesson": "Start the next lesson",
+    "courseComplete": "YOU HAVE REACHED THE END OF THIS COURSE",
+    "completeBody": "You can revisit the units, continue practicing, or build your next course.",
+    "progressLabel": "{{count}} of {{total}} lesson goals demonstrated",
+    "progressDetail": "{{covered}} lesson goals covered · {{demonstrated}} demonstrated independently.",
+    "retentionNote": "Long-term retention needs later review; completing a task does not establish mastery.",
+    "whatToChange": "How would you like to adjust the course?",
+    "changeHint": "For example: more grammar, shorter lessons, or more conversations about work. You will review the revised course before it takes effect.",
+    "syllabus": "Your full course",
+    "unitCount": "{{count}} units",
+    "lessonCount": "{{count}} lessons",
+    "youAreHere": "You are here",
+    "grammar": "Grammar and structure",
+    "vocabulary": "Vocabulary and situations",
+    "unitSuccess": "By the end, you will be able to…",
+    "homeworkExample": "A taste of your practice",
+    "estimatedMinutes": "About {{count}} minutes",
+    "prerequisites": "Builds on",
+    "savedPreferences": "Saved preferences",
+    "buildingPlan": "Preparing your course. Your preferences are saved…",
+    "teacherThinking": "Your teacher is thinking…",
+    "changed": "Your saved work changed in another session. We have loaded the latest version; review it before continuing.",
+    "reload": "Reload",
+    "tryAgain": "Try again",
+    "homework": "Practice from your lesson",
+    "homeworkCompleted": "Practice completed",
+    "viewResults": "View results",
+    "resumeHomework": "Continue practice",
+    "practiceNow": "Start practicing",
+    "homeworkTitle": "A little practice, lasting progress",
+    "backToCourse": "Back to my course",
+    "preparingHomework": "Preparing your practice",
+    "preparingHomeworkBody": "A few focused activities based on what you actually learned.",
+    "homeworkDone": "Your practice is complete",
+    "independentSuccess": "You answered {{count}} tasks independently.",
+    "practiceSuccess": "You practiced the material and took another step forward.",
+    "nextReview": "Worth revisiting",
+    "homeworkContinuation": "Your teacher will use this practice to shape your next lesson. You can continue learning even when homework is unfinished.",
+    "independent": "Demonstrated independently",
+    "withSupport": "Practiced with support or recognition",
+    "forReview": "Worth another practice",
+    "taskProgress": "Task {{current}} of {{total}}",
+    "taskProgressLabel": "Practice progress",
+    "readInstead": "Read instead of listening",
+    "clearAnswer": "Clear answer",
+    "checkAnswer": "Check my answer",
+    "yourAnswer": "Your answer",
+    "feedback": {
+      "correct": "That works",
+      "retry": "One more try",
+      "uncertain": "Let us clarify that",
+      "skipped": "Saved for another practice"
+    },
+    "finishPractice": "See my progress",
+    "nextTask": "Next task",
+    "hint": "A little help",
+    "skipTask": "Skip this task",
+    "pauseHomework": "Save and finish later",
+    "draftNotice": "Unsent text stays in this browser session. Save to continue on another device.",
+    "progressSaved": "Your submitted answers are saved.",
+    "lessonHomeworkTitle": "Keep today’s progress going",
+    "lessonHomeworkBody": "A short practice, based on this lesson. Start with one click.",
+    "oneFocus": "One thing to strengthen:",
+    "reportDetails": "Details, corrections and vocabulary",
+    "supportLanguageError": "Choose a familiar explanation language different from the language you are starting to learn.",
+    "separateCourseError": "Create a new course for a different language or further changes. Your existing course is saved."
   }
 }

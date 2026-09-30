@@ -185,6 +185,14 @@ export function createGateway(config) {
           startupPrewarmTriggered = true;
           prewarmCore();
         }
+        if (pathname === "/ready" && config.prewarmUpstreams !== false) {
+          try {
+            await ensureCoreReady();
+          } catch {
+            fail(503, "UPSTREAM_UNAVAILABLE");
+            return;
+          }
+        }
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           req.method === "HEAD"
@@ -267,7 +275,8 @@ export function createGateway(config) {
           return;
         }
         const limit =
-          apiPath === "/api/v1/pronunciation/assessments"
+          apiPath === "/api/v1/pronunciation/assessments" ||
+          apiPath === "/api/v1/courses/transcribe"
             ? 1024 * 1024
             : 256 * 1024;
         const chunks = [];
@@ -430,6 +439,12 @@ export function createGateway(config) {
   server.headersTimeout = 15000;
   server.requestTimeout = 30000;
   server.keepAliveTimeout = 5000;
+  server.once("listening", () => {
+    if (!startupPrewarmTriggered) {
+      startupPrewarmTriggered = true;
+      prewarmCore();
+    }
+  });
   server.drain = () => {
     draining = true;
     server.closeIdleConnections();
@@ -451,11 +466,26 @@ async function waitForUpstream(origin, retryDelays) {
           redirect: "manual",
           signal: controller.signal,
         });
-        await response.arrayBuffer();
-        if (response.status === 200) return;
+        const contentType = response.headers.get("content-type") || "";
+        const content = await response.text();
+        let readiness;
+        if (contentType.startsWith("application/json"))
+          try {
+            readiness = JSON.parse(content);
+          } catch {
+            readiness = undefined;
+          }
+        if (
+          response.status === 200 &&
+          readiness &&
+          typeof readiness === "object" &&
+          readiness.status === "ready"
+        )
+          return;
         retryable =
-          renderUnavailableStatuses.has(response.status) &&
-          response.headers.get("content-type")?.startsWith("text/html");
+          (renderUnavailableStatuses.has(response.status) &&
+            contentType.startsWith("text/html")) ||
+          response.status === 200;
       } catch {
         retryable = !controller.signal.aborted;
       }

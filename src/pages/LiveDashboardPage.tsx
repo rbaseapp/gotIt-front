@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
-  LibraryBig,
   Play,
   Sparkles,
   Trophy,
@@ -13,13 +12,13 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { RemoteState } from "../components/RemoteState";
+import { CourseContinueCard } from "../components/CourseContinueCard";
 import {
   dashboardSchema,
   itemSchema,
   needsStrengthening,
   page,
   product,
-  wordPacksSchema,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { useTranslation } from "react-i18next";
@@ -52,12 +51,8 @@ export function LiveDashboardPage() {
       [],
     ),
   );
-  const packs = useResource(
-    useCallback(() => product(wordPacksSchema, "word-packs"), []),
-  );
   const d = resource.data;
   const weakItems = weakest.data?.items.filter(needsStrengthening);
-  const installedPacks = packs.data?.packs.filter((pack) => pack.installed);
   return (
     <div className="dashboard-page live-page page-enter">
       <section className="page-heading-row">
@@ -74,6 +69,7 @@ export function LiveDashboardPage() {
           {t("dashboard.startReview")}
         </Link>
       </section>
+      <CourseContinueCard />
       <RemoteState
         loading={resource.loading}
         error={resource.error}
@@ -168,71 +164,6 @@ export function LiveDashboardPage() {
                 ? t("dashboard.smartPractice")
                 : t("dashboard.toVocabulary")}
             </Link>
-          </section>
-          <section className="live-panel dashboard-packs-panel">
-            <div className="pack-dashboard-heading">
-              <div>
-                <span className="pill light">
-                  <LibraryBig size={15} /> {t("dashboard.packLearning")}
-                </span>
-                <h2>{t("dashboard.installedPacks")}</h2>
-              </div>
-              <Link className="text-link" to="/word-packs">
-                {t("dashboard.allPacks")}
-              </Link>
-            </div>
-            <RemoteState
-              loading={packs.loading}
-              error={packs.error}
-              retry={() => void packs.reload()}
-            />
-            {installedPacks && installedPacks.length > 0 && (
-              <div className="dashboard-pack-grid">
-                {installedPacks.map((pack) => {
-                  const percent = pack.progress.linked
-                    ? Math.round(
-                        (pack.progress.mastered / pack.progress.linked) * 100,
-                      )
-                    : 0;
-                  return (
-                    <article className="dashboard-pack-card" key={pack.id}>
-                      <div>
-                        <small>{pack.track.title}</small>
-                        <h3>{pack.title}</h3>
-                      </div>
-                      <strong>{percent}%</strong>
-                      <progress
-                        max={100}
-                        value={percent}
-                        aria-label={t("dashboard.packProgress", {
-                          title: pack.title,
-                        })}
-                      />
-                      <p>
-                        {t("dashboard.packCompleted", {
-                          mastered: pack.progress.mastered,
-                          linked: pack.progress.linked,
-                        })}
-                      </p>
-                      <Link
-                        className="button secondary"
-                        to={`/learn/session/smart?pack=${pack.id}`}
-                      >
-                        <Play size={16} /> {t("dashboard.continueLearning")}
-                      </Link>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-            {installedPacks && !installedPacks.length && (
-              <div className="live-empty">
-                <p>{t("dashboard.noPacks")}</p>
-                <Link className="button secondary" to="/word-packs">
-                  {t("dashboard.chooseFirstPack")}
-                </Link>
-              </div>
-            )}
           </section>
           <div className="live-two-columns">
             <section className="live-panel">

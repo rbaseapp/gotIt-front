@@ -50,7 +50,7 @@ select {
   color: var(--muted);
   font-weight: 600;
 }
-.ui-language-select select {
+.ui-language-select .language-combobox input {
   min-height: 38px;
   padding: 0 10px;
   border: 1px solid var(--line);
@@ -552,6 +552,7 @@ select:focus-visible {
   background: #fbfbf8;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 .sidebar-top {
   margin: 0 0 30px;
@@ -614,6 +615,77 @@ select:focus-visible {
   display: flex;
   gap: 10px;
   background: #faf5e9;
+}
+.sidebar-skill-assessment {
+  flex: 0 0 auto;
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 10px;
+  padding: 13px;
+  border: 1px solid #bedccb;
+  border-radius: 14px;
+  color: #315a49;
+  background: linear-gradient(135deg, #edf8f2, #fff8e9);
+  box-shadow: 0 8px 22px rgba(31, 101, 75, 0.09);
+}
+.sidebar-skill-assessment:hover {
+  border-color: #7fb69b;
+  transform: translateY(-1px);
+}
+.sidebar-skill-assessment > span {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.sidebar-skill-assessment > strong {
+  color: var(--green-dark);
+  font-size: 24px;
+}
+.sidebar-skill-assessment > div {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+.sidebar-skill-assessment small {
+  display: grid;
+  gap: 2px;
+  color: #66766e;
+  font-size: 8px;
+  text-align: center;
+}
+.sidebar-skill-assessment small b {
+  color: #315a49;
+  font-size: 12px;
+}
+.sidebar-skill-assessment + .sidebar-tip {
+  margin-top: 10px;
+}
+.topbar-level-assessment {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid #bedccb;
+  border-radius: 12px;
+  color: #315a49;
+  background: #edf8f2;
+  font-size: 11px;
+  font-weight: 700;
+}
+.topbar-level-assessment b {
+  min-width: 30px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--green);
+  text-align: center;
+}
+.topbar-level-assessment:hover {
+  border-color: #7fb69b;
+  background: #e5f4ec;
 }
 .tip-icon {
   flex: 0 0 30px;
@@ -2163,13 +2235,28 @@ select:focus-visible {
   animation: pulse 1.2s infinite;
 }
 .hold-to-talk {
-  min-width: 230px;
+  width: min(100%, 260px);
+  min-width: 0;
+  height: 56px;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
+.hold-to-talk:hover,
+.hold-to-talk:active {
+  transform: none;
+}
 .hold-to-talk.recording {
-  animation: pulse 1.2s infinite;
+  animation: talk-glow 1.2s infinite;
+}
+.hold-to-talk-cancel.is-inactive {
+  visibility: hidden;
+  pointer-events: none;
+}
+@keyframes talk-glow {
+  50% {
+    box-shadow: 0 0 0 7px rgba(44, 122, 98, 0.18);
+  }
 }
 .record-button i {
   position: absolute;
@@ -3028,6 +3115,7 @@ select:focus-visible {
 
 /* Settings */
 .settings-layout {
+  min-width: 0;
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 20px;
@@ -3060,10 +3148,13 @@ select:focus-visible {
   font-weight: 600;
 }
 .settings-content {
+  min-width: 0;
   display: grid;
   gap: 14px;
 }
 .settings-card {
+  min-width: 0;
+  max-width: 100%;
   padding: 23px;
   border: 1px solid var(--line);
   border-radius: 17px;
@@ -3072,10 +3163,14 @@ select:focus-visible {
   scroll-margin-top: 95px;
 }
 .settings-card-heading {
+  min-width: 0;
   margin-bottom: 21px;
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.settings-card-heading > div {
+  min-width: 0;
 }
 .settings-card-heading h2 {
   margin: 0 0 4px;
@@ -3110,9 +3205,13 @@ select:focus-visible {
   background: var(--blue-soft);
 }
 .settings-fields {
+  min-width: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 17px;
+}
+.settings-fields > * {
+  min-width: 0;
 }
 .settings-fields .field.full {
   grid-column: 1 / -1;
@@ -3358,6 +3457,11 @@ select:focus-visible {
   .mobile-close,
   .mobile-menu {
     display: grid;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    flex: 0 0 44px;
   }
   .sidebar-scrim {
     position: fixed;
@@ -3462,6 +3566,9 @@ select:focus-visible {
     height: 64px;
   }
   .topbar-title > span {
+    display: none;
+  }
+  .topbar-level-assessment > span {
     display: none;
   }
   .compact-stat span,
@@ -3584,6 +3691,9 @@ select:focus-visible {
   }
   .settings-card {
     padding: 18px 15px;
+  }
+  .settings-nav a {
+    min-height: 44px;
   }
   .settings-actions {
     flex-direction: column-reverse;
@@ -4075,13 +4185,16 @@ body.game-session-open {
   .session-page:not(.live-session) .session-main {
     height: 100%;
     min-height: 0;
-    padding: 14px;
-    overflow: hidden;
+    padding: 14px 14px max(14px, env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-items: safe center;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   .session-page:not(.live-session) .session-main > div,
   .session-page:not(.live-session) .exercise-area {
     min-height: 0;
-    max-height: 100%;
   }
   .session-page:not(.live-session) .session-footer {
     display: none;
@@ -4689,4 +4802,51 @@ button:disabled {
   .session-footer span {
     font-size: 11px;
   }
+}
+.language-combobox {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.language-combobox input {
+  width: 100%;
+}
+
+.language-combobox-list {
+  position: absolute;
+  z-index: 50;
+  inset-inline: 0;
+  top: calc(100% + 3px);
+  max-height: 15rem;
+  overflow-y: auto;
+  background: var(--surface, #fff);
+  color: var(--text, #20232b);
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px #0002;
+}
+
+.language-combobox-list [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.language-combobox-list [role="option"].active,
+.language-combobox-list [role="option"]:hover {
+  background: #e6e9f8;
+  color: #171b46;
+}
+
+.language-combobox-list [aria-selected="true"] {
+  font-weight: 700;
+}
+
+.language-combobox-list small {
+  font-size: 0.75em;
+  opacity: 0.7;
 }

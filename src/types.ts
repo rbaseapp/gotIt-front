@@ -114,6 +114,20 @@ export interface UserProfile {
     effectiveLevel?: string | null;
     systemConfidence?: number | null;
     lastEvaluatedAt?: string | null;
+    estimatedLevelRange?: {
+      from: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+      to: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+    } | null;
+    assessmentEvidenceCount?: number;
+    calibrationTarget?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | null;
+    skillEstimates?: Array<{
+      skill: "speaking" | "vocabulary" | "grammar" | "fluency" | "comprehension";
+      score: number;
+      level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+      confidence: number;
+      evidenceCount: number;
+      highestTestedLevel: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | null;
+    }>;
   }>;
   interests: string[];
 }

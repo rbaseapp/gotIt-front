@@ -32,9 +32,92 @@
     "billing": "Подписка"
   },
   "privateLesson": {
+    "mode": {
+      "title": "Тип урока",
+      "teachingLanguage": "Язык объяснений",
+      "chooseTeachingLanguage": "Выберите язык объяснений",
+      "explainInTarget": "Объяснять на {{language}}",
+      "explainInSupport": "Объяснять на {{language}}",
+      "supportHint": "Инструкции и объяснения будут на этом языке. Слова и предложения для практики останутся на изучаемом языке.",
+      "beginnerHint": "Преподаватель будет объяснять на этом языке и постепенно введёт 3–5 полезных фраз.",
+      "options": {
+        "standard": {
+          "title": "Обычный урок",
+          "description": "Урок проходит в основном на изучаемом языке, с помощью при необходимости."
+        },
+        "absolute_beginner": {
+          "title": "С нуля",
+          "description": "Предварительные знания не нужны. Преподаватель объясняет на вашем языке и отрабатывает первые фразы."
+        }
+      }
+    },
+    "preparingRecommendation": "Preparing a lesson for you…",
+    "recommendedForYou": "Recommended for you",
+    "recommendedFallbackTitle": "Everyday conversation",
+    "recommendedFallbackDescription": "A focused conversation matched to your current level.",
+    "chooseAnotherFocus": "Choose another topic or focus",
+    "yourLevel": "Your level",
+    "viewDetails": "View details",
+    "learningPath": "Learning path",
+    "open": "Open",
+    "managePreferences": "Manage language and lesson preferences in Settings",
+    "levelDetailsTitle": "Your current level",
+    "updateLevel": "Update level in Settings",
+    "lessonOptionsTitle": "Adjust this lesson",
+    "lessonOptionsDescription": "These changes apply to this lesson only. Your regular preferences stay in Settings.",
+    "roadmapModalTitle": "My learning path",
+    "roadmapCurrentStage": "Current stage",
+    "roadmapCreatePath": "Create a path",
+    "assessmentCurrentEstimate": "Current estimate",
+    "assessmentNoLessonYet": "Complete a lesson and your detailed skill estimate will appear here.",
+    "preferences": {
+      "title": "Lesson preferences",
+      "saved": "Saved automatically for this language"
+    },
+    "roadmap": {
+      "eyebrow": "Your learning roadmap",
+      "loading": "Preparing your learning path…",
+      "chooseTitle": "Choose one direction — we’ll build the path",
+      "chooseDescription": "Start with our recommendation or choose a communication goal or English skill. You can change it later.",
+      "recommended": "Recommended for you",
+      "recommendedReason": "Based on your current level and the most useful next skill",
+      "change": "Change goal",
+      "communicationTitle": "Choose a communication goal",
+      "grammarTitle": "Explore English skills",
+      "currentHint": "This lesson revisits the current milestone and advances only after the target task is completed consistently.",
+      "evidence_one": "{{count}}/2 completed task · {{score}}/75 task score",
+      "evidence_other": "{{count}}/2 completed tasks · {{score}}/75 task score",
+      "goals": {
+        "everyday-conversation": "Everyday conversation",
+        "workplace-communication": "Workplace communication",
+        "travel-confidence": "Travel confidence",
+        "job-interviews": "Job interviews",
+        "presentations": "Presentations"
+      },
+      "topics": {
+        "articles": "Articles (a, an, the)",
+        "present-simple-continuous": "Present Simple / Continuous",
+        "past-simple-continuous": "Past Simple / Continuous",
+        "verb-forms-v1-v2-v3": "Verb forms V1 / V2 / V3",
+        "prepositions": "Prepositions",
+        "future-forms": "Future forms",
+        "modal-verbs": "Modal verbs",
+        "gerund-infinitive": "Gerund / Infinitive",
+        "conditionals": "Conditionals",
+        "passive-voice": "Passive Voice",
+        "advanced-sentence-structure": "Advanced sentence structure"
+      },
+      "stages": {
+        "foundation": "Foundation",
+        "guided-use": "Guided use",
+        "controlled-conversation": "Controlled conversation",
+        "free-conversation": "Free conversation",
+        "independent-mastery": "Independent use"
+      }
+    },
     "eyebrow": "GotIt Voice",
     "title": "Ваш частный голосовой урок",
-    "description": "Пять минут целевого разговора с учётом вашего уровня, интересов и сохранённых слов.",
+    "description": "Целевая беседа выбранной продолжительности с учётом вашего уровня, интересов и сохранённых слов.",
     "setupTitle": "Настройте урок",
     "setupDescription": "Выберите язык и цель. Текущая сессия GotIt используется автоматически — токен не нужен.",
     "targetLanguage": "Язык практики",
@@ -42,22 +125,85 @@
     "noSupport": "Без языка помощи",
     "level": "Уровень",
     "automaticLevel": "Использовать уровень профиля",
-    "teacherVoice": "Голос преподавателя",
+    "levelOptions": {
+      "A1": "Начальный",
+      "A2": "Базовый",
+      "B1": "Средний",
+      "B2": "Выше среднего",
+      "C1": "Продвинутый",
+      "C2": "Свободное владение"
+    },
+    "teacherVoice": "Преподаватель",
     "voiceOptions": {
-      "female": "Женский голос",
-      "male": "Мужской голос"
+      "female": "Рэйчел",
+      "male": "Майк"
     },
     "speechRate": "Скорость речи",
     "speedOptions": {
+      "very_slow": "Очень медленная",
       "slow": "Медленная",
       "normal": "Обычная",
-      "fast": "Быстрая"
+      "fast": "Быстрая",
+      "very_fast": "Очень быстрая"
     },
     "topic": "Тема",
     "topicPlaceholder": "Например: путешествия или собеседование",
     "grammarFocus": "Грамматическая цель",
     "grammarPlaceholder": "Например: прошедшее время",
-    "start": "Начать пятиминутный урок",
+    "focus": {
+      "title": "Что вы хотите улучшить?",
+      "description": "Выберите одну или несколько областей. Преподаватель уделит им больше времени.",
+      "options": {
+        "speaking": "Разговорная речь",
+        "vocabulary": "Словарный запас",
+        "grammar": "Грамматика",
+        "fluency": "Беглость",
+        "pronunciation": "Произношение",
+        "listening": "Аудирование"
+      }
+    },
+    "vocabularyMode": {
+      "title": "Использовать сохранённые слова?",
+      "description": "Разговор — продвинутый этап практики, поэтому используются только уже выученные слова.",
+      "options": {
+        "learned": {
+          "title": "Использовать выученные слова",
+          "description": "Преподаватель естественно включит уже выученные слова. Слова в процессе изучения исключены."
+        },
+        "none": {
+          "title": "Свободный урок",
+          "description": "Урок будет посвящён теме и вашим целям без сохранённой лексики."
+        }
+      }
+    },
+    "correctionMode": {
+      "title": "Как вас исправлять?",
+      "description": "Выберите, насколько часто преподаватель будет прерывать беседу для исправлений и объяснений.",
+      "options": {
+        "critical_only": {
+          "title": "Свободный разговор",
+          "description": "Поддерживать беседу и исправлять только критические ошибки, заметно меняющие смысл."
+        },
+        "recast": {
+          "title": "Исправлять предложение",
+          "description": "Давать естественный правильный вариант сказанного и предлагать повторить."
+        },
+        "deep_explanation": {
+          "title": "Подробное объяснение",
+          "description": "Исправлять предложение и объяснять правило и причину ошибки в исходной фразе."
+        }
+      }
+    },
+    "customFocus": "Моя личная цель",
+    "customFocusPlaceholder": "Например: уверенно говорить на встречах с клиентами",
+    "duration": "Продолжительность урока",
+    "durationOptions": {
+      "1": "1 минута",
+      "5": "5 минут",
+      "10": "10 минут",
+      "15": "15 минут"
+    },
+    "start": "Начать урок",
     "preparing": "Подготавливаем урок…",
     "privacy": "Звук микрофона используется в реальном времени и не сохраняется GotIt в этом POC.",
     "ready": "Можно начинать, когда будете готовы.",
@@ -75,12 +221,39 @@
     "stopped": "Вы завершили урок.",
     "connectionClosed": "Голосовое соединение закрыто.",
     "communicationError": "Ошибка связи в голосовом уроке.",
-    "timeFinished": "Пятиминутный урок завершён.",
+    "timeFinished": "Время урока истекло.",
+    "muteMicrophone": "Выключить микрофон",
+    "unmuteMicrophone": "Включить микрофон",
     "transcriptTitle": "Транскрипция в реальном времени",
     "finish": "Завершить урок",
     "finishing": "Подводим итог и прощаемся…",
-    "translateLast": "Перевести последнее предложение",
+    "continueLesson": "Продолжить урок",
+    "continuing": "Продолжаем с преподавателем…",
+    "translateLast": "Перевести последнюю реплику",
     "restart": "Начать новый урок",
+    "continuity": {
+      "title": "Следующий урок продолжится отсюда:"
+    },
+    "assessment": {
+      "latest": "Текущая оценка вашего уровня",
+      "title": "Оценка уровня по этому уроку",
+      "overall": "Общая оценка: {{level}}",
+      "provisional": "Диапазон по данным урока: {{range}}",
+      "insufficient": "Недостаточно данных",
+      "collecting": "Собираем данные",
+      "confidence": {
+        "low": "Начальная оценка · нужно больше практики",
+        "medium": "Оценка на основе результатов",
+        "high": "Убедительные данные этого урока"
+      },
+      "skills": {
+        "speaking": "Разговорная речь",
+        "vocabulary": "Словарный запас",
+        "grammar": "Грамматика",
+        "fluency": "Беглость",
+        "comprehension": "Понимание"
+      }
+    },
     "history": {
       "eyebrow": "Журнал уроков",
       "title": "Прошлые частные уроки",
@@ -112,7 +285,11 @@
       "saveWord": "Сохранить",
       "saved": "Сохранено"
     },
-    "roles": { "learner": "Вы", "tutor": "Преподаватель", "system": "Урок" },
+    "roles": {
+      "learner": "Вы",
+      "tutor": "Преподаватель",
+      "system": "Урок"
+    },
     "errors": {
       "BROWSER_UNSUPPORTED": "Этот браузер не поддерживает голосовой урок. Используйте актуальную версию Chrome, Edge или Safari по HTTPS.",
       "MICROPHONE_UNAVAILABLE": "Доступ к микрофону не предоставлен. Разрешите доступ и повторите попытку.",
@@ -121,6 +298,7 @@
     }
   },
   "shell": {
+    "levelAssessment": "Оценка уровня языка",
     "closeMenu": "Закрыть меню",
     "openMenu": "Открыть меню",
     "upgradePro": "Перейти на PRO",
@@ -206,6 +384,10 @@
     "retry": "Попробуйте ещё раз"
   },
   "settings": {
+    "privateLessonNav": "Private lessons",
+    "privateLessonTitle": "Private lesson preferences",
+    "privateLessonDescription": "Choose your regular lesson language and teaching style once. You can still make a one-time change before a lesson.",
+    "privateLessonFocusHelp": "These are the default skills emphasized in every lesson.",
     "interfaceSection": "Интерфейс",
     "interfaceDescription": "Выбери язык, который используется в меню и экранах GotIt.",
     "savedLocally": "Предпочтения интерфейса сохраняются в этом браузере и не влияют на языки обучения и перевода.",
@@ -716,6 +898,13 @@
     "wordCount": "{{count}} слов",
     "selectedCount": "{{count}} выбрано",
     "masteredCount": "{{count}} завершено",
+    "progressStates": {
+      "completed": "Набор завершён",
+      "inProgress": "В процессе",
+      "notStarted": "Ещё не начат"
+    },
+    "progressCount": "Освоено {{mastered}} из {{total}} слов",
+    "progressLabel": "Прогресс в наборе {{title}}",
     "showWords": "Показать слова",
     "updateSelection": "Обновить и выбрать слова",
     "editSelection": "Редактировать выбор слов",
@@ -846,7 +1035,7 @@
     "cancelRecording": "Отменить запись",
     "yourAnswer": "Ваш ответ",
     "checkAnswer": "Проверить ответ",
-    "answerLocked": "Ответ заблокирован до подтверждения сервером. Локальный прогресс не был записан.",
+    "checkingAnswer": "Проверяем ваш ответ…",
     "retryAnswer": "Повторить тот же ответ",
     "skip": "Пропустить",
     "expectedAnswer": "Ответ: {{answer}}",
@@ -1313,16 +1502,16 @@
     "SPEECH_UNAVAILABLE": "Служба аудио временно недоступна. Попробуйте позже.",
     "AUDIO_INVALID": "Запись не была захвачена четко. Попробуйте снова в тихом месте.",
     "SKILL_UNAVAILABLE": "Это упражнение в настоящий момент отключено в ваших предпочтениях обучения.",
-    "READING_PROVIDER_AUTHENTICATION": "Anthropic отклонил ключ API, настроенный на сервере. Замените ANTHROPIC_API_KEY и разверните снова.",
-    "READING_PROVIDER_BILLING": "Аккаунт Anthropic требует оплаты или активного кредита API.",
-    "READING_PROVIDER_PERMISSION": "Ключ Anthropic не имеет доступа к выбранному рабочему пространству или модели.",
-    "READING_PROVIDER_WORKSPACE": "Настроенное рабочее пространство Anthropic не совпадает с ключом API. Удалите или исправьте ANTHROPIC_WORKSPACE_ID.",
-    "READING_PROVIDER_MODEL_ACCESS": "Настроенная модель недоступна для ключа Anthropic. Проверьте AI_READING_MODEL.",
-    "READING_PROVIDER_RATE_LIMIT": "Лимит запросов Anthropic в настоящий момент исчерпан. Попробуйте позже.",
-    "READING_PROVIDER_REQUEST_INVALID": "Anthropic отклонил формат запроса. Проверьте конфигурацию модели сервера.",
-    "READING_PROVIDER_TIMEOUT": "Anthropic не ответил в течение 30 секунд. Попробуйте снова или проверьте время ответа в Render.",
-    "READING_PROVIDER_RESPONSE_INVALID": "Anthropic вернул ответ, который сервер не может обработать. Проверьте модель и структурированный вывод.",
-    "READING_PROVIDER_UPSTREAM": "Запрос Anthropic завершился ошибкой до получения валидного ответа.",
+    "READING_PROVIDER_AUTHENTICATION": "OpenAI отклонил ключ API, настроенный на сервере. Замените OPENAI_API_KEY и разверните снова.",
+    "READING_PROVIDER_BILLING": "Аккаунт OpenAI требует оплаты или активного кредита API.",
+    "READING_PROVIDER_PERMISSION": "Ключ OpenAI не имеет доступа к выбранному проекту или модели.",
+    "READING_PROVIDER_WORKSPACE": "Настроенный проект или рабочее пространство OpenAI не совпадает с ключом API.",
+    "READING_PROVIDER_MODEL_ACCESS": "Настроенная модель недоступна для ключа OpenAI. Проверьте AI_READING_MODEL.",
+    "READING_PROVIDER_RATE_LIMIT": "Лимит запросов OpenAI в настоящий момент исчерпан. Попробуйте позже.",
+    "READING_PROVIDER_REQUEST_INVALID": "OpenAI отклонил формат запроса. Проверьте конфигурацию модели сервера.",
+    "READING_PROVIDER_TIMEOUT": "OpenAI не ответил до истечения срока генерации. Попробуйте снова или проверьте время ответа в Render.",
+    "READING_PROVIDER_RESPONSE_INVALID": "OpenAI вернул ответ, который сервер не может обработать. Проверьте модель и структурированный вывод.",
+    "READING_PROVIDER_UPSTREAM": "Запрос OpenAI завершился ошибкой до получения валидного ответа.",
     "network": "Служба недоступна. Проверьте подключение и повторите попытку.",
     "timeout": "Обработка запроса заняла больше времени, чем ожидалось. Повторите попытку; тот же ответ можно безопасно отправить снова.",
     "serverUnavailable": "Служба временно недоступна. Попробуйте снова.",
@@ -1458,5 +1647,156 @@
     "storageUnavailable": "Хранилище браузера заблокировано или переполнено. Изменения будут сохранены только для этого сеанса.",
     "logoutServerFailed": "Вы вышли на этом устройстве. Сеанс сервера не удалось отозвать; он истечет согласно политике Core.",
     "loadBeforeSave": "Загрузите профиль перед сохранением изменений"
+  },
+  "courses": {
+    "eyebrow": "ВАШ ЛИЧНЫЙ ПРЕПОДАВАТЕЛЬ",
+    "title": "Понятный путь в вашем темпе",
+    "allCourses": "Мои курсы",
+    "freePractice": "Свободная беседа",
+    "welcomeKicker": "Начнём с разговора",
+    "welcomeTitle": "Что вы хотели бы уметь сказать?",
+    "welcomeBody": "Короткая беседа с преподавателем на вашем языке: шесть вопросов примерно за четыре минуты. Отвечайте текстом или голосом, затем проверьте данные перед составлением программы.",
+    "welcomeHint": "Перед началом вы проверите предпочтения и всю программу.",
+    "targetLanguage": "Хочу изучать",
+    "supportLanguage": "Язык беседы с преподавателем",
+    "buildWithTeacher": "Составить курс с преподавателем",
+    "yourCourse": "ВАШ ПУТЬ ОБУЧЕНИЯ",
+    "continueCourse": "Продолжить курс",
+    "intakeInProgress": "Знакомство с вами",
+    "newCourse": "Создать ещё один курс",
+    "loading": "Открываем сохранённую работу…",
+    "unavailable": "Преподаватель временно недоступен. Ваши курсы сохранены.",
+    "stepsLabel": "Создание курса",
+    "steps": {
+      "conversation": "Знакомство",
+      "preferences": "Предпочтения",
+      "plan": "Программа"
+    },
+    "teacher": "ИИ-преподаватель",
+    "you": "Вы",
+    "saved": "Сохранено",
+    "conversationHistory": "Наша беседа",
+    "answerLabel": "Ваш ответ",
+    "answerPlaceholder": "Напишите короткий ответ или включите микрофон…",
+    "send": "Отправить",
+    "voiceAnswer": "Ответить голосом",
+    "stopRecording": "Завершить запись",
+    "transcribing": "Распознаём речь…",
+    "recordingHint": "Запись длится до 15 секунд. Можно завершить её в любой момент.",
+    "checkTranscript": "Проверьте или исправьте распознанный текст перед отправкой.",
+    "typeFallback": "Можно продолжить письменно.",
+    "readAloud": "Прочитать вслух",
+    "stopAudio": "Остановить чтение",
+    "reviewNow": "Проверить собранную информацию",
+    "correctAnswer": "Исправить ответ",
+    "saveCorrection": "Сохранить исправление",
+    "cancelCorrection": "Отменить исправление",
+    "backToConversation": "Вернуться к разговору",
+    "reviewKicker": "ПЕРЕД СОЗДАНИЕМ КУРСА",
+    "reviewTitle": "Вот что я понял о вас",
+    "reviewBody": "Проверьте, подходит ли вам это. Измените деталь или скажите преподавателю, что исправить.",
+    "approvePreferences": "Всё подходит — создать программу",
+    "retryPlan": "Создать мою программу",
+    "changeWithTeacher": "Попросить преподавателя внести изменения",
+    "goal": "Ваша цель",
+    "editGoal": "Изменить цель",
+    "save": "Сохранить",
+    "path": "Тип курса",
+    "paths": {
+      "comprehensive": "Комплексное обучение",
+      "grammar": "Систематическая грамматика",
+      "goal": "Практическая цель"
+    },
+    "pace": "Ваш темп",
+    "paceValue": "{{minutes}} минут · {{days}} дней в неделю",
+    "experience": "Точка старта",
+    "learningStyle": "Подход к обучению",
+    "interests": "Ваши интересы",
+    "age": {
+      "child": "Ребёнок",
+      "teen": "Подросток",
+      "adult": "Взрослый",
+      "unspecified": "Возраст не указан"
+    },
+    "literacy": {
+      "not_yet": "Устные задания",
+      "developing": "Чтение с поддержкой",
+      "independent": "Самостоятельное чтение",
+      "unspecified": "Навык чтения не указан"
+    },
+    "youSaid": "Что вы рассказали",
+    "teacherSuggests": "Мои рекомендации",
+    "provisionalLevel": "Начальный уровень — ориентир для преподавания. Мы уточним его по вашей работе на уроках.",
+    "previewKicker": "ВАША ПРОГРАММА · НА ПРОВЕРКУ",
+    "previewBody": "{{count}} разделов, у каждого своя цель. Откройте любой раздел, чтобы увидеть содержание.",
+    "approvePlan": "Подтвердить программу",
+    "requestChanges": "Запросить изменения",
+    "nextLesson": "ВАШ СЛЕДУЮЩИЙ УРОК",
+    "startNextLesson": "Начать следующий урок",
+    "courseComplete": "ВЫ ЗАВЕРШИЛИ ЭТОТ КУРС",
+    "completeBody": "Можно повторить разделы, продолжить практику или составить следующий курс.",
+    "progressLabel": "Подтверждено {{count}} из {{total}} целей уроков",
+    "progressDetail": "Изучено {{covered}} целей · самостоятельно продемонстрировано {{demonstrated}}.",
+    "retentionNote": "Долговременное запоминание проверяется при последующем повторении. Завершение задания ещё не означает владение материалом.",
+    "whatToChange": "Как адаптировать вашу программу?",
+    "changeHint": "Например: больше грамматики, более короткие уроки или разговоры о работе. Вы проверите изменения до их применения.",
+    "syllabus": "Весь ваш курс",
+    "unitCount": "{{count}} разделов",
+    "lessonCount": "{{count}} уроков",
+    "youAreHere": "Вы здесь",
+    "grammar": "Грамматика и структура",
+    "vocabulary": "Лексика и ситуации",
+    "unitSuccess": "В конце вы сможете…",
+    "homeworkExample": "Пример вашей практики",
+    "estimatedMinutes": "Около {{count}} минут",
+    "prerequisites": "Опирается на",
+    "savedPreferences": "Сохранённые предпочтения",
+    "buildingPlan": "Готовим вашу программу. Предпочтения сохранены…",
+    "teacherThinking": "Преподаватель готовит ответ…",
+    "changed": "Данные изменились в другой сессии. Загружена последняя версия; проверьте её перед продолжением.",
+    "reload": "Обновить",
+    "tryAgain": "Попробовать снова",
+    "homework": "Практика по вашему уроку",
+    "homeworkCompleted": "Практика завершена",
+    "viewResults": "Посмотреть результаты",
+    "resumeHomework": "Продолжить практику",
+    "practiceNow": "Начать практику",
+    "homeworkTitle": "Немного практики — устойчивый прогресс",
+    "backToCourse": "Вернуться к курсу",
+    "preparingHomework": "Готовим задания",
+    "preparingHomeworkBody": "Несколько коротких заданий по тому, что вы действительно изучили.",
+    "homeworkDone": "Вы завершили практику",
+    "independentSuccess": "Вы самостоятельно ответили на {{count}} заданий.",
+    "practiceSuccess": "Вы потренировались и сделали ещё один шаг вперёд.",
+    "nextReview": "Стоит повторить",
+    "homeworkContinuation": "Преподаватель учтёт эти ответы на следующем уроке. Можно продолжать обучение, даже если домашние задания ещё не закончены.",
+    "independent": "Продемонстрировано самостоятельно",
+    "withSupport": "Практика с помощью или узнаванием",
+    "forReview": "Стоит потренировать ещё",
+    "taskProgress": "Задание {{current}} из {{total}}",
+    "taskProgressLabel": "Прогресс практики",
+    "readInstead": "Читать вместо прослушивания",
+    "clearAnswer": "Очистить ответ",
+    "checkAnswer": "Проверить ответ",
+    "yourAnswer": "Ваш ответ",
+    "feedback": {
+      "correct": "Это подходит",
+      "retry": "Ещё одна попытка",
+      "uncertain": "Давайте уточним",
+      "skipped": "Сохранено для следующей практики"
+    },
+    "finishPractice": "Посмотреть мой прогресс",
+    "nextTask": "Следующее задание",
+    "hint": "Небольшая подсказка",
+    "skipTask": "Пропустить задание",
+    "pauseHomework": "Сохранить и закончить позже",
+    "draftNotice": "Неотправленный текст остаётся в этой сессии браузера. Сохраните его для продолжения на другом устройстве.",
+    "progressSaved": "Отправленные ответы сохранены.",
+    "lessonHomeworkTitle": "Закрепим сегодняшний прогресс",
+    "lessonHomeworkBody": "Короткая практика по этому уроку. Начните одним нажатием.",
+    "oneFocus": "Один момент для закрепления:",
+    "reportDetails": "Подробности, исправления и лексика",
+    "supportLanguageError": "Чтобы начать с нуля, выберите знакомый язык объяснений, отличный от изучаемого.",
+    "separateCourseError": "Создайте новый курс для другого языка или дальнейших изменений. Текущий курс сохранён."
   }
 }

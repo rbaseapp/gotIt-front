@@ -11,7 +11,7 @@ import {
   type Intent,
 } from "../lib/product";
 import { Modal } from "./Modal";
-import { getLanguageOptions } from "../lib/languages";
+import { LanguageCombobox } from "./LanguageCombobox";
 import { useTranslation } from "react-i18next";
 
 export function LiveCaptureModal({
@@ -37,8 +37,7 @@ function CaptureForm({
   onClose: () => void;
   onSaved?: () => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const languageOptions = getLanguageOptions(i18n.resolvedLanguage || "en");
+  const { t } = useTranslation();
   const { profile } = useApp();
   const [source, setSource] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState(
@@ -206,30 +205,18 @@ function CaptureForm({
         <div className="live-form-grid">
           <label className="field">
             <span>{t("capture.sourceLanguage")}</span>
-            <select
+            <LanguageCombobox
               value={sourceLanguage}
-              onChange={(e) => setSourceLanguage(e.target.value)}
-            >
-              <option value="">{t("capture.autoDetect")}</option>
-              {languageOptions.map(([code, label]) => (
-                <option value={code} key={code}>
-                  {label} · {code}
-                </option>
-              ))}
-            </select>
+              onChange={setSourceLanguage}
+              emptyLabel={t("capture.autoDetect")}
+            />
           </label>
           <label className="field">
             <span>{t("capture.translationLanguage")}</span>
-            <select
+            <LanguageCombobox
               value={targetLanguage}
-              onChange={(e) => setTargetLanguage(e.target.value)}
-            >
-              {languageOptions.map(([code, label]) => (
-                <option value={code} key={code}>
-                  {label} · {code}
-                </option>
-              ))}
-            </select>
+              onChange={setTargetLanguage}
+            />
           </label>
         </div>
         <label className="field">

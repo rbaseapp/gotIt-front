@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   BarChart3,
   BookOpen,
@@ -26,6 +26,26 @@ import { LiveCaptureModal } from "./LiveCaptureModal";
 import { SubscriptionBanner } from "./SubscriptionBanner";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useTranslation } from "react-i18next";
+import {
+  getSavedPrivateLessonLanguage,
+  listPrivateLessons,
+  PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
+  type SavedPrivateLesson,
+} from "../lib/privateLesson";
+import { getBilingualLanguageOptions } from "../lib/languages";
+
+function sameBaseLanguage(first: string, second: string) {
+  try {
+    return (
+      new Intl.Locale(first).language.toLowerCase() ===
+      new Intl.Locale(second).language.toLowerCase()
+    );
+  } catch {
+    return (
+      first.toLowerCase().split("-")[0] === second.toLowerCase().split("-")[0]
+    );
+  }
+}
 
 const navItems = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: BarChart3 },
@@ -37,7 +57,12 @@ const navItems = [
     liveOnly: true,
   },
   { to: "/vocabulary", labelKey: "nav.vocabulary", icon: BookOpen },
-  { to: "/word-packs", labelKey: "nav.wordPacks", icon: LibraryBig, liveOnly: true },
+  {
+    to: "/word-packs",
+    labelKey: "nav.wordPacks",
+    icon: LibraryBig,
+    liveOnly: true,
+  },
   { to: "/reading", labelKey: "nav.reading", icon: BookOpenText },
   { to: "/transfer", labelKey: "nav.transfer", icon: BookOpen },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
@@ -55,14 +80,87 @@ export function AppShell({
   const { profile, stats, items, mode, user, profileError, retryProfile } =
     useApp();
   const location = useLocation();
+  const focusedLearning =
+    /^\/(courses|homework)(\/|$)/.test(location.pathname) ||
+    location.pathname === "/private-lesson";
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
   const canWriteVocabulary = hasEntitlement("vocabulary.write");
+  const defaultLessonLanguage =
+    profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en";
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-  const pageTitle =
-    navItems.find((item) => location.pathname.startsWith(item.to))?.labelKey;
+  const [latestLessonAssessment, setLatestLessonAssessment] =
+    useState<SavedPrivateLesson>();
+  const [assessmentLanguage, setAssessmentLanguage] = useState(() =>
+    getSavedPrivateLessonLanguage(defaultLessonLanguage),
+  );
+  useEffect(() => {
+    const openSidebar = () => setMobileOpen(true);
+    window.addEventListener("gotit:open-sidebar", openSidebar);
+    return () => window.removeEventListener("gotit:open-sidebar", openSidebar);
+  }, []);
+  useEffect(() => {
+    if (mode !== "live") {
+      setLatestLessonAssessment(undefined);
+      return;
+    }
+    let active = true;
+    const loadAssessment = () => {
+      const selectedLanguage = getSavedPrivateLessonLanguage(
+        defaultLessonLanguage,
+      );
+      setAssessmentLanguage(selectedLanguage);
+      void listPrivateLessons(50)
+        .then((lessons) => {
+          if (!active) return;
+          setLatestLessonAssessment(
+            lessons.find(
+              (lesson) =>
+                lesson.status === "completed" &&
+                lesson.report?.assessment &&
+                sameBaseLanguage(lesson.targetLanguageCode, selectedLanguage),
+            ),
+          );
+        })
+        .catch(() => {
+          // The assessment stays hidden when this account cannot access private lessons.
+        });
+    };
+    loadAssessment();
+    window.addEventListener("gotit:lesson-assessment-updated", loadAssessment);
+    window.addEventListener(
+      PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
+      loadAssessment,
+    );
+    return () => {
+      active = false;
+      window.removeEventListener(
+        "gotit:lesson-assessment-updated",
+        loadAssessment,
+      );
+      window.removeEventListener(
+        PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
+        loadAssessment,
+      );
+    };
+  }, [defaultLessonLanguage, mode]);
+  const pageTitle = focusedLearning
+    ? "nav.privateLesson"
+    : navItems.find((item) => location.pathname.startsWith(item.to))?.labelKey;
+  const latestAssessment = latestLessonAssessment?.report?.assessment;
+  const latestLevelLabel = latestAssessment?.overallLevel
+    ? latestAssessment.overallLevel
+    : latestAssessment?.levelRange
+      ? latestAssessment.levelRange.from === latestAssessment.levelRange.to
+        ? latestAssessment.levelRange.from
+        : `${latestAssessment.levelRange.from}–${latestAssessment.levelRange.to}`
+      : t("privateLesson.assessment.collecting");
+  const assessmentLanguageLabel =
+    getBilingualLanguageOptions().find(([code]) =>
+      sameBaseLanguage(code, assessmentLanguage),
+    )?.[1] ?? assessmentLanguage;
 
   return (
     <div className="app-layout">
@@ -97,7 +195,9 @@ export function AppShell({
                 to={to}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
+                  isActive || (to === "/private-lesson" && focusedLearning)
+                    ? "nav-link active"
+                    : "nav-link"
                 }
               >
                 <Icon size={20} />
@@ -110,6 +210,31 @@ export function AppShell({
               </NavLink>
             ))}
         </nav>
+        {latestLessonAssessment?.report && (
+          <NavLink
+            to="/private-lesson?view=level"
+            className="sidebar-skill-assessment"
+            onClick={() => setMobileOpen(false)}
+          >
+            <span>
+              {t("shell.levelAssessment")} · {assessmentLanguageLabel}
+            </span>
+            <strong>{latestLevelLabel}</strong>
+            <div>
+              {(["speaking", "vocabulary", "grammar"] as const).map((skill) => (
+                <small key={skill}>
+                  {t(`privateLesson.assessment.skills.${skill}`)}
+                  <b>
+                    {
+                      latestLessonAssessment.report!.assessment.skills[skill]
+                        .score
+                    }
+                  </b>
+                </small>
+              ))}
+            </div>
+          </NavLink>
+        )}
         <div className="sidebar-tip">
           <span className="tip-icon">
             <Zap size={18} />
@@ -127,7 +252,10 @@ export function AppShell({
           <HelpCircle size={19} />
           {t("shell.helpCenter")}
         </NavLink>
-        <nav className="sidebar-legal-links" aria-label={t("shell.legalNavigation")}>
+        <nav
+          className="sidebar-legal-links"
+          aria-label={t("shell.legalNavigation")}
+        >
           <Link to="/terms-of-service">{t("shell.terms")}</Link>
           <Link to="/privacy-policy">{t("shell.privacy")}</Link>
           <Link to="/refund-policy">{t("shell.refunds")}</Link>
@@ -155,6 +283,17 @@ export function AppShell({
             <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
           </div>
           <div className="topbar-actions">
+            {latestLessonAssessment?.report && (
+              <Link
+                to="/private-lesson?view=level"
+                className="topbar-level-assessment"
+                title={`${t("shell.levelAssessment")} · ${assessmentLanguageLabel}`}
+              >
+                <BarChart3 size={16} />
+                <span>{assessmentLanguageLabel}</span>
+                <b>{latestLevelLabel}</b>
+              </Link>
+            )}
             {mode === "demo" && (
               <>
                 <div className="compact-stat streak">
@@ -183,12 +322,12 @@ export function AppShell({
                     {user?.role === "admin"
                       ? "Admin"
                       : mode === "demo"
-                      ? t("shell.demoLevel", { level: levelFromXp(stats.xp) })
-                      : status?.tier === "paid"
-                        ? t("shell.proUser")
-                        : status?.tier === "trial"
-                          ? t("shell.trial")
-                          : t("shell.freeAccount")}
+                        ? t("shell.demoLevel", { level: levelFromXp(stats.xp) })
+                        : status?.tier === "paid"
+                          ? t("shell.proUser")
+                          : status?.tier === "trial"
+                            ? t("shell.trial")
+                            : t("shell.freeAccount")}
                   </small>
                 </span>
                 <ChevronDown size={16} />
@@ -205,20 +344,26 @@ export function AppShell({
           </div>
         </header>
         <div className="page-content">
-          {mode === "live" && user?.role !== "admin" && <SubscriptionBanner />}
-          <div
-            className={
-              mode === "demo" ? "mode-banner demo" : "mode-banner live"
-            }
-          >
-            {mode === "demo"
-              ? t("shell.demoBanner")
-              : user?.role === "admin"
-                ? t("shell.liveBanner")
-                : status?.tier === "free"
-                ? t("shell.readOnlyBanner")
-                : t("shell.liveBanner")}
-          </div>
+          {mode === "live" &&
+            user?.role !== "admin" &&
+            (!focusedLearning || status?.tier !== "paid") && (
+              <SubscriptionBanner />
+            )}
+          {(!focusedLearning || mode === "demo") && (
+            <div
+              className={
+                mode === "demo" ? "mode-banner demo" : "mode-banner live"
+              }
+            >
+              {mode === "demo"
+                ? t("shell.demoBanner")
+                : user?.role === "admin"
+                  ? t("shell.liveBanner")
+                  : status?.tier === "free"
+                    ? t("shell.readOnlyBanner")
+                    : t("shell.liveBanner")}
+            </div>
+          )}
           {profileError && (
             <div className="form-error" role="alert">
               {profileError}

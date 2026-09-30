@@ -13,6 +13,7 @@
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:responsive": "playwright test",
     "start": "node server/gateway.mjs",
     "test:gateway": "node --test test/gateway.test.mjs",
     "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run test:gateway"
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",

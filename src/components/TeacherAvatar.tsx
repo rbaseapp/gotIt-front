@@ -25,10 +25,15 @@ export function TeacherAvatar({
   label,
   variant,
 }: TeacherAvatarProps) {
-  const level = active ? Math.max(0, Math.min(1, audioLevel)) : 0;
-  const speechFrame =
-    level > 0.48 ? "speaking-strong" : level > 0.12 ? "speaking-soft" : "";
-  const visualActivity = speechFrame ? "speaking" : activity;
+  const level =
+    active && Number.isFinite(audioLevel)
+      ? Math.max(0, Math.min(1, audioLevel))
+      : 0;
+  // The remote audio meter already smooths its samples and updates every ~70 ms.
+  // Blend just the mouth region so the rest of the portrait stays still.
+  const mouthOpen = Math.max(0, Math.min(1, (level - 0.025) / 0.13));
+  const wideMouth = Math.max(0, Math.min(1, (level - 0.2) / 0.55));
+  const visualActivity = mouthOpen > 0 ? "speaking" : activity;
   const listeningImage =
     variant === "female" ? tutorFemaleListening : tutorMaleListening;
   const speakingImage =
@@ -41,7 +46,7 @@ export function TeacherAvatar({
 
   return (
     <div
-      className={`teacher-avatar ${variant} ${visualActivity}${active ? " active" : ""}${speechFrame ? ` ${speechFrame}` : ""}`}
+      className={`teacher-avatar ${variant} ${visualActivity}${active ? " active" : ""}`}
       style={
         {
           "--tutor-ring-size": `${5 + level * 13}px`,
@@ -51,6 +56,8 @@ export function TeacherAvatar({
           "--tutor-bar-medium": `${11 + level * 10}px`,
           "--tutor-bar-large": `${15 + level * 8}px`,
           "--tutor-speech-lift": `${-Math.max(0.5, level * 2.2)}px`,
+          "--tutor-mouth-soft": mouthOpen * (1 - wideMouth),
+          "--tutor-mouth-wide": mouthOpen * wideMouth,
         } as CSSProperties
       }
       role="img"

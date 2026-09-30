@@ -23,6 +23,8 @@ import { useApp } from "../context/AppContext";
 import { cn, isDue, skillLabels, speak, statusLabels } from "../lib/utils";
 import type { LearningItem, LearningStatus, SkillKey } from "../types";
 import { AddWordModal } from "../components/AddWordModal";
+import { LanguageCombobox } from "../components/LanguageCombobox";
+import { getBilingualLanguageOptions } from "../lib/languages";
 import { CapabilityNotice } from "../components/CapabilityNotice";
 import { Modal } from "../components/Modal";
 import { useTranslation } from "react-i18next";
@@ -511,15 +513,18 @@ export function VocabularyPage() {
         </label>
         <label>
           {t("demoVocabulary.languages")}{" "}
-          <select
+          <LanguageCombobox
             value={pair}
-            onChange={(event) => setPair(event.target.value)}
-          >
-            <option value="">{t("demoVocabulary.allLanguages")}</option>
-            {pairs.map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
+            onChange={setPair}
+            emptyLabel={t("demoVocabulary.allLanguages")}
+            options={pairs.map((value) => {
+              const names = getBilingualLanguageOptions();
+              const label = value.split(" → ").map((code) =>
+                names.find(([known]) => known === code)?.[1] ?? code,
+              ).join(" → ");
+              return [value, label] as const;
+            })}
+          />
         </label>
       </div>
       {visibleSelection.length > 0 && (

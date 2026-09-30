@@ -1,10 +1,159 @@
 import { z } from "zod";
 import { product, uuid } from "./product";
+import { readStorage, writeStorage } from "./storage";
+
+export const privateLessonFocusAreas = [
+  "speaking",
+  "vocabulary",
+  "grammar",
+  "fluency",
+  "pronunciation",
+  "listening",
+] as const;
+export type PrivateLessonFocusArea = (typeof privateLessonFocusAreas)[number];
+
+export const privateLessonCorrectionModes = [
+  "critical_only",
+  "recast",
+  "deep_explanation",
+] as const;
+export type PrivateLessonCorrectionMode =
+  (typeof privateLessonCorrectionModes)[number];
+
+export const privateLessonVocabularyModes = ["learned", "none"] as const;
+export type PrivateLessonVocabularyMode =
+  (typeof privateLessonVocabularyModes)[number];
+
+export const privateLessonSpeechRates = [
+  "very_slow",
+  "slow",
+  "normal",
+  "fast",
+  "very_fast",
+] as const;
+export type PrivateLessonSpeechRate = (typeof privateLessonSpeechRates)[number];
+
+export const privateLessonModes = ["standard", "absolute_beginner"] as const;
+export type PrivateLessonMode = (typeof privateLessonModes)[number];
+export const privateLessonTeachingLanguages = ["target", "support"] as const;
+export type PrivateLessonTeachingLanguage =
+  (typeof privateLessonTeachingLanguages)[number];
+
+const roadmapMilestoneSchema = z.object({
+  id: uuid,
+  position: z.number().int().min(1).max(5),
+  key: z.string(),
+  title: z.string(),
+  description: z.string(),
+  communicationObjective: z.string(),
+  grammarTopics: z.array(z.string()),
+  successCriteria: z.object({
+    minimumLessons: z.number().int(),
+    targetScore: z.number().int(),
+  }),
+  status: z.enum(["locked", "current", "completed"]),
+  progressScore: z.number().int().min(0).max(100),
+  evidenceLessonCount: z.number().int().nonnegative(),
+  lessonSessionCount: z.number().int().nonnegative().optional().default(0),
+});
+
+export const privateLessonRoadmapSchema = z.object({
+  id: uuid,
+  targetLanguageCode: z.string(),
+  goalKind: z.enum(["recommended", "communication", "grammar"]),
+  goalKey: z.string(),
+  goalTitle: z.string(),
+  recommendedReason: z.string(),
+  status: z.enum(["active", "paused", "completed"]),
+  currentMilestonePosition: z.number().int().min(1).max(5),
+  milestones: z.array(roadmapMilestoneSchema).length(5),
+});
+
+const lessonRoadmapContextSchema = z
+  .object({
+    roadmapId: uuid,
+    milestoneId: uuid,
+    milestoneKey: z.string(),
+    goalTitle: z.string(),
+    communicationObjective: z.string(),
+    grammarTopics: z.array(z.string()),
+    successCriteria: z.object({
+      minimumLessons: z.number().int(),
+      targetScore: z.number().int(),
+    }),
+    evidenceLessonCount: z.number().int().nonnegative().optional().default(0),
+    isFirstMilestoneLesson: z.boolean().optional().default(false),
+  })
+  .nullable();
+
+export const privateLessonSetupSchema = z.object({
+  preferences: z
+    .object({
+      supportLanguageCode: z.string().nullable(),
+      lessonMode: z.enum(privateLessonModes).default("standard"),
+      teachingLanguage: z
+        .enum(privateLessonTeachingLanguages)
+        .default("target"),
+      requestedDurationMinutes: z.union([
+        z.literal(1),
+        z.literal(5),
+        z.literal(10),
+        z.literal(15),
+      ]),
+      teacherVoice: z.enum(["female", "male"]),
+      speechRate: z.enum(privateLessonSpeechRates),
+      focusAreas: z.array(z.enum(privateLessonFocusAreas)),
+      customFocus: z.string().nullable(),
+      correctionMode: z.enum(privateLessonCorrectionModes),
+      vocabularyMode: z.enum(privateLessonVocabularyModes),
+    })
+    .nullable(),
+  roadmap: privateLessonRoadmapSchema.nullable(),
+  curriculum: z.object({
+    recommended: z.object({
+      goalKind: z.literal("grammar"),
+      goalKey: z.string(),
+      reason: z.string(),
+    }),
+    communicationGoals: z.array(z.object({ key: z.string() })),
+    grammarTopics: z.array(
+      z.object({
+        key: z.string(),
+        cefr: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+        prerequisites: z.array(z.string()),
+      }),
+    ),
+  }),
+});
+
+export type PrivateLessonSetup = z.infer<typeof privateLessonSetupSchema>;
+export type PrivateLessonRoadmap = z.infer<typeof privateLessonRoadmapSchema>;
+export type PrivateLessonPreferences = NonNullable<
+  PrivateLessonSetup["preferences"]
+>;
+
+const PRIVATE_LESSON_LANGUAGE_KEY = "gotit.privateLesson.targetLanguage";
+export const PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT =
+  "gotit:private-lesson-language-changed";
+
+export function getSavedPrivateLessonLanguage(fallback: string) {
+  return readStorage(PRIVATE_LESSON_LANGUAGE_KEY, fallback);
+}
+
+export function savePrivateLessonLanguage(languageCode: string) {
+  const saved = writeStorage(PRIVATE_LESSON_LANGUAGE_KEY, languageCode);
+  if (saved && typeof window !== "undefined")
+    window.dispatchEvent(new Event(PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT));
+  return saved;
+}
 
 const instructionEventSchema = z
   .object({
     type: z.literal("response.create"),
-    response: z.object({ instructions: z.string().min(1).max(1000) }).strict(),
+    // A turn override must retain the full server-built lesson instructions.
+    response: z
+      .object({ instructions: z.string().min(1).max(128_000) })
+      .strict(),
   })
   .strict();
 
@@ -23,11 +172,18 @@ export const privateLessonSessionSchema = z.object({
       .max(20 * 60),
     targetLanguageCode: z.string().min(1).max(64),
     supportLanguageCode: z.string().min(1).max(64).nullable(),
+    lessonMode: z.enum(privateLessonModes).default("standard"),
+    teachingLanguage: z.enum(privateLessonTeachingLanguages).default("target"),
     level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
     topic: z.string().min(1).max(120),
     grammarFocus: z.string().min(1).max(160).nullable(),
+    focusAreas: z.array(z.enum(privateLessonFocusAreas)).min(1).max(6),
+    customFocus: z.string().min(1).max(300).nullable(),
+    correctionMode: z.enum(privateLessonCorrectionModes),
+    vocabularyMode: z.enum(privateLessonVocabularyModes),
+    continuesFromLessonId: uuid.nullable(),
     teacherVoice: z.enum(["female", "male"]),
-    speechRate: z.enum(["slow", "normal", "fast"]),
+    speechRate: z.enum(privateLessonSpeechRates),
     targetWords: z.array(
       z.object({
         learningItemId: uuid,
@@ -35,6 +191,7 @@ export const privateLessonSessionSchema = z.object({
         translationText: z.string().min(1),
       }),
     ),
+    roadmap: lessonRoadmapContextSchema.optional().default(null),
   }),
   realtime: z.object({
     clientSecret: z.string().min(1).max(4096),
@@ -42,24 +199,182 @@ export const privateLessonSessionSchema = z.object({
     model: z.string().min(1).max(200),
     connectionUrl: z.literal("https://api.openai.com/v1/realtime/calls"),
     openingEvent: instructionEventSchema,
+    continuationEvent: instructionEventSchema.optional(),
     wrapUpEvent: instructionEventSchema,
     translationEvent: instructionEventSchema.nullable(),
   }),
 });
 
 export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
+export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15;
 export type PrivateLessonInput = {
+  courseId?: string;
   targetLanguageCode: string;
-  supportLanguageCode?: string;
+  supportLanguageCode?: string | null;
+  lessonMode?: PrivateLessonMode;
+  teachingLanguage?: PrivateLessonTeachingLanguage;
   requestedLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  requestedDurationMinutes?: PrivateLessonDurationMinutes;
   teacherVoice?: "female" | "male";
-  speechRate?: "slow" | "normal" | "fast";
+  speechRate?: PrivateLessonSpeechRate;
   topic?: string;
   grammarFocus?: string;
+  focusAreas?: PrivateLessonFocusArea[];
+  customFocus?: string | null;
+  correctionMode?: PrivateLessonCorrectionMode;
+  vocabularyMode?: PrivateLessonVocabularyMode;
 };
+
+const legacySkillEvidence = {
+  confidence: 0.1,
+  evidenceQuality: "insufficient" as const,
+  highestTestedLevel: null,
+  evidenceCount: 0,
+  dimensions: null,
+  evidence: [],
+};
+
+const legacyAssessment = {
+  overallLevel: null,
+  levelRange: null,
+  confidence: "low" as const,
+  evidenceSufficient: false,
+  calibrationTarget: null,
+  basis: "More evidence is needed.",
+  lessonPerformance: {
+    taskLevel: "A2" as const,
+    score: 0,
+    result: "insufficient" as const,
+    evidenceQuality: "insufficient" as const,
+    independence: 0,
+  },
+  skills: {
+    speaking: {
+      ...legacySkillEvidence,
+      score: 35,
+      level: null,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    vocabulary: {
+      ...legacySkillEvidence,
+      score: 35,
+      level: null,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    grammar: {
+      ...legacySkillEvidence,
+      score: 35,
+      level: null,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    fluency: {
+      ...legacySkillEvidence,
+      score: 35,
+      level: null,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+    comprehension: {
+      ...legacySkillEvidence,
+      score: 35,
+      level: null,
+      feedback: "Complete another lesson to refresh this estimate.",
+    },
+  },
+};
+
+const skillAssessmentSchema = z.object({
+  score: z.number().int().min(0).max(100),
+  level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]).nullable().default(null),
+  feedback: z.string(),
+  confidence: z.number().min(0).max(1).default(0.1),
+  evidenceQuality: z
+    .enum(["insufficient", "weak", "moderate", "strong"])
+    .default("insufficient"),
+  highestTestedLevel: z
+    .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+    .nullable()
+    .default(null),
+  evidenceCount: z.number().int().min(0).default(0),
+  dimensions: z
+    .object({
+      accuracy: z.number().int().min(0).max(100),
+      independence: z.number().int().min(0).max(100),
+      range: z.number().int().min(0).max(100),
+      complexity: z.number().int().min(0).max(100),
+      consistency: z.number().int().min(0).max(100),
+    })
+    .nullable()
+    .default(null),
+  evidence: z
+    .array(
+      z.object({
+        learnerQuote: z.string(),
+        observation: z.string(),
+        independent: z.boolean(),
+      }),
+    )
+    .default([]),
+});
 
 export const privateLessonReportSchema = z.object({
   summary: z.string(),
+  assessment: z
+    .object({
+      overallLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]).nullable(),
+      levelRange: z
+        .object({
+          from: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+          to: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+        })
+        .nullable()
+        .default(null),
+      confidence: z.enum(["low", "medium", "high"]),
+      evidenceSufficient: z.boolean().default(false),
+      calibrationTarget: z
+        .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+        .nullable()
+        .default(null),
+      basis: z.string().default("More evidence is needed."),
+      lessonPerformance: z
+        .object({
+          taskLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+          score: z.number().int().min(0).max(100),
+          result: z.enum([
+            "insufficient",
+            "developing",
+            "successful",
+            "strong",
+          ]),
+          evidenceQuality: z.enum([
+            "insufficient",
+            "weak",
+            "moderate",
+            "strong",
+          ]),
+          independence: z.number().int().min(0).max(100),
+        })
+        .default(legacyAssessment.lessonPerformance),
+      skills: z.object({
+        speaking: skillAssessmentSchema,
+        vocabulary: skillAssessmentSchema,
+        grammar: skillAssessmentSchema,
+        fluency: skillAssessmentSchema,
+        comprehension: skillAssessmentSchema,
+      }),
+    })
+    .default(legacyAssessment),
+  roadmapProgress: z
+    .object({
+      objectiveCompletionScore: z.number().int().min(0).max(100),
+      targetFormControlScore: z.number().int().min(0).max(100),
+      score: z.number().int().min(0).max(100),
+      taskCompleted: z.boolean(),
+      confidence: z.enum(["low", "medium", "high"]),
+      evidence: z.string(),
+    })
+    .nullable()
+    .optional()
+    .default(null),
   strengths: z.array(z.string()),
   corrections: z.array(
     z.object({
@@ -99,14 +414,24 @@ export const savedPrivateLessonSchema = z.object({
   id: uuid,
   targetLanguageCode: z.string(),
   supportLanguageCode: z.string().nullable(),
+  lessonMode: z.enum(privateLessonModes).default("standard"),
+  teachingLanguage: z.enum(privateLessonTeachingLanguages).default("target"),
   level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
   topic: z.string(),
   grammarFocus: z.string().nullable(),
+  focusAreas: z
+    .array(z.enum(privateLessonFocusAreas))
+    .default(["speaking", "vocabulary"]),
+  customFocus: z.string().nullable().default(null),
+  correctionMode: z.enum(privateLessonCorrectionModes).default("recast"),
+  vocabularyMode: z.enum(privateLessonVocabularyModes).default("learned"),
+  continuesFromLessonId: uuid.nullable().default(null),
   teacherVoice: z.enum(["female", "male"]),
-  speechRate: z.enum(["slow", "normal", "fast"]),
+  speechRate: z.enum(privateLessonSpeechRates),
   plannedDurationSeconds: z.number().int().positive(),
   actualDurationSeconds: z.number().int().nonnegative().nullable(),
   targetWords: privateLessonSessionSchema.shape.lesson.shape.targetWords,
+  roadmap: lessonRoadmapContextSchema.optional().default(null),
   status: z.enum(["active", "summarizing", "completed", "report_failed"]),
   startedAt: z.string().datetime(),
   endedAt: z.string().datetime().nullable(),
@@ -149,6 +474,38 @@ export function listPrivateLessons(limit = 20) {
   ).then((result) => result.lessons);
 }
 
+export function getPrivateLessonSetup(targetLanguageCode: string) {
+  return product(
+    privateLessonSetupSchema,
+    `private-lessons/setup?targetLanguageCode=${encodeURIComponent(targetLanguageCode)}`,
+  );
+}
+
+export function savePrivateLessonPreferences(
+  targetLanguageCode: string,
+  preferences: PrivateLessonPreferences,
+) {
+  return product(
+    z.object({ preferences: privateLessonSetupSchema.shape.preferences }),
+    "private-lessons/preferences",
+    "PUT",
+    { targetLanguageCode, ...preferences },
+  ).then((result) => result.preferences);
+}
+
+export function createPrivateLessonRoadmap(input: {
+  targetLanguageCode: string;
+  goalKind: "recommended" | "communication" | "grammar";
+  goalKey: string;
+}) {
+  return product(
+    z.object({ roadmap: privateLessonRoadmapSchema }),
+    "private-lessons/roadmaps",
+    "POST",
+    input,
+  ).then((result) => result.roadmap);
+}
+
 export function deletePrivateLesson(id: string) {
   return product(
     z.object({ deleted: z.literal(true) }),
@@ -159,6 +516,7 @@ export function deletePrivateLesson(id: string) {
 
 export type PrivateLessonConnection = {
   send: (event: unknown) => boolean;
+  setMicrophoneMuted: (muted: boolean) => boolean;
   close: () => void;
 };
 
@@ -283,7 +641,12 @@ export async function connectPrivateLesson(
       }
     });
     channel.addEventListener("open", () => {
-      channel.send(JSON.stringify(session.realtime.openingEvent));
+      channel.send(
+        JSON.stringify({
+          ...session.realtime.openingEvent,
+          event_id: "private-lesson-opening",
+        }),
+      );
       handlers.onOpen();
     });
     channel.addEventListener("close", handlers.onClose);
@@ -310,7 +673,17 @@ export async function connectPrivateLesson(
     return {
       send(event) {
         if (channel.readyState !== "open") return false;
-        channel.send(JSON.stringify(event));
+        try {
+          channel.send(JSON.stringify(event));
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      setMicrophoneMuted(muted) {
+        const track = stream?.getAudioTracks()[0];
+        if (!track || track.readyState === "ended") return false;
+        track.enabled = !muted;
         return true;
       },
       close() {
