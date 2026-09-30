@@ -99,6 +99,12 @@ export function configuration(env = process.env) {
     prewarmUpstreams: true,
   };
 }
+export function upstreamTimeoutMs(prefix, apiPath) {
+  return prefix === "/gotit-api" &&
+    /^\/api\/v1\/courses\/homework\/[0-9a-f-]+\/prepare$/i.test(apiPath)
+    ? 220000
+    : 80000;
+}
 export function createGateway(config) {
   let draining = false;
   let startupPrewarmTriggered = false;
@@ -321,7 +327,10 @@ export function createGateway(config) {
           }
         }
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 80000);
+        const timer = setTimeout(
+          () => controller.abort(),
+          upstreamTimeoutMs(prefix, apiPath),
+        );
         const cancel = () => {
           if (!res.writableEnded) controller.abort();
         };

@@ -4,7 +4,22 @@ import http from "node:http";
 import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createGateway, configuration } from "../server/gateway.mjs";
+import {
+  createGateway,
+  configuration,
+  upstreamTimeoutMs,
+} from "../server/gateway.mjs";
+
+it("allows long homework preparation without extending unrelated requests", () => {
+  const path =
+    "/api/v1/courses/homework/11111111-1111-4111-8111-111111111111/prepare";
+  assert.equal(upstreamTimeoutMs("/gotit-api", path), 220000);
+  assert.equal(upstreamTimeoutMs("/core-api", path), 80000);
+  assert.equal(
+    upstreamTimeoutMs("/gotit-api", path.replace("/prepare", "/actions")),
+    80000,
+  );
+});
 
 let upstream;
 let gateway;

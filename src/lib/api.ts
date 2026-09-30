@@ -63,7 +63,8 @@ function localizedMessage(code: string): string {
   if (code === "COURSE_TARGET_CHANGE_NEW" || code === "COURSE_REVISION_LIMIT")
     return i18n.t("courses.separateCourseError");
   if (code === "COURSE_AI_UNAVAILABLE") return i18n.t("courses.unavailable");
-  if (code === "COURSE_VOICE_UNAVAILABLE") return i18n.t("courses.liveDisconnected");
+  if (code === "COURSE_VOICE_UNAVAILABLE")
+    return i18n.t("courses.liveDisconnected");
   return messageCodes.has(code) ? i18n.t(`apiErrors.${code}`) : "";
 }
 
@@ -85,13 +86,15 @@ async function request(
           ? 120000
           : path === "private-lessons/realtime-sessions"
             ? 90000
-            : path.startsWith("courses")
-              ? 120000
-              : path.startsWith("reading") ||
-                  path.endsWith("/complete") ||
-                  path === "import"
-                ? 75000
-                : 20000;
+            : path.startsWith("courses/homework/") && path.endsWith("/prepare")
+              ? 230000
+              : path.startsWith("courses")
+                ? 120000
+                : path.startsWith("reading") ||
+                    path.endsWith("/complete") ||
+                    path === "import"
+                  ? 75000
+                  : 20000;
   const timeoutSignal = AbortSignal.timeout(timeoutMs);
   try {
     response = await fetch(`${base}/api/v1/${path}`, {
