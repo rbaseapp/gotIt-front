@@ -1,5 +1,11 @@
 import { StrictMode } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -1184,7 +1190,7 @@ describe("live server-backed flows", () => {
     ).toHaveLength(0);
   });
   it("opens recent dashboard words in place without navigating to vocabulary", async () => {
-    mount("/dashboard", async (url) => {
+    const fetchMock = mount("/dashboard", async (url) => {
       if (url.includes("/dashboard?"))
         return json({
           counts: {
@@ -1242,7 +1248,6 @@ describe("live server-backed flows", () => {
         });
       if (url.includes("/learning-items?"))
         return json({ items: [], nextCursor: null });
-      if (url.endsWith("/word-packs")) return json({ packs: [] });
       throw new Error("Unexpected route");
     });
     const user = userEvent.setup();
@@ -1253,6 +1258,9 @@ describe("live server-backed flows", () => {
     expect(screen.getByRole("dialog")).toHaveTextContent("subscription");
     expect(screen.getByRole("dialog")).toHaveTextContent("מנוי");
     expect(screen.getByRole("heading", { name: /שלום/u })).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith("/word-packs")),
+    ).toBe(false);
   });
   it("shows a recoverable API failure instead of displaying demo words", async () => {
     mount("/vocabulary", async (url) =>
@@ -1297,6 +1305,102 @@ describe("live server-backed flows", () => {
     expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/practice/sessions")),
     ).toBe(false);
+  });
+  it("shows completed, partial, and not started packs from server progress", async () => {
+    const basePack = {
+      id: exerciseId,
+      slug: "test-pack",
+      title: "Completed pack",
+      description: "A test pack",
+      moduleNumber: 1,
+      version: 1,
+      wordCount: 4,
+      installed: true,
+      installedVersion: 1,
+      topic: { id: itemId, slug: "test", title: "Test topic" },
+      track: {
+        id: sessionId,
+        slug: "test-track",
+        title: "Test track",
+        levelCode: "beginner",
+        cefrFrom: "A1",
+        cefrTo: "A2",
+        sourceLanguageCode: "en",
+        translationLanguageCode: "he",
+      },
+      progress: {
+        linked: 4,
+        new: 0,
+        learning: 0,
+        reviewing: 0,
+        mastered: 4,
+        due: 0,
+      },
+    };
+    const packs = [
+      basePack,
+      {
+        ...basePack,
+        id: secondItemId,
+        title: "Partial pack",
+        progress: { ...basePack.progress, mastered: 2, learning: 2 },
+      },
+      {
+        ...basePack,
+        id: remedialExerciseId,
+        title: "Not started pack",
+        installed: false,
+        installedVersion: null,
+        progress: { ...basePack.progress, linked: 0, mastered: 0 },
+      },
+      {
+        ...basePack,
+        id: "77777777-7777-4777-8777-777777777777",
+        title: "Added but not started pack",
+        progress: { ...basePack.progress, new: 4, mastered: 0 },
+      },
+      {
+        ...basePack,
+        id: "66666666-6666-4666-8666-666666666666",
+        title: "Selected subset pack",
+        progress: { ...basePack.progress, linked: 2, mastered: 2 },
+      },
+    ];
+    mount("/word-packs", async (url) => {
+      if (url.endsWith("/word-packs")) return json({ packs });
+      throw new Error("Unexpected route");
+    });
+    const card = async (title: string) =>
+      (await screen.findByRole("heading", { name: title })).closest("article")!;
+    const completed = await card("Completed pack");
+    const partial = await card("Partial pack");
+    const notStarted = await card("Not started pack");
+    const addedNotStarted = await card("Added but not started pack");
+    const subset = await card("Selected subset pack");
+
+    expect(completed).toHaveClass("completed");
+    expect(within(completed).getByText("המאגר הושלם")).toBeInTheDocument();
+    expect(
+      within(completed).getByText("4 מתוך 4 מילים הושלמו"),
+    ).toBeInTheDocument();
+    expect(within(completed).getByRole("progressbar")).toHaveAttribute(
+      "value",
+      "4",
+    );
+    expect(partial).not.toHaveClass("completed");
+    expect(within(partial).getByText("בלמידה")).toBeInTheDocument();
+    expect(
+      within(partial).getByText("2 מתוך 4 מילים הושלמו"),
+    ).toBeInTheDocument();
+    expect(notStarted).not.toHaveClass("completed");
+    expect(within(notStarted).getByText("טרם התחיל")).toBeInTheDocument();
+    expect(within(notStarted).getByRole("progressbar")).toHaveAttribute(
+      "value",
+      "0",
+    );
+    expect(within(addedNotStarted).getByText("טרם התחיל")).toBeInTheDocument();
+    expect(subset).not.toHaveClass("completed");
+    expect(within(subset).getByText("בלמידה")).toBeInTheDocument();
   });
   it("shows leveled word packs and adds a selected unit", async () => {
     const pack = {

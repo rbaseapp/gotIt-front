@@ -1523,7 +1523,8 @@ body.private-lesson-session-open .private-lesson-session > .button {
   }
 }
 
-body.private-lesson-viewport-compact .private-lesson-session.live-panel:not(.has-report) {
+body.private-lesson-viewport-compact
+  .private-lesson-session.live-panel:not(.has-report) {
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
     "header header"
@@ -1541,7 +1542,8 @@ body.private-lesson-viewport-compact .private-lesson-meta {
       auto auto minmax(90px, 0.52fr) auto minmax(110px, 1fr)
       auto;
   }
-  body.private-lesson-viewport-compact .private-lesson-session.live-panel:not(.has-report) {
+  body.private-lesson-viewport-compact
+    .private-lesson-session.live-panel:not(.has-report) {
     grid-template-rows: auto minmax(82px, 0.48fr) auto minmax(100px, 1fr) auto;
     grid-template-areas:
       "header"
@@ -3841,6 +3843,11 @@ html[dir="ltr"] .pack-search input {
 .pack-card.installed {
   border-color: #a8cfb3;
 }
+.pack-card.completed {
+  border-color: #4a9d63;
+  background: #f1faf3;
+  box-shadow: 0 8px 24px rgba(39, 126, 68, 0.12);
+}
 .pack-card-context {
   display: flex;
   align-items: center;
@@ -3900,6 +3907,33 @@ html[dir="ltr"] .pack-search input {
 }
 .pack-counts span:last-child {
   border: 0;
+}
+.pack-learning-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  color: #596b61;
+  font-size: 12px;
+  font-weight: 650;
+}
+.pack-learning-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 750;
+}
+.pack-learning-state.completed .pack-learning-label {
+  color: #176b35;
+}
+.pack-learning-state.inProgress .pack-learning-label {
+  color: #345c80;
+}
+.pack-learning-progress {
+  width: 100%;
+  height: 8px;
+  accent-color: #4a9d63;
 }
 .pack-actions {
   align-items: stretch;
@@ -4114,17 +4148,13 @@ html[dir="ltr"] .pack-search input {
   min-height: 0;
   overflow: hidden;
 }
-.pack-selection-summary,
-.pack-dashboard-heading {
+.pack-selection-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
-.pack-selection-summary p,
-.pack-dashboard-heading h2,
-.dashboard-pack-card h3,
-.dashboard-pack-card p {
+.pack-selection-summary p {
   margin: 0;
 }
 .pack-word-list {
@@ -4174,43 +4204,6 @@ html[dir="ltr"] .pack-search input {
   font-style: normal;
   font-weight: 700;
 }
-.dashboard-packs-panel {
-  display: grid;
-  gap: 18px;
-}
-.pack-dashboard-heading > div {
-  display: grid;
-  gap: 10px;
-}
-.dashboard-pack-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-.dashboard-pack-card {
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  background: #fbfdfb;
-}
-.dashboard-pack-card small {
-  color: var(--muted);
-}
-.dashboard-pack-card strong {
-  color: var(--green-dark);
-  font-size: 21px;
-}
-.dashboard-pack-card progress,
-.dashboard-pack-card p,
-.dashboard-pack-card .button {
-  grid-column: 1 / -1;
-}
-.dashboard-pack-card .button {
-  justify-content: center;
-}
 .pack-filter-field {
   min-width: 0;
 }
@@ -4223,11 +4216,6 @@ html[dir="ltr"] .pack-search input {
   display: grid;
   gap: 7px;
   background: #fff;
-}
-@media (max-width: 1000px) {
-  .dashboard-pack-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 @media (max-width: 650px) {
   .modal-backdrop {
@@ -4252,8 +4240,7 @@ html[dir="ltr"] .pack-search input {
   .pack-word-modal .pack-word-list {
     max-height: none;
   }
-  .pack-selection-summary,
-  .pack-dashboard-heading {
+  .pack-selection-summary {
     align-items: stretch;
     flex-direction: column;
   }
@@ -4263,9 +4250,6 @@ html[dir="ltr"] .pack-search input {
   }
   .pack-word-actions {
     padding-inline: 18px;
-  }
-  .dashboard-pack-grid {
-    grid-template-columns: 1fr;
   }
 }
 

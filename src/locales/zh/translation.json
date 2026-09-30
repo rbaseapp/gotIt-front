@@ -862,6 +862,13 @@
     "wordCount": "{{count}}字",
     "selectedCount": "{{count}} 已选择",
     "masteredCount": "{{count}} 已完成",
+    "progressStates": {
+      "completed": "词包已完成",
+      "inProgress": "学习中",
+      "notStarted": "尚未开始"
+    },
+    "progressCount": "已掌握 {{mastered}} / {{total}} 个单词",
+    "progressLabel": "{{title}} 的学习进度",
     "showWords": "显示单词",
     "updateSelection": "更新并选择单词",
     "editSelection": "编辑单词选择",
