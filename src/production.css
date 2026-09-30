@@ -4430,6 +4430,40 @@ html[dir="ltr"] .pack-search input {
 .dashboard-weak-panel {
   margin-block: 22px;
 }
+.dashboard-last-lesson {
+  display: grid;
+  gap: 14px;
+  margin-block: 20px;
+  overflow-wrap: anywhere;
+}
+.dashboard-last-lesson-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.dashboard-last-lesson-heading h2,
+.dashboard-last-lesson-heading p,
+.dashboard-last-lesson > p,
+.dashboard-last-lesson-point p {
+  margin: 0;
+}
+.dashboard-last-lesson-heading time,
+.dashboard-last-lesson-point small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.dashboard-last-lesson-point {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--green-soft);
+}
+.dashboard-last-lesson-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .dashboard-more {
   margin-block: 22px;
 }

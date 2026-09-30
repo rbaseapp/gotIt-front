@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { CourseContinueCard } from "../components/CourseContinueCard";
+import { LastLessonCard } from "../components/LastLessonCard";
 import { RemoteState } from "../components/RemoteState";
 import {
   WordPreviewModal,
@@ -107,6 +108,7 @@ export function LiveDashboardPage() {
       </section>
 
       <CourseContinueCard />
+      <LastLessonCard />
       <RemoteState
         loading={resource.loading}
         error={resource.error}
