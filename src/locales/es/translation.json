@@ -36,6 +36,9 @@
       "title": "Tipo de clase",
       "teachingLanguage": "Idioma de las explicaciones",
       "chooseTeachingLanguage": "Elige un idioma para las explicaciones",
+      "explainInTarget": "Explicar en {{language}}",
+      "explainInSupport": "Explicar en {{language}}",
+      "supportHint": "Las instrucciones y explicaciones usarán este idioma. Las palabras y frases de práctica seguirán en el idioma que estudias.",
       "beginnerHint": "El profesor explicará en este idioma e introducirá gradualmente entre 3 y 5 frases útiles.",
       "options": {
         "standard": {

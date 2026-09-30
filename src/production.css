@@ -267,6 +267,12 @@
 .private-lesson-mode-field.compact .private-lesson-mode-options label > span {
   min-height: 0;
 }
+.private-lesson-explanation-language {
+  display: grid;
+  gap: 6px;
+  max-width: 460px;
+  margin-block: 14px;
+}
 .private-lesson-beginner-language {
   display: grid;
   grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr);

@@ -56,6 +56,7 @@ import {
   type PrivateLessonConnection,
   type PrivateLessonDurationMinutes,
   type PrivateLessonMode,
+  type PrivateLessonTeachingLanguage,
   privateLessonCorrectionModes,
   type PrivateLessonCorrectionMode,
   privateLessonVocabularyModes,
@@ -118,6 +119,10 @@ export function PrivateLessonPage() {
     profile.defaultTranslationLanguage || "",
   );
   const [lessonMode, setLessonMode] = useState<PrivateLessonMode>("standard");
+  const [teachingLanguage, setTeachingLanguage] =
+    useState<PrivateLessonTeachingLanguage>("target");
+  const [courseTeachingLanguage, setCourseTeachingLanguage] =
+    useState<PrivateLessonTeachingLanguage>("target");
   const [level, setLevel] = useState<"" | CefrLevel>("");
   const [teacherVoice, setTeacherVoice] = useState<TeacherVoice>("female");
   const [speechRate, setSpeechRate] =
@@ -519,6 +524,11 @@ export function PrivateLessonPage() {
         if (saved) {
           setSupportLanguage(saved.supportLanguageCode ?? "");
           setLessonMode(saved.lessonMode);
+          setTeachingLanguage(
+            saved.lessonMode === "absolute_beginner"
+              ? "support"
+              : saved.teachingLanguage,
+          );
           setLessonDurationMinutes(saved.requestedDurationMinutes);
           setTeacherVoice(saved.teacherVoice);
           setSpeechRate(saved.speechRate);
@@ -544,11 +554,35 @@ export function PrivateLessonPage() {
     };
   }, [targetLanguage]);
 
+  const coursePreferences = courseData
+    ? (courseData.versions.find(
+        (version) => version.version === courseData.activeVersion,
+      )?.preferences ?? courseData.preferences)
+    : null;
+  const lessonTargetLanguage =
+    coursePreferences?.targetLanguageCode ?? targetLanguage;
+  const lessonSupportLanguage = coursePreferences
+    ? coursePreferences.supportLanguageCode
+    : supportLanguage;
+  const lessonTeachingLanguage =
+    coursePreferences?.absoluteBeginner ||
+    (!coursePreferences && lessonMode === "absolute_beginner")
+      ? "support"
+      : coursePreferences
+        ? courseTeachingLanguage
+        : teachingLanguage;
+  const supportExplanationAvailable = Boolean(
+    lessonSupportLanguage &&
+    !sameBaseLanguage(lessonTargetLanguage, lessonSupportLanguage),
+  );
+
   const sessionFullscreen = phase !== "setup" && phase !== "preparing";
   const childCourse =
-    (courseData?.versions.find(
-      (version) => version.version === courseData.activeVersion,
-    )?.preferences ?? courseData?.preferences)?.ageGroup === "child";
+    (
+      courseData?.versions.find(
+        (version) => version.version === courseData.activeVersion,
+      )?.preferences ?? courseData?.preferences
+    )?.ageGroup === "child";
   usePrivateLessonViewport(sessionFullscreen);
   useEffect(() => {
     const transcript = transcriptRef.current;
@@ -583,6 +617,7 @@ export function PrivateLessonPage() {
         targetLanguageCode: targetLanguage.trim(),
         supportLanguageCode: supportLanguage.trim() || null,
         lessonMode,
+        teachingLanguage: lessonTeachingLanguage,
         ...(level ? { requestedLevel: level } : {}),
         requestedDurationMinutes: lessonDurationMinutes,
         teacherVoice,
@@ -595,21 +630,9 @@ export function PrivateLessonPage() {
         vocabularyMode,
         ...(courseData
           ? {
-              targetLanguageCode: (
-                courseData.versions.find(
-                  (v) => v.version === courseData.activeVersion,
-                )?.preferences ?? courseData.preferences
-              ).targetLanguageCode,
-              supportLanguageCode: (
-                courseData.versions.find(
-                  (v) => v.version === courseData.activeVersion,
-                )?.preferences ?? courseData.preferences
-              ).supportLanguageCode,
-              lessonMode: (
-                courseData.versions.find(
-                  (v) => v.version === courseData.activeVersion,
-                )?.preferences ?? courseData.preferences
-              ).absoluteBeginner
+              targetLanguageCode: coursePreferences!.targetLanguageCode,
+              supportLanguageCode: coursePreferences!.supportLanguageCode,
+              lessonMode: coursePreferences!.absoluteBeginner
                 ? ("absolute_beginner" as const)
                 : ("standard" as const),
             }
@@ -824,6 +847,7 @@ export function PrivateLessonPage() {
   const chooseLessonMode = (mode: PrivateLessonMode) => {
     setLessonMode(mode);
     if (mode === "absolute_beginner") {
+      setTeachingLanguage("support");
       setLevel("A1");
       setSpeechRate((current) => (current === "normal" ? "slow" : current));
     }
@@ -930,9 +954,50 @@ export function PrivateLessonPage() {
                 </div>
               )}
               <form onSubmit={(event) => void startLesson(event)}>
+                {coursePreferences && !coursePreferences.absoluteBeginner && (
+                  <label className="field private-lesson-explanation-language">
+                    <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                    <select
+                      value={courseTeachingLanguage}
+                      dir="auto"
+                      onChange={(event) =>
+                        setCourseTeachingLanguage(
+                          event.target.value as PrivateLessonTeachingLanguage,
+                        )
+                      }
+                    >
+                      <option value="target">
+                        {t("privateLesson.mode.explainInTarget", {
+                          language:
+                            languageOptions.find(([code]) =>
+                              sameBaseLanguage(code, lessonTargetLanguage),
+                            )?.[1] ?? lessonTargetLanguage,
+                        })}
+                      </option>
+                      {supportExplanationAvailable && (
+                        <option value="support">
+                          {t("privateLesson.mode.explainInSupport", {
+                            language:
+                              languageOptions.find(([code]) =>
+                                sameBaseLanguage(
+                                  code,
+                                  lessonSupportLanguage || "",
+                                ),
+                              )?.[1] ?? lessonSupportLanguage,
+                          })}
+                        </option>
+                      )}
+                    </select>
+                  </label>
+                )}
                 <button
                   className="button primary"
-                  disabled={!courseData?.nextLesson || phase === "preparing"}
+                  disabled={
+                    !courseData?.nextLesson ||
+                    phase === "preparing" ||
+                    (lessonTeachingLanguage === "support" &&
+                      !supportExplanationAvailable)
+                  }
                   type="submit"
                 >
                   {phase === "preparing" ? (
@@ -997,19 +1062,61 @@ export function PrivateLessonPage() {
                     )}
                   </div>
                 </fieldset>
-                {lessonMode === "absolute_beginner" && (
+                {lessonMode === "standard" && (
+                  <label className="field private-lesson-explanation-language">
+                    <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                    <select
+                      value={teachingLanguage}
+                      dir="auto"
+                      onChange={(event) =>
+                        setTeachingLanguage(
+                          event.target.value as PrivateLessonTeachingLanguage,
+                        )
+                      }
+                    >
+                      <option value="target">
+                        {t("privateLesson.mode.explainInTarget", {
+                          language: targetLanguageLabel,
+                        })}
+                      </option>
+                      <option value="support">
+                        {t("privateLesson.mode.explainInSupport", {
+                          language: supportLanguage
+                            ? (languageOptions.find(([code]) =>
+                                sameBaseLanguage(code, supportLanguage),
+                              )?.[1] ?? supportLanguage)
+                            : t("privateLesson.mode.chooseTeachingLanguage"),
+                        })}
+                      </option>
+                    </select>
+                  </label>
+                )}
+                {(lessonMode === "absolute_beginner" ||
+                  teachingLanguage === "support") && (
                   <div className="private-lesson-beginner-language">
                     <label className="field">
-                      <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                      <span>
+                        {t("privateLesson.mode.chooseTeachingLanguage")}
+                      </span>
                       <LanguageCombobox
                         value={supportLanguage}
                         onChange={setSupportLanguage}
-                        options={languageOptions.filter(([code]) => !sameBaseLanguage(code, targetLanguage))}
-                        emptyLabel={t("privateLesson.mode.chooseTeachingLanguage")}
+                        options={languageOptions.filter(
+                          ([code]) => !sameBaseLanguage(code, targetLanguage),
+                        )}
+                        emptyLabel={t(
+                          "privateLesson.mode.chooseTeachingLanguage",
+                        )}
                         required
                       />
                     </label>
-                    <p>{t("privateLesson.mode.beginnerHint")}</p>
+                    <p>
+                      {t(
+                        lessonMode === "absolute_beginner"
+                          ? "privateLesson.mode.beginnerHint"
+                          : "privateLesson.mode.supportHint",
+                      )}
+                    </p>
                   </div>
                 )}
                 {setupLoading ? (
@@ -1071,8 +1178,8 @@ export function PrivateLessonPage() {
                     type="submit"
                     disabled={
                       !targetLanguage.trim() ||
-                      (lessonMode === "absolute_beginner" &&
-                        !supportLanguage.trim()) ||
+                      (lessonTeachingLanguage === "support" &&
+                        !supportExplanationAvailable) ||
                       phase === "preparing" ||
                       setupLoading
                     }
@@ -1667,14 +1774,50 @@ export function PrivateLessonPage() {
                 </div>
               </fieldset>
               <div className="live-form-grid">
-                {lessonMode === "absolute_beginner" && (
+                {lessonMode === "standard" && (
                   <label className="field">
                     <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                    <select
+                      value={teachingLanguage}
+                      dir="auto"
+                      onChange={(event) =>
+                        setTeachingLanguage(
+                          event.target.value as PrivateLessonTeachingLanguage,
+                        )
+                      }
+                    >
+                      <option value="target">
+                        {t("privateLesson.mode.explainInTarget", {
+                          language: targetLanguageLabel,
+                        })}
+                      </option>
+                      <option value="support">
+                        {t("privateLesson.mode.explainInSupport", {
+                          language: supportLanguage
+                            ? (languageOptions.find(([code]) =>
+                                sameBaseLanguage(code, supportLanguage),
+                              )?.[1] ?? supportLanguage)
+                            : t("privateLesson.mode.chooseTeachingLanguage"),
+                        })}
+                      </option>
+                    </select>
+                  </label>
+                )}
+                {(lessonMode === "absolute_beginner" ||
+                  teachingLanguage === "support") && (
+                  <label className="field">
+                    <span>
+                      {t("privateLesson.mode.chooseTeachingLanguage")}
+                    </span>
                     <LanguageCombobox
                       value={supportLanguage}
                       onChange={setSupportLanguage}
-                      options={languageOptions.filter(([code]) => !sameBaseLanguage(code, targetLanguage))}
-                      emptyLabel={t("privateLesson.mode.chooseTeachingLanguage")}
+                      options={languageOptions.filter(
+                        ([code]) => !sameBaseLanguage(code, targetLanguage),
+                      )}
+                      emptyLabel={t(
+                        "privateLesson.mode.chooseTeachingLanguage",
+                      )}
                       required
                     />
                   </label>

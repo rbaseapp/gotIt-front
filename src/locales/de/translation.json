@@ -36,6 +36,9 @@
       "title": "Unterrichtsart",
       "teachingLanguage": "Sprache für Erklärungen",
       "chooseTeachingLanguage": "Erklärungssprache wählen",
+      "explainInTarget": "Auf {{language}} erklären",
+      "explainInSupport": "Auf {{language}} erklären",
+      "supportHint": "Anweisungen und Erklärungen erfolgen in dieser Sprache. Übungswörter und -sätze bleiben in der Zielsprache.",
       "beginnerHint": "Die Lehrkraft erklärt in dieser Sprache und führt schrittweise 3–5 nützliche Sätze ein.",
       "options": {
         "standard": {

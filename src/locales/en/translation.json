@@ -63,6 +63,9 @@
       "title": "Lesson type",
       "teachingLanguage": "Language used for explanations",
       "chooseTeachingLanguage": "Choose an explanation language",
+      "explainInTarget": "Explain in {{language}}",
+      "explainInSupport": "Explain in {{language}}",
+      "supportHint": "Directions and explanations use this language. Practice words and sentences stay in the target language.",
       "beginnerHint": "The tutor will explain in this language and gradually introduce 3–5 useful phrases in the new language.",
       "options": {
         "standard": {

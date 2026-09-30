@@ -59,6 +59,9 @@
       "title": "סוג השיעור",
       "teachingLanguage": "השפה שבה המורה יסביר",
       "chooseTeachingLanguage": "בחירת שפת הסבר",
+      "explainInTarget": "הסבר ב־{{language}}",
+      "explainInSupport": "הסבר ב־{{language}}",
+      "supportHint": "ההוראות וההסברים יינתנו בשפה שבחרת. המילים והמשפטים לתרגול יישארו בשפת היעד.",
       "beginnerHint": "המורה יסביר בשפה הזו וישלב בהדרגה 3–5 משפטים שימושיים בשפה החדשה.",
       "options": {
         "standard": {

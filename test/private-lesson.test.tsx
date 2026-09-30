@@ -95,6 +95,7 @@ const session = {
     targetLanguageCode: "en",
     supportLanguageCode: "he",
     lessonMode: "standard",
+    teachingLanguage: "target",
     level: "B1",
     topic: "technology",
     grammarFocus: null,
@@ -137,6 +138,7 @@ const setup = {
   preferences: {
     supportLanguageCode: "he",
     lessonMode: "standard",
+    teachingLanguage: "target",
     requestedDurationMinutes: 5,
     teacherVoice: "female",
     speechRate: "normal",
@@ -203,6 +205,7 @@ const savedLesson = {
   targetLanguageCode: "en",
   supportLanguageCode: "he",
   lessonMode: "standard",
+  teachingLanguage: "target",
   level: "B1",
   topic: "technology",
   grammarFocus: null,
@@ -360,7 +363,35 @@ describe("private voice lesson", () => {
     mocks.course.mockResolvedValueOnce({ course: adult });
     renderPage(`/private-lesson?course=${adult.id}`);
     await screen.findByText(adult.nextLesson!.title);
-    expect(screen.queryByRole("img", { name: /רייצ/u })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("img", { name: /רייצ/u }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("lets a grammar course use its approved support language for explanations", async () => {
+    const course = courseWithPlan(true);
+    course.preferences.absoluteBeginner = false;
+    course.versions[0]!.preferences.absoluteBeginner = false;
+    mocks.course.mockResolvedValueOnce({ course });
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage(`/private-lesson?course=${course.id}`);
+    const selector = await screen.findByRole("combobox", {
+      name: "השפה שבה המורה יסביר",
+    });
+    expect(selector).toHaveAttribute("dir", "auto");
+    await user.selectOptions(selector, "support");
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          courseId: course.id,
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          teachingLanguage: "support",
+        }),
+      ),
+    );
   });
 
   it("opens level details when the shell level action targets the page", async () => {
@@ -392,8 +423,62 @@ describe("private voice lesson", () => {
           targetLanguageCode: "en",
           supportLanguageCode: "he",
           lessonMode: "absolute_beginner",
+          teachingLanguage: "support",
           requestedLevel: "A1",
           speechRate: "slow",
+        }),
+      ),
+    );
+  });
+  it("offers Hebrew explanations while keeping English as the practiced language", async () => {
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage();
+    const selector = await screen.findByRole("combobox", {
+      name: "השפה שבה המורה יסביר",
+    });
+    expect(selector).toHaveAttribute("dir", "auto");
+    await user.selectOptions(selector, "support");
+    expect(
+      screen.getByText(/המילים והמשפטים לתרגול יישארו בשפת היעד/u),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          lessonMode: "standard",
+          teachingLanguage: "support",
+        }),
+      ),
+    );
+  });
+
+  it("requires a chosen support language for explanations, including an RTL language", async () => {
+    mocks.setup.mockResolvedValueOnce({
+      ...setup,
+      preferences: { ...setup.preferences, supportLanguageCode: null },
+    });
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage();
+    const selector = await screen.findByRole("combobox", {
+      name: "השפה שבה המורה יסביר",
+    });
+    await user.selectOptions(selector, "support");
+    const start = screen.getByRole("button", { name: "התחלת השיעור" });
+    expect(start).toBeDisabled();
+    await user.click(screen.getByRole("combobox", { name: "בחירת שפת הסבר" }));
+    await user.click(screen.getByRole("option", { name: /Arabic/u }));
+    expect(start).toBeEnabled();
+    await user.click(start);
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetLanguageCode: "en",
+          supportLanguageCode: "ar",
+          teachingLanguage: "support",
         }),
       ),
     );
@@ -423,7 +508,10 @@ describe("private voice lesson", () => {
     const optionsDialog = screen.getByRole("dialog", {
       name: "התאמת השיעור הזה",
     });
-    await user.selectOptions(within(optionsDialog).getByRole("combobox"), "10");
+    await user.selectOptions(
+      within(optionsDialog).getByRole("combobox", { name: "משך השיעור" }),
+      "10",
+    );
     await user.click(
       within(optionsDialog).getByRole("button", { name: "התחלת השיעור" }),
     );
@@ -460,6 +548,7 @@ describe("private voice lesson", () => {
         targetLanguageCode: "en",
         supportLanguageCode: "he",
         lessonMode: "standard",
+        teachingLanguage: "target",
         requestedDurationMinutes: 10,
         teacherVoice: "female",
         speechRate: "normal",

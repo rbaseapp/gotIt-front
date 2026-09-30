@@ -36,6 +36,9 @@
       "title": "课程类型",
       "teachingLanguage": "讲解所用语言",
       "chooseTeachingLanguage": "选择讲解语言",
+      "explainInTarget": "用{{language}}讲解",
+      "explainInSupport": "用{{language}}讲解",
+      "supportHint": "说明和讲解使用所选语言，练习的词语和句子仍使用目标语言。",
       "beginnerHint": "老师会用这种语言讲解，并逐步加入 3–5 个实用的新语言短句。",
       "options": {
         "standard": {

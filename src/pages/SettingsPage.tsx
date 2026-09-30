@@ -36,6 +36,7 @@ import {
 const defaultLessonPreferences: PrivateLessonPreferences = {
   supportLanguageCode: null,
   lessonMode: "standard",
+  teachingLanguage: "target",
   requestedDurationMinutes: 5,
   teacherVoice: "female",
   speechRate: "normal",
@@ -458,6 +459,10 @@ export function SettingsPage() {
                           ...current,
                           lessonMode: event.target
                             .value as PrivateLessonPreferences["lessonMode"],
+                          teachingLanguage:
+                            event.target.value === "absolute_beginner"
+                              ? "support"
+                              : current.teachingLanguage,
                         }));
                       }}
                     >
@@ -487,7 +492,8 @@ export function SettingsPage() {
                     <LanguageCombobox
                       value={lessonPreferences.supportLanguageCode ?? ""}
                       required={
-                        lessonPreferences.lessonMode === "absolute_beginner"
+                        lessonPreferences.lessonMode === "absolute_beginner" ||
+                        lessonPreferences.teachingLanguage === "support"
                       }
                       onChange={(code) => {
                         setSaved(false);
@@ -500,6 +506,43 @@ export function SettingsPage() {
                       emptyLabel={t("privateLesson.noSupport")}
                     />
                   </label>
+                  {lessonPreferences.lessonMode === "standard" && (
+                    <label className="field">
+                      <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                      <select
+                        value={lessonPreferences.teachingLanguage}
+                        dir="auto"
+                        onChange={(event) => {
+                          setSaved(false);
+                          setLessonPreferences((current) => ({
+                            ...current,
+                            teachingLanguage: event.target
+                              .value as PrivateLessonPreferences["teachingLanguage"],
+                          }));
+                        }}
+                      >
+                        <option value="target">
+                          {t("privateLesson.mode.explainInTarget", {
+                            language:
+                              languageOptions.find(
+                                ([code]) => code === lessonLanguage,
+                              )?.[1] ?? lessonLanguage,
+                          })}
+                        </option>
+                        <option value="support">
+                          {t("privateLesson.mode.explainInSupport", {
+                            language:
+                              languageOptions.find(
+                                ([code]) =>
+                                  code ===
+                                  lessonPreferences.supportLanguageCode,
+                              )?.[1] ??
+                              t("privateLesson.mode.chooseTeachingLanguage"),
+                          })}
+                        </option>
+                      </select>
+                    </label>
+                  )}
                   <label className="field">
                     <span>{t("privateLesson.duration")}</span>
                     <select

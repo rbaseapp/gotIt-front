@@ -35,6 +35,9 @@ export type PrivateLessonSpeechRate = (typeof privateLessonSpeechRates)[number];
 
 export const privateLessonModes = ["standard", "absolute_beginner"] as const;
 export type PrivateLessonMode = (typeof privateLessonModes)[number];
+export const privateLessonTeachingLanguages = ["target", "support"] as const;
+export type PrivateLessonTeachingLanguage =
+  (typeof privateLessonTeachingLanguages)[number];
 
 const roadmapMilestoneSchema = z.object({
   id: uuid,
@@ -88,6 +91,9 @@ export const privateLessonSetupSchema = z.object({
     .object({
       supportLanguageCode: z.string().nullable(),
       lessonMode: z.enum(privateLessonModes).default("standard"),
+      teachingLanguage: z
+        .enum(privateLessonTeachingLanguages)
+        .default("target"),
       requestedDurationMinutes: z.union([
         z.literal(1),
         z.literal(5),
@@ -167,6 +173,7 @@ export const privateLessonSessionSchema = z.object({
     targetLanguageCode: z.string().min(1).max(64),
     supportLanguageCode: z.string().min(1).max(64).nullable(),
     lessonMode: z.enum(privateLessonModes).default("standard"),
+    teachingLanguage: z.enum(privateLessonTeachingLanguages).default("target"),
     level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
     topic: z.string().min(1).max(120),
     grammarFocus: z.string().min(1).max(160).nullable(),
@@ -205,6 +212,7 @@ export type PrivateLessonInput = {
   targetLanguageCode: string;
   supportLanguageCode?: string | null;
   lessonMode?: PrivateLessonMode;
+  teachingLanguage?: PrivateLessonTeachingLanguage;
   requestedLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   requestedDurationMinutes?: PrivateLessonDurationMinutes;
   teacherVoice?: "female" | "male";
@@ -407,6 +415,7 @@ export const savedPrivateLessonSchema = z.object({
   targetLanguageCode: z.string(),
   supportLanguageCode: z.string().nullable(),
   lessonMode: z.enum(privateLessonModes).default("standard"),
+  teachingLanguage: z.enum(privateLessonTeachingLanguages).default("target"),
   level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
   topic: z.string(),
   grammarFocus: z.string().nullable(),
