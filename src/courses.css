@@ -18,6 +18,17 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+.course-heading-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.course-create-button {
+  min-height: 48px;
+  font-size: 14px;
+  font-weight: 700;
+}
 .course-page h2 {
   font-size: clamp(21px, 2.5vw, 27px);
   line-height: 1.5;
@@ -951,6 +962,12 @@
     flex-direction: column;
     gap: 8px;
     margin-block-end: 16px;
+  }
+  .course-heading-actions {
+    width: 100%;
+  }
+  .course-create-button {
+    width: 100%;
   }
   .course-steps {
     gap: 13px;

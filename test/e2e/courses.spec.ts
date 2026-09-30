@@ -120,7 +120,15 @@ test("multiple courses in two languages stay grouped on a narrow screen", async 
   await page.goto("/courses");
   await expect(page.getByRole("region", { name: /English/ }).getByRole("link")).toHaveCount(2);
   await expect(page.getByRole("region", { name: /Spanish/ }).getByRole("link")).toHaveCount(1);
+  const createButton = page.getByRole("button", { name: "יצירת קורס נוסף" });
+  await expect(page.locator(".course-page-heading").getByRole("button", { name: "יצירת קורס נוסף" })).toHaveCount(1);
+  await expect(createButton).toBeInViewport();
+  await expect(createButton).toHaveCSS("background-color", "rgb(44, 122, 98)");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(createButton).toBeInViewport();
+  await createButton.click();
+  await expect(page.locator(".course-welcome")).toBeVisible();
 });
 
 for (const language of ["he", "en"])

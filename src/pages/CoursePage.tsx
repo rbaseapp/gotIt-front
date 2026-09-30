@@ -254,15 +254,29 @@ export function CoursePage() {
             </p>
           )}
         </div>
-        {course ? (
-          <Link className="course-text-link" to="/courses">
-            {t("courses.allCourses")}
-          </Link>
-        ) : (
-          <Link className="course-text-link" to="/private-lesson?practice=free">
-            {t("courses.freePractice")}
-          </Link>
-        )}
+        <div className="course-heading-actions">
+          {course ? (
+            <Link className="course-text-link" to="/courses">
+              {t("courses.allCourses")}
+            </Link>
+          ) : (
+            <>
+              {!creating && courses.length > 0 && (
+                <button
+                  type="button"
+                  className="button primary course-create-button"
+                  onClick={() => setCreating(true)}
+                >
+                  <Plus size={18} aria-hidden="true" />
+                  {t("courses.newCourse")}
+                </button>
+              )}
+              <Link className="course-text-link" to="/private-lesson?practice=free">
+                {t("courses.freePractice")}
+              </Link>
+            </>
+          )}
+        </div>
       </header>
       {error && (
         <div className="course-error" role="alert">
@@ -360,13 +374,6 @@ export function CoursePage() {
               </section>
             ))}
           </div>
-          <button
-            className="course-text-link"
-            onClick={() => setCreating(true)}
-          >
-            <Plus size={17} />
-            {t("courses.newCourse")}
-          </button>
         </>
       ) : !course ? (
         <section className="course-hero course-welcome">
