@@ -791,6 +791,13 @@
     "trialStatus_many": "تجربتك نشطة. يتبقى {{count}} يوم."
   },
   "help": {
+    "contactTitle": "هل تحتاج إلى مساعدة شخصية؟",
+    "contactBody": "تواصل مع فريق GotIt عبر البريد الإلكتروني أو WhatsApp.",
+    "contactEmail": "إرسال بريد إلكتروني",
+    "contactWhatsapp": "المحادثة عبر WhatsApp",
+    "contactPrivacy": "يرجى عدم إرسال كلمات المرور أو تفاصيل الدفع.",
+    "emailSubject": "طلب دعم GotIt",
+    "whatsappMessage": "مرحبًا، أحتاج إلى مساعدة بشأن GotIt.",
     "eyebrow": "نظام بسيط، ذاكرة قوية",
     "title": "مركز المساعدة",
     "description": "ما يمكنك فعله الآن وكيفية تخزين بيانات.",

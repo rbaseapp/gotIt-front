@@ -9,6 +9,7 @@ import {
   LoaderCircle,
   LockKeyhole,
   Mail,
+  MessageCircle,
   Sparkles,
 } from "lucide-react";
 import { Logo } from "../components/Logo";
@@ -18,6 +19,7 @@ import { FacebookSignIn } from "../components/FacebookSignIn";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
+import { supportEmailHref, supportWhatsappHref } from "../lib/supportContact";
 
 export function AuthPage() {
   const { t } = useTranslation();
@@ -220,6 +222,20 @@ export function AuthPage() {
           <p className="auth-footnote">
             {t("auth.socialNote")}
           </p>
+          <nav className="auth-support-links" aria-label={t("help.contactTitle")}>
+            <a href={supportEmailHref(t("help.emailSubject"))}>
+              <Mail size={15} aria-hidden="true" />
+              {t("help.contactEmail")}
+            </a>
+            <a
+              href={supportWhatsappHref(t("help.whatsappMessage"))}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageCircle size={15} aria-hidden="true" />
+              {t("help.contactWhatsapp")}
+            </a>
+          </nav>
           <nav className="auth-legal-links" aria-label={t("auth.legalNavigation")}>
             <Link to="/terms-of-service">{t("auth.terms")}</Link>
             <Link to="/privacy-policy">{t("auth.privacy")}</Link>

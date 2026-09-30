@@ -764,6 +764,13 @@
     }
   },
   "help": {
+    "contactTitle": "Brauchst du persönliche Hilfe?",
+    "contactBody": "Kontaktiere das GotIt-Team per E-Mail oder WhatsApp.",
+    "contactEmail": "E-Mail senden",
+    "contactWhatsapp": "Auf WhatsApp chatten",
+    "contactPrivacy": "Bitte keine Passwörter oder Zahlungsdaten senden.",
+    "emailSubject": "GotIt-Supportanfrage",
+    "whatsappMessage": "Hallo, ich brauche Hilfe mit GotIt.",
     "eyebrow": "Ein bisschen Ordnung, viel mehr Speicher",
     "title": "Hilfezentrum",
     "description": "Was Sie jetzt tun können und wie Ihre Daten gespeichert werden.",

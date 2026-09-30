@@ -755,6 +755,13 @@
     }
   },
   "help": {
+    "contactTitle": "需要人工帮助？",
+    "contactBody": "通过电子邮件或 WhatsApp 联系 GotIt 团队。",
+    "contactEmail": "发送电子邮件",
+    "contactWhatsapp": "通过 WhatsApp 聊天",
+    "contactPrivacy": "请勿发送密码或付款信息。",
+    "emailSubject": "GotIt 支持请求",
+    "whatsappMessage": "你好，我需要 GotIt 的帮助。",
     "eyebrow": "一点顺序，更多记忆",
     "title": "帮助中心",
     "description": "您现在可以做什么以及您的数据如何存储。",

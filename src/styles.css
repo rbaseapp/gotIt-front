@@ -377,6 +377,24 @@ select:focus-visible {
   color: var(--muted);
   font-size: 11px;
 }
+.auth-support-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 16px;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+.auth-support-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.auth-support-links a:hover {
+  text-decoration: underline;
+}
 .auth-legal-links a:hover,
 .sidebar-legal-links a:hover {
   color: var(--green-dark);
@@ -4663,6 +4681,20 @@ body.game-viewport-short .session-page:not(.live-session) .skip-button {
 }
 .help-grid h2 {
   font-size: 20px;
+}
+.help-contact {
+  margin-top: 24px;
+}
+.help-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+.help-contact-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 16px 0 0;
 }
 .help-status {
   margin-top: 24px;

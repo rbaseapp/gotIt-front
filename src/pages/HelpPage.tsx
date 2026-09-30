@@ -1,9 +1,19 @@
-import { BookOpen, Gamepad2, LockKeyhole, ShieldCheck } from "lucide-react";
+import {
+  BookOpen,
+  Gamepad2,
+  LockKeyhole,
+  Mail,
+  MessageCircle,
+  ShieldCheck,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { supportEmailHref, supportWhatsappHref } from "../lib/supportContact";
 
 export function HelpPage() {
   const { t } = useTranslation();
+  const emailHref = supportEmailHref(t("help.emailSubject"));
+  const whatsappHref = supportWhatsappHref(t("help.whatsappMessage"));
   return (
     <div className="help-page page-enter">
       <section className="page-heading-row">
@@ -42,6 +52,26 @@ export function HelpPage() {
           <p>{t("help.tokenBody")}</p>
         </section>
       </div>
+      <section className="panel help-contact">
+        <h2>{t("help.contactTitle")}</h2>
+        <p>{t("help.contactBody")}</p>
+        <div className="help-contact-actions">
+          <a className="button secondary" href={emailHref}>
+            <Mail size={18} aria-hidden="true" />
+            {t("help.contactEmail")}
+          </a>
+          <a
+            className="button primary"
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle size={18} aria-hidden="true" />
+            {t("help.contactWhatsapp")}
+          </a>
+        </div>
+        <p className="help-contact-note">{t("help.contactPrivacy")}</p>
+      </section>
       <section className="panel help-status">
         <h2>{t("help.availabilityTitle")}</h2>
         <dl>

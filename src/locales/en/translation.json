@@ -763,6 +763,13 @@
     }
   },
   "help": {
+    "contactTitle": "Need personal help?",
+    "contactBody": "Contact the GotIt team by email or WhatsApp.",
+    "contactEmail": "Send an email",
+    "contactWhatsapp": "Chat on WhatsApp",
+    "contactPrivacy": "Please do not send passwords or payment details.",
+    "emailSubject": "GotIt support request",
+    "whatsappMessage": "Hi, I need help with GotIt.",
     "eyebrow": "A little order, a lot more memory",
     "title": "Help center",
     "description": "What you can do now and how your data is stored.",

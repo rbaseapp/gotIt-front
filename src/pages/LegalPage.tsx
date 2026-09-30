@@ -1,11 +1,11 @@
 import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo";
+import { SUPPORT_EMAIL } from "../lib/supportContact";
 
 export type LegalPageKind = "terms" | "privacy" | "refund";
 
 const EFFECTIVE_DATE = "September 23, 2026";
-const SUPPORT_EMAIL = "ori@rbaseapp.com";
 
 const titles: Record<LegalPageKind, string> = {
   terms: "Terms of Service",

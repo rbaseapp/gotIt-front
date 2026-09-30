@@ -279,6 +279,14 @@ describe("complete frontend flows", () => {
     const password = await screen.findByLabelText("סיסמה");
     expect(password).toHaveAttribute("minlength", "12");
     expect(password).toHaveAttribute("maxlength", "128");
+    expect(screen.getByRole("link", { name: "שליחת אימייל" })).toHaveAttribute(
+      "href",
+      `mailto:support@rbaseapp.com?subject=${encodeURIComponent("פנייה לתמיכה של GotIt")}`,
+    );
+    expect(screen.getByRole("link", { name: "שיחה ב־WhatsApp" })).toHaveAttribute(
+      "href",
+      `https://wa.me/972502153466?text=${encodeURIComponent("שלום, אשמח לעזרה עם GotIt.")}`,
+    );
     expect(fetchMock).not.toHaveBeenCalled();
   });
   it("loads and patches the real profile without leaking demo data or identity fields", async () => {

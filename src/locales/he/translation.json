@@ -763,6 +763,13 @@
     }
   },
   "help": {
+    "contactTitle": "צריכים עזרה אישית?",
+    "contactBody": "אפשר לפנות לצוות GotIt באימייל או ב־WhatsApp.",
+    "contactEmail": "שליחת אימייל",
+    "contactWhatsapp": "שיחה ב־WhatsApp",
+    "contactPrivacy": "אין לשלוח סיסמאות או פרטי תשלום.",
+    "emailSubject": "פנייה לתמיכה של GotIt",
+    "whatsappMessage": "שלום, אשמח לעזרה עם GotIt.",
     "eyebrow": "קצת סדר, הרבה יותר זיכרון",
     "title": "מרכז העזרה",
     "description": "מה אפשר לעשות עכשיו, ואיך הנתונים שלך נשמרים.",
