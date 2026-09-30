@@ -895,6 +895,13 @@
     "wordCount": "{{count}} слов",
     "selectedCount": "{{count}} выбрано",
     "masteredCount": "{{count}} завершено",
+    "progressStates": {
+      "completed": "Набор завершён",
+      "inProgress": "В процессе",
+      "notStarted": "Ещё не начат"
+    },
+    "progressCount": "Освоено {{mastered}} из {{total}} слов",
+    "progressLabel": "Прогресс в наборе {{title}}",
     "showWords": "Показать слова",
     "updateSelection": "Обновить и выбрать слова",
     "editSelection": "Редактировать выбор слов",

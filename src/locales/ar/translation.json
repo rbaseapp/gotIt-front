@@ -907,6 +907,13 @@
     "wordCount": "{{count}} كلمات",
     "selectedCount": "{{count}} مختارة",
     "masteredCount": "{{count}} مكتملة",
+    "progressStates": {
+      "completed": "اكتملت المجموعة",
+      "inProgress": "قيد التعلم",
+      "notStarted": "لم يبدأ بعد"
+    },
+    "progressCount": "تم إتقان {{mastered}} من أصل {{total}} كلمة",
+    "progressLabel": "التقدم في {{title}}",
     "showWords": "عرض الكلمات",
     "updateSelection": "تحديث واختيار كلمات",
     "editSelection": "تحرير اختيار الكلمات",

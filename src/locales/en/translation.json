@@ -870,6 +870,13 @@
     "wordCount": "{{count}} words",
     "selectedCount": "{{count}} selected",
     "masteredCount": "{{count}} completed",
+    "progressStates": {
+      "completed": "Pack completed",
+      "inProgress": "In progress",
+      "notStarted": "Not started"
+    },
+    "progressCount": "{{mastered}} of {{total}} words mastered",
+    "progressLabel": "Progress in {{title}}",
     "showWords": "Show words",
     "updateSelection": "Update and choose words",
     "editSelection": "Edit word selection",
