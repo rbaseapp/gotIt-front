@@ -1,4 +1,11 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -598,7 +605,9 @@ describe("private voice lesson", () => {
     await user.click(
       screen.getByRole("button", { name: "תרגום קטע הדיבור האחרון" }),
     );
-    expect(mocks.send).toHaveBeenCalledWith(session.realtime.translationEvent);
+    expect(mocks.send).toHaveBeenCalledWith(
+      expect.objectContaining(session.realtime.translationEvent),
+    );
 
     await user.click(screen.getByRole("button", { name: "סיום השיעור" }));
     expect(mocks.send).toHaveBeenCalledWith(
@@ -618,6 +627,114 @@ describe("private voice lesson", () => {
         },
       }).success,
     ).toBe(false);
+  });
+
+  it("accepts full teaching instructions and older servers without continuation support", () => {
+    expect(privateLessonSessionSchema.safeParse(session).success).toBe(true);
+    expect(
+      privateLessonSessionSchema.safeParse({
+        ...session,
+        realtime: {
+          ...session.realtime,
+          openingEvent: {
+            type: "response.create",
+            response: { instructions: "Lesson policy. ".repeat(2000) },
+          },
+          continuationEvent: {
+            type: "response.create",
+            response: { instructions: "Continue in context." },
+          },
+        },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("continues after silence, respects playback and mute, and stops recovery on closing or unmount", async () => {
+    vi.useFakeTimers();
+    const continuationEvent = {
+      type: "response.create",
+      response: { instructions: "Continue in context." },
+    };
+    mocks.create.mockResolvedValue({
+      ...session,
+      realtime: { ...session.realtime, continuationEvent },
+    });
+    mocks.send.mockClear();
+    let onEvent: (event: Record<string, unknown>) => void = () => undefined;
+    mocks.connect.mockImplementation(async (_session, _audio, handlers) => {
+      onEvent = handlers.onEvent;
+      handlers.onOpen();
+      return {
+        close: mocks.close,
+        send: mocks.send,
+        setMicrophoneMuted: mocks.setMicrophoneMuted,
+      };
+    });
+    const page = renderPage();
+    try {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+      });
+      act(() => {
+        onEvent({ type: "response.created" });
+        onEvent({ type: "output_audio_buffer.started" });
+        onEvent({ type: "response.done" });
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(30_000);
+      });
+      expect(mocks.send).not.toHaveBeenCalled();
+      act(() => {
+        onEvent({ type: "output_audio_buffer.stopped" });
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15_000);
+      });
+      expect(mocks.send).toHaveBeenCalledTimes(1);
+      expect(mocks.send).toHaveBeenLastCalledWith(
+        expect.objectContaining(continuationEvent),
+      );
+      act(() => {
+        onEvent({ type: "response.done" });
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15_000);
+      });
+      expect(mocks.send).toHaveBeenCalledTimes(2);
+      act(() => {
+        onEvent({ type: "response.done" });
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15_000);
+      });
+      expect(mocks.send).toHaveBeenCalledTimes(2);
+      fireEvent.click(screen.getByRole("button", { name: "נמשיך בשיעור" }));
+      expect(mocks.send).toHaveBeenCalledTimes(3);
+      act(() => {
+        onEvent({ type: "response.done" });
+      });
+      fireEvent.click(screen.getByRole("button", { name: /השתקת המיקרופון/u }));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(30_000);
+      });
+      expect(mocks.send).toHaveBeenCalledTimes(3);
+      fireEvent.click(screen.getByRole("button", { name: "סיום השיעור" }));
+      const sendsAtClosing = mocks.send.mock.calls.length;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(30_000);
+      });
+      expect(mocks.send).toHaveBeenCalledTimes(sendsAtClosing);
+      page.unmount();
+      onEvent({ type: "response.done" });
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(mocks.send).toHaveBeenCalledTimes(sendsAtClosing);
+    } finally {
+      page.unmount();
+      vi.useRealTimers();
+    }
   });
 
   it("shows saved lesson reports in the journal", async () => {

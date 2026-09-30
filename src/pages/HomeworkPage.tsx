@@ -61,7 +61,7 @@ export function HomeworkPage() {
     try {
       let data = (await courseApi.homework(homeworkId)).homework;
       setHomework(data);
-      if (data.status === "pending")
+      if (data.status === "pending" || data.needsRefresh)
         data = (
           await courseApi.homeworkCommand(homeworkId, "prepare", {
             revision: data.revision,

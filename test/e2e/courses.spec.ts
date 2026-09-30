@@ -146,7 +146,9 @@ test("a learner who needs oral support can hear each choice before selecting it"
   page,
 }) => {
   await page.addInitScript(() => {
-    window.SpeechSynthesisUtterance = class extends window.SpeechSynthesisUtterance {
+    window.SpeechSynthesisUtterance = class extends (
+      window.SpeechSynthesisUtterance
+    ) {
       constructor(text?: string) {
         super(text);
         Object.defineProperty(this, "voice", { value: null, writable: true });
@@ -182,3 +184,28 @@ test("a learner who needs oral support can hear each choice before selecting it"
     ),
   ).toBe(true);
 });
+
+for (const viewport of [
+  { width: 768, height: 1024 },
+  { width: 844, height: 390 },
+]) {
+  for (const screen of ["plan", "homework"] as const) {
+    test(`additional viewport ${viewport.width}x${viewport.height} ${screen}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await signedIn(page, screen);
+      if (screen === "homework")
+        await page.getByRole("button", { name: "is", exact: true }).click();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      ).toBe(true);
+      const action = page.locator(".course-page .button.primary").first();
+      await action.scrollIntoViewIfNeeded();
+      await expect(action).toBeVisible();
+      await expect(action).toBeEnabled();
+    });
+  }
+}

@@ -171,6 +171,22 @@ describe("personal course experience", () => {
     await user.click(screen.getByRole("button", { name: "למשימה הבאה" }));
     expect(screen.getByText("משימה 2 מתוך 2")).toBeInTheDocument();
   });
+  it("refreshes an unstarted older exercise before showing its question", async () => {
+    const old = structuredClone(fixtureHomework);
+    old.needsRefresh = true;
+    old.tasks[0]!.prompt = "Choose the correct short answer: No, ____.";
+    const refreshed = structuredClone(fixtureHomework);
+    mocks.homework.mockResolvedValue({ homework: old });
+    mocks.homeworkCommand.mockResolvedValue({ homework: refreshed });
+    renderRoute(`/homework/${old.id}`);
+    await screen.findByText(refreshed.tasks[0]!.prompt);
+    expect(mocks.homeworkCommand).toHaveBeenCalledWith(
+      old.id,
+      "prepare",
+      expect.objectContaining({ revision: old.revision }),
+    );
+    expect(screen.queryByText(old.tasks[0]!.prompt)).not.toBeInTheDocument();
+  });
   it("restores the server draft and persists a pause before navigating away", async () => {
     const homework = structuredClone(fixtureHomework);
     homework.tasks[0]!.done = true;

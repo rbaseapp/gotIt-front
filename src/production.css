@@ -1362,6 +1362,9 @@ body.private-lesson-session-open .private-lesson-actions {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+body.private-lesson-session-open .private-lesson-continue {
+  grid-column: 1 / -1;
+}
 body.private-lesson-session-open .private-lesson-actions .button,
 body.private-lesson-session-open .private-lesson-session > .button {
   width: 100%;

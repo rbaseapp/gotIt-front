@@ -144,7 +144,10 @@ export function savePrivateLessonLanguage(languageCode: string) {
 const instructionEventSchema = z
   .object({
     type: z.literal("response.create"),
-    response: z.object({ instructions: z.string().min(1).max(1000) }).strict(),
+    // A turn override must retain the full server-built lesson instructions.
+    response: z
+      .object({ instructions: z.string().min(1).max(128_000) })
+      .strict(),
   })
   .strict();
 
@@ -189,6 +192,7 @@ export const privateLessonSessionSchema = z.object({
     model: z.string().min(1).max(200),
     connectionUrl: z.literal("https://api.openai.com/v1/realtime/calls"),
     openingEvent: instructionEventSchema,
+    continuationEvent: instructionEventSchema.optional(),
     wrapUpEvent: instructionEventSchema,
     translationEvent: instructionEventSchema.nullable(),
   }),
@@ -628,7 +632,12 @@ export async function connectPrivateLesson(
       }
     });
     channel.addEventListener("open", () => {
-      channel.send(JSON.stringify(session.realtime.openingEvent));
+      channel.send(
+        JSON.stringify({
+          ...session.realtime.openingEvent,
+          event_id: "private-lesson-opening",
+        }),
+      );
       handlers.onOpen();
     });
     channel.addEventListener("close", handlers.onClose);
@@ -655,8 +664,12 @@ export async function connectPrivateLesson(
     return {
       send(event) {
         if (channel.readyState !== "open") return false;
-        channel.send(JSON.stringify(event));
-        return true;
+        try {
+          channel.send(JSON.stringify(event));
+          return true;
+        } catch {
+          return false;
+        }
       },
       setMicrophoneMuted(muted) {
         const track = stream?.getAudioTracks()[0];

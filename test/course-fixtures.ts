@@ -111,6 +111,7 @@ export const fixtureHomework: Homework = {
   supportLanguageCode: "he",
   createdAt: fixtureCourse.createdAt,
   status: "ready",
+  needsRefresh: false,
   taskCount: 2,
   completedCount: 0,
   objective: "להשתמש ב־am / is / are",

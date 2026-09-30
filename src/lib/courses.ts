@@ -106,6 +106,7 @@ export const homeworkSummarySchema = z.object({
 });
 export const homeworkSchema = homeworkSummarySchema.extend({
   revision: z.number(),
+  needsRefresh: z.boolean().default(false),
   supportLanguageCode: z.string(),
   objective: z.string().nullable(),
   oralFirst: z.boolean().optional(),

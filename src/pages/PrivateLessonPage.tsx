@@ -34,6 +34,7 @@ import type { TFunction } from "i18next";
 import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TeacherAvatar } from "../components/TeacherAvatar";
+import { PrivateLessonFlow } from "../lib/privateLessonFlow";
 import { Modal } from "../components/Modal";
 import { courseApi, type Course } from "../lib/courses";
 import { LessonHomeworkCard } from "./HomeworkPage";
@@ -183,6 +184,9 @@ export function PrivateLessonPage() {
   const [responding, setResponding] = useState(false);
   const [microphoneMuted, setMicrophoneMuted] = useState(false);
   const [microphoneReady, setMicrophoneReady] = useState(false);
+  const [needsContinue, setNeedsContinue] = useState(false);
+  const flowRef = useRef<PrivateLessonFlow | undefined>(undefined);
+  const microphoneMutedRef = useRef(false);
   const turnId = useRef(0);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -222,6 +226,9 @@ export function PrivateLessonPage() {
   };
   const dispose = () => {
     clearTimers();
+    flowRef.current = undefined;
+    microphoneMutedRef.current = false;
+    setNeedsContinue(false);
     abortRef.current?.abort();
     abortRef.current = undefined;
     connectionRef.current?.close();
@@ -348,15 +355,45 @@ export function PrivateLessonPage() {
   const requestTranslation = (activeSession: PrivateLessonSession) => {
     if (!activeSession.realtime.translationEvent || activeResponse.current)
       return;
-    const sent = connectionRef.current?.send(
-      activeSession.realtime.translationEvent,
-    );
+    const eventId = crypto.randomUUID();
+    flowRef.current?.requested(eventId);
+    const sent = connectionRef.current?.send({
+      ...activeSession.realtime.translationEvent,
+      event_id: eventId,
+    });
     if (sent) {
       translationRequested.current = true;
       activeResponse.current = true;
       setResponding(true);
       setStatus(t("privateLesson.translating"));
+    } else flowRef.current?.sendFailed();
+  };
+  const continueLesson = (
+    activeSession: PrivateLessonSession,
+    manual = false,
+  ) => {
+    const flow = flowRef.current;
+    if (!flow || !activeSession.realtime.continuationEvent) return;
+    flow.setPaused(
+      phaseRef.current !== "active" ||
+        microphoneMutedRef.current ||
+        document.hidden ||
+        !navigator.onLine ||
+        !connectionRef.current,
+    );
+    const eventId = crypto.randomUUID();
+    if (flow.shouldContinue(eventId, manual)) {
+      const sent = connectionRef.current?.send({
+        ...activeSession.realtime.continuationEvent,
+        event_id: eventId,
+      });
+      if (sent) {
+        activeResponse.current = true;
+        setResponding(true);
+        setStatus(t("privateLesson.continuing"));
+      } else flow.sendFailed();
     }
+    setNeedsContinue(flow.needsContinue);
   };
   const beginTimer = (activeSession: PrivateLessonSession) => {
     const startedAt = Date.now();
@@ -364,6 +401,7 @@ export function PrivateLessonPage() {
     const tick = () => {
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       setRemaining(Math.max(0, activeSession.lesson.durationSeconds - elapsed));
+      continueLesson(activeSession);
       if (elapsed < activeSession.lesson.durationSeconds)
         timers.current.push(window.setTimeout(tick, 250));
     };
@@ -391,6 +429,9 @@ export function PrivateLessonPage() {
     event: Record<string, unknown>,
     activeSession: PrivateLessonSession,
   ) => {
+    const flow = flowRef.current;
+    flow?.observe(event);
+    if (flow) setNeedsContinue(flow.needsContinue);
     if (event.type === "response.created") {
       activeResponse.current = true;
       setResponding(true);
@@ -412,7 +453,10 @@ export function PrivateLessonPage() {
       else if (translationRequested.current) {
         translationRequested.current = false;
         setStatus(t("privateLesson.connected"));
-      }
+      } else setStatus(t("privateLesson.connected"));
+      const response = event.response as { status?: string } | undefined;
+      if (response?.status === "failed" || response?.status === "incomplete")
+        setStatus(t("privateLesson.communicationError"));
     }
     if (
       event.type === "conversation.item.input_audio_transcription.completed" &&
@@ -433,13 +477,19 @@ export function PrivateLessonPage() {
       if (wrapResponseStarted.current) wrapTranscript.current = transcript;
       assistantBuffer.current = "";
     }
-    if (event.type === "error")
+    if (event.type === "error") {
+      if (flow && !flow.busy) {
+        activeResponse.current = false;
+        setResponding(false);
+      }
       setStatus(t("privateLesson.communicationError"));
+    }
   };
 
   useEffect(
     () => () => {
       timers.current.forEach((timer) => window.clearTimeout(timer));
+      flowRef.current = undefined;
       abortRef.current?.abort();
       connectionRef.current?.close();
     },
@@ -567,6 +617,14 @@ export function PrivateLessonPage() {
       setStatus(t("privateLesson.microphoneRequest"));
       const audio = audioRef.current;
       if (!audio) throw new Error("Missing audio element");
+      flowRef.current = new PrivateLessonFlow(
+        Date.now,
+        created.lesson.lessonMode === "absolute_beginner" ||
+          ["slow", "very_slow"].includes(created.lesson.speechRate)
+          ? 20_000
+          : 15_000,
+      );
+      flowRef.current.requested("private-lesson-opening");
       const connection = await connectPrivateLesson(
         created,
         audio,
@@ -591,9 +649,15 @@ export function PrivateLessonPage() {
               );
             }
           },
-          onEvent: (realtimeEvent) =>
-            handleRealtimeEvent(realtimeEvent, created),
-          onAudioLevel: setTutorAudioLevel,
+          onEvent: (realtimeEvent) => {
+            if (!controller.signal.aborted)
+              handleRealtimeEvent(realtimeEvent, created);
+          },
+          onAudioLevel(level) {
+            if (controller.signal.aborted) return;
+            flowRef.current?.audioLevel(level);
+            setTutorAudioLevel(level);
+          },
         },
         controller.signal,
       );
@@ -695,8 +759,12 @@ export function PrivateLessonPage() {
   };
   const toggleMicrophone = () => {
     const nextMuted = !microphoneMuted;
-    if (connectionRef.current?.setMicrophoneMuted(nextMuted))
+    if (connectionRef.current?.setMicrophoneMuted(nextMuted)) {
+      microphoneMutedRef.current = nextMuted;
+      if (nextMuted) flowRef.current?.microphoneMuted();
+      flowRef.current?.setPaused(nextMuted);
       setMicrophoneMuted(nextMuted);
+    }
   };
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
@@ -2055,6 +2123,19 @@ export function PrivateLessonPage() {
               </div>
             ) : (
               <div className="private-lesson-actions">
+                {needsContinue &&
+                  session?.realtime.continuationEvent &&
+                  phase === "active" && (
+                    <button
+                      className="button secondary private-lesson-continue"
+                      type="button"
+                      disabled={responding || microphoneMuted}
+                      onClick={() => continueLesson(session, true)}
+                    >
+                      <MessageCircleMore size={17} />{" "}
+                      {t("privateLesson.continueLesson")}
+                    </button>
+                  )}
                 {session?.realtime.translationEvent && (
                   <button
                     className="button secondary"
