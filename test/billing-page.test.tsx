@@ -89,6 +89,8 @@ describe("BillingPage tutor offers", () => {
     expect(screen.getByRole("heading", { name: "GotIt Pro" })).toBeInTheDocument();
     expect(screen.getByText("195 AI tutor minutes included")).toBeInTheDocument();
     expect(screen.getByText("50 AI tutor minutes available")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms-of-service");
+    expect(screen.getByRole("link", { name: "Refunds" })).toHaveAttribute("href", "/refund-policy");
     await user.click(screen.getByRole("button", { name: "Buy 60 minutes" }));
     await waitFor(() => expect(mocks.checkout).toHaveBeenCalledWith("minutes-60"));
     expect(mocks.checkoutOpen).toHaveBeenCalledWith(expect.objectContaining({

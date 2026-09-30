@@ -149,7 +149,7 @@ export function BillingPage() {
         <div><ShieldCheck size={22} /><span><strong>{t("billing.secureTitle")}</strong>{t("billing.secureBody")}</span></div>
         <div><ReceiptText size={22} /><span><strong>{t("billing.selfServiceTitle")}</strong>{t("billing.selfServiceBody")}</span></div>
       </section>
-      <p className="billing-legal-note">{t("billing.checkoutNote")} <a href="/terms">{t("shell.terms")}</a> &middot; <a href="/refunds">{t("shell.refunds")}</a></p>
+      <p className="billing-legal-note">{t("billing.checkoutNote")} <a href="/terms-of-service">{t("shell.terms")}</a> &middot; <a href="/refund-policy">{t("shell.refunds")}</a></p>
     </div>
   );
 }
