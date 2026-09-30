@@ -1,5 +1,14 @@
 # GotIt Frontend
 
+## Notifications
+
+The live settings page reads backend notification preferences and channel
+availability. Email requires a verified Core address. Push opt-in registers
+`/notification-sw.js` using the backend's public VAPID key; SMTP credentials and
+the private VAPID key remain on the backend. Push requires HTTPS and browser
+Service Worker/Push API support. Demo mode sends no notifications. Deploy the
+backend migration and API before this frontend.
+
 אתר React + TypeScript מלא ל־GotIt. החשבון האמיתי משתמש ב־rbase Core לאימות וב־GotIt Backend לכל נתוני המוצר. כל בדיקת תשובה, שליטה, תזמון ו־XP מתבצעת בשרת; הפרונט אינו משחזר את מנוע הלמידה.
 
 ## יכולות

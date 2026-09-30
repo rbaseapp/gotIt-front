@@ -20,6 +20,12 @@ import { getLanguageOptions } from "../lib/languages";
 import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
 import {
+  getNotifications,
+  saveNotifications,
+  type NotificationConfig,
+  type NotificationPreferences,
+} from "../lib/notifications";
+import {
   getPrivateLessonSetup,
   getSavedPrivateLessonLanguage,
   privateLessonCorrectionModes,
@@ -52,6 +58,7 @@ export function SettingsPage() {
     updateProfile,
     resetDemo,
     mode,
+    user,
     profileError,
     retryProfile,
   } = useApp();
@@ -59,6 +66,13 @@ export function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [notificationPreferences, setNotificationPreferences] =
+    useState<NotificationPreferences | null>(null);
+  const [savedNotifications, setSavedNotifications] =
+    useState<NotificationPreferences | null>(null);
+  const [notificationConfig, setNotificationConfig] =
+    useState<NotificationConfig | null>(null);
+  const [notificationLoading, setNotificationLoading] = useState(false);
   const [newInterest, setNewInterest] = useState("");
   const [resetOpen, setResetOpen] = useState(false);
   const [lessonLanguage, setLessonLanguage] = useState(() =>
@@ -81,6 +95,28 @@ export function SettingsPage() {
   useEffect(() => {
     setForm(structuredClone(profile));
   }, [profile]);
+  useEffect(() => {
+    if (mode !== "live") return;
+    let active = true;
+    setNotificationLoading(true);
+    void getNotifications()
+      .then(({ preferences, config }) => {
+        if (!active) return;
+        setNotificationPreferences(preferences);
+        setSavedNotifications(preferences);
+        setNotificationConfig(config);
+      })
+      .catch((reason) => {
+        if (active)
+          setError(reason instanceof Error ? reason.message : String(reason));
+      })
+      .finally(() => {
+        if (active) setNotificationLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [mode]);
   useEffect(() => {
     if (mode !== "live" || !lessonLanguage) return;
     let active = true;
@@ -124,6 +160,27 @@ export function SettingsPage() {
       savePrivateLessonLanguage(lessonLanguage);
       if (mode === "live" && lessonPreferencesRemoteAvailable)
         await savePrivateLessonPreferences(lessonLanguage, lessonPreferences);
+      if (
+        mode === "live" &&
+        notificationPreferences &&
+        savedNotifications &&
+        notificationConfig
+      ) {
+        const patch = {
+          practiceEmail: notificationPreferences.practiceEmail,
+          practicePush: notificationPreferences.practicePush,
+          systemEmail: notificationPreferences.systemEmail,
+          systemPush: notificationPreferences.systemPush,
+          reminderHour: notificationPreferences.reminderHour,
+        };
+        const result = await saveNotifications(
+          patch,
+          savedNotifications,
+          notificationConfig,
+        );
+        setNotificationPreferences(result);
+        setSavedNotifications(result);
+      }
       setSaved(true);
     } catch (reason) {
       setError(
@@ -864,9 +921,97 @@ export function SettingsPage() {
               </div>
             </section>
           </fieldset>
-          <div className="settings-card">
+          <div className="settings-card" id="notifications">
             <h2>{t("settings.remindersTitle")}</h2>
             <p className="muted-note">{t("settings.remindersDescription")}</p>
+            {mode === "live" &&
+              notificationPreferences &&
+              notificationConfig && (
+                <div className="settings-fields">
+                  <p className="muted-note">
+                    {t("settings.reminderTimezone", {
+                      defaultValue:
+                        "Times follow your profile timezone: {{timezone}}",
+                      timezone: form.timezone,
+                    })}
+                  </p>
+                  <label className="field">
+                    <span>
+                      {t("settings.reminderHour", {
+                        defaultValue: "Daily reminder hour",
+                      })}
+                    </span>
+                    <select
+                      value={notificationPreferences.reminderHour}
+                      onChange={(event) => {
+                        setSaved(false);
+                        setNotificationPreferences(
+                          (current) =>
+                            current && {
+                              ...current,
+                              reminderHour: Number(event.target.value),
+                            },
+                        );
+                      }}
+                    >
+                      {Array.from({ length: 24 }, (_, hour) => (
+                        <option key={hour} value={hour}>
+                          {String(hour).padStart(2, "0")}:00
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {(
+                    [
+                      "practiceEmail",
+                      "practicePush",
+                      "systemEmail",
+                      "systemPush",
+                    ] as const
+                  ).map((key) => (
+                    <label key={key} className="field">
+                      <span>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences[key]}
+                          disabled={
+                            key.endsWith("Email")
+                              ? (!notificationConfig.emailAvailable ||
+                                  !user?.emailVerified) &&
+                                !notificationPreferences[key]
+                              : !notificationConfig.pushAvailable &&
+                                !notificationPreferences[key]
+                          }
+                          onChange={(event) => {
+                            setSaved(false);
+                            setNotificationPreferences(
+                              (current) =>
+                                current && {
+                                  ...current,
+                                  [key]: event.target.checked,
+                                },
+                            );
+                          }}
+                        />
+                        {t(`settings.${key}`, {
+                          defaultValue: key.replace(/([A-Z])/g, " $1"),
+                        })}
+                      </span>
+                    </label>
+                  ))}
+                  {!user?.emailVerified && (
+                    <p className="muted-note">
+                      {t("settings.verifiedEmailNeeded", {
+                        defaultValue:
+                          "Verify your email address before enabling email notifications.",
+                      })}
+                    </p>
+                  )}
+                </div>
+              )}
+            {mode === "live" && notificationLoading && (
+              <p className="muted-note">{t("common.loading")}</p>
+            )}
           </div>
           {error && (
             <p className="form-error" role="alert">
