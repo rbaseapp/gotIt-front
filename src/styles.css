@@ -4830,6 +4830,11 @@ button:disabled {
   box-shadow: 0 8px 24px #0002;
 }
 
+.language-combobox-list[data-placement="above"] {
+  top: auto;
+  bottom: calc(100% + 3px);
+}
+
 .language-combobox-list [role="option"] {
   display: flex;
   align-items: center;
@@ -4837,6 +4842,11 @@ button:disabled {
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   cursor: pointer;
+}
+
+.language-combobox-list [role="option"] > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .language-combobox-list [role="option"].active,

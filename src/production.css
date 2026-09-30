@@ -1778,7 +1778,8 @@ body.private-lesson-viewport-compact .private-lesson-meta {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: #fbfcfa;
-  overflow: hidden;
+  /* The language list extends beyond the filter panel when it is open. */
+  overflow: visible;
 }
 .live-page .vocabulary-advanced-filters > summary {
   min-height: 54px;
