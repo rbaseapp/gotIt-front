@@ -418,6 +418,9 @@ describe("live server-backed flows", () => {
       screen.getByRole("button", { name: "סיום ושמירת הסיכום" }),
     );
     await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
+    expect(document.querySelector(".live-session-main")).not.toHaveClass(
+      "session-active",
+    );
     expect(screen.getAllByText("13").length).toBeGreaterThan(0);
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
   });
@@ -626,6 +629,9 @@ describe("live server-backed flows", () => {
     await user.click(screen.getByRole("button", { name: "apple" }));
     await user.click(screen.getByRole("button", { name: "תפוח" }));
     await screen.findByRole("heading", { name: "כל הכבוד, סיימת!" });
+    expect(document.querySelector(".live-session-main")).not.toHaveClass(
+      "session-active",
+    );
     expect(submitted).toEqual([
       expect.objectContaining({ exerciseId, choiceId: choiceA }),
       expect.objectContaining({

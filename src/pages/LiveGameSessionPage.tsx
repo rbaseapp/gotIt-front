@@ -183,6 +183,10 @@ export function LiveGameSessionPage() {
   );
   const exercise = exercises[index];
   const studyCard = studyCards[studyIndex];
+  const sessionCompleted = session?.status === "completed";
+  // The last exercise is retained for results/restart. It must not keep the
+  // active-game layout (and its scroll lock) after the session has ended.
+  const activeCard = !sessionCompleted && Boolean(exercise || studyCard);
   const dragDropBoard =
     type === "drag_drop" || (type === "smart" && smartDragDropActive);
   const masteryRequirements = receipt?.progress.masteryRequirements;
@@ -867,14 +871,14 @@ export function LiveGameSessionPage() {
         />
       )}
       <main
-        className={`live-session-main${exercise || studyCard ? " session-active" : ""}${exercise?.kind === "provider" ? " provider-active" : ""}`}
+        className={`live-session-main${activeCard ? " session-active" : ""}${activeCard && exercise?.kind === "provider" ? " provider-active" : ""}`}
       >
         {error && (
           <div role="alert" className="form-error">
             {error}
           </div>
         )}
-        {!exercise && !studyCard && session?.status !== "completed" && (
+        {!activeCard && !sessionCompleted && (
           <section className="live-panel session-launch">
             <span className="launch-icon" aria-hidden="true">
               <Sparkles size={30} />
@@ -966,7 +970,7 @@ export function LiveGameSessionPage() {
             )}
           </section>
         )}
-        {session?.status === "completed" ? (
+        {sessionCompleted ? (
           <section className="live-panel live-empty session-results">
             <span className="result-trophy" aria-hidden="true">
               <Trophy size={42} />

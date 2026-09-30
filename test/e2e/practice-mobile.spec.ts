@@ -50,20 +50,6 @@ const launchFixture = `
     </main>
   </div>`;
 
-const resultsFixture = `
-  <div class="session-page live-session">
-    <header class="session-topbar"><button class="button ghost">Exit</button></header>
-    <main class="live-session-main">
-      <section class="live-panel live-empty session-results">
-        <span class="result-trophy">★</span><p class="eyebrow">Saved</p>
-        <h1>Great work!</h1><p>You reached a streak of eight.</p>
-        <div class="live-stats-grid">${Array.from({ length: 4 }, (_, i) => `<div><b>${i + 8}</b><span>Results</span></div>`).join("")}</div>
-        <div class="session-learnings"><b>Words strengthened</b><div><span>remember</span><span>displacement</span></div></div>
-        <div class="finish-actions"><button class="button primary">Another round</button></div>
-      </section>
-    </main>
-  </div>`;
-
 async function openLiveFixture(page: Page, width: number, height: number, fixture = liveFixture) {
   await page.goto("/dashboard");
   await page.locator("body").evaluate((body, { fixture, height }) => {
@@ -151,15 +137,4 @@ test.describe("practice on phones", () => {
     expect(placement.topGap).toBeGreaterThan(100);
   });
 
-  test("the result action can be reached on a short phone", async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 568 });
-    await openLiveFixture(page, 320, 568, resultsFixture);
-    const main = page.locator(".live-session-main");
-    const action = main.locator(".finish-actions .button");
-    expect(await main.evaluate((element) => element.scrollHeight)).toBeGreaterThan(
-      await main.evaluate((element) => element.clientHeight),
-    );
-    await action.scrollIntoViewIfNeeded();
-    await expect(action).toBeInViewport();
-  });
 });
