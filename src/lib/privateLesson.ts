@@ -99,6 +99,7 @@ export const privateLessonSetupSchema = z.object({
         z.literal(5),
         z.literal(10),
         z.literal(15),
+        z.literal(20),
       ]),
       teacherVoice: z.enum(["female", "male"]),
       speechRate: z.enum(privateLessonSpeechRates),
@@ -206,7 +207,7 @@ export const privateLessonSessionSchema = z.object({
 });
 
 export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
-export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15;
+export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15 | 20;
 export type PrivateLessonInput = {
   courseId?: string;
   targetLanguageCode: string;

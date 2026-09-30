@@ -1384,6 +1384,7 @@ export function PrivateLessonPage() {
                         <label className="field">
                           <span>{t("privateLesson.duration")}</span>
                           <select
+                            aria-label={t("privateLesson.duration")}
                             value={lessonDurationMinutes}
                             onChange={(event) =>
                               setLessonDurationMinutes(
@@ -1393,12 +1394,13 @@ export function PrivateLessonPage() {
                               )
                             }
                           >
-                            {([1, 5, 10, 15] as const).map((value) => (
+                            {([1, 5, 10, 15, 20] as const).map((value) => (
                               <option key={value} value={value}>
                                 {t(`privateLesson.durationOptions.${value}`)}
                               </option>
                             ))}
                           </select>
+                          <small>{t("privateLesson.minutesChargePolicy")}</small>
                         </label>
                       </div>
                       <details className="private-lesson-advanced">
@@ -1845,6 +1847,7 @@ export function PrivateLessonPage() {
                 <label className="field">
                   <span>{t("privateLesson.duration")}</span>
                   <select
+                    aria-label={t("privateLesson.duration")}
                     value={lessonDurationMinutes}
                     onChange={(event) =>
                       setLessonDurationMinutes(
@@ -1854,12 +1857,13 @@ export function PrivateLessonPage() {
                       )
                     }
                   >
-                    {([1, 5, 10, 15] as const).map((value) => (
+                    {([1, 5, 10, 15, 20] as const).map((value) => (
                       <option key={value} value={value}>
                         {t(`privateLesson.durationOptions.${value}`)}
                       </option>
                     ))}
                   </select>
+                  <small>{t("privateLesson.minutesChargePolicy")}</small>
                 </label>
                 <label className="field">
                   <span>{t("privateLesson.topic")}</span>

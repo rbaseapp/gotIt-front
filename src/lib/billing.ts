@@ -6,11 +6,13 @@ const plan = z.object({
   id: z.string().uuid(),
   key: z.string(),
   name: z.string(),
-  kind: z.enum(["free", "paid"]),
+  kind: z.enum(["free", "paid", "one_time"]),
   provider: z.literal("paddle").nullable(),
+  providerPriceId: z.string().nullable(),
   amountMinor: z.number().int().nonnegative().nullable(),
   currencyCode: z.string().length(3).nullable(),
-  billingInterval: z.enum(["month", "year"]).nullable(),
+  billingInterval: z.enum(["month", "quarter", "year"]).nullable(),
+  minuteAllowance: z.number().int().positive().nullable(),
   trialDays: z.number().int().nonnegative().optional(),
   entitlements: z.array(z.string()),
 });
@@ -41,6 +43,12 @@ export const billingStatusSchema = z.object({
     .nullable(),
 });
 const urlSchema = z.object({ url: z.string().url() });
+const minutesSchema = z.object({
+  secondsTotal: z.number().int().nonnegative(),
+  secondsUsed: z.number().int().nonnegative(),
+  secondsRemaining: z.number().int().nonnegative(),
+  expiresAt: z.string().datetime({ offset: true }).nullable(),
+});
 
 export type BillingPlan = z.infer<typeof plan>;
 export type BillingStatus = z.infer<typeof billingStatusSchema>;
@@ -76,5 +84,8 @@ export const billing = {
   },
   async portal() {
     return parse(urlSchema, await api.core("billing/portal", "POST"));
+  },
+  async minutes() {
+    return parse(minutesSchema, await api.product("private-lesson-minutes"));
   },
 };

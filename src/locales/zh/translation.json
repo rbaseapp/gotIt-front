@@ -197,11 +197,13 @@
     "customFocus": "我的个人目标",
     "customFocusPlaceholder": "例如：在客户会议中自信表达",
     "duration": "课程时长",
+    "minutesChargePolicy": "语音课程开始时扣除所选课程时长。如果无法创建课程，分钟数将退还。",
     "durationOptions": {
       "1": "1 分钟",
       "5": "5 分钟",
       "10": "10 分钟",
-      "15": "15 分钟"
+      "15": "15 分钟",
+      "20": "20 分钟"
     },
     "start": "开始课程",
     "preparing": "正在准备课程…",
@@ -677,13 +679,13 @@
     "back": "返回订阅"
   },
   "billing": {
-    "paymentComplete": "付款完成。您的 Pro 访问权限现已更新。",
+    "paymentComplete": "付款完成。您的方案和导师分钟数正在更新。",
     "noPaddlePrice": "未找到 Pro 计划的 Paddle 价格。",
     "priceLoadFailed": "目前无法加载本地价格。",
     "paymentOpenFailed": "目前无法开通支付服务。",
     "eyebrow": "您的订阅",
     "title": "选择您想要的学习方式",
-    "description": "免费试用 GotIt 的所有功能 14 天，然后继续使用专业版。付款是安全的并由 Paddle 管理。",
+    "description": "选择包含预付 AI 导师分钟数的方案，或随时增加 60 分钟。由 Paddle 安全处理付款。",
     "loading": "正在加载订阅详细信息...",
     "currentPlan": "目前计划",
     "paidStatus": "所有 Pro 功能均可在您的帐户中使用。",
@@ -717,6 +719,18 @@
     "openingPayment": "开放结账…",
     "upgrade": "升级到专业版",
     "checkoutNote": "在您确认付款之前，Paddle 将显示最终价格和地方税。",
+    "quarterly": "每 3 个月",
+    "perQuarter": "每 3 个月",
+    "oneTime": "一次性购买",
+    "subscription": "订阅",
+    "choosePlan": "选择方案",
+    "buyMinutes": "购买 60 分钟",
+    "minutesPack": "额外分钟数",
+    "minutesPackDescription": "为任何方案（包括免费方案）增加私人课程分钟数。自购买起一年内有效。",
+    "tutorDescription": "包含 GotIt Pro 功能，以及本计费周期内预付的 AI 导师分钟数。",
+    "includedMinutes": "包含 {{count}} 分钟 AI 导师课程",
+    "packValidity": "自购买起一年内有效",
+    "minutesRemaining": "可用 AI 导师课程 {{count}} 分钟",
     "entitlements": {
       "vocabulary": {
         "read": "查看保存的单词和数据",
@@ -1478,6 +1492,7 @@
   },
   "apiErrors": {
     "SUBSCRIPTION_REQUIRED": "订阅 Pro 版即可使用此功能。您可以从订阅页面升级。",
+    "PRIVATE_LESSON_MINUTES_REQUIRED": "本次课程的分钟数不足。请选择更短的课程或再购买 60 分钟。",
     "AI_MONTHLY_LIMIT_REACHED": "您已使用全部 4 篇 AI 月刊文章。您的津贴将在下月初更新。",
     "BILLING_NOT_CONFIGURED": "计费服务尚未配置。",
     "INVALID_CREDENTIALS": "电子邮件地址或密码不正确。",

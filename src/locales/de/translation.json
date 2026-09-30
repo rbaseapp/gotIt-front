@@ -197,11 +197,13 @@
     "customFocus": "Mein persönliches Ziel",
     "customFocusPlaceholder": "Zum Beispiel: sicher in Kundenterminen sprechen",
     "duration": "Unterrichtsdauer",
+    "minutesChargePolicy": "Die gewählte Unterrichtsdauer wird beim Öffnen der Sprachsitzung abgezogen. Kann die Sitzung nicht erstellt werden, werden die Minuten zurückgegeben.",
     "durationOptions": {
       "1": "1 Minute",
       "5": "5 Minuten",
       "10": "10 Minuten",
-      "15": "15 Minuten"
+      "15": "15 Minuten",
+      "20": "20 Minuten"
     },
     "start": "Unterricht starten",
     "preparing": "Deine Stunde wird vorbereitet…",
@@ -686,13 +688,13 @@
     "back": "Zurück zum Abonnement"
   },
   "billing": {
-    "paymentComplete": "Zahlung abgeschlossen. Dein Pro-Zugang wird jetzt aktualisiert.",
+    "paymentComplete": "Zahlung abgeschlossen. Dein Tarif und deine Tutor-Minuten werden aktualisiert.",
     "noPaddlePrice": "Kein Paddle-Preis für einen Pro-Plan gefunden.",
     "priceLoadFailed": "Der lokale Preis konnte jetzt nicht geladen werden.",
     "paymentOpenFailed": "Der Zahlungsdienst konnte jetzt nicht geöffnet werden.",
     "eyebrow": "Dein Abonnement",
     "title": "Wähle deine bevorzugte Lernmethode",
-    "description": "Probiere jede GotIt-Funktion 14 Tage kostenlos aus, dann weiterhin mit Pro. Zahlung ist sicher und wird von Paddle verwaltet.",
+    "description": "Wähle einen Tarif mit vorausbezahlten KI-Tutor-Minuten oder füge jederzeit 60 Minuten hinzu. Sichere Zahlung über Paddle.",
     "loading": "Abonnementdetails werden geladen…",
     "currentPlan": "Aktueller Plan",
     "paidStatus": "Alle Pro-Funktionen sind in deinem Konto verfügbar.",
@@ -726,6 +728,18 @@
     "openingPayment": "Kasse wird geöffnet…",
     "upgrade": "Upgrade auf Pro",
     "checkoutNote": "Paddle zeigt den Gesamtpreis und die lokale Steuer an, bevor Sie die Zahlung bestätigen.",
+    "quarterly": "Alle 3 Monate",
+    "perQuarter": "alle 3 Monate",
+    "oneTime": "einmalig",
+    "subscription": "Abonnement",
+    "choosePlan": "Tarif wählen",
+    "buyMinutes": "60 Minuten kaufen",
+    "minutesPack": "Zusätzliche Minuten",
+    "minutesPackDescription": "Füge jedem Tarif, auch dem kostenlosen, Minuten für Privatstunden hinzu. Ein Jahr gültig.",
+    "tutorDescription": "Enthält GotIt Pro und ein Guthaben an KI-Tutor-Minuten für den Abrechnungszeitraum.",
+    "includedMinutes": "{{count}} KI-Tutor-Minuten enthalten",
+    "packValidity": "Ein Jahr ab Kauf gültig",
+    "minutesRemaining": "{{count}} KI-Tutor-Minuten verfügbar",
     "entitlements": {
       "vocabulary": {
         "read": "Gespeicherte Wörter und Daten anzeigen",
@@ -1487,6 +1501,7 @@
   },
   "apiErrors": {
     "SUBSCRIPTION_REQUIRED": "Diese Funktion ist mit einem Pro-Abonnement verfügbar. Sie können über die Abonnementseite ein Upgrade durchführen.",
+    "PRIVATE_LESSON_MINUTES_REQUIRED": "Für diese Stunde fehlen KI-Tutor-Minuten. Wähle eine kürzere Stunde oder kaufe 60 weitere Minuten.",
     "AI_MONTHLY_LIMIT_REACHED": "Sie haben Ihre AI-Artikel-Zuteilung verwendet. Ihre Zuteilung wird am Anfang des nächsten Monats erneuert.",
     "BILLING_NOT_CONFIGURED": "Der Abrechnungsdienst ist noch nicht konfiguriert.",
     "INVALID_CREDENTIALS": "Die E-Mail-Adresse oder das Passwort ist falsch.",

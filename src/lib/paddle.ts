@@ -10,7 +10,6 @@ type PaddleEnvironment = z.infer<typeof environmentSchema>;
 export interface PaddleRuntime {
   paddle: Paddle;
   countryCode?: string;
-  priceIds: Partial<Record<"month" | "year", string>>;
 }
 
 let paddleRuntime: Promise<PaddleRuntime> | undefined;
@@ -25,7 +24,6 @@ async function publicConfiguration() {
             paddleClientToken?: unknown;
             paddleEnvironment?: unknown;
             countryCode?: unknown;
-            paddlePriceIds?: { month?: unknown; year?: unknown };
           }
         | undefined)
     : undefined;
@@ -47,27 +45,10 @@ async function publicConfiguration() {
     throw new Error(i18n.t("paddleErrors.invalidSandboxToken"));
 
   const parsedCountry = countryCodeSchema.safeParse(runtime?.countryCode);
-  const monthlyPriceId =
-    (typeof runtime?.paddlePriceIds?.month === "string" &&
-      runtime.paddlePriceIds.month.trim()) ||
-    import.meta.env.VITE_PADDLE_PRO_MONTHLY_PRICE_ID?.trim();
-  const yearlyPriceId =
-    (typeof runtime?.paddlePriceIds?.year === "string" &&
-      runtime.paddlePriceIds.year.trim()) ||
-    import.meta.env.VITE_PADDLE_PRO_YEARLY_PRICE_ID?.trim();
-  const priceIdSchema = z.string().regex(/^pri_[a-z0-9]{26}$/u);
-  if (!priceIdSchema.safeParse(monthlyPriceId).success)
-    throw new Error(i18n.t("paddleErrors.invalidMonthlyPrice"));
-  if (yearlyPriceId && !priceIdSchema.safeParse(yearlyPriceId).success)
-    throw new Error(i18n.t("paddleErrors.invalidYearlyPrice"));
   return {
     token,
     environment: environment.data as PaddleEnvironment,
     ...(parsedCountry.success ? { countryCode: parsedCountry.data } : {}),
-    priceIds: {
-      month: monthlyPriceId,
-      ...(yearlyPriceId ? { year: yearlyPriceId } : {}),
-    },
   };
 }
 
@@ -88,7 +69,6 @@ export function getPaddleRuntime(): Promise<PaddleRuntime> {
     if (!paddle) throw new Error(i18n.t("paddleErrors.initialization"));
     return {
       paddle,
-      priceIds: configuration.priceIds,
       ...(configuration.countryCode
         ? { countryCode: configuration.countryCode }
         : {}),

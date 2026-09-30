@@ -197,11 +197,13 @@
     "customFocus": "Mi objetivo personal",
     "customFocusPlaceholder": "Por ejemplo: hablar con confianza en reuniones con clientes",
     "duration": "Duración de la clase",
+    "minutesChargePolicy": "La duración elegida se descuenta al abrir la sesión de voz. Si no se puede crear, se devuelven los minutos.",
     "durationOptions": {
       "1": "1 minuto",
       "5": "5 minutos",
       "10": "10 minutos",
-      "15": "15 minutos"
+      "15": "15 minutos",
+      "20": "20 minutos"
     },
     "start": "Comenzar clase",
     "preparing": "Preparando tu clase…",
@@ -686,13 +688,13 @@
     "back": "Volver a suscripción"
   },
   "billing": {
-    "paymentComplete": "Pago completado. Tu acceso Pro se está actualizando.",
+    "paymentComplete": "Pago completado. Se están actualizando tu plan y tus minutos de tutoría.",
     "noPaddlePrice": "No se encontró un precio de Paddle para un plan Pro.",
     "priceLoadFailed": "El precio local no se pudo cargar en este momento.",
     "paymentOpenFailed": "El servicio de pago no se pudo abrir en este momento.",
     "eyebrow": "Tu suscripción",
     "title": "Elige la forma en que deseas aprender",
-    "description": "Prueba todas las características de GotIt gratis durante 14 días, luego continúa con Pro. El pago es seguro y está gestionado por Paddle.",
+    "description": "Elige un plan con minutos prepagados de tutor de IA o añade 60 minutos cuando quieras. Pago seguro con Paddle.",
     "loading": "Cargando detalles de suscripción…",
     "currentPlan": "Plan actual",
     "paidStatus": "Todas las características Pro están disponibles en tu cuenta.",
@@ -726,6 +728,18 @@
     "openingPayment": "Abriendo checkout…",
     "upgrade": "Actualizar a Pro",
     "checkoutNote": "Paddle mostrará el precio final e impuestos locales antes de que confirmes el pago.",
+    "quarterly": "Cada 3 meses",
+    "perQuarter": "cada 3 meses",
+    "oneTime": "pago único",
+    "subscription": "Suscripción",
+    "choosePlan": "Elegir plan",
+    "buyMinutes": "Comprar 60 minutos",
+    "minutesPack": "Minutos extra",
+    "minutesPackDescription": "Añade minutos de clases particulares a cualquier plan, incluso al gratuito. Válidos durante un año.",
+    "tutorDescription": "Incluye las funciones de GotIt Pro y un saldo prepago de minutos con tutor de IA para el periodo de facturación.",
+    "includedMinutes": "{{count}} minutos con tutor de IA incluidos",
+    "packValidity": "Válido durante un año desde la compra",
+    "minutesRemaining": "{{count}} minutos con tutor de IA disponibles",
     "entitlements": {
       "vocabulary": {
         "read": "Ver palabras guardadas y datos",
@@ -1487,6 +1501,7 @@
   },
   "apiErrors": {
     "SUBSCRIPTION_REQUIRED": "Esta función está disponible con una suscripción Pro. Puedes actualizar desde la página de suscripción.",
+    "PRIVATE_LESSON_MINUTES_REQUIRED": "No tienes suficientes minutos para esta clase. Elige una clase más corta o compra 60 minutos más.",
     "AI_MONTHLY_LIMIT_REACHED": "Has utilizado tu asignación actual de artículos de IA.",
     "BILLING_NOT_CONFIGURED": "El servicio de facturación aún no está configurado.",
     "INVALID_CREDENTIALS": "La dirección de correo electrónico o contraseña es incorrecta.",

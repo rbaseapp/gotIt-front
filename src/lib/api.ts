@@ -28,6 +28,7 @@ export class ApiError extends Error {
 
 const messageCodes = new Set([
   "SUBSCRIPTION_REQUIRED",
+  "PRIVATE_LESSON_MINUTES_REQUIRED",
   "AI_MONTHLY_LIMIT_REACHED",
   "BILLING_NOT_CONFIGURED",
   "INVALID_CREDENTIALS",

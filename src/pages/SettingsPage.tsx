@@ -614,7 +614,7 @@ export function SettingsPage() {
                         }));
                       }}
                     >
-                      {([1, 5, 10, 15] as const).map((value) => (
+                      {([1, 5, 10, 15, 20] as const).map((value) => (
                         <option key={value} value={value}>
                           {t(`privateLesson.durationOptions.${value}`)}
                         </option>

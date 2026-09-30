@@ -194,15 +194,11 @@ export default function App() {
                     path="/private-lesson"
                     element={
                       mode === "live" ? (
-                        <LiveGameAccess>
-                          {location.search.includes("course=") ||
+                        <PrivateLessonEntry preferLesson={
+                          location.search.includes("course=") ||
                           location.search.includes("practice=free") ||
-                          location.search.includes("view=") ? (
-                            <PrivateLessonPage />
-                          ) : (
-                            <CoursePage />
-                          )}
-                        </LiveGameAccess>
+                          location.search.includes("view=")
+                        } />
                       ) : (
                         <Navigate to="/learn" replace />
                       )
@@ -277,6 +273,19 @@ export default function App() {
       </Suspense>
     </SubscriptionProvider>
   );
+}
+
+export function PrivateLessonEntry({ preferLesson }: { preferLesson: boolean }) {
+  const { t } = useTranslation();
+  const { status, loading, hasEntitlement } = useSubscription();
+  if (loading)
+    return <div className="empty-session" role="status">
+      <LoaderCircle className="spin" size={30} />
+      <p>{t("app.checkingAccess")}</p>
+    </div>;
+  return preferLesson || (status && !hasEntitlement("practice.play"))
+    ? <PrivateLessonPage />
+    : <CoursePage />;
 }
 
 function LiveGameAccess({ children }: { children: React.ReactNode }) {
