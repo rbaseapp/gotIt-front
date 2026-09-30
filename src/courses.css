@@ -666,9 +666,23 @@
   gap: 12px;
   margin-block-end: 10px;
 }
-.course-language-heading h2 { margin: 0; font-size: 21px; }
-.course-language-heading span { color: var(--muted); font-size: 13px; }
-.course-list { display: grid; gap: 10px; }
+.course-language-heading h2 {
+  margin: 0;
+  font-size: 21px;
+}
+.course-language-heading span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.course-list {
+  display: grid;
+  gap: 10px;
+}
+.course-list-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
 .course-list a {
   display: flex;
   align-items: center;
@@ -678,17 +692,49 @@
   border-radius: 15px;
   background: var(--surface);
   font-size: 14px;
+  flex: 1;
+  min-width: 0;
 }
-.course-list a:hover, .course-list a:focus-visible { border-color: var(--green); }
+.course-list a:hover,
+.course-list a:focus-visible {
+  border-color: var(--green);
+}
+.course-delete-button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.course-delete-button:hover,
+.course-delete-button:focus-visible {
+  color: var(--danger, #b42318);
+  border-color: currentColor;
+}
+.course-delete-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
 .course-list-card-main {
   flex: 1;
   min-width: 0;
   display: grid;
   gap: 7px;
 }
-.course-list-card-main strong { font-weight: 600; overflow-wrap: anywhere; }
-.course-list-card-main small { color: var(--muted); line-height: 1.5; }
-.course-list-card > svg { flex-shrink: 0; }
+.course-list-card-main strong {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.course-list-card-main small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+.course-list-card > svg {
+  flex-shrink: 0;
+}
 .course-busy {
   display: flex;
   justify-content: center;

@@ -12,11 +12,13 @@ import {
   MessageCircle,
   Pencil,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { TeacherAvatar } from "../components/TeacherAvatar";
 import { CourseComposer } from "../components/CourseComposer";
 import { CourseLiveInterview } from "../components/CourseLiveInterview";
+import { Modal } from "../components/Modal";
 import {
   courseApi,
   lessonLink,
@@ -47,6 +49,7 @@ export function CoursePage() {
     [resumeConversation, setResumeConversation] = useState(false),
     [editingPlan, setEditingPlan] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [message, setMessage] = useState("");
   const [editAnswerIndex, setEditAnswerIndex] = useState<number | null>(null);
   const [target, setTarget] = useState(
@@ -153,6 +156,16 @@ export function CoursePage() {
       navigate(`/courses/${result.course.id}`);
     });
   }
+  function deleteSelectedCourse() {
+    if (!courseToDelete) return;
+    const id = courseToDelete.id;
+    void run(async () => {
+      await courseApi.delete(id);
+      setCourses((current) => current.filter((item) => item.id !== id));
+      setHomework((current) => current.filter((item) => item.courseId !== id));
+      setCourseToDelete(null);
+    });
+  }
   function send(channel: "text" | "voice", value = message) {
     void run(async () => {
       const updated = await command("turns", {
@@ -235,9 +248,11 @@ export function CoursePage() {
           <h1>
             {course && displayed ? displayed.plan.title : t("courses.title")}
           </h1>
-          {course && <p className="course-heading-language">
-            {languageName(course.preferences.targetLanguageCode)}
-          </p>}
+          {course && (
+            <p className="course-heading-language">
+              {languageName(course.preferences.targetLanguageCode)}
+            </p>
+          )}
         </div>
         {course ? (
           <Link className="course-text-link" to="/courses">
@@ -265,35 +280,80 @@ export function CoursePage() {
         <>
           <div className="course-language-groups">
             {courseGroups.map(([code, items]) => (
-              <section className="course-language-group" key={code} aria-label={languageName(code)}>
+              <section
+                className="course-language-group"
+                key={code}
+                aria-label={languageName(code)}
+              >
                 <div className="course-language-heading">
                   <h2>{languageName(code)}</h2>
-                  <span>{t(items.length === 1 ? "courses.singleCourse" : "courses.courseCount", { count: items.length })}</span>
+                  <span>
+                    {t(
+                      items.length === 1
+                        ? "courses.singleCourse"
+                        : "courses.courseCount",
+                      { count: items.length },
+                    )}
+                  </span>
                 </div>
                 <div className="course-list">
                   {items.map((item) => {
-                    const plan = item.versions.find(
-                      (version) => version.version === item.activeVersion,
-                    ) ?? item.versions.find(
-                      (version) => version.version === item.draftVersion,
-                    );
-                    const total = plan?.plan.units.reduce(
-                      (sum, unit) => sum + unit.lessons.length, 0,
-                    ) ?? 0;
+                    const plan =
+                      item.versions.find(
+                        (version) => version.version === item.activeVersion,
+                      ) ??
+                      item.versions.find(
+                        (version) => version.version === item.draftVersion,
+                      );
+                    const total =
+                      plan?.plan.units.reduce(
+                        (sum, unit) => sum + unit.lessons.length,
+                        0,
+                      ) ?? 0;
                     const status = item.activeVersion
-                      ? item.nextLesson ? "inProgress" : "courseComplete"
-                      : item.draftVersion ? "awaitingApproval" : "intakeInProgress";
+                      ? item.nextLesson
+                        ? "inProgress"
+                        : "courseComplete"
+                      : item.draftVersion
+                        ? "awaitingApproval"
+                        : "intakeInProgress";
                     return (
-                      <Link key={item.id} to={`/courses/${item.id}`} className="course-list-card">
-                        <BookOpen size={20} aria-hidden="true" />
-                        <span className="course-list-card-main">
-                          <strong dir="auto">{plan?.plan.title ?? t("courses.intakeInProgress")}</strong>
-                          <small>{t(`courses.${status}`)}
-                            {item.activeVersion && ` · ${t("courses.completedCount", { count: item.progress.covered, total })}`}
-                          </small>
-                        </span>
-                        <ArrowRight size={18} className="directional-arrow" aria-hidden="true" />
-                      </Link>
+                      <div key={item.id} className="course-list-row">
+                        <Link
+                          to={`/courses/${item.id}`}
+                          className="course-list-card"
+                        >
+                          <BookOpen size={20} aria-hidden="true" />
+                          <span className="course-list-card-main">
+                            <strong dir="auto">
+                              {plan?.plan.title ??
+                                t("courses.intakeInProgress")}
+                            </strong>
+                            <small>
+                              {t(`courses.${status}`)}
+                              {item.activeVersion &&
+                                ` · ${t("courses.completedCount", { count: item.progress.covered, total })}`}
+                            </small>
+                          </span>
+                          <ArrowRight
+                            size={18}
+                            className="directional-arrow"
+                            aria-hidden="true"
+                          />
+                        </Link>
+                        <button
+                          type="button"
+                          className="course-delete-button"
+                          aria-label={t("courses.deleteCourse", {
+                            title:
+                              plan?.plan.title ?? t("courses.intakeInProgress"),
+                          })}
+                          onClick={() => setCourseToDelete(item)}
+                          disabled={busy}
+                        >
+                          <Trash2 size={18} aria-hidden="true" />
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -754,25 +814,48 @@ export function CoursePage() {
                         </p>
                         <ol className="course-lesson-list">
                           {unit.lessons.map((lesson, lessonIndex) => {
-                            const records = draft ? [] : course.evidence.filter(
-                              (e) => e.unitKey === unit.key && e.lessonIndex === lessonIndex && e.covered,
-                            );
-                            const isNext = !draft && course.nextLesson?.unitKey === unit.key &&
+                            const records = draft
+                              ? []
+                              : course.evidence.filter(
+                                  (e) =>
+                                    e.unitKey === unit.key &&
+                                    e.lessonIndex === lessonIndex &&
+                                    e.covered,
+                                );
+                            const isNext =
+                              !draft &&
+                              course.nextLesson?.unitKey === unit.key &&
                               course.nextLesson.lessonIndex === lessonIndex;
                             const state = records.length
-                              ? isNext ? "repeatLesson" : "lessonDone"
-                              : isNext ? "nextInPlan" : "upcomingLesson";
+                              ? isNext
+                                ? "repeatLesson"
+                                : "lessonDone"
+                              : isNext
+                                ? "nextInPlan"
+                                : "upcomingLesson";
                             const last = records.at(-1);
                             return (
-                              <li key={`${unit.key}:${lessonIndex}`} className={`course-lesson-${state}`}>
-                                <span className="course-lesson-number">{records.length ? <Check size={15} /> : lessonIndex + 1}</span>
+                              <li
+                                key={`${unit.key}:${lessonIndex}`}
+                                className={`course-lesson-${state}`}
+                              >
+                                <span className="course-lesson-number">
+                                  {records.length ? (
+                                    <Check size={15} />
+                                  ) : (
+                                    lessonIndex + 1
+                                  )}
+                                </span>
                                 <div>
                                   <strong dir="auto">{lesson.title}</strong>
                                   <p dir="auto">{lesson.objective}</p>
-                                  {!draft && <small className="course-lesson-status">
-                                    {t(`courses.${state}`)}
-                                    {last && ` · ${new Date(last.recordedAt).toLocaleDateString(i18n.language)}`}
-                                  </small>}
+                                  {!draft && (
+                                    <small className="course-lesson-status">
+                                      {t(`courses.${state}`)}
+                                      {last &&
+                                        ` · ${new Date(last.recordedAt).toLocaleDateString(i18n.language)}`}
+                                    </small>
+                                  )}
                                 </div>
                               </li>
                             );
@@ -866,6 +949,34 @@ export function CoursePage() {
           )}
         </>
       )}
+      <Modal
+        open={Boolean(courseToDelete)}
+        onClose={() => {
+          if (!busy) setCourseToDelete(null);
+        }}
+        title={t("courses.deleteCourseTitle")}
+        size="sm"
+      >
+        <div className="modal-body">
+          <p>{t("courses.deleteCourseDescription")}</p>
+          <div className="modal-actions">
+            <button
+              className="button secondary"
+              onClick={() => setCourseToDelete(null)}
+              disabled={busy}
+            >
+              {t("feedback.cancel")}
+            </button>
+            <button
+              className="button primary"
+              onClick={deleteSelectedCourse}
+              disabled={busy}
+            >
+              {t("courses.deleteCourseConfirm")}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

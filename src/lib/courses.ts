@@ -194,6 +194,7 @@ export const courseApi = {
       "courses",
     ),
   get: (id: string) => product(courseResponse, `courses/${id}`),
+  delete: (id: string) => product(z.undefined(), `courses/${id}`, "DELETE"),
   realtimeSession: (id: string) =>
     product(realtimeResponse, `courses/${id}/realtime-session`, "POST"),
   start: (input: {

@@ -12,6 +12,7 @@ import {
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
   get: vi.fn(),
+  delete: vi.fn(),
   command: vi.fn(),
   homework: vi.fn(),
   homeworkCommand: vi.fn(),
@@ -368,29 +369,86 @@ describe("personal course experience", () => {
     spanish.id = "10000000-0000-4000-8000-000000000003";
     spanish.preferences.targetLanguageCode = "es";
     spanish.versions[0]!.plan.title = "Spanish for work";
-    mocks.list.mockResolvedValue({ courses: [first, second, spanish], homework: [], available: true });
+    mocks.list.mockResolvedValue({
+      courses: [first, second, spanish],
+      homework: [],
+      available: true,
+    });
 
     renderRoute("/courses");
     const groups = await screen.findAllByRole("region");
-    const english = groups.find((group) => within(group).queryByRole("heading", { name: /English/ }));
-    const spanishGroup = groups.find((group) => within(group).queryByRole("heading", { name: /Spanish/ }));
+    const english = groups.find((group) =>
+      within(group).queryByRole("heading", { name: /English/ }),
+    );
+    const spanishGroup = groups.find((group) =>
+      within(group).queryByRole("heading", { name: /Spanish/ }),
+    );
     expect(english).toBeDefined();
     expect(spanishGroup).toBeDefined();
     expect(within(english!).getAllByRole("link")).toHaveLength(2);
     expect(within(spanishGroup!).getAllByRole("link")).toHaveLength(1);
     expect(within(english!).getByText("2 קורסים")).toBeInTheDocument();
     expect(within(spanishGroup!).getByText("קורס אחד")).toBeInTheDocument();
-    expect(within(english!).getByRole("link", { name: /1 מתוך 12 שיעורים בוצעו/ })).toHaveAttribute("href", `/courses/${first.id}`);
-    expect(within(spanishGroup!).queryByText("English for travel")).not.toBeInTheDocument();
+    expect(
+      within(english!).getByRole("link", { name: /1 מתוך 12 שיעורים בוצעו/ }),
+    ).toHaveAttribute("href", `/courses/${first.id}`);
+    expect(
+      within(spanishGroup!).queryByText("English for travel"),
+    ).not.toBeInTheDocument();
+  });
+  it("asks before deleting a course and keeps it visible when deletion fails", async () => {
+    const course = courseWithPlan(true);
+    mocks.list.mockResolvedValue({
+      courses: [course],
+      homework: [],
+      available: true,
+    });
+    const user = userEvent.setup();
+    renderRoute("/courses");
+    const deleteButton = await screen.findByRole("button", {
+      name: /מחיקת קורס:/,
+    });
+    await user.click(deleteButton);
+    expect(mocks.delete).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "ביטול" }));
+    expect(mocks.delete).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("link", { name: /אנגלית מהיסודות/ }),
+    ).toBeInTheDocument();
+    await user.click(deleteButton);
+    mocks.delete.mockRejectedValueOnce(new Error("Delete failed"));
+    await user.click(screen.getByRole("button", { name: "מחיקת הקורס" }));
+    expect(await screen.findByText("Delete failed")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /אנגלית מהיסודות/ }),
+    ).toBeInTheDocument();
+    mocks.delete.mockResolvedValueOnce(undefined);
+    await user.click(screen.getByRole("button", { name: "מחיקת הקורס" }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /מחיקת קורס:/ }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(mocks.delete).toHaveBeenCalledWith(course.id);
   });
   it("marks done, next, and later lessons only from the selected course", async () => {
     const selected = courseWithPlan(true);
-    selected.evidence = [{
-      lessonId: "30000000-0000-4000-8000-000000000001",
-      version: 1, unitKey: "unit-1", lessonIndex: 0,
-      covered: true, independent: true, recordedAt: "2026-09-29T10:00:00.000Z",
-    }];
-    selected.nextLesson = { ...selected.nextLesson!, lessonIndex: 1, title: selected.versions[0]!.plan.units[0]!.lessons[1]!.title };
+    selected.evidence = [
+      {
+        lessonId: "30000000-0000-4000-8000-000000000001",
+        version: 1,
+        unitKey: "unit-1",
+        lessonIndex: 0,
+        covered: true,
+        independent: true,
+        recordedAt: "2026-09-29T10:00:00.000Z",
+      },
+    ];
+    selected.nextLesson = {
+      ...selected.nextLesson!,
+      lessonIndex: 1,
+      title: selected.versions[0]!.plan.units[0]!.lessons[1]!.title,
+    };
     mocks.get.mockResolvedValue({ course: selected });
     renderRoute(`/courses/${selected.id}`);
     await screen.findByText("כל מה שנלמד בקורס");
