@@ -1037,7 +1037,7 @@
     "cancelRecording": "إلغاء التسجيل",
     "yourAnswer": "إجابتك",
     "checkAnswer": "التحقق من الإجابة",
-    "answerLocked": "الإجابة مقفلة حتى يؤكدها الخادم. لم يتم تسجيل أي تقدم محلي.",
+    "checkingAnswer": "جارٍ التحقق من إجابتك…",
     "retryAnswer": "إعادة محاولة الإجابة ذاتها",
     "skip": "تخطي",
     "expectedAnswer": "الإجابة: {{answer}}",

@@ -1,5 +1,5 @@
 import { StrictMode } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -246,6 +246,41 @@ describe("live server-backed flows", () => {
       screen.queryByRole("button", { name: /כניסה לסביבת ההדגמה/ }),
     ).not.toBeInTheDocument();
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
+  });
+  it("shows a spinner while checking an answer, then an error and retry after failure", async () => {
+    let rejectAttempt!: (reason: Error) => void;
+    const firstAttempt = new Promise<Response>((_resolve, reject) => {
+      rejectAttempt = reject;
+    });
+    let attempts = 0;
+    mount("/learn/session/recall?items=" + itemId, async (url) => {
+      if (url.endsWith("/practice/sessions")) return json({ session });
+      if (url.endsWith("/exercises"))
+        return json({ exercises: [exercise], algorithmVersion: "server-v1" }, 201);
+      if (url.endsWith("/practice/attempts"))
+        return ++attempts === 1 ? firstAttempt : json(receipt, 201);
+      throw new Error("Unexpected route");
+    });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "מתחילים" }));
+    await user.type(await screen.findByLabelText("התשובה שלך"), "remember");
+    await user.click(screen.getByRole("button", { name: "בדיקת תשובה" }));
+
+    const status = await screen.findByText("בודקים את התשובה…");
+    expect(status.closest('[role="status"]')).toHaveClass("answer-pending");
+    expect(document.querySelector(".answer-pending-spinner svg")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "ניסיון נוסף לאותה תשובה" })).not.toBeInTheDocument();
+
+    await act(async () => rejectAttempt(new Error("lost response")));
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.queryByText("בודקים את התשובה…")).not.toBeInTheDocument();
+    const retry = screen.getByRole("button", { name: "ניסיון נוסף לאותה תשובה" });
+    expect(retry).toBeEnabled();
+    await user.click(retry);
+    expect(await screen.findByRole("heading", { name: "נכון חלקית" })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(attempts).toBe(2);
   });
   it("uses server-issued exercises, freezes attempt retries, and trusts only the server projection", async () => {
     let attempts = 0;

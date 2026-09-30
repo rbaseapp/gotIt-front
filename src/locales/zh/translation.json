@@ -992,7 +992,7 @@
     "cancelRecording": "取消录音",
     "yourAnswer": "你的答案",
     "checkAnswer": "检查答案",
-    "answerLocked": "答案被锁定，直到服务器确认为止。没有记录到当地的进展。",
+    "checkingAnswer": "正在检查你的答案…",
     "retryAnswer": "重试相同的答案",
     "skip": "跳过",
     "expectedAnswer": "答案：{{answer}}",

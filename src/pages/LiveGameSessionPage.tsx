@@ -15,6 +15,7 @@ import { z } from "zod";
 import {
   ArrowLeft,
   ArrowRight,
+  Brain,
   CheckCircle2,
   Flame,
   Gauge,
@@ -1376,14 +1377,22 @@ export function LiveGameSessionPage() {
                       )}
                       {pending ? (
                         <>
-                          <p>{t("game.answerLocked")}</p>
-                          <button
-                            className="button primary"
-                            disabled={busy}
-                            onClick={() => void submit({})}
-                          >
-                            {t("game.retryAnswer")}
-                          </button>
+                          {busy && !error ? (
+                            <div className="answer-pending" role="status">
+                              <span className="answer-pending-spinner" aria-hidden="true">
+                                <Brain size={24} strokeWidth={1.8} />
+                              </span>
+                              <span>{t("game.checkingAnswer")}</span>
+                            </div>
+                          ) : (
+                            <button
+                              className="button primary"
+                              disabled={busy}
+                              onClick={() => void submit({})}
+                            >
+                              {t("game.retryAnswer")}
+                            </button>
+                          )}
                         </>
                       ) : (
                         <button
