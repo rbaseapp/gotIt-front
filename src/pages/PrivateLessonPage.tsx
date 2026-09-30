@@ -171,6 +171,7 @@ export function PrivateLessonPage() {
   const turnsRef = useRef<Turn[]>([]);
   const [completedLesson, setCompletedLesson] = useState<SavedPrivateLesson>();
   const [reportLoading, setReportLoading] = useState(false);
+  const [reportRequested, setReportRequested] = useState(false);
   const [reportError, setReportError] = useState("");
   const [history, setHistory] = useState<SavedPrivateLesson[]>([]);
   const [historyError, setHistoryError] = useState("");
@@ -210,6 +211,7 @@ export function PrivateLessonPage() {
   const wrapResponseStarted = useRef(false);
   const wrapResponseStartedAt = useRef(0);
   const wrapTranscript = useRef("");
+  const lastTutorAudioAt = useRef(0);
   const translationRequested = useRef(false);
   const assistantBuffer = useRef("");
   const lessonStartedAt = useRef(0);
@@ -295,7 +297,6 @@ export function PrivateLessonPage() {
     }
   };
   const finish = (
-    activeSession: PrivateLessonSession,
     message: string,
     includeTimeMessage = false,
     reason: "completed" | "stopped" | "disconnected" = "completed",
@@ -306,7 +307,6 @@ export function PrivateLessonPage() {
     setRemaining(0);
     setStatus(message);
     setPhase("ended");
-    void finalizeLesson(activeSession);
   };
   const requestWrapUp = (
     activeSession: PrivateLessonSession,
@@ -344,23 +344,29 @@ export function PrivateLessonPage() {
       .filter(Boolean).length;
     const rateMultiplier =
       speechRateMultipliers[activeSession.lesson.speechRate];
-    const estimatedPlaybackMs = Math.min(
-      20_000,
-      Math.max(3_000, (wordCount / (2.4 * rateMultiplier)) * 1000 + 1_500),
+    const estimatedPlaybackMs = Math.max(
+      3_000,
+      (wordCount / (2.4 * rateMultiplier)) * 1000 + 2_500,
     );
     const elapsed = Date.now() - wrapResponseStartedAt.current;
     setStatus(t("privateLesson.goodbyePlaying"));
+    const finishWhenQuiet = () => {
+      const quietFor = Date.now() - lastTutorAudioAt.current;
+      if (quietFor < 1_200) {
+        timers.current.push(window.setTimeout(finishWhenQuiet, 1_200 - quietFor));
+        return;
+      }
+      finish(
+        completionReason.current === "stopped"
+          ? t("privateLesson.stopped")
+          : t("privateLesson.ended"),
+        true,
+        completionReason.current,
+      );
+    };
     timers.current.push(
       window.setTimeout(
-        () =>
-          finish(
-            activeSession,
-            completionReason.current === "stopped"
-              ? t("privateLesson.stopped")
-              : t("privateLesson.ended"),
-            true,
-            completionReason.current,
-          ),
+        finishWhenQuiet,
         Math.max(1_000, estimatedPlaybackMs - elapsed),
       ),
     );
@@ -431,11 +437,21 @@ export function PrivateLessonPage() {
         activeSession.lesson.durationSeconds * 1000,
       ),
     );
-    timers.current.push(
-      window.setTimeout(
-        () => finish(activeSession, t("privateLesson.ended"), true),
-        (activeSession.lesson.durationSeconds + 30) * 1000,
-      ),
+  };
+  const wrapAfterCurrentPlayback = (activeSession: PrivateLessonSession) => {
+    const quietFor = Date.now() - lastTutorAudioAt.current;
+    if (lastTutorAudioAt.current && quietFor < 1_200) {
+      timers.current.push(
+        window.setTimeout(
+          () => wrapAfterCurrentPlayback(activeSession),
+          Math.max(250, 1_200 - quietFor),
+        ),
+      );
+      return;
+    }
+    requestWrapUp(
+      activeSession,
+      completionReason.current === "stopped" ? "stopped" : "completed",
     );
   };
   const handleRealtimeEvent = (
@@ -451,16 +467,13 @@ export function PrivateLessonPage() {
       if (wrapSent.current && !wrapResponseStarted.current) {
         wrapResponseStarted.current = true;
         wrapResponseStartedAt.current = Date.now();
+        lastTutorAudioAt.current = 0;
       }
     }
     if (event.type === "response.done") {
       activeResponse.current = false;
       setResponding(false);
-      if (wrapPending.current)
-        requestWrapUp(
-          activeSession,
-          completionReason.current === "stopped" ? "stopped" : "completed",
-        );
+      if (wrapPending.current) wrapAfterCurrentPlayback(activeSession);
       else if (wrapResponseStarted.current)
         finishAfterClosingPlayback(activeSession);
       else if (translationRequested.current) {
@@ -593,7 +606,8 @@ export function PrivateLessonPage() {
   usePrivateLessonViewport(sessionFullscreen);
   useEffect(() => {
     const transcript = transcriptRef.current;
-    if (transcript) transcript.scrollTop = transcript.scrollHeight;
+    if (transcript && phase !== "ended")
+      transcript.scrollTop = transcript.scrollHeight;
   }, [phase, status, turns, needsContinue]);
 
   const startLesson = async (event: FormEvent) => {
@@ -605,6 +619,7 @@ export function PrivateLessonPage() {
     turnsRef.current = [];
     setSession(undefined);
     setCompletedLesson(undefined);
+    setReportRequested(false);
     setReportError("");
     setSavedSuggestions(new Set());
     finalizing.current = false;
@@ -614,6 +629,7 @@ export function PrivateLessonPage() {
     wrapResponseStarted.current = false;
     wrapResponseStartedAt.current = 0;
     wrapTranscript.current = "";
+    lastTutorAudioAt.current = 0;
     translationRequested.current = false;
     assistantBuffer.current = "";
     const controller = new AbortController();
@@ -677,7 +693,6 @@ export function PrivateLessonPage() {
               (phaseRef.current === "active" || phaseRef.current === "wrapping")
             ) {
               finish(
-                created,
                 t("privateLesson.connectionClosed"),
                 false,
                 "disconnected",
@@ -690,6 +705,7 @@ export function PrivateLessonPage() {
           },
           onAudioLevel(level) {
             if (controller.signal.aborted) return;
+            if (level > 0.06) lastTutorAudioAt.current = Date.now();
             flowRef.current?.audioLevel(level);
             setTutorAudioLevel(level);
           },
@@ -721,6 +737,7 @@ export function PrivateLessonPage() {
     setTurns([]);
     turnsRef.current = [];
     setCompletedLesson(undefined);
+    setReportRequested(false);
     setReportError("");
     setError("");
     setRemaining(lessonDurationMinutes * 60);
@@ -2068,7 +2085,7 @@ export function PrivateLessonPage() {
       ) : (
         createPortal(
           <section
-            className={`private-lesson-session live-panel${phase === "ended" ? " has-report" : ""}`}
+            className={`private-lesson-session live-panel${reportRequested ? " has-report" : ""}`}
             role="dialog"
             aria-label={t("privateLesson.title")}
           >
@@ -2154,7 +2171,7 @@ export function PrivateLessonPage() {
               )}
             </div>
 
-            {phase === "ended" ? (
+            {phase === "ended" && reportRequested ? (
               <div className="private-lesson-report-shell">
                 {reportLoading ? (
                   <div className="private-lesson-report-loading" role="status">
@@ -2272,8 +2289,20 @@ export function PrivateLessonPage() {
 
             {phase === "ended" ? (
               <div className="private-lesson-actions private-lesson-report-actions">
+                {!reportRequested && session && (
+                  <button
+                    className="button primary"
+                    type="button"
+                    onClick={() => {
+                      setReportRequested(true);
+                      void finalizeLesson(session);
+                    }}
+                  >
+                    <BookOpen size={18} /> {t("privateLesson.report.generate")}
+                  </button>
+                )}
                 <button
-                  className="button primary"
+                  className="button secondary"
                   type="button"
                   onClick={reset}
                 >
