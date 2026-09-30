@@ -240,6 +240,10 @@ describe("live server-backed flows", () => {
     ).toBeInTheDocument();
   });
   it("keeps the learning queue and practice history on the selected language", async () => {
+    const languages = [
+      { code: "en", count: 2 },
+      { code: "fr", count: 1 },
+    ];
     const fetchMock = mount(
       "/learn",
       async (url) => {
@@ -252,10 +256,7 @@ describe("live server-backed flows", () => {
         throw new Error("Unexpected route");
       },
       seedProfile,
-      [
-        { code: "en", count: 2 },
-        { code: "fr", count: 1 },
-      ],
+      languages,
     );
     const user = userEvent.setup();
     await user.selectOptions(await screen.findByRole("combobox"), "fr");
@@ -278,6 +279,15 @@ describe("live server-backed flows", () => {
     expect(
       document.querySelector('a[href="/learn/session/smart?language=fr"]'),
     ).toBeInTheDocument();
+    await act(async () => {
+      languages.push({ code: "de", count: 1 });
+      window.dispatchEvent(new Event("gotit:library-changed"));
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByRole("combobox").querySelector('option[value="de"]'),
+      ).toBeInTheDocument(),
+    );
   });
   it("does not hydrate a persisted demo when production demo mode is disabled", async () => {
     localStorage.setItem("gotit.mode", JSON.stringify("demo"));

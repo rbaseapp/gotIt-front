@@ -233,6 +233,7 @@ export function LiveVocabularyPage() {
       setSelected([]);
       toast(t("vocabulary.changeSaved"), { tone: "success" });
       await resource.reload();
+      await language.reload();
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
@@ -752,7 +753,10 @@ export function LiveVocabularyPage() {
           <LiveWordDetail
             key={itemId}
             id={itemId}
-            onChanged={() => void resource.reload()}
+            onChanged={() => {
+              void resource.reload();
+              void language.reload();
+            }}
             tags={tags.data?.tags || []}
           />
         </Modal>

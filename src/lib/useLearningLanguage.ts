@@ -21,6 +21,12 @@ export function useLearningLanguage() {
   const resource = useResource(
     useCallback(() => product(languageList, "dashboard/languages"), []),
   );
+  const reloadLanguages = resource.reload;
+  useEffect(() => {
+    const changed = () => void reloadLanguages();
+    window.addEventListener("gotit:library-changed", changed);
+    return () => window.removeEventListener("gotit:library-changed", changed);
+  }, [reloadLanguages]);
   const languages = useMemo(
     () => resource.data?.languages || [],
     [resource.data],
@@ -45,6 +51,6 @@ export function useLearningLanguage() {
     setCode: setChosen,
     loading: resource.loading,
     error: resource.error,
-    reload: resource.reload,
+    reload: reloadLanguages,
   };
 }
