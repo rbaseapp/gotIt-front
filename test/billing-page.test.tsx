@@ -99,6 +99,25 @@ describe("BillingPage tutor offers", () => {
     }));
   });
 
+  it("shows Free only as the current plan, never as a selectable offer", async () => {
+    renderPage();
+    const currentPlan = await screen.findByText("GotIt Free");
+    expect(currentPlan.closest(".billing-current")).toBeInTheDocument();
+    expect(document.querySelector(".billing-grid")).not.toHaveTextContent("GotIt Free");
+    expect(document.querySelectorAll(".billing-plan")).toHaveLength(4);
+    expect(screen.getAllByRole("button", { name: "Choose plan" })).toHaveLength(3);
+  });
+
+  it("does not offer Free when a paid plan is current", async () => {
+    mocks.status.mockResolvedValueOnce({
+      tier: "paid", access: true, plan: { key: "pro-monthly", name: "GotIt Pro", kind: "paid" },
+      entitlements: [], subscription: { id: "sub_123" }, trial: null,
+    });
+    renderPage();
+    expect(await screen.findAllByRole("heading", { name: "GotIt Pro" })).toHaveLength(2);
+    expect(screen.queryByText("GotIt Free")).not.toBeInTheDocument();
+  });
+
   it("switches the tutor bank between quarterly and yearly billing", async () => {
     const user = userEvent.setup();
     renderPage();

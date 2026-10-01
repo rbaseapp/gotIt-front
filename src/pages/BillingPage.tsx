@@ -33,7 +33,6 @@ export function BillingPage() {
   }, [checkoutCompleted, reloadMinutes, reloadStatus, t, toast]);
 
   const offers = useMemo(() => plans.data?.plans ?? [], [plans.data]);
-  const free = offers.find((plan) => plan.kind === "free");
   const oneTime = offers.find((plan) => plan.kind === "one_time");
   const selected = groups.map((group) => {
     const members = offers.filter((plan) => plan.kind === "paid" && plan.key.startsWith(group + "-"));
@@ -132,8 +131,6 @@ export function BillingPage() {
       </div>
 
       <div className="billing-grid">
-        {free && <PlanCard plan={free} price={t("billing.free")} description={t("billing.freeDescription")}
-          current={status.data?.plan.key === free.key} />}
         {selected.map((plan) => <PlanCard key={plan.key} plan={plan} price={price(plan)}
           description={plan.key.startsWith("pro-") ? t("billing.proDescription") : t("billing.tutorDescription")}
           current={status.data?.plan.key === plan.key} featured={plan.key.startsWith("tutor-60")}
@@ -168,7 +165,7 @@ function PlanCard({ plan, price, description, featured = false, current, action 
     : plan.billingInterval === "year" ? t("billing.perYear") : t("billing.oneTime");
   return <section className={`live-panel billing-plan ${plan.kind}${featured ? " featured" : ""}`}>
     <div className="billing-plan-heading"><div>
-      <p className="eyebrow">{plan.kind === "one_time" ? t("billing.minutesPack") : plan.kind === "free" ? t("billing.startFree") : t("billing.subscription")}</p>
+      <p className="eyebrow">{plan.kind === "one_time" ? t("billing.minutesPack") : t("billing.subscription")}</p>
       <h2>{plan.name}</h2>
     </div>{featured && <span className="billing-recommended">{t("billing.recommended")}</span>}</div>
     <p className="billing-plan-description">{description}</p>
@@ -182,7 +179,7 @@ function PlanCard({ plan, price, description, featured = false, current, action 
     {action && <button className="button primary billing-upgrade-button" disabled={action.disabled} onClick={action.run}>
       {action.busy ? t("billing.openingPayment") : action.label}
     </button>}
-    {plan.kind !== "free" && <small className="billing-checkout-note">{t("billing.checkoutNote")}</small>}
+    <small className="billing-checkout-note">{t("billing.checkoutNote")}</small>
     {current && <span className="status-chip active">{t("billing.currentPlan")}</span>}
   </section>;
 }
