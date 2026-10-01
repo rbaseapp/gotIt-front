@@ -46,6 +46,19 @@ describe("UI locales", () => {
     );
   });
 
+  it("renders Hebrew text for the selected-word known actions", () => {
+    expect(he.englishPath.markSelectedKnown).toBe(
+      "אני כבר יודע/ת את המילים שנבחרו",
+    );
+    expect(he.englishPath.unmarkSelectedKnown).toBe(
+      "ביטול סימון הנבחרות כידועות",
+    );
+    expect(he.englishPath.selectedKnown).toBe("המילים שנבחרו סומנו כידועות");
+    expect(he.englishPath.selectedUnknown).toBe(
+      "סימון המילים שנבחרו כידועות בוטל",
+    );
+  });
+
   it("normalizes supported regional language tags", () => {
     expect(normalizeUiLocale("zh-CN")).toBe("zh");
     expect(normalizeUiLocale("ar-IL")).toBe("ar");
