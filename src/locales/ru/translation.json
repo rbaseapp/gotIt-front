@@ -381,6 +381,7 @@
   "facebook": {
     "continue": "Продолжить с Facebook",
     "timeout": "Facebook загружается слишком долго. Попробуй снова.",
+    "loginTimeout": "Вход через Facebook занял слишком много времени. Закройте окно Facebook и попробуйте снова.",
     "unavailable": "Facebook временно недоступен.",
     "loadFailed": "Facebook не удалось загрузить. Проверь подключение или блокировщик контента.",
     "notConfigured": "Facebook не настроен в этом окружении.",

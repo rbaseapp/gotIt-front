@@ -427,6 +427,7 @@
   "facebook": {
     "continue": "המשך עם Facebook",
     "timeout": "טעינת Facebook ארכה זמן רב. נסו שוב.",
+    "loginTimeout": "כניסת Facebook ארכה זמן רב. סגרו את חלון Facebook ונסו שוב.",
     "unavailable": "Facebook אינו זמין כרגע.",
     "loadFailed": "לא ניתן לטעון כניסה עם Facebook. בדקו חיבור או חסימת תוכן.",
     "notConfigured": "כניסה עם Facebook אינה זמינה כרגע. אפשר להיכנס באימייל ובסיסמה.",

@@ -1669,6 +1669,7 @@
   "facebook": {
     "continue": "使用 Facebook 继续",
     "timeout": "Facebook 加载用时过长。请重试。",
+    "loginTimeout": "Facebook 登录耗时过长。请关闭 Facebook 窗口后重试。",
     "unavailable": "Facebook 暂时无法使用。",
     "loadFailed": "Facebook 登录无法加载。请检查您的连接或内容拦截器。",
     "notConfigured": "此环境中未配置 Facebook 登录。",

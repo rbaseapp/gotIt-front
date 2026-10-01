@@ -381,6 +381,7 @@
   "facebook": {
     "continue": "Continuer avec Facebook",
     "timeout": "Facebook a mis trop de temps à charger. Veuillez réessayer.",
+    "loginTimeout": "La connexion Facebook prend trop de temps. Fermez la fenêtre Facebook et réessayez.",
     "unavailable": "Facebook est actuellement indisponible.",
     "loadFailed": "La connexion Facebook n'a pas pu charger. Vérifiez votre connexion ou votre bloqueur de contenu.",
     "notConfigured": "La connexion Facebook n'est pas configurée dans cet environnement.",

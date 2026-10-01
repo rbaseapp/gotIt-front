@@ -427,6 +427,7 @@
   "facebook": {
     "continue": "Continue with Facebook",
     "timeout": "Facebook took too long to load. Please try again.",
+    "loginTimeout": "Facebook sign-in took too long. Close the Facebook window and try again.",
     "unavailable": "Facebook is currently unavailable.",
     "loadFailed": "Facebook sign-in could not load. Check your connection or content blocker.",
     "notConfigured": "Facebook sign-in is currently unavailable. You can use email and password.",

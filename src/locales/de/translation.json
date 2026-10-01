@@ -381,6 +381,7 @@
   "facebook": {
     "continue": "Mit Facebook fortfahren",
     "timeout": "Facebook hat zu lange zum Laden gebraucht. Versuche es bitte erneut.",
+    "loginTimeout": "Die Facebook-Anmeldung dauert zu lange. Schließe das Facebook-Fenster und versuche es erneut.",
     "unavailable": "Facebook ist derzeit nicht verfügbar.",
     "loadFailed": "Facebook-Anmeldung konnte nicht geladen werden. Überprüfe deine Verbindung oder deinen Content Blocker.",
     "notConfigured": "Facebook-Anmeldung ist in dieser Umgebung nicht konfiguriert.",

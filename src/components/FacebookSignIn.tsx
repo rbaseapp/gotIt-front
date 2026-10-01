@@ -33,6 +33,7 @@ declare global {
 
 let loading: Promise<FacebookSdk> | undefined;
 let initializedAppId = "";
+const LOGIN_TIMEOUT_MS = 60_000;
 
 function sdkLocale(language?: string): string {
   const locales: Record<string, string> = {
@@ -86,6 +87,8 @@ export function FacebookSignIn({
 }) {
   const { t, i18n } = useTranslation();
   const mounted = useRef(true);
+  const loginTimer = useRef<number | undefined>(undefined);
+  const loginAttempt = useRef(0);
   const [sdk, setSdk] = useState<FacebookSdk | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -96,6 +99,8 @@ export function FacebookSignIn({
     mounted.current = true;
     return () => {
       mounted.current = false;
+      loginAttempt.current += 1;
+      window.clearTimeout(loginTimer.current);
     };
   }, []);
 
@@ -139,10 +144,21 @@ export function FacebookSignIn({
     if (disabled || busy || !sdk) return;
     setBusy(true);
     setError("");
+    const attempt = ++loginAttempt.current;
+    loginTimer.current = window.setTimeout(() => {
+      if (!mounted.current || loginAttempt.current !== attempt) return;
+      loginAttempt.current += 1;
+      loginTimer.current = undefined;
+      setBusy(false);
+      setError(t("facebook.loginTimeout"));
+    }, LOGIN_TIMEOUT_MS);
     try {
       sdk.login(
         (response) => {
-          if (!mounted.current) return;
+          if (!mounted.current || loginAttempt.current !== attempt) return;
+          window.clearTimeout(loginTimer.current);
+          loginTimer.current = undefined;
+          loginAttempt.current += 1;
           setBusy(false);
           const token = response.authResponse?.accessToken;
           if (response.status === "connected" && token) onCredential(token);
@@ -151,7 +167,10 @@ export function FacebookSignIn({
         { scope: "public_profile,email", return_scopes: true },
       );
     } catch {
-      if (!mounted.current) return;
+      if (!mounted.current || loginAttempt.current !== attempt) return;
+      window.clearTimeout(loginTimer.current);
+      loginTimer.current = undefined;
+      loginAttempt.current += 1;
       setBusy(false);
       setError(t("facebook.unavailable"));
     }

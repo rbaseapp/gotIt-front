@@ -381,6 +381,7 @@
   "facebook": {
     "continue": "المتابعة عبر Facebook",
     "timeout": "استغرق Facebook وقتاً طويلاً في التحميل. يرجى المحاولة مرة أخرى.",
+    "loginTimeout": "استغرق تسجيل الدخول عبر Facebook وقتاً طويلاً. أغلق نافذة Facebook وحاول مرة أخرى.",
     "unavailable": "Facebook غير متاح حالياً.",
     "loadFailed": "تعذر تحميل تسجيل الدخول عبر Facebook. تحقق من اتصالك أو مانع المحتوى.",
     "notConfigured": "لم يتم تكوين تسجيل الدخول عبر Facebook في هذه البيئة.",
