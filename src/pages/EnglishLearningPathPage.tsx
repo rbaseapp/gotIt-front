@@ -344,6 +344,7 @@ export function EnglishLearningPathPage() {
       )}
       <Modal
         open={Boolean(preview)}
+        className="english-path-word-modal"
         onClose={() => !busy && setPreview(undefined)}
         title={
           preview
@@ -363,7 +364,7 @@ export function EnglishLearningPathPage() {
               <div className="pack-word-list">
                 {preview.entries.map((entry) => (
                   <div
-                    className={`pack-word-row${entry.known ? " known" : ""}`}
+                    className={`pack-word-row english-path-word-row${entry.known ? " known" : ""}`}
                     key={entry.id}
                   >
                     <span>

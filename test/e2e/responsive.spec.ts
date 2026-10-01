@@ -125,10 +125,14 @@ test.describe("responsive application shell", () => {
           await expect(modal).toBeVisible();
           const result = await modal.evaluate((element) => {
             const rect = element.getBoundingClientRect();
-            const controls = [...element.querySelectorAll("input, textarea, button")]
+            const controls = [
+              ...element.querySelectorAll("input, textarea, button"),
+            ]
               .filter((control) => {
                 const style = getComputedStyle(control);
-                return style.display !== "none" && style.visibility !== "hidden";
+                return (
+                  style.display !== "none" && style.visibility !== "hidden"
+                );
               })
               .map((control) => {
                 const controlRect = control.getBoundingClientRect();
@@ -161,6 +165,47 @@ test.describe("responsive application shell", () => {
         });
       }
     });
+  }
+});
+
+test("English unit word's one-click known control stays on one line", async ({
+  page,
+}) => {
+  for (const width of [320, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await openDemoRoute(page, "/dashboard");
+    const layout = await page.evaluate(() => {
+      const backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop";
+      backdrop.innerHTML = `<section class="modal modal-lg english-path-word-modal">
+        <div class="modal-body pack-word-dialog"><div class="pack-word-list">
+          <div class="pack-word-row english-path-word-row">
+            <span><b>refrigerator</b><span>מקרר</span></span>
+            <button class="button ghost">אני כבר יודע/ת</button>
+          </div>
+        </div></div></section>`;
+      document.body.append(backdrop);
+      const row = backdrop.querySelector<HTMLElement>(
+        ".english-path-word-row",
+      )!;
+      const button = row.querySelector<HTMLButtonElement>("button")!;
+      const rowRect = row.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      const text = document.createRange();
+      text.selectNodeContents(button);
+      return {
+        textLines: text.getClientRects().length,
+        buttonLeft: buttonRect.left,
+        buttonRight: buttonRect.right,
+        rowLeft: rowRect.left,
+        rowRight: rowRect.right,
+        rowOverflow: row.scrollWidth - row.clientWidth,
+      };
+    });
+    expect(layout.textLines, `${width}px button text wrapped`).toBe(1);
+    expect(layout.buttonLeft).toBeGreaterThanOrEqual(layout.rowLeft);
+    expect(layout.buttonRight).toBeLessThanOrEqual(layout.rowRight);
+    expect(layout.rowOverflow).toBeLessThanOrEqual(1);
   }
 });
 

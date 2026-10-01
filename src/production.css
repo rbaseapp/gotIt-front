@@ -4374,6 +4374,20 @@ html[dir="ltr"] .pack-search input {
   border-color: #9bc9a9;
   background: #f1faf3;
 }
+.english-path-word-row {
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+.pack-word-row.english-path-word-row > span {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  overflow-wrap: anywhere;
+}
+.english-path-word-row > button {
+  white-space: nowrap;
+}
 .pack-word-row > span {
   display: grid;
   grid-template-columns: minmax(90px, 0.7fr) minmax(90px, 0.7fr) minmax(

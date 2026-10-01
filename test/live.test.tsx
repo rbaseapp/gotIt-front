@@ -1998,6 +1998,8 @@ describe("live server-backed flows", () => {
       within(card).getByRole("button", { name: /הצגת היחידה/ }),
     );
     const row = (await screen.findByText("I")).closest(".pack-word-row")!;
+    expect(row).toHaveClass("english-path-word-row");
+    expect(screen.getByRole("dialog")).toHaveClass("english-path-word-modal");
     await userEvent.click(
       within(row).getByRole("button", { name: /כבר יודע/ }),
     );
