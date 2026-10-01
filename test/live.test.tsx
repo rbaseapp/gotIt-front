@@ -1857,7 +1857,7 @@ describe("live server-backed flows", () => {
       return json({}, 500);
     });
     expect(
-      await screen.findByRole("heading", { name: "מסלול לימוד אנגלית" }),
+      await screen.findByRole("heading", { name: "לימוד שפה מאפס" }),
     ).toBeInTheDocument();
     expect(
       await screen.findByRole("heading", { name: "אנגלית בסיסית" }),

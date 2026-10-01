@@ -4375,18 +4375,38 @@ html[dir="ltr"] .pack-search input {
   background: #f1faf3;
 }
 .english-path-word-row {
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: minmax(0, 1fr) 142px;
 }
 .pack-word-row.english-path-word-row > span {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   min-width: 0;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 12px;
+  gap: 12px;
+  text-align: start;
   overflow-wrap: anywhere;
 }
 .english-path-word-row > button {
+  width: 100%;
+  border: 1px solid var(--line);
   white-space: nowrap;
+}
+.english-path-word-modal {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.english-path-word-modal .pack-word-dialog {
+  min-height: 0;
+  overflow: hidden;
+}
+.english-path-word-modal .pack-word-list {
+  max-height: none;
+}
+.english-path-word-modal .modal-actions {
+  flex: none;
+  padding: 14px 23px max(14px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: #fff;
 }
 .pack-word-row > span {
   display: grid;
@@ -4452,6 +4472,24 @@ html[dir="ltr"] .pack-search input {
   }
   .pack-word-actions {
     padding-inline: 18px;
+  }
+  .english-path-word-modal .pack-word-dialog {
+    padding: 16px;
+  }
+  .english-path-word-modal .modal-actions {
+    padding-inline: 16px;
+  }
+}
+@media (max-width: 420px) {
+  .english-path-word-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .english-path-word-row > button {
+    width: auto;
+    justify-self: start;
+  }
+  .english-path-word-modal .modal-actions {
+    flex-wrap: wrap;
   }
 }
 

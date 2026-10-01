@@ -209,6 +209,67 @@ test("English unit word's one-click known control stays on one line", async ({
   }
 });
 
+test("English unit preview keeps aligned controls and footer at short heights", async ({
+  page,
+}) => {
+  for (const { width, height } of [
+    { width: 320, height: 568 },
+    { width: 525, height: 709 },
+    { width: 1920, height: 900 },
+  ]) {
+    await page.setViewportSize({ width, height });
+    await openDemoRoute(page, "/dashboard");
+    const layout = await page.evaluate(() => {
+      const backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop";
+      backdrop.innerHTML = `<section class="modal modal-lg english-path-word-modal">
+        <header class="modal-header"><h2>יחידה 3: Essential Everyday Actions</h2></header>
+        <div class="modal-body pack-word-dialog"><p>50 מילים וביטויים ביחידה זו.</p>
+          <div class="pack-word-list" dir="rtl"></div></div>
+        <div class="modal-actions" dir="rtl"><button class="button ghost">סגירה</button>
+          <button class="button primary">הוספה ותחילת תרגול</button></div></section>`;
+      document.body.append(backdrop);
+      const list = backdrop.querySelector<HTMLElement>(".pack-word-list")!;
+      for (let index = 0; index < 50; index += 1) {
+        const row = document.createElement("div");
+        row.className = "pack-word-row english-path-word-row";
+        row.innerHTML = `<span><b dir="auto">${index ? "refrigerator" : "wash"}</b>
+          <span dir="auto">${index ? "מקרר" : "לשטוף"}</span></span>
+          <button class="button ghost">אני כבר יודע/ת</button>`;
+        list.append(row);
+      }
+      const rows = [...list.querySelectorAll<HTMLElement>(".english-path-word-row")];
+      const buttons = rows.map((row) => row.querySelector<HTMLButtonElement>("button")!);
+      const modalRect = backdrop.querySelector(".modal")!.getBoundingClientRect();
+      const footerRect = backdrop.querySelector(".modal-actions")!.getBoundingClientRect();
+      const footerButtons = [
+        ...backdrop.querySelectorAll<HTMLElement>(".modal-actions .button"),
+      ];
+      const text = document.createRange();
+      text.selectNodeContents(buttons[0]);
+      return {
+        textLines: text.getClientRects().length,
+        buttonLefts: buttons.slice(0, 5).map((button) => button.getBoundingClientRect().left),
+        rowOverflow: rows.some((row) => row.scrollWidth > row.clientWidth + 1),
+        footerInside: footerRect.bottom <= modalRect.bottom + 1 &&
+          footerRect.left >= modalRect.left - 1 && footerRect.right <= modalRect.right + 1,
+        footerButtonsInside: footerButtons.every((button) => {
+          const rect = button.getBoundingClientRect();
+          return rect.left >= modalRect.left - 1 && rect.right <= modalRect.right + 1 &&
+            rect.bottom <= modalRect.bottom + 1;
+        }),
+        listScrolls: list.scrollHeight > list.clientHeight,
+      };
+    });
+    expect(layout.textLines, `${width}px button text wrapped`).toBe(1);
+    expect(new Set(layout.buttonLefts).size).toBe(1);
+    expect(layout.rowOverflow).toBe(false);
+    expect(layout.footerInside).toBe(true);
+    expect(layout.footerButtonsInside).toBe(true);
+    expect(layout.listScrolls).toBe(true);
+  }
+});
+
 const privateLessonFixture = `
   <aside class="sidebar"></aside>
   <section class="private-lesson-session live-panel has-report" role="dialog">
