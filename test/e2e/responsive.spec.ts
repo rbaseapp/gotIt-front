@@ -275,6 +275,9 @@ test("English unit preview keeps aligned controls and footer at short heights", 
             rect.bottom <= modalRect.bottom + 1
           );
         }),
+        footerButtonMinWidth: Math.min(
+          ...footerButtons.map((button) => button.getBoundingClientRect().width),
+        ),
         listScrolls: list.scrollHeight > list.clientHeight,
       };
     });
@@ -283,6 +286,7 @@ test("English unit preview keeps aligned controls and footer at short heights", 
     expect(layout.rowOverflow).toBe(false);
     expect(layout.footerInside).toBe(true);
     expect(layout.footerButtonsInside).toBe(true);
+    expect(layout.footerButtonMinWidth).toBeGreaterThanOrEqual(100);
     expect(layout.listScrolls).toBe(true);
   }
 });

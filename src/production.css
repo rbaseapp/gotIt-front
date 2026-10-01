@@ -4395,6 +4395,7 @@ html[dir="ltr"] .pack-search input {
   white-space: nowrap;
 }
 .english-path-word-modal {
+  width: min(100%, 700px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -4407,10 +4408,20 @@ html[dir="ltr"] .pack-search input {
   max-height: none;
 }
 .english-path-word-modal .modal-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   flex: none;
   padding: 14px 23px max(14px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
   background: #fff;
+}
+.english-path-word-modal .modal-actions > .button {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.3;
+}
+.english-path-word-modal .modal-actions > .button:last-child {
+  grid-column: span 2;
 }
 .pack-word-row > span {
   display: grid;
@@ -4494,7 +4505,7 @@ html[dir="ltr"] .pack-search input {
     justify-self: start;
   }
   .english-path-word-modal .modal-actions {
-    flex-wrap: wrap;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
