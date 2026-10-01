@@ -216,31 +216,6 @@ export function AppShell({
               </NavLink>
             ))}
         </nav>
-        {latestLessonAssessment?.report && (
-          <NavLink
-            to="/private-lesson?view=level"
-            className="sidebar-skill-assessment"
-            onClick={() => setMobileOpen(false)}
-          >
-            <span>
-              {t("shell.levelAssessment")} · {assessmentLanguageLabel}
-            </span>
-            <strong>{latestLevelLabel}</strong>
-            <div>
-              {(["speaking", "vocabulary", "grammar"] as const).map((skill) => (
-                <small key={skill}>
-                  {t(`privateLesson.assessment.skills.${skill}`)}
-                  <b>
-                    {
-                      latestLessonAssessment.report!.assessment.skills[skill]
-                        .score
-                    }
-                  </b>
-                </small>
-              ))}
-            </div>
-          </NavLink>
-        )}
         <div className="sidebar-tip">
           <span className="tip-icon">
             <Zap size={18} />
@@ -355,21 +330,19 @@ export function AppShell({
             (!focusedLearning || status?.tier !== "paid") && (
               <SubscriptionBanner />
             )}
-          {(!focusedLearning || mode === "demo") && (
-            <div
-              className={
-                mode === "demo" ? "mode-banner demo" : "mode-banner live"
-              }
-            >
-              {mode === "demo"
-                ? t("shell.demoBanner")
-                : user?.role === "admin"
-                  ? t("shell.liveBanner")
-                  : status?.tier === "free"
-                    ? t("shell.readOnlyBanner")
-                    : t("shell.liveBanner")}
-            </div>
-          )}
+          {(!focusedLearning || mode === "demo") &&
+            (mode === "demo" ||
+              (user?.role !== "admin" && status?.tier === "free")) && (
+              <div
+                className={
+                  mode === "demo" ? "mode-banner demo" : "mode-banner live"
+                }
+              >
+                {mode === "demo"
+                  ? t("shell.demoBanner")
+                  : t("shell.readOnlyBanner")}
+              </div>
+            )}
           {profileError && (
             <div className="form-error" role="alert">
               {profileError}
