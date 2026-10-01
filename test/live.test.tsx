@@ -1889,11 +1889,13 @@ describe("live server-backed flows", () => {
       expect(JSON.parse(String(call?.[1]?.body)).entryIds).toHaveLength(50);
     });
   });
-  it("adds and removes only checked English unit words, including the last one", async () => {
+  it("adds checked English words and bulk marks or unmarks only selected words as known", async () => {
     await i18n.changeLanguage("en");
     const ids = [itemId, secondItemId, remedialExerciseId];
     const linked = new Set<string>([ids[0]]);
     const everLinked = new Set<string>([ids[0]]);
+    const known = new Set<string>();
+    let failKnown = true;
     const pack = {
       id: exerciseId,
       slug: "daily-english-basic-01-en-he",
@@ -1932,7 +1934,7 @@ describe("live server-backed flows", () => {
     };
     const currentPack = () => ({
       ...pack,
-      progress: { ...pack.progress, linked: linked.size },
+      progress: { ...pack.progress, linked: linked.size, known: known.size },
     });
     const entries = () =>
       ids.map((id, index) => ({
@@ -1944,9 +1946,10 @@ describe("live server-backed flows", () => {
         exampleText: null,
         learningItemId: everLinked.has(id) ? id : null,
         excludedAt: everLinked.has(id) && !linked.has(id) ? date : null,
-        known: false,
+        known: known.has(id),
       }));
     const requests: string[][] = [];
+    const knownRequests: { entryIds: string[]; known: boolean }[] = [];
     const fetchMock = mount("/english-learning", async (url, init) => {
       if (url.endsWith("/word-packs")) return json({ packs: [currentPack()] });
       if (url.endsWith(`/word-packs/${pack.id}`))
@@ -1976,6 +1979,25 @@ describe("live server-backed flows", () => {
           201,
         );
       }
+      if (
+        url.endsWith(`/word-packs/${pack.id}/known`) &&
+        init?.method === "PUT"
+      ) {
+        const request = JSON.parse(String(init.body)) as {
+          entryIds: string[];
+          known: boolean;
+        };
+        knownRequests.push(request);
+        if (failKnown) {
+          failKnown = false;
+          return json({ message: "Try again" }, 500);
+        }
+        request.entryIds.forEach((id) => {
+          if (request.known) known.add(id);
+          else known.delete(id);
+        });
+        return json({ packId: pack.id, knownCount: known.size });
+      }
       return json({}, 500);
     });
     const card = (
@@ -1998,28 +2020,76 @@ describe("live server-backed flows", () => {
       screen.getByRole("checkbox", { name: "Select word 1" }),
     );
     await userEvent.click(
-      screen.getByRole("button", { name: "Remove selected words" }),
+      screen.getByRole("checkbox", { name: "Select word 2" }),
     );
-    await waitFor(() => expect(requests).toEqual([[ids[0], ids[1]], [ids[1]]]));
+    expect(
+      screen.queryByRole("button", { name: "Remove selected words" }),
+    ).toBeNull();
+    await userEvent.click(
+      screen.getByRole("button", { name: "I know the selected words" }),
+    );
+    await waitFor(() => expect(knownRequests).toHaveLength(1));
+    expect(knownRequests[0]).toEqual({
+      entryIds: [ids[0], ids[1]],
+      known: true,
+    });
+    expect(
+      screen.getByRole("checkbox", { name: "Select word 1" }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole("checkbox", { name: "Select word 2" }),
+    ).toBeChecked();
+    expect(requests).toEqual([[ids[0], ids[1]]]);
+    await userEvent.click(
+      screen.getByRole("button", { name: "I know the selected words" }),
+    );
+    await waitFor(() => expect(knownRequests).toHaveLength(2));
+    expect(knownRequests[1]).toEqual({
+      entryIds: [ids[0], ids[1]],
+      known: true,
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByRole("checkbox", { name: "Select word 1" }),
+      ).not.toBeChecked(),
+    );
+    expect(
+      screen.getByRole("button", { name: "I know the selected words" }),
+    ).toBeDisabled();
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Select word 1" }),
+    );
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Select word 2" }),
     );
     await userEvent.click(
-      screen.getByRole("button", { name: "Remove selected words" }),
+      screen.getByRole("button", { name: "Undo known for selected words" }),
     );
-    await waitFor(() => expect(requests.at(-1)).toEqual([]));
+    await waitFor(() => expect(knownRequests).toHaveLength(3));
+    expect(knownRequests[2]).toEqual({
+      entryIds: [ids[0], ids[1]],
+      known: false,
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByRole("checkbox", { name: "Select word 1" }),
+      ).not.toBeChecked(),
+    );
+    expect(requests).toEqual([[ids[0], ids[1]]]);
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Select word 3" }),
     );
     await userEvent.click(
       screen.getByRole("button", { name: "Add selected words" }),
     );
-    await waitFor(() => expect(requests.at(-1)).toEqual([ids[2]]));
+    await waitFor(() =>
+      expect(requests.at(-1)).toEqual([ids[0], ids[1], ids[2]]),
+    );
     expect(
       fetchMock.mock.calls.filter(([url]) =>
         url.endsWith(`/word-packs/${pack.id}/add`),
       ),
-    ).toHaveLength(4);
+    ).toHaveLength(2);
   });
   it("marks a named English unit or one word as known and skips known words when starting", async () => {
     const known = new Set<string>();

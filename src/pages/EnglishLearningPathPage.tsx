@@ -62,6 +62,7 @@ export function EnglishLearningPathPage() {
     pack: WordPack,
     entryIds: string[],
     known: boolean,
+    clearSelection = false,
   ) => {
     if (!hasEntitlement("vocabulary.write")) {
       navigate("/billing");
@@ -82,6 +83,17 @@ export function EnglishLearningPathPage() {
           `word-packs/${pack.id}`,
         );
         setPreview({ pack: detail.pack, entries: detail.entries });
+      }
+      if (clearSelection) {
+        setSelectedIds([]);
+        toast(
+          t(
+            known ? "englishPath.selectedKnown" : "englishPath.selectedUnknown",
+          ),
+          {
+            tone: "success",
+          },
+        );
       }
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
@@ -145,7 +157,7 @@ export function EnglishLearningPathPage() {
     }
   };
 
-  const updateSelected = async (add: boolean) => {
+  const addSelected = async () => {
     if (!preview || !selectedIds.length) return;
     if (!hasEntitlement("vocabulary.write")) {
       navigate("/billing");
@@ -157,12 +169,10 @@ export function EnglishLearningPathPage() {
       (entry) => entry.learningItemId && !entry.excludedAt,
     );
     const entryIds = entries
-      .filter((entry) =>
-        add
-          ? selected.has(entry.id) ||
-            included.some((item) => item.id === entry.id)
-          : !selected.has(entry.id) &&
-            included.some((item) => item.id === entry.id),
+      .filter(
+        (entry) =>
+          selected.has(entry.id) ||
+          included.some((item) => item.id === entry.id),
       )
       .map((entry) => entry.id);
     setBusy(true);
@@ -180,12 +190,7 @@ export function EnglishLearningPathPage() {
       setPreview({ pack: detail.pack, entries: detail.entries });
       setSelectedIds([]);
       await resource.reload();
-      toast(
-        t(add ? "englishPath.selectedAdded" : "englishPath.selectedRemoved"),
-        {
-          tone: "success",
-        },
-      );
+      toast(t("englishPath.selectedAdded"), { tone: "success" });
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
     } finally {
@@ -198,9 +203,8 @@ export function EnglishLearningPathPage() {
   const selectedToAdd = selectedEntries.some(
     (entry) => !entry.learningItemId || entry.excludedAt,
   );
-  const selectedToRemove = selectedEntries.some(
-    (entry) => entry.learningItemId && !entry.excludedAt,
-  );
+  const selectedToMarkKnown = selectedEntries.some((entry) => !entry.known);
+  const selectedToUnmarkKnown = selectedEntries.some((entry) => entry.known);
 
   return (
     <div className="english-path-page live-page page-enter">
@@ -495,17 +499,29 @@ export function EnglishLearningPathPage() {
                 type="button"
                 className="button secondary"
                 disabled={busy || !selectedToAdd}
-                onClick={() => void updateSelected(true)}
+                onClick={() => void addSelected()}
               >
                 {t("englishPath.addSelected", { count: selectedIds.length })}
               </button>
               <button
                 type="button"
-                className="button danger"
-                disabled={busy || !selectedToRemove}
-                onClick={() => void updateSelected(false)}
+                className="button secondary"
+                disabled={busy || !selectedToMarkKnown}
+                onClick={() =>
+                  void setKnown(preview.pack, selectedIds, true, true)
+                }
               >
-                {t("englishPath.removeSelected", { count: selectedIds.length })}
+                {t("englishPath.markSelectedKnown")}
+              </button>
+              <button
+                type="button"
+                className="button ghost"
+                disabled={busy || !selectedToUnmarkKnown}
+                onClick={() =>
+                  void setKnown(preview.pack, selectedIds, false, true)
+                }
+              >
+                {t("englishPath.unmarkSelectedKnown")}
               </button>
               <button
                 type="button"

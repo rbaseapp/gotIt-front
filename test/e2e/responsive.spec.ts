@@ -228,7 +228,7 @@ test("English unit preview keeps aligned controls and footer at short heights", 
         <div class="modal-body pack-word-dialog"><p>50 מילים וביטויים ביחידה זו.</p>
           <div class="pack-selection-summary"><p>2 נבחרו</p><div class="live-options"><button class="button ghost">בחירת הכול</button><button class="button ghost">ניקוי הבחירה</button></div></div>
           <div class="pack-word-list" dir="rtl"></div></div>
-        <div class="modal-actions" dir="rtl"><button class="button secondary">הוספת המילים שנבחרו</button><button class="button danger">הסרת המילים שנבחרו</button><button class="button ghost">סגירה</button>
+        <div class="modal-actions" dir="rtl"><button class="button secondary">הוספת המילים שנבחרו</button><button class="button secondary">אני כבר יודע/ת את המילים שנבחרו</button><button class="button ghost">ביטול סימון הנבחרות כידועות</button><button class="button ghost">סגירה</button>
           <button class="button primary">הוספה ותחילת תרגול</button></div></section>`;
       document.body.append(backdrop);
       const list = backdrop.querySelector<HTMLElement>(".pack-word-list")!;
