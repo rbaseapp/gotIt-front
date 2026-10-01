@@ -1813,6 +1813,17 @@ describe("live server-backed flows", () => {
         due: 0,
       },
     };
+    const advancedPack = {
+      ...pack,
+      id: remedialExerciseId,
+      slug: "daily-english-advanced-05-en-he",
+      moduleNumber: 5,
+      track: {
+        ...pack.track,
+        slug: "daily-english-advanced-en-he",
+        levelCode: "advanced",
+      },
+    };
     const entries = Array.from({ length: 50 }, (_, index) => ({
       id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
       sourceText: index === 0 ? "good morning" : `word ${index}`,
@@ -1828,7 +1839,7 @@ describe("live server-backed flows", () => {
         url.endsWith("/word-packs") &&
         (!init?.method || init.method === "GET")
       )
-        return json({ packs: [pack] });
+        return json({ packs: [pack, advancedPack] });
       if (url.endsWith(`/word-packs/${pack.id}`))
         return json({ pack, entries });
       if (url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST")
@@ -1850,6 +1861,18 @@ describe("live server-backed flows", () => {
     ).toBeInTheDocument();
     expect(
       await screen.findByRole("heading", { name: "אנגלית בסיסית" }),
+    ).toBeInTheDocument();
+    const basicCard = screen
+      .getByText("יחידה 1", { exact: true })
+      .closest("article");
+    const advancedCard = screen
+      .getByText("יחידה 5", { exact: true })
+      .closest("article");
+    expect(basicCard).not.toBeNull();
+    expect(advancedCard).not.toBeNull();
+    expect(within(basicCard!).getByText("אנגלית בסיסית")).toBeInTheDocument();
+    expect(
+      within(advancedCard!).getByText("אנגלית מתקדמת"),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "התחלת היחידה" }));
     expect(await screen.findByText("good morning")).toBeInTheDocument();

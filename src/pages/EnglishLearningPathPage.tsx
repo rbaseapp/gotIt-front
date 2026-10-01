@@ -203,6 +203,9 @@ export function EnglishLearningPathPage() {
                               />
                             )}
                           </div>
+                          <span className="english-path-unit-level">
+                            {t(`englishPath.levels.${level}`)}
+                          </span>
                           <strong>
                             {t("englishPath.unitSize", {
                               count: pack.wordCount,

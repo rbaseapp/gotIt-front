@@ -3798,6 +3798,9 @@ progress::-webkit-progress-value {
   color: #5d6c63;
   font-size: 13px;
 }
+.english-path-unit-level {
+  font-weight: 700;
+}
 .english-path-unit-actions {
   justify-content: flex-start;
   flex-wrap: wrap;
