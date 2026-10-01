@@ -20,6 +20,7 @@ interface FacebookSdk {
     cookie: boolean;
     xfbml: boolean;
     version: string;
+    fedCM: boolean;
   }): void;
   login(
     callback: (response: FacebookLoginResponse) => void,
@@ -140,6 +141,8 @@ export function FacebookSignIn({
             cookie: false,
             xfbml: false,
             version: "v26.0",
+            // Keep the user-gesture popup flow instead of Meta's HTTPS FedCM default.
+            fedCM: false,
           });
           initializedAppId = appId;
           initializedSdk = loadedSdk;

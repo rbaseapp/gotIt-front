@@ -6,7 +6,7 @@ import i18n from "../src/i18n";
 describe("Facebook Login button", () => {
   afterEach(() => vi.useRealTimers());
 
-  it("initializes the official SDK and forwards only its access token", async () => {
+  it("selects popup login over Meta's FedCM default and forwards only its access token", async () => {
     vi.stubEnv("VITE_FACEBOOK_APP_ID", "123456789");
     const login = vi.fn((callback) =>
       callback({
@@ -30,6 +30,7 @@ describe("Facebook Login button", () => {
       cookie: false,
       xfbml: false,
       version: "v26.0",
+      fedCM: false,
     });
     expect(login).toHaveBeenCalledWith(expect.any(Function), {
       scope: "public_profile,email",
