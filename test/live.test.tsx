@@ -16,6 +16,7 @@ import { clearTokens, setTokens } from "../src/lib/api";
 import { seedProfile } from "../src/data/seed";
 import { recordVoice } from "../src/lib/voice";
 import { FeedbackProvider } from "../src/components/Feedback";
+import i18n from "../src/i18n";
 
 vi.mock("../src/lib/voice", () => ({ recordVoice: vi.fn() }));
 const itemId = "11111111-1111-4111-8111-111111111111";
@@ -1887,6 +1888,138 @@ describe("live server-backed flows", () => {
       expect(call).toBeDefined();
       expect(JSON.parse(String(call?.[1]?.body)).entryIds).toHaveLength(50);
     });
+  });
+  it("adds and removes only checked English unit words, including the last one", async () => {
+    await i18n.changeLanguage("en");
+    const ids = [itemId, secondItemId, remedialExerciseId];
+    const linked = new Set<string>([ids[0]]);
+    const everLinked = new Set<string>([ids[0]]);
+    const pack = {
+      id: exerciseId,
+      slug: "daily-english-basic-01-en-he",
+      title: "Unit 1",
+      description: "First unit",
+      moduleNumber: 1,
+      version: 1,
+      wordCount: 3,
+      installed: true,
+      installedVersion: 1,
+      topic: {
+        id: sessionId,
+        slug: "english-learning-path-en-he",
+        title: "English",
+      },
+      track: {
+        id: itemId,
+        slug: "daily-english-basic-en-he",
+        title: "Basic English",
+        levelCode: "beginner",
+        cefrFrom: "A1",
+        cefrTo: "A2",
+        sourceLanguageCode: "en",
+        translationLanguageCode: "he",
+      },
+      progress: {
+        linked: 1,
+        new: 1,
+        learning: 0,
+        reviewing: 0,
+        mastered: 0,
+        known: 0,
+        completed: 0,
+        due: 0,
+      },
+    };
+    const currentPack = () => ({
+      ...pack,
+      progress: { ...pack.progress, linked: linked.size },
+    });
+    const entries = () =>
+      ids.map((id, index) => ({
+        id,
+        sourceText: `word ${index + 1}`,
+        translationText: `meaning ${index + 1}`,
+        itemType: "word",
+        partOfSpeech: null,
+        exampleText: null,
+        learningItemId: everLinked.has(id) ? id : null,
+        excludedAt: everLinked.has(id) && !linked.has(id) ? date : null,
+        known: false,
+      }));
+    const requests: string[][] = [];
+    const fetchMock = mount("/english-learning", async (url, init) => {
+      if (url.endsWith("/word-packs")) return json({ packs: [currentPack()] });
+      if (url.endsWith(`/word-packs/${pack.id}`))
+        return json({ pack: currentPack(), entries: entries() });
+      if (
+        url.endsWith(`/word-packs/${pack.id}/add`) &&
+        init?.method === "POST"
+      ) {
+        const { entryIds } = JSON.parse(String(init.body)) as {
+          entryIds: string[];
+        };
+        requests.push(entryIds);
+        linked.clear();
+        entryIds.forEach((id) => {
+          linked.add(id);
+          everLinked.add(id);
+        });
+        return json(
+          {
+            packId: pack.id,
+            added: 0,
+            linkedExisting: entryIds.length,
+            restored: 0,
+            excluded: 3 - entryIds.length,
+            total: entryIds.length,
+          },
+          201,
+        );
+      }
+      return json({}, 500);
+    });
+    const card = (
+      await screen.findByRole("heading", { name: "Unit 1" })
+    ).closest("article")!;
+    await userEvent.click(
+      within(card).getByRole("button", { name: /Preview unit/ }),
+    );
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Select word 2" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add selected words" }),
+    );
+    await waitFor(() => expect(requests).toEqual([[ids[0], ids[1]]]));
+    expect(
+      screen.getByRole("checkbox", { name: "Select word 2" }),
+    ).not.toBeChecked();
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Select word 1" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Remove selected words" }),
+    );
+    await waitFor(() => expect(requests).toEqual([[ids[0], ids[1]], [ids[1]]]));
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Select word 2" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Remove selected words" }),
+    );
+    await waitFor(() => expect(requests.at(-1)).toEqual([]));
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Select word 3" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add selected words" }),
+    );
+    await waitFor(() => expect(requests.at(-1)).toEqual([ids[2]]));
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        url.endsWith(`/word-packs/${pack.id}/add`),
+      ),
+    ).toHaveLength(4);
   });
   it("marks a named English unit or one word as known and skips known words when starting", async () => {
     const known = new Set<string>();

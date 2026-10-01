@@ -34,6 +34,7 @@ export function EnglishLearningPathPage() {
     [resource.data],
   );
   const [preview, setPreview] = useState<Preview>();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const available = levels.some(({ packs }) => packs.length);
@@ -48,6 +49,7 @@ export function EnglishLearningPathPage() {
         wordPackDetailSchema,
         `word-packs/${pack.id}`,
       );
+      setSelectedIds([]);
       setPreview({ pack: detail.pack, entries: detail.entries });
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
@@ -142,6 +144,63 @@ export function EnglishLearningPathPage() {
       setBusy(false);
     }
   };
+
+  const updateSelected = async (add: boolean) => {
+    if (!preview || !selectedIds.length) return;
+    if (!hasEntitlement("vocabulary.write")) {
+      navigate("/billing");
+      return;
+    }
+    const { pack, entries } = preview;
+    const selected = new Set(selectedIds);
+    const included = entries.filter(
+      (entry) => entry.learningItemId && !entry.excludedAt,
+    );
+    const entryIds = entries
+      .filter((entry) =>
+        add
+          ? selected.has(entry.id) ||
+            included.some((item) => item.id === entry.id)
+          : !selected.has(entry.id) &&
+            included.some((item) => item.id === entry.id),
+      )
+      .map((entry) => entry.id);
+    setBusy(true);
+    try {
+      await product(
+        wordPackAddReceiptSchema,
+        `word-packs/${pack.id}/add`,
+        "POST",
+        { entryIds },
+      );
+      const detail = await product(
+        wordPackDetailSchema,
+        `word-packs/${pack.id}`,
+      );
+      setPreview({ pack: detail.pack, entries: detail.entries });
+      setSelectedIds([]);
+      await resource.reload();
+      toast(
+        t(add ? "englishPath.selectedAdded" : "englishPath.selectedRemoved"),
+        {
+          tone: "success",
+        },
+      );
+    } catch (reason) {
+      toast(errorMessage(reason), { tone: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const selectedEntries =
+    preview?.entries.filter((entry) => selectedIds.includes(entry.id)) ?? [];
+  const selectedToAdd = selectedEntries.some(
+    (entry) => !entry.learningItemId || entry.excludedAt,
+  );
+  const selectedToRemove = selectedEntries.some(
+    (entry) => entry.learningItemId && !entry.excludedAt,
+  );
 
   return (
     <div className="english-path-page live-page page-enter">
@@ -361,12 +420,54 @@ export function EnglishLearningPathPage() {
                   count: preview.entries.length,
                 })}
               </p>
+              <div className="pack-selection-summary">
+                <p>
+                  {t("englishPath.selectedCount", {
+                    count: selectedIds.length,
+                  })}
+                </p>
+                <div className="live-options">
+                  <button
+                    type="button"
+                    className="button ghost"
+                    disabled={busy}
+                    onClick={() =>
+                      setSelectedIds(preview.entries.map((entry) => entry.id))
+                    }
+                  >
+                    {t("englishPath.selectAll")}
+                  </button>
+                  <button
+                    type="button"
+                    className="button ghost"
+                    disabled={busy || !selectedIds.length}
+                    onClick={() => setSelectedIds([])}
+                  >
+                    {t("englishPath.clearSelection")}
+                  </button>
+                </div>
+              </div>
               <div className="pack-word-list">
                 {preview.entries.map((entry) => (
                   <div
                     className={`pack-word-row english-path-word-row${entry.known ? " known" : ""}`}
                     key={entry.id}
                   >
+                    <input
+                      type="checkbox"
+                      aria-label={t("englishPath.selectWord", {
+                        word: entry.sourceText,
+                      })}
+                      checked={selectedIds.includes(entry.id)}
+                      disabled={busy}
+                      onChange={(event) =>
+                        setSelectedIds((current) =>
+                          event.target.checked
+                            ? [...current, entry.id]
+                            : current.filter((id) => id !== entry.id),
+                        )
+                      }
+                    />
                     <span>
                       <b dir="auto">{entry.sourceText}</b>
                       <span dir="auto">{entry.translationText}</span>
@@ -390,6 +491,22 @@ export function EnglishLearningPathPage() {
               </div>
             </div>
             <div className="modal-actions">
+              <button
+                type="button"
+                className="button secondary"
+                disabled={busy || !selectedToAdd}
+                onClick={() => void updateSelected(true)}
+              >
+                {t("englishPath.addSelected", { count: selectedIds.length })}
+              </button>
+              <button
+                type="button"
+                className="button danger"
+                disabled={busy || !selectedToRemove}
+                onClick={() => void updateSelected(false)}
+              >
+                {t("englishPath.removeSelected", { count: selectedIds.length })}
+              </button>
               <button
                 type="button"
                 className="button ghost"

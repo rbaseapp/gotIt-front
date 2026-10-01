@@ -180,6 +180,7 @@ test("English unit word's one-click known control stays on one line", async ({
       backdrop.innerHTML = `<section class="modal modal-lg english-path-word-modal">
         <div class="modal-body pack-word-dialog"><div class="pack-word-list">
           <div class="pack-word-row english-path-word-row">
+            <input type="checkbox" aria-label="Select refrigerator" />
             <span><b>refrigerator</b><span>מקרר</span></span>
             <button class="button ghost">אני כבר יודע/ת</button>
           </div>
@@ -225,23 +226,32 @@ test("English unit preview keeps aligned controls and footer at short heights", 
       backdrop.innerHTML = `<section class="modal modal-lg english-path-word-modal">
         <header class="modal-header"><h2>יחידה 3: Essential Everyday Actions</h2></header>
         <div class="modal-body pack-word-dialog"><p>50 מילים וביטויים ביחידה זו.</p>
+          <div class="pack-selection-summary"><p>2 נבחרו</p><div class="live-options"><button class="button ghost">בחירת הכול</button><button class="button ghost">ניקוי הבחירה</button></div></div>
           <div class="pack-word-list" dir="rtl"></div></div>
-        <div class="modal-actions" dir="rtl"><button class="button ghost">סגירה</button>
+        <div class="modal-actions" dir="rtl"><button class="button secondary">הוספת המילים שנבחרו</button><button class="button danger">הסרת המילים שנבחרו</button><button class="button ghost">סגירה</button>
           <button class="button primary">הוספה ותחילת תרגול</button></div></section>`;
       document.body.append(backdrop);
       const list = backdrop.querySelector<HTMLElement>(".pack-word-list")!;
       for (let index = 0; index < 50; index += 1) {
         const row = document.createElement("div");
         row.className = "pack-word-row english-path-word-row";
-        row.innerHTML = `<span><b dir="auto">${index ? "refrigerator" : "wash"}</b>
+        row.innerHTML = `<input type="checkbox" aria-label="Select word" /><span><b dir="auto">${index ? "refrigerator" : "wash"}</b>
           <span dir="auto">${index ? "מקרר" : "לשטוף"}</span></span>
           <button class="button ghost">אני כבר יודע/ת</button>`;
         list.append(row);
       }
-      const rows = [...list.querySelectorAll<HTMLElement>(".english-path-word-row")];
-      const buttons = rows.map((row) => row.querySelector<HTMLButtonElement>("button")!);
-      const modalRect = backdrop.querySelector(".modal")!.getBoundingClientRect();
-      const footerRect = backdrop.querySelector(".modal-actions")!.getBoundingClientRect();
+      const rows = [
+        ...list.querySelectorAll<HTMLElement>(".english-path-word-row"),
+      ];
+      const buttons = rows.map((row) =>
+        row.querySelector<HTMLButtonElement>("button")!,
+      );
+      const modalRect = backdrop
+        .querySelector(".modal")!
+        .getBoundingClientRect();
+      const footerRect = backdrop
+        .querySelector(".modal-actions")!
+        .getBoundingClientRect();
       const footerButtons = [
         ...backdrop.querySelectorAll<HTMLElement>(".modal-actions .button"),
       ];
@@ -249,14 +259,21 @@ test("English unit preview keeps aligned controls and footer at short heights", 
       text.selectNodeContents(buttons[0]);
       return {
         textLines: text.getClientRects().length,
-        buttonLefts: buttons.slice(0, 5).map((button) => button.getBoundingClientRect().left),
+        buttonLefts: buttons
+          .slice(0, 5)
+          .map((button) => button.getBoundingClientRect().left),
         rowOverflow: rows.some((row) => row.scrollWidth > row.clientWidth + 1),
-        footerInside: footerRect.bottom <= modalRect.bottom + 1 &&
-          footerRect.left >= modalRect.left - 1 && footerRect.right <= modalRect.right + 1,
+        footerInside:
+          footerRect.bottom <= modalRect.bottom + 1 &&
+          footerRect.left >= modalRect.left - 1 &&
+          footerRect.right <= modalRect.right + 1,
         footerButtonsInside: footerButtons.every((button) => {
           const rect = button.getBoundingClientRect();
-          return rect.left >= modalRect.left - 1 && rect.right <= modalRect.right + 1 &&
-            rect.bottom <= modalRect.bottom + 1;
+          return (
+            rect.left >= modalRect.left - 1 &&
+            rect.right <= modalRect.right + 1 &&
+            rect.bottom <= modalRect.bottom + 1
+          );
         }),
         listScrolls: list.scrollHeight > list.clientHeight,
       };

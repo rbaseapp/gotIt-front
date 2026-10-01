@@ -4375,7 +4375,11 @@ html[dir="ltr"] .pack-search input {
   background: #f1faf3;
 }
 .english-path-word-row {
-  grid-template-columns: minmax(0, 1fr) 142px;
+  grid-template-columns: auto minmax(0, 1fr) 142px;
+}
+.english-path-word-row > input {
+  width: 18px;
+  height: 18px;
 }
 .pack-word-row.english-path-word-row > span {
   display: grid;
@@ -4482,9 +4486,10 @@ html[dir="ltr"] .pack-search input {
 }
 @media (max-width: 420px) {
   .english-path-word-row {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
   }
   .english-path-word-row > button {
+    grid-column: 2;
     width: auto;
     justify-self: start;
   }
