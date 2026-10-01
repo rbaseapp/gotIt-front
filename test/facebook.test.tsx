@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FacebookSignIn } from "../src/components/FacebookSignIn";
+import i18n from "../src/i18n";
 
 describe("Facebook Login button", () => {
   afterEach(() => vi.useRealTimers());
@@ -77,5 +78,57 @@ describe("Facebook Login button", () => {
 
     fireEvent.click(button);
     expect(sdk.login).toHaveBeenCalledTimes(2);
+  });
+
+  it("waits for the full SDK and retries a bootstrap whose bundle never becomes ready", async () => {
+    vi.stubEnv("VITE_FACEBOOK_APP_ID", "123456789");
+    vi.stubGlobal("FB", undefined);
+    vi.stubGlobal("fbAsyncInit", undefined);
+    vi.useFakeTimers();
+    const credential = vi.fn();
+    render(<FacebookSignIn onCredential={credential} disabled={false} />);
+    const button = screen.getByRole("button", { name: /Facebook/i });
+    const bootstrap = document.querySelector<HTMLScriptElement>(
+      'script[src="https://connect.facebook.net/he_IL/sdk.js"]',
+    )!;
+    const bundle = document.createElement("script");
+    bundle.src = "https://connect.facebook.net/he_IL/bundle/sdk.js/";
+    document.head.append(bundle);
+    const queuedSdk = { __buffer: {}, init: vi.fn(), login: vi.fn() };
+    window.FB = queuedSdk;
+    fireEvent.load(bootstrap);
+    fireEvent.click(button);
+    expect(button).toBeDisabled();
+    expect(queuedSdk.init).not.toHaveBeenCalled();
+    expect(queuedSdk.login).not.toHaveBeenCalled();
+
+    await act(async () => { vi.advanceTimersByTime(15_000); });
+    expect(screen.getByRole("alert")).toHaveTextContent(i18n.t("facebook.timeout"));
+    expect(bootstrap).not.toBeInTheDocument();
+    expect(bundle).not.toBeInTheDocument();
+    expect(window.FB).toBeUndefined();
+    expect(window.fbAsyncInit).toBeUndefined();
+
+    fireEvent.click(screen.getByRole("button", { name: i18n.t("facebook.retry") }));
+    const retryBootstrap = document.querySelector<HTMLScriptElement>(
+      'script[src="https://connect.facebook.net/he_IL/sdk.js"]',
+    )!;
+    fireEvent.load(retryBootstrap);
+    expect(button).toBeDisabled();
+    const readySdk = {
+      init: vi.fn(),
+      login: vi.fn((callback) => callback({
+        status: "connected",
+        authResponse: { accessToken: "ready-sdk-token" },
+      })),
+    };
+    window.FB = readySdk;
+    await act(async () => { window.fbAsyncInit?.(); });
+    expect(readySdk.init).toHaveBeenCalledOnce();
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    expect(credential).toHaveBeenCalledWith("ready-sdk-token");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    retryBootstrap.remove();
   });
 });

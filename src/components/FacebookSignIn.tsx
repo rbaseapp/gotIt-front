@@ -13,6 +13,8 @@ interface FacebookLoginResponse {
 }
 
 interface FacebookSdk {
+  // Meta's bootstrap exposes queued methods before the actual SDK is ready.
+  __buffer?: unknown;
   init(options: {
     appId: string;
     cookie: boolean;
@@ -28,11 +30,13 @@ interface FacebookSdk {
 declare global {
   interface Window {
     FB?: FacebookSdk;
+    fbAsyncInit?: () => void;
   }
 }
 
 let loading: Promise<FacebookSdk> | undefined;
 let initializedAppId = "";
+let initializedSdk: FacebookSdk | undefined;
 const LOGIN_TIMEOUT_MS = 60_000;
 
 function sdkLocale(language?: string): string {
@@ -49,26 +53,44 @@ function sdkLocale(language?: string): string {
 }
 
 function loadFacebook(locale: string): Promise<FacebookSdk> {
-  if (window.FB) return Promise.resolve(window.FB);
+  if (window.FB && !window.FB.__buffer) return Promise.resolve(window.FB);
   if (loading) return loading;
   loading = new Promise<FacebookSdk>((resolve, reject) => {
+    const previousInit = window.fbAsyncInit;
     const script = document.createElement("script");
     script.src = `https://connect.facebook.net/${locale}/sdk.js`;
     script.async = true;
     script.crossOrigin = "anonymous";
-    const timer = window.setTimeout(() => {
-      script.remove();
-      reject(new Error("FACEBOOK_LOAD_TIMEOUT"));
-    }, 15_000);
-    script.onload = () => {
+    const cleanup = () => {
       window.clearTimeout(timer);
-      if (window.FB) resolve(window.FB);
-      else reject(new Error("FACEBOOK_UNAVAILABLE"));
+      if (window.fbAsyncInit === onReady) window.fbAsyncInit = previousInit;
     };
-    script.onerror = () => {
-      window.clearTimeout(timer);
+    const fail = (code: string) => {
+      cleanup();
       script.remove();
-      reject(new Error("FACEBOOK_LOAD_FAILED"));
+      if (window.FB?.__buffer) {
+        // The bootstrap would otherwise refuse to load again on retry.
+        delete window.FB;
+        document.querySelectorAll<HTMLScriptElement>("script[src]").forEach((candidate) => {
+          if (candidate.src === `https://connect.facebook.net/${locale}/bundle/sdk.js/`)
+            candidate.remove();
+        });
+      }
+      reject(new Error(code));
+    };
+    const onReady = () => {
+      const readySdk = window.FB;
+      if (!readySdk || readySdk.__buffer) return;
+      cleanup();
+      resolve(readySdk);
+      previousInit?.();
+    };
+    window.fbAsyncInit = onReady;
+    const timer = window.setTimeout(() => {
+      fail("FACEBOOK_LOAD_TIMEOUT");
+    }, 15_000);
+    script.onerror = () => {
+      fail("FACEBOOK_LOAD_FAILED");
     };
     document.head.append(script);
   }).catch((error) => {
@@ -112,7 +134,7 @@ export function FacebookSignIn({
     void loadFacebook(sdkLocale(i18n.resolvedLanguage))
       .then((loadedSdk) => {
         if (cancelled) return;
-        if (initializedAppId !== appId) {
+        if (initializedAppId !== appId || initializedSdk !== loadedSdk) {
           loadedSdk.init({
             appId,
             cookie: false,
@@ -120,6 +142,7 @@ export function FacebookSignIn({
             version: "v26.0",
           });
           initializedAppId = appId;
+          initializedSdk = loadedSdk;
         }
         setSdk(loadedSdk);
       })
