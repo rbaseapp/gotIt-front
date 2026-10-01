@@ -158,19 +158,43 @@ let refreshPending: Promise<string> | null = null;
 let generation = 0;
 function storedRefresh() {
   try {
-    return sessionStorage.getItem("gotit.refresh");
+    const persistent = localStorage.getItem("gotit.refresh");
+    if (persistent) return persistent;
+    const legacy = sessionStorage.getItem("gotit.refresh");
+    if (legacy) {
+      try {
+        localStorage.setItem("gotit.refresh", legacy);
+        sessionStorage.removeItem("gotit.refresh");
+      } catch {
+        /* Keep the existing tab session if persistent storage is unavailable. */
+      }
+    }
+    return legacy;
   } catch {
-    return null;
+    try {
+      return sessionStorage.getItem("gotit.refresh");
+    } catch {
+      return null;
+    }
   }
+}
+
+export function hasStoredSession() {
+  return Boolean(tokens?.refreshToken || storedRefresh());
 }
 
 export function setTokens(value: AuthTokens) {
   tokens = value;
   expiresAt = Date.now() + value.expiresIn * 1000;
   try {
-    sessionStorage.setItem("gotit.refresh", value.refreshToken);
+    localStorage.setItem("gotit.refresh", value.refreshToken);
+    sessionStorage.removeItem("gotit.refresh");
   } catch {
-    /* Memory-only session is still usable. */
+    try {
+      sessionStorage.setItem("gotit.refresh", value.refreshToken);
+    } catch {
+      /* Memory-only session is still usable. */
+    }
   }
 }
 export function clearTokens() {
@@ -179,6 +203,11 @@ export function clearTokens() {
   expiresAt = 0;
   try {
     sessionStorage.removeItem("gotit.refresh");
+  } catch {
+    /* Storage may be blocked. */
+  }
+  try {
+    localStorage.removeItem("gotit.refresh");
     localStorage.removeItem("gotit.auth");
     localStorage.removeItem("gotit.demo");
   } catch {
@@ -242,16 +271,31 @@ export const api = {
     if (refreshPending) return refreshPending;
     refreshPending = (async () => {
       const requestGeneration = generation;
-      const refreshToken = tokens?.refreshToken || storedRefresh();
+      const refreshToken = storedRefresh() || tokens?.refreshToken;
       if (!refreshToken)
         throw new ApiError(
           401,
           "INVALID_REFRESH_TOKEN",
           i18n.t("apiErrors.signInRequired"),
         );
-      const payload = await request(coreUrl, "auth/refresh", "POST", {
-        refreshToken,
-      });
+      let payload: unknown;
+      try {
+        payload = await request(coreUrl, "auth/refresh", "POST", {
+          refreshToken,
+        });
+      } catch (error) {
+        const latest = storedRefresh();
+        if (
+          !(error instanceof ApiError) ||
+          error.status !== 401 ||
+          !latest ||
+          latest === refreshToken
+        )
+          throw error;
+        payload = await request(coreUrl, "auth/refresh", "POST", {
+          refreshToken: latest,
+        });
+      }
       if (requestGeneration !== generation)
         throw new ApiError(
           401,
@@ -383,7 +427,7 @@ export const api = {
     );
   },
   async logout() {
-    const refreshToken = tokens?.refreshToken || storedRefresh();
+    const refreshToken = storedRefresh() || tokens?.refreshToken;
     clearTokens();
     try {
       if (refreshToken)

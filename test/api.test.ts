@@ -30,7 +30,60 @@ describe("API token lifecycle and safe failures", () => {
     expect(
       fetchMock.mock.calls.filter(([url]) => url.endsWith("/auth/refresh")),
     ).toHaveLength(1);
-    expect(sessionStorage.getItem("gotit.refresh")).toBe("rotated-refresh");
+    expect(localStorage.getItem("gotit.refresh")).toBe("rotated-refresh");
+    expect(sessionStorage.getItem("gotit.refresh")).toBeNull();
+  });
+  it("restores a rotated session after the browser tab closes", async () => {
+    clearTokens();
+    setTokens(tokens);
+    expect(localStorage.getItem("gotit.refresh")).toBe("old-refresh");
+    sessionStorage.clear();
+    vi.resetModules();
+    const reopened = await import("../src/lib/api");
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      expect(url).toContain("/auth/refresh");
+      expect(JSON.parse(String(init?.body))).toEqual({
+        refreshToken: "old-refresh",
+      });
+      return json({ ...tokens, refreshToken: "rotated-refresh" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    expect(reopened.hasStoredSession()).toBe(true);
+    await reopened.api.refresh();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem("gotit.refresh")).toBe("rotated-refresh");
+    reopened.clearTokens();
+  });
+  it("uses a refresh token rotated by another tab", async () => {
+    clearTokens();
+    setTokens(tokens);
+    localStorage.setItem("gotit.refresh", "other-tab-refresh");
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      expect(JSON.parse(String(init?.body))).toEqual({
+        refreshToken: "other-tab-refresh",
+      });
+      return json({ ...tokens, refreshToken: "new-refresh" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await api.refresh();
+    expect(localStorage.getItem("gotit.refresh")).toBe("new-refresh");
+  });
+  it("retries once when another tab rotates during refresh", async () => {
+    clearTokens();
+    setTokens(tokens);
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const submitted = JSON.parse(String(init?.body)).refreshToken;
+      if (submitted === "old-refresh") {
+        localStorage.setItem("gotit.refresh", "other-tab-refresh");
+        return json({ error: { code: "INVALID_REFRESH_TOKEN" } }, 401);
+      }
+      expect(submitted).toBe("other-tab-refresh");
+      return json({ ...tokens, refreshToken: "new-refresh" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await api.refresh();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(localStorage.getItem("gotit.refresh")).toBe("new-refresh");
   });
   it("retries a protected 401 once with a fresh access token", async () => {
     clearTokens();
@@ -81,6 +134,7 @@ describe("API token lifecycle and safe failures", () => {
     resolveResponse(json(tokens));
     await expect(refresh).rejects.toMatchObject({ status: 401 });
     expect(sessionStorage.getItem("gotit.refresh")).toBeNull();
+    expect(localStorage.getItem("gotit.refresh")).toBeNull();
   });
   it("handles logout 204 and clears local credentials even on service failure", async () => {
     clearTokens();
@@ -91,6 +145,7 @@ describe("API token lifecycle and safe failures", () => {
     );
     await api.logout();
     expect(sessionStorage.getItem("gotit.refresh")).toBeNull();
+    expect(localStorage.getItem("gotit.refresh")).toBeNull();
     setTokens(tokens);
     vi.stubGlobal(
       "fetch",
@@ -100,6 +155,7 @@ describe("API token lifecycle and safe failures", () => {
     );
     await expect(api.logout()).rejects.toBeInstanceOf(ApiError);
     expect(sessionStorage.getItem("gotit.refresh")).toBeNull();
+    expect(localStorage.getItem("gotit.refresh")).toBeNull();
   });
   it("allows pronunciation assessment latency and reports a timeout distinctly", async () => {
     clearTokens();

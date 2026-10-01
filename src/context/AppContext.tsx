@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { seedItems, seedProfile } from "../data/seed";
-import { api, ApiError, clearTokens } from "../lib/api";
+import { api, ApiError, clearTokens, hasStoredSession } from "../lib/api";
 import {
   demoAward,
   demoReducer,
@@ -148,7 +148,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setMode("demo");
           return;
         }
-        if (!sessionStorage.getItem("gotit.refresh")) {
+        if (!hasStoredSession()) {
           setMode("signed-out");
           return;
         }
@@ -171,14 +171,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         } catch (error) {
           if (!cancelled)
             setProfileError(
-              error instanceof Error ? error.message : i18n.t("session.profileFailed"),
+              error instanceof Error
+                ? error.message
+                : i18n.t("session.profileFailed"),
             );
         }
       } catch (error) {
         if (!cancelled) {
-          clearTokens();
+          if (error instanceof ApiError && error.status === 401) clearTokens();
           setMode("signed-out");
-          setNotice(error instanceof Error ? error.message : i18n.t("session.signInAgain"));
+          setNotice(
+            error instanceof Error
+              ? error.message
+              : i18n.t("session.signInAgain"),
+          );
         }
       }
     };
@@ -259,9 +265,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     profile,
     stats,
     profileError,
-    notice: storageError
-      ? i18n.t("session.storageUnavailable")
-      : notice,
+    notice: storageError ? i18n.t("session.storageUnavailable") : notice,
     items: mode === "demo" ? demo.items : [],
     attempts: mode === "demo" ? demo.attempts : [],
     sessions: mode === "demo" ? demo.sessions : [],
@@ -283,7 +287,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProfileError("");
       } catch (error) {
         setProfileError(
-          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
+          error instanceof Error
+            ? error.message
+            : i18n.t("session.profileFailed"),
         );
       }
     },
@@ -305,7 +311,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProfileError("");
       } catch (error) {
         setProfileError(
-          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
+          error instanceof Error
+            ? error.message
+            : i18n.t("session.profileFailed"),
         );
       }
     },
@@ -327,7 +335,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProfileError("");
       } catch (error) {
         setProfileError(
-          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
+          error instanceof Error
+            ? error.message
+            : i18n.t("session.profileFailed"),
         );
       }
     },
@@ -351,9 +361,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         if (mode === "live") await api.logout();
       } catch {
-        setNotice(
-          i18n.t("session.logoutServerFailed"),
-        );
+        setNotice(i18n.t("session.logoutServerFailed"));
       } finally {
         clearTokens();
         writeStorage("gotit.mode", "signed-out");
@@ -373,7 +381,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setMode("signed-out");
         }
         setProfileError(
-          error instanceof Error ? error.message : i18n.t("session.profileFailed"),
+          error instanceof Error
+            ? error.message
+            : i18n.t("session.profileFailed"),
         );
       }
     },

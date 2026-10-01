@@ -283,7 +283,9 @@ describe("complete frontend flows", () => {
       "href",
       `mailto:support@rbaseapp.com?subject=${encodeURIComponent("פנייה לתמיכה של GotIt")}`,
     );
-    expect(screen.getByRole("link", { name: "שיחה ב־WhatsApp" })).toHaveAttribute(
+    expect(
+      screen.getByRole("link", { name: "שיחה ב־WhatsApp" }),
+    ).toHaveAttribute(
       "href",
       `https://wa.me/972502153466?text=${encodeURIComponent("שלום, אשמח לעזרה עם GotIt.")}`,
     );
@@ -353,7 +355,7 @@ describe("complete frontend flows", () => {
     );
     expect(JSON.parse(patch[1]!.body as string)).not.toHaveProperty("email");
     expect(JSON.parse(patch[1]!.body as string)).not.toHaveProperty("name");
-    expect(sessionStorage.getItem("gotit.refresh")).toBe("refresh-test");
+    expect(localStorage.getItem("gotit.refresh")).toBe("refresh-test");
     expect(localStorage.getItem("gotit.auth")).toBeNull();
     await user.click(screen.getByRole("link", { name: "אוצר מילים" }));
     expect(
