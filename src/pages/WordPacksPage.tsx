@@ -30,6 +30,7 @@ import {
   type WordPackEntry,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
+import { isEnglishPathPack } from "../lib/englishPath";
 import { useTranslation } from "react-i18next";
 
 type PackDialog = {
@@ -71,6 +72,10 @@ export function WordPacksPage() {
   const [topicId, setTopicId] = useState("");
   const [level, setLevel] = useState("");
   const [availability, setAvailability] = useState("");
+  const regularPacks = useMemo(
+    () => (packs.data?.packs ?? []).filter((pack) => !isEnglishPathPack(pack)),
+    [packs.data],
+  );
   const topics = useMemo(() => {
     const available = new Map<
       string,
@@ -82,7 +87,7 @@ export function WordPacksPage() {
         installedCount: number;
       }
     >();
-    for (const pack of packs.data?.packs || []) {
+    for (const pack of regularPacks) {
       const current = available.get(pack.topic.id) || {
         id: pack.topic.id,
         title: pack.topic.title,
@@ -98,10 +103,10 @@ export function WordPacksPage() {
     return [...available.values()].sort((left, right) =>
       left.title.localeCompare(right.title),
     );
-  }, [packs.data]);
+  }, [regularPacks]);
   const filteredPacks = useMemo(() => {
     const needle = search.trim().toLocaleLowerCase();
-    return (packs.data?.packs || []).filter((pack) => {
+    return regularPacks.filter((pack) => {
       if (topicId && pack.topic.id !== topicId) return false;
       if (level && pack.track.levelCode !== level) return false;
       if (availability === "installed" && !pack.installed) return false;
@@ -114,7 +119,7 @@ export function WordPacksPage() {
         pack.track.title,
       ].some((value) => value.toLocaleLowerCase().includes(needle));
     });
-  }, [availability, level, packs.data, search, topicId]);
+  }, [availability, level, regularPacks, search, topicId]);
   const grouped = useMemo(() => {
     const groups = new Map<string, { title: string; packs: WordPack[] }>();
     for (const pack of filteredPacks) {
@@ -127,8 +132,7 @@ export function WordPacksPage() {
     }
     return [...groups.values()];
   }, [filteredPacks]);
-  const installedCount =
-    packs.data?.packs.filter((pack) => pack.installed).length || 0;
+  const installedCount = regularPacks.filter((pack) => pack.installed).length;
   const hasFilters = Boolean(search || topicId || level || availability);
   const clearFilters = () => {
     setSearch("");
@@ -251,12 +255,21 @@ export function WordPacksPage() {
           <p>{t("packs.description")}</p>
         </div>
       </section>
+      <section className="live-panel english-path-invite">
+        <div>
+          <h2>{t("englishPath.title")}</h2>
+          <p>{t("englishPath.invite")}</p>
+        </div>
+        <Link className="button primary" to="/english-learning">
+          {t("englishPath.open")}
+        </Link>
+      </section>
       <RemoteState
         loading={packs.loading}
         error={packs.error}
         retry={() => void packs.reload()}
       />
-      {packs.data && packs.data.packs.length > 0 && (
+      {packs.data && regularPacks.length > 0 && (
         <section
           className="pack-explorer live-panel"
           aria-labelledby="pack-explorer-title"
@@ -280,7 +293,7 @@ export function WordPacksPage() {
                 {t("packs.topicCount", { count: topics.length })}
               </span>
               <span>
-                <b>{packs.data.packs.length}</b>
+                <b>{regularPacks.length}</b>
                 {t("packs.title")}
               </span>
               <span>
@@ -315,7 +328,7 @@ export function WordPacksPage() {
               </span>
               <strong>{t("packs.allTopics")}</strong>
               <small>
-                {t("packs.packCount", { count: packs.data.packs.length })}
+                {t("packs.packCount", { count: regularPacks.length })}
               </small>
             </button>
             {topics.map((topic) => (
@@ -535,7 +548,7 @@ export function WordPacksPage() {
       {!packs.loading &&
         !packs.error &&
         packs.data &&
-        packs.data.packs.length > 0 &&
+        regularPacks.length > 0 &&
         !grouped.length && (
           <section className="pack-empty-results live-panel">
             <Compass size={30} />
@@ -550,7 +563,7 @@ export function WordPacksPage() {
             </button>
           </section>
         )}
-      {!packs.loading && !packs.error && !packs.data?.packs.length && (
+      {!packs.loading && !packs.error && !regularPacks.length && (
         <section className="live-panel">
           <p>{t("packs.empty")}</p>
         </section>

@@ -25,11 +25,44 @@
     "learn": "ללמוד",
     "vocabulary": "אוצר מילים",
     "wordPacks": "מאגרי מילים",
+    "englishLearning": "מסלול לימוד אנגלית",
     "reading": "קריאה בהקשר",
     "privateLesson": "שיעור פרטי",
     "transfer": "ייבוא וייצוא",
     "settings": "הגדרות",
     "billing": "מנוי"
+  },
+  "englishPath": {
+    "eyebrow": "לימוד שפה",
+    "title": "מסלול לימוד אנגלית",
+    "description": "מתחילים מהבסיס ומתקדמים בקצב שלך: שלוש רמות, 20 יחידות בכל רמה ו־50 מילים וביטויים בכל יחידה.",
+    "invite": "לימוד אנגלית מעברית במסלול מדורג, מיחידה קצרה אחת לבאה.",
+    "open": "לפתיחת המסלול",
+    "unavailableTitle": "המסלול עדיין לא זמין",
+    "unavailableDescription": "המסלול מיועד כרגע ללומדי אנגלית עם תרגום לעברית. כדאי לבדוק שוב בקרוב.",
+    "nextLabel": "היחידה הבאה שלך",
+    "unit": "יחידה {{number}}",
+    "unitSize": "{{count}} מילים וביטויים",
+    "levelNumber": "רמה {{number}} מתוך 3",
+    "levelProgress": "{{mastered}} מתוך {{total}} נלמדו",
+    "unitProgress": "{{mastered}} מתוך {{total}} נלמדו",
+    "levels": {
+      "beginner": "אנגלית בסיסית",
+      "intermediate": "אנגלית טובה",
+      "advanced": "אנגלית מתקדמת"
+    },
+    "levelDescriptions": {
+      "beginner": "מילים וביטויים חיוניים לתקשורת ראשונית.",
+      "intermediate": "הרחבת אוצר המילים והשיחה מעבר לבסיס.",
+      "advanced": "ביטוי מדויק וגמיש במצבים מגוונים."
+    },
+    "completed": "היחידה הושלמה",
+    "preview": "הצגת היחידה",
+    "previewDescription": "{{count}} מילים וביטויים ביחידה זו. אפשר ללמוד אותם ולתרגל בקצב שלך.",
+    "start": "התחלת היחידה",
+    "continue": "המשך ללמוד",
+    "practice": "תרגול היחידה",
+    "addAndPractice": "הוספה ותחילת תרגול"
   },
   "privateLesson": {
     "preparingRecommendation": "מכינים עבורך שיעור…",

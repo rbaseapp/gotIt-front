@@ -63,6 +63,11 @@ const TransferPage = lazy(() =>
 const WordPacksPage = lazy(() =>
   import("./pages/WordPacksPage").then((m) => ({ default: m.WordPacksPage })),
 );
+const EnglishLearningPathPage = lazy(() =>
+  import("./pages/EnglishLearningPathPage").then((m) => ({
+    default: m.EnglishLearningPathPage,
+  })),
+);
 const BillingPage = lazy(() =>
   import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
 );
@@ -194,11 +199,13 @@ export default function App() {
                     path="/private-lesson"
                     element={
                       mode === "live" ? (
-                        <PrivateLessonEntry preferLesson={
-                          location.search.includes("course=") ||
-                          location.search.includes("practice=free") ||
-                          location.search.includes("view=")
-                        } />
+                        <PrivateLessonEntry
+                          preferLesson={
+                            location.search.includes("course=") ||
+                            location.search.includes("practice=free") ||
+                            location.search.includes("view=")
+                          }
+                        />
                       ) : (
                         <Navigate to="/learn" replace />
                       )
@@ -251,6 +258,16 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/english-learning"
+                    element={
+                      mode === "live" ? (
+                        <EnglishLearningPathPage />
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
+                  <Route
                     path="/billing"
                     element={
                       mode === "live" ? (
@@ -275,17 +292,25 @@ export default function App() {
   );
 }
 
-export function PrivateLessonEntry({ preferLesson }: { preferLesson: boolean }) {
+export function PrivateLessonEntry({
+  preferLesson,
+}: {
+  preferLesson: boolean;
+}) {
   const { t } = useTranslation();
   const { status, loading, hasEntitlement } = useSubscription();
   if (loading)
-    return <div className="empty-session" role="status">
-      <LoaderCircle className="spin" size={30} />
-      <p>{t("app.checkingAccess")}</p>
-    </div>;
-  return preferLesson || (status && !hasEntitlement("practice.play"))
-    ? <PrivateLessonPage />
-    : <CoursePage />;
+    return (
+      <div className="empty-session" role="status">
+        <LoaderCircle className="spin" size={30} />
+        <p>{t("app.checkingAccess")}</p>
+      </div>
+    );
+  return preferLesson || (status && !hasEntitlement("practice.play")) ? (
+    <PrivateLessonPage />
+  ) : (
+    <CoursePage />
+  );
 }
 
 function LiveGameAccess({ children }: { children: React.ReactNode }) {

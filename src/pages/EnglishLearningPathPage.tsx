@@ -1,0 +1,315 @@
+import { useCallback, useMemo, useState } from "react";
+import { BookOpen, CheckCircle2, Eye, Play } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Modal } from "../components/Modal";
+import { RemoteState } from "../components/RemoteState";
+import { useFeedback } from "../components/Feedback";
+import { useSubscription } from "../context/SubscriptionContext";
+import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
+import {
+  errorMessage,
+  product,
+  wordPackAddReceiptSchema,
+  wordPackDetailSchema,
+  wordPacksSchema,
+  type WordPack,
+  type WordPackEntry,
+} from "../lib/product";
+import { useResource } from "../lib/useResource";
+
+type Preview = { pack: WordPack; entries: WordPackEntry[] };
+
+export function EnglishLearningPathPage() {
+  const { t } = useTranslation();
+  const { toast } = useFeedback();
+  const { hasEntitlement } = useSubscription();
+  const navigate = useNavigate();
+  const resource = useResource(
+    useCallback(() => product(wordPacksSchema, "word-packs"), []),
+  );
+  const levels = useMemo(
+    () => englishPathLevels(resource.data?.packs ?? []),
+    [resource.data],
+  );
+  const [preview, setPreview] = useState<Preview>();
+  const [busy, setBusy] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const available = levels.some(({ packs }) => packs.length);
+  const next = levels
+    .flatMap(({ packs }) => packs)
+    .find((pack) => !completedEnglishUnit(pack));
+
+  const openUnit = async (pack: WordPack) => {
+    setDetailLoading(true);
+    try {
+      const detail = await product(
+        wordPackDetailSchema,
+        `word-packs/${pack.id}`,
+      );
+      setPreview({ pack: detail.pack, entries: detail.entries });
+    } catch (reason) {
+      toast(errorMessage(reason), { tone: "error" });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const startUnit = async () => {
+    if (!preview) return;
+    if (!hasEntitlement("vocabulary.write")) {
+      navigate("/billing");
+      return;
+    }
+    const { pack, entries } = preview;
+    setBusy(true);
+    try {
+      await product(
+        wordPackAddReceiptSchema,
+        `word-packs/${pack.id}/add`,
+        "POST",
+        {
+          entryIds: entries.map(({ id }) => id),
+        },
+      );
+      setPreview(undefined);
+      await resource.reload();
+      navigate(`/learn/session/smart?pack=${pack.id}`);
+    } catch (reason) {
+      toast(errorMessage(reason), { tone: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="english-path-page live-page page-enter">
+      <section className="page-heading-row">
+        <div>
+          <p className="eyebrow">{t("englishPath.eyebrow")}</p>
+          <h1>{t("englishPath.title")}</h1>
+          <p>{t("englishPath.description")}</p>
+        </div>
+      </section>
+      <RemoteState
+        loading={resource.loading}
+        error={resource.error}
+        retry={() => void resource.reload()}
+      />
+      {!resource.loading && !resource.error && !available && (
+        <section className="live-panel" role="status">
+          <h2>{t("englishPath.unavailableTitle")}</h2>
+          <p>{t("englishPath.unavailableDescription")}</p>
+        </section>
+      )}
+      {available && (
+        <>
+          {next && (
+            <section
+              className="english-path-next live-panel"
+              aria-labelledby="english-path-next-heading"
+            >
+              <div>
+                <p className="eyebrow">{t("englishPath.nextLabel")}</p>
+                <h2 id="english-path-next-heading">
+                  {t(`englishPath.levels.${next.track.levelCode}`)} ·{" "}
+                  {t("englishPath.unit", { number: next.moduleNumber })}
+                </h2>
+                <p>{t("englishPath.unitSize", { count: next.wordCount })}</p>
+              </div>
+              {next.installed ? (
+                <Link
+                  className="button primary"
+                  to={`/learn/session/smart?pack=${next.id}`}
+                >
+                  <Play size={17} /> {t("englishPath.continue")}
+                </Link>
+              ) : (
+                <button
+                  className="button primary"
+                  type="button"
+                  disabled={detailLoading}
+                  onClick={() => void openUnit(next)}
+                >
+                  <BookOpen size={17} /> {t("englishPath.start")}
+                </button>
+              )}
+            </section>
+          )}
+          {levels
+            .filter(({ packs }) => packs.length)
+            .map(({ level, packs }) => {
+              const mastered = packs.reduce(
+                (total, pack) => total + pack.progress.mastered,
+                0,
+              );
+              const count = packs.reduce(
+                (total, pack) => total + pack.wordCount,
+                0,
+              );
+              return (
+                <section
+                  className="english-path-level"
+                  key={level}
+                  aria-labelledby={`english-path-${level}`}
+                >
+                  <div className="english-path-level-heading">
+                    <div>
+                      <p className="eyebrow">
+                        {t("englishPath.levelNumber", {
+                          number:
+                            levels.findIndex((item) => item.level === level) +
+                            1,
+                        })}
+                      </p>
+                      <h2 id={`english-path-${level}`}>
+                        {t(`englishPath.levels.${level}`)}
+                      </h2>
+                      <p>{t(`englishPath.levelDescriptions.${level}`)}</p>
+                    </div>
+                    <span>
+                      {t("englishPath.levelProgress", {
+                        mastered,
+                        total: count,
+                      })}
+                    </span>
+                  </div>
+                  <progress
+                    max={count || 1}
+                    value={mastered}
+                    aria-label={t("englishPath.levelProgress", {
+                      mastered,
+                      total: count,
+                    })}
+                  />
+                  <div className="english-path-unit-grid">
+                    {packs.map((pack) => {
+                      const completed = completedEnglishUnit(pack);
+                      return (
+                        <article
+                          className={`english-path-unit${completed ? " completed" : ""}`}
+                          key={pack.id}
+                        >
+                          <div className="english-path-unit-top">
+                            <span>
+                              {t("englishPath.unit", {
+                                number: pack.moduleNumber,
+                              })}
+                            </span>
+                            {completed && (
+                              <CheckCircle2
+                                size={20}
+                                aria-label={t("englishPath.completed")}
+                              />
+                            )}
+                          </div>
+                          <strong>
+                            {t("englishPath.unitSize", {
+                              count: pack.wordCount,
+                            })}
+                          </strong>
+                          <span>
+                            {t("englishPath.unitProgress", {
+                              mastered: pack.progress.mastered,
+                              total: pack.wordCount,
+                            })}
+                          </span>
+                          <progress
+                            max={pack.wordCount || 1}
+                            value={pack.progress.mastered}
+                            aria-label={t("englishPath.unitProgress", {
+                              mastered: pack.progress.mastered,
+                              total: pack.wordCount,
+                            })}
+                          />
+                          <div className="english-path-unit-actions">
+                            <button
+                              type="button"
+                              className="button ghost"
+                              disabled={detailLoading}
+                              onClick={() => void openUnit(pack)}
+                            >
+                              <Eye size={16} /> {t("englishPath.preview")}
+                            </button>
+                            {pack.installed && (
+                              <Link
+                                className="button secondary"
+                                to={`/learn/session/smart?pack=${pack.id}`}
+                              >
+                                <Play size={16} /> {t("englishPath.practice")}
+                              </Link>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
+        </>
+      )}
+      <Modal
+        open={Boolean(preview)}
+        onClose={() => !busy && setPreview(undefined)}
+        title={
+          preview
+            ? `${t(`englishPath.levels.${preview.pack.track.levelCode}`)} · ${t("englishPath.unit", { number: preview.pack.moduleNumber })}`
+            : t("englishPath.title")
+        }
+        size="lg"
+      >
+        {preview && (
+          <>
+            <div className="modal-body pack-word-dialog">
+              <p>
+                {t("englishPath.previewDescription", {
+                  count: preview.entries.length,
+                })}
+              </p>
+              <div className="pack-word-list">
+                {preview.entries.map((entry) => (
+                  <div className="pack-word-row" key={entry.id}>
+                    <span>
+                      <b dir="auto">{entry.sourceText}</b>
+                      <span dir="auto">{entry.translationText}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="button ghost"
+                onClick={() => setPreview(undefined)}
+              >
+                {t("common.close")}
+              </button>
+              {!preview.pack.installed && (
+                <button
+                  type="button"
+                  className="button primary"
+                  disabled={
+                    busy || preview.entries.length !== preview.pack.wordCount
+                  }
+                  onClick={() => void startUnit()}
+                >
+                  {t("englishPath.addAndPractice")}
+                </button>
+              )}
+              {preview.pack.installed && (
+                <Link
+                  className="button primary"
+                  to={`/learn/session/smart?pack=${preview.pack.id}`}
+                >
+                  {t("englishPath.practice")}
+                </Link>
+              )}
+            </div>
+          </>
+        )}
+      </Modal>
+    </div>
+  );
+}

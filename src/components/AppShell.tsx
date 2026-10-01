@@ -51,6 +51,12 @@ const navItems = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: BarChart3 },
   { to: "/learn", labelKey: "nav.learn", icon: Gamepad2 },
   {
+    to: "/english-learning",
+    labelKey: "nav.englishLearning",
+    icon: BookOpenText,
+    liveOnly: true,
+  },
+  {
     to: "/private-lesson",
     labelKey: "nav.privateLesson",
     icon: Mic2,

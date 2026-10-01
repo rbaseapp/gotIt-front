@@ -1507,27 +1507,44 @@ describe("live server-backed flows", () => {
       updatedAt: date,
       primaryTranslation: "כלב",
     };
-    mount("/vocabulary", async (url) => {
-      if (url.endsWith("/tags")) return json({ tags: [] });
-      if (url.endsWith("/word-packs")) return json({ packs: [] });
-      if (url.includes("/learning-items?"))
-        return json({
-          items: [
-            { ...word, phoneticText: "דוֹג", phoneticScheme: "transliteration:he" },
-            { ...word, id: secondItemId, sourceText: "cat", phoneticText: "קָט", phoneticScheme: "hebrew_niqqud" },
-          ],
-          nextCursor: null,
-          totalCount: 2,
-          page: 1,
-          pageCount: 1,
-        });
-      throw new Error("Unexpected route");
-    }, seedProfile, [{ code: "en", count: 2 }]);
+    mount(
+      "/vocabulary",
+      async (url) => {
+        if (url.endsWith("/tags")) return json({ tags: [] });
+        if (url.endsWith("/word-packs")) return json({ packs: [] });
+        if (url.includes("/learning-items?"))
+          return json({
+            items: [
+              {
+                ...word,
+                phoneticText: "דוֹג",
+                phoneticScheme: "transliteration:he",
+              },
+              {
+                ...word,
+                id: secondItemId,
+                sourceText: "cat",
+                phoneticText: "קָט",
+                phoneticScheme: "hebrew_niqqud",
+              },
+            ],
+            nextCursor: null,
+            totalCount: 2,
+            page: 1,
+            pageCount: 1,
+          });
+        throw new Error("Unexpected route");
+      },
+      seedProfile,
+      [{ code: "en", count: 2 }],
+    );
     const guide = await screen.findByText("דוֹג");
     expect(guide).toHaveAttribute("lang", "he");
     expect(guide.parentElement).toHaveClass("live-word-reading");
     expect(guide.parentElement).toHaveAttribute("dir", "ltr");
-    expect(guide.parentElement?.querySelector("strong")?.textContent).toBe("dog");
+    expect(guide.parentElement?.querySelector("strong")?.textContent).toBe(
+      "dog",
+    );
     expect(screen.queryByText("קָט")).not.toBeInTheDocument();
   });
   it("signs out when a product request cannot refresh an expired session", async () => {
@@ -1759,6 +1776,93 @@ describe("live server-backed flows", () => {
     );
     expect(JSON.parse(String(addCall?.[1]?.body))).toEqual({
       entryIds: [itemId],
+    });
+  });
+  it("opens a dedicated English path and starts a complete 50-item unit", async () => {
+    const pack = {
+      id: exerciseId,
+      slug: "daily-english-basic-01-en-he",
+      title: "Unit 1",
+      description: "First unit",
+      moduleNumber: 1,
+      version: 1,
+      wordCount: 50,
+      installed: false,
+      installedVersion: null,
+      topic: {
+        id: itemId,
+        slug: "english-learning-path-en-he",
+        title: "מסלול לימוד אנגלית",
+      },
+      track: {
+        id: sessionId,
+        slug: "daily-english-basic-en-he",
+        title: "אנגלית בסיסית",
+        levelCode: "beginner",
+        cefrFrom: "A1",
+        cefrTo: "A2",
+        sourceLanguageCode: "en",
+        translationLanguageCode: "he",
+      },
+      progress: {
+        linked: 0,
+        new: 0,
+        learning: 0,
+        reviewing: 0,
+        mastered: 0,
+        due: 0,
+      },
+    };
+    const entries = Array.from({ length: 50 }, (_, index) => ({
+      id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+      sourceText: index === 0 ? "good morning" : `word ${index}`,
+      translationText: index === 0 ? "בוקר טוב" : "מילה",
+      itemType: "word",
+      partOfSpeech: null,
+      exampleText: null,
+      learningItemId: null,
+      excludedAt: null,
+    }));
+    const fetchMock = mount("/english-learning", async (url, init) => {
+      if (
+        url.endsWith("/word-packs") &&
+        (!init?.method || init.method === "GET")
+      )
+        return json({ packs: [pack] });
+      if (url.endsWith(`/word-packs/${pack.id}`))
+        return json({ pack, entries });
+      if (url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST")
+        return json(
+          {
+            packId: pack.id,
+            added: 50,
+            linkedExisting: 0,
+            restored: 0,
+            excluded: 0,
+            total: 50,
+          },
+          201,
+        );
+      return json({}, 500);
+    });
+    expect(
+      await screen.findByRole("heading", { name: "מסלול לימוד אנגלית" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "אנגלית בסיסית" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "התחלת היחידה" }));
+    expect(await screen.findByText("good morning")).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "הוספה ותחילת תרגול" }),
+    );
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST",
+      );
+      expect(call).toBeDefined();
+      expect(JSON.parse(String(call?.[1]?.body)).entryIds).toHaveLength(50);
     });
   });
 });

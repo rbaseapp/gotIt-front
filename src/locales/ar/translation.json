@@ -29,7 +29,8 @@
     "privateLesson": "درس خاص",
     "transfer": "الاستيراد والتصدير",
     "settings": "الإعدادات",
-    "billing": "الاشتراك"
+    "billing": "الاشتراك",
+    "englishLearning": "English learning path"
   },
   "privateLesson": {
     "mode": {
@@ -1898,5 +1899,37 @@
     "reportDetails": "التفاصيل والتصحيحات والمفردات",
     "supportLanguageError": "للبدء من الصفر، اختر لغة شرح مألوفة تختلف عن اللغة التي تتعلمها.",
     "separateCourseError": "أنشئ دورة جديدة للغة أخرى أو لمزيد من التعديلات. دورتك الحالية محفوظة."
+  },
+  "englishPath": {
+    "eyebrow": "Language learning",
+    "title": "English learning path",
+    "description": "Start with the essentials and progress at your pace: three levels, 20 units per level, and 50 words and expressions per unit.",
+    "invite": "A guided English course for Hebrew speakers, one short unit at a time.",
+    "open": "Open the path",
+    "unavailableTitle": "This path is not available yet",
+    "unavailableDescription": "This path currently supports English learning with Hebrew translations. Please check again soon.",
+    "nextLabel": "Your next unit",
+    "unit": "Unit {{number}}",
+    "unitSize": "{{count}} words and expressions",
+    "levelNumber": "Level {{number}} of 3",
+    "levelProgress": "{{mastered}} of {{total}} learned",
+    "unitProgress": "{{mastered}} of {{total}} learned",
+    "levels": {
+      "beginner": "Basic English",
+      "intermediate": "Good English",
+      "advanced": "Advanced English"
+    },
+    "levelDescriptions": {
+      "beginner": "Essential words and expressions for initial communication.",
+      "intermediate": "Expand your vocabulary and conversation beyond the basics.",
+      "advanced": "Express yourself precisely and flexibly in varied situations."
+    },
+    "completed": "Unit completed",
+    "preview": "Preview unit",
+    "previewDescription": "This unit has {{count}} words and expressions. Learn and practice them at your own pace.",
+    "start": "Start unit",
+    "continue": "Continue learning",
+    "practice": "Practice unit",
+    "addAndPractice": "Add and start practicing"
   }
 }
