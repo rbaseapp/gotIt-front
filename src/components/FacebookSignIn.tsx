@@ -90,7 +90,7 @@ export function FacebookSignIn({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
-  const appId = import.meta.env.VITE_FACEBOOK_APP_ID ?? FACEBOOK_APP_ID;
+  const appId = import.meta.env.VITE_FACEBOOK_APP_ID || FACEBOOK_APP_ID;
 
   useEffect(() => {
     mounted.current = true;

@@ -34,10 +34,16 @@ describe("Facebook Login button", () => {
     });
   });
 
-  it("does not render an active login button without an app ID", () => {
+  it("uses the public GotIt Meta app ID when no build override is supplied", async () => {
     vi.stubEnv("VITE_FACEBOOK_APP_ID", "");
+    const sdk = { init: vi.fn(), login: vi.fn() };
+    vi.stubGlobal("FB", sdk);
     render(<FacebookSignIn onCredential={vi.fn()} disabled={false} />);
-    expect(screen.queryByRole("button", { name: /Facebook/i })).not.toBeInTheDocument();
-    expect(document.querySelector(".auth-footnote")).toHaveTextContent(/Facebook/i);
+    await waitFor(() =>
+      expect(sdk.init).toHaveBeenCalledWith(
+        expect.objectContaining({ appId: "2207127606520765" }),
+      ),
+    );
+    expect(screen.getByRole("button", { name: /Facebook/i })).toBeEnabled();
   });
 });
