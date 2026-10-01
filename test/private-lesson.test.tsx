@@ -578,7 +578,7 @@ describe("private voice lesson", () => {
       Number(avatar.style.getPropertyValue("--tutor-mouth-soft")),
     ).toBeGreaterThan(0);
     expect(
-      Number(avatar.style.getPropertyValue("--tutor-mouth-wide")),
+      Number(avatar.style.getPropertyValue("--tutor-mouth-rounded")),
     ).toBeGreaterThan(0);
     act(() => onAudioLevel(0));
     expect(avatar).toHaveClass("listening");

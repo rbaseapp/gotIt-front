@@ -1,4 +1,7 @@
 import type { CSSProperties } from "react";
+import { avatarMouth } from "../lib/avatarMotion";
+import tutorFemaleRounded from "../assets/private-lesson/tutor-female-speaking-rounded.png";
+import tutorMaleRounded from "../assets/private-lesson/tutor-speaking-rounded.png";
 import tutorFemaleBlink from "../assets/private-lesson/tutor-female-blink.png";
 import tutorFemaleListening from "../assets/private-lesson/tutor-female-listening.png";
 import tutorFemaleSpeaking from "../assets/private-lesson/tutor-female-speaking.png";
@@ -29,11 +32,8 @@ export function TeacherAvatar({
     active && Number.isFinite(audioLevel)
       ? Math.max(0, Math.min(1, audioLevel))
       : 0;
-  // The remote audio meter already smooths its samples and updates every ~70 ms.
-  // Blend just the mouth region so the rest of the portrait stays still.
-  const mouthOpen = Math.max(0, Math.min(1, (level - 0.025) / 0.13));
-  const wideMouth = Math.max(0, Math.min(1, (level - 0.2) / 0.55));
-  const visualActivity = mouthOpen > 0 ? "speaking" : activity;
+  const mouth = avatarMouth(level);
+  const visualActivity = mouth.speaking ? "speaking" : activity;
   const listeningImage =
     variant === "female" ? tutorFemaleListening : tutorMaleListening;
   const speakingImage =
@@ -55,9 +55,9 @@ export function TeacherAvatar({
           "--tutor-bar-small": `${7 + level * 15}px`,
           "--tutor-bar-medium": `${11 + level * 10}px`,
           "--tutor-bar-large": `${15 + level * 8}px`,
-          "--tutor-speech-lift": `${-Math.max(0.5, level * 2.2)}px`,
-          "--tutor-mouth-soft": mouthOpen * (1 - wideMouth),
-          "--tutor-mouth-wide": mouthOpen * wideMouth,
+          "--tutor-mouth-soft": mouth.soft,
+          "--tutor-mouth-rounded": mouth.rounded,
+          "--tutor-mouth-wide": mouth.wide,
         } as CSSProperties
       }
       role="img"
@@ -72,6 +72,11 @@ export function TeacherAvatar({
           alt=""
         />
         <img className="teacher-avatar-speaking" src={speakingImage} alt="" />
+        <img
+          className="teacher-avatar-speaking-rounded"
+          src={variant === "female" ? tutorFemaleRounded : tutorMaleRounded}
+          alt=""
+        />
         <img
           className="teacher-avatar-speaking-wide"
           src={speakingWideImage}

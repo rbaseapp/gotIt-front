@@ -2,6 +2,7 @@ import { z } from "zod";
 import { product, uuid } from "./product";
 import { readStorage, writeStorage } from "./storage";
 import { productApiUrl } from "./api";
+import { smoothAvatarLevel } from "./avatarMotion";
 
 export const privateLessonFocusAreas = [
   "speaking",
@@ -586,6 +587,7 @@ export async function connectPrivateLesson(
       source.connect(analyser);
       const samples = new Uint8Array(analyser.fftSize);
       let lastUpdate = 0;
+      let lastSample: number | undefined;
       let smoothedLevel = 0;
       const sample = (timestamp: number) => {
         analyser.getByteTimeDomainData(samples);
@@ -596,8 +598,13 @@ export async function connectPrivateLesson(
         }
         const rms = Math.sqrt(sumSquares / samples.length);
         const measuredLevel = Math.min(1, Math.max(0, (rms - 0.012) * 14));
-        smoothedLevel = smoothedLevel * 0.58 + measuredLevel * 0.42;
-        if (timestamp - lastUpdate >= 70) {
+        smoothedLevel = smoothAvatarLevel(
+          smoothedLevel,
+          measuredLevel,
+          lastSample === undefined ? 16 : timestamp - lastSample,
+        );
+        lastSample = timestamp;
+        if (timestamp - lastUpdate >= 32) {
           handlers.onAudioLevel?.(smoothedLevel);
           lastUpdate = timestamp;
         }

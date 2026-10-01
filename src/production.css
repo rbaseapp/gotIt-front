@@ -644,7 +644,7 @@
   inset: 0;
   overflow: hidden;
   border-radius: 0 0 46% 46%;
-  animation: teacher-avatar-breathe 4.8s ease-in-out infinite;
+  animation: teacher-avatar-breathe 11.7s ease-in-out infinite;
 }
 .teacher-avatar-portrait img {
   position: absolute;
@@ -657,24 +657,26 @@
 }
 .teacher-avatar-thinking-frame,
 .teacher-avatar-speaking,
+.teacher-avatar-speaking-rounded,
 .teacher-avatar-speaking-wide,
 .teacher-avatar-blink {
   opacity: 0;
 }
 .teacher-avatar-speaking,
+.teacher-avatar-speaking-rounded,
 .teacher-avatar-speaking-wide {
   /* Existing full portraits differ outside the mouth. Feather the blend there. */
   -webkit-mask-image: radial-gradient(
-    ellipse 19% 10% at 50% 46%,
-    #000 48%,
+    ellipse 13% 7% at 50% 46%,
+    #000 70%,
     transparent 100%
   );
   mask-image: radial-gradient(
-    ellipse 19% 10% at 50% 46%,
-    #000 48%,
+    ellipse 13% 7% at 50% 46%,
+    #000 70%,
     transparent 100%
   );
-  transition: opacity 80ms linear;
+  transition: opacity 32ms linear;
 }
 .teacher-avatar.thinking .teacher-avatar-thinking-frame {
   animation: teacher-avatar-thinking-glance 9.5s ease-in-out 2.5s infinite;
@@ -685,18 +687,26 @@
 .teacher-avatar .teacher-avatar-speaking-wide {
   opacity: var(--tutor-mouth-wide);
 }
-.teacher-avatar.speaking .teacher-avatar-portrait {
-  animation: teacher-avatar-talk 420ms ease-in-out infinite alternate;
+.teacher-avatar .teacher-avatar-speaking-rounded {
+  opacity: var(--tutor-mouth-rounded, 0);
 }
 .teacher-avatar-blink {
   z-index: 4;
-  animation: teacher-avatar-blink 7.2s linear infinite;
+  /* Only eyelids change: blinking must not replace the speaking mouth. */
+  -webkit-mask-image: radial-gradient(
+    ellipse 18% 5% at 50% 33%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 18% 5% at 50% 33%,
+    #000 70%,
+    transparent 100%
+  );
+  animation: teacher-avatar-blink 8.3s linear infinite;
 }
 .teacher-avatar.female .teacher-avatar-blink {
   animation-delay: -2.9s;
-}
-.teacher-avatar.speaking .teacher-avatar-blink {
-  display: none;
 }
 .teacher-avatar-thinking {
   position: absolute;
@@ -789,28 +799,27 @@
   100% {
     transform: translateY(0) rotate(-0.12deg);
   }
-  50% {
-    transform: translateY(-3px) rotate(0.12deg);
+  31% {
+    transform: translateY(-1.5px) rotate(0.18deg);
   }
-}
-@keyframes teacher-avatar-talk {
-  from {
-    transform: translateY(0) rotate(-0.1deg);
+  64% {
+    transform: translateY(-0.4px) rotate(-0.2deg);
   }
-  to {
-    transform: translateY(var(--tutor-speech-lift)) rotate(0.1deg);
+  83% {
+    transform: translateY(-1px) rotate(0.08deg);
   }
 }
 @keyframes teacher-avatar-blink {
   0%,
-  42%,
-  44%,
-  46%,
+  36%,
+  38%,
+  81%,
+  83%,
   100% {
     opacity: 0;
   }
-  43%,
-  45% {
+  37%,
+  82% {
     opacity: 1;
   }
 }
@@ -1639,6 +1648,7 @@ body.private-lesson-viewport-compact .private-lesson-meta {
     display: none;
   }
   .teacher-avatar .teacher-avatar-speaking,
+  .teacher-avatar .teacher-avatar-speaking-rounded,
   .teacher-avatar .teacher-avatar-speaking-wide {
     opacity: 0;
     transition: none;

@@ -20,7 +20,7 @@ describe("TeacherAvatar", () => {
     );
     expect(
       container.querySelectorAll(".teacher-avatar-portrait img"),
-    ).toHaveLength(5);
+    ).toHaveLength(6);
 
     rerender(
       <TeacherAvatar
@@ -38,8 +38,10 @@ describe("TeacherAvatar", () => {
     const soft = Number(avatar.style.getPropertyValue("--tutor-mouth-soft"));
     const wide = Number(avatar.style.getPropertyValue("--tutor-mouth-wide"));
     expect(soft).toBeGreaterThan(0);
-    expect(wide).toBeGreaterThan(0);
-    expect(soft + wide).toBeCloseTo(1);
+    expect(wide).toBe(0);
+    expect(
+      Number(avatar.style.getPropertyValue("--tutor-mouth-rounded")),
+    ).toBeGreaterThan(0);
 
     rerender(
       <TeacherAvatar
@@ -133,4 +135,54 @@ describe("TeacherAvatar", () => {
     expect(avatar).toHaveClass("listening");
     expect(Number(avatar.style.getPropertyValue("--tutor-mouth-wide"))).toBe(0);
   });
+
+  it.each(["male", "female"] as const)(
+    "loads the %s rounded speech pose and closes it on silence or invalid audio",
+    (variant) => {
+      const { container, rerender } = render(
+        <TeacherAvatar
+          activity="listening"
+          active
+          audioLevel={0.34}
+          label="Teacher"
+          variant={variant}
+        />,
+      );
+      const avatar = screen.getByRole("img", { name: "Teacher" });
+      const frame = container.querySelector(".teacher-avatar-speaking-rounded");
+      expect(frame?.getAttribute("src")).toContain(
+        variant === "female"
+          ? "tutor-female-speaking-rounded"
+          : "tutor-speaking-rounded",
+      );
+      expect(avatar.style.getPropertyValue("--tutor-mouth-rounded")).toBe("1");
+      for (const audioLevel of [0, NaN, Infinity, -1]) {
+        rerender(
+          <TeacherAvatar
+            activity="listening"
+            active
+            audioLevel={audioLevel}
+            label="Teacher"
+            variant={variant}
+          />,
+        );
+        expect(avatar).toHaveClass("listening");
+        for (const pose of ["soft", "rounded", "wide"]) {
+          expect(avatar.style.getPropertyValue(`--tutor-mouth-${pose}`)).toBe(
+            "0",
+          );
+        }
+      }
+      rerender(
+        <TeacherAvatar
+          activity="idle"
+          active={false}
+          audioLevel={0.34}
+          label="Teacher"
+          variant={variant}
+        />,
+      );
+      expect(avatar.style.getPropertyValue("--tutor-mouth-rounded")).toBe("0");
+    },
+  );
 });

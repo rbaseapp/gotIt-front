@@ -1,7 +1,10 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { connectPrivateLesson } from "../src/lib/privateLesson";
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 it("connects through the product backend and asks the server to end the call", async () => {
   const channel = {
@@ -11,6 +14,10 @@ it("connects through the product backend and asks the server to end the call", a
     close: vi.fn(),
   };
   class Peer {
+    static instance: Peer;
+    constructor() {
+      Peer.instance = this;
+    }
     ontrack: ((event: unknown) => void) | null = null;
     createDataChannel() {
       return channel;
@@ -23,6 +30,37 @@ it("connects through the product backend and asks the server to end the call", a
     async setRemoteDescription() {}
     close() {}
   }
+  let frame: FrameRequestCallback | undefined;
+  let sampleValue = 138;
+  const cancelFrame = vi.fn(() => {
+    frame = undefined;
+  });
+  const closeContext = vi.fn(async () => undefined);
+  vi.stubGlobal(
+    "requestAnimationFrame",
+    vi.fn((callback: FrameRequestCallback) => {
+      frame = callback;
+      return 1;
+    }),
+  );
+  vi.stubGlobal("cancelAnimationFrame", cancelFrame);
+  vi.stubGlobal(
+    "AudioContext",
+    class {
+      createMediaStreamSource() {
+        return { connect() {} };
+      }
+      createAnalyser() {
+        return {
+          fftSize: 512,
+          smoothingTimeConstant: 0,
+          getByteTimeDomainData: (samples: Uint8Array) =>
+            samples.fill(sampleValue),
+        };
+      }
+      close = closeContext;
+    },
+  );
   vi.stubGlobal("RTCPeerConnection", Peer);
   Object.defineProperty(navigator, "mediaDevices", {
     configurable: true,
@@ -47,6 +85,9 @@ it("connects through the product backend and asks the server to end the call", a
       );
     }),
   );
+  const audio = document.createElement("audio");
+  vi.spyOn(audio, "play").mockResolvedValue(undefined);
+  const onAudioLevel = vi.fn();
   const connection = await connectPrivateLesson(
     {
       realtime: {
@@ -58,11 +99,25 @@ it("connects through the product backend and asks the server to end the call", a
         clientSecret: "ticket-id",
       },
     },
-    document.createElement("audio"),
-    { onOpen() {}, onClose() {}, onEvent() {} },
+    audio,
+    { onOpen() {}, onClose() {}, onEvent() {}, onAudioLevel },
     new AbortController().signal,
   );
+  Peer.instance.ontrack?.({ streams: [{}] });
+  onAudioLevel.mockClear();
+  for (const timestamp of [16, 32, 48, 64, 80, 96]) frame?.(timestamp);
+  // The previous 70ms publication cadence misses these syllable updates.
+  expect(onAudioLevel).toHaveBeenCalledTimes(3);
+  expect(onAudioLevel.mock.calls[2][0]).toBeGreaterThan(0.8);
+  sampleValue = 128;
+  for (let timestamp = 112; timestamp <= 416; timestamp += 16)
+    frame?.(timestamp);
+  expect(onAudioLevel.mock.lastCall?.[0]).toBe(0);
   connection.close();
+  expect(onAudioLevel.mock.lastCall?.[0]).toBe(0);
+  expect(cancelFrame).toHaveBeenCalledWith(1);
+  expect(closeContext).toHaveBeenCalledOnce();
+  expect(frame).toBeUndefined();
   await vi.waitFor(() => expect(requests).toHaveLength(2));
   expect(requests).toEqual([
     {
