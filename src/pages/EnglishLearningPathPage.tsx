@@ -11,6 +11,7 @@ import {
   errorMessage,
   product,
   wordPackAddReceiptSchema,
+  wordPackKnownReceiptSchema,
   wordPackDetailSchema,
   wordPacksSchema,
   type WordPack,
@@ -55,6 +56,61 @@ export function EnglishLearningPathPage() {
     }
   };
 
+  const setKnown = async (
+    pack: WordPack,
+    entryIds: string[],
+    known: boolean,
+  ) => {
+    if (!hasEntitlement("vocabulary.write")) {
+      navigate("/billing");
+      return;
+    }
+    setBusy(true);
+    try {
+      await product(
+        wordPackKnownReceiptSchema,
+        `word-packs/${pack.id}/known`,
+        "PUT",
+        { entryIds, known },
+      );
+      await resource.reload();
+      if (preview?.pack.id === pack.id) {
+        const detail = await product(
+          wordPackDetailSchema,
+          `word-packs/${pack.id}`,
+        );
+        setPreview({ pack: detail.pack, entries: detail.entries });
+      }
+    } catch (reason) {
+      toast(errorMessage(reason), { tone: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const setUnitKnown = async (pack: WordPack) => {
+    if (!hasEntitlement("vocabulary.write")) {
+      navigate("/billing");
+      return;
+    }
+    setDetailLoading(true);
+    try {
+      const detail = await product(
+        wordPackDetailSchema,
+        `word-packs/${pack.id}`,
+      );
+      await setKnown(
+        pack,
+        detail.entries.map(({ id }) => id),
+        detail.entries.some((entry) => !entry.known),
+      );
+    } catch (reason) {
+      toast(errorMessage(reason), { tone: "error" });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   const startUnit = async () => {
     if (!preview) return;
     if (!hasEntitlement("vocabulary.write")) {
@@ -62,6 +118,11 @@ export function EnglishLearningPathPage() {
       return;
     }
     const { pack, entries } = preview;
+    const toLearn = entries.filter((entry) => !entry.known);
+    if (!toLearn.length) {
+      setPreview(undefined);
+      return;
+    }
     setBusy(true);
     try {
       await product(
@@ -69,7 +130,7 @@ export function EnglishLearningPathPage() {
         `word-packs/${pack.id}/add`,
         "POST",
         {
-          entryIds: entries.map(({ id }) => id),
+          entryIds: toLearn.map(({ id }) => id),
         },
       );
       setPreview(undefined);
@@ -113,7 +174,7 @@ export function EnglishLearningPathPage() {
                 <p className="eyebrow">{t("englishPath.nextLabel")}</p>
                 <h2 id="english-path-next-heading">
                   {t(`englishPath.levels.${next.track.levelCode}`)} ·{" "}
-                  {t("englishPath.unit", { number: next.moduleNumber })}
+                  {next.title}
                 </h2>
                 <p>{t("englishPath.unitSize", { count: next.wordCount })}</p>
               </div>
@@ -139,8 +200,9 @@ export function EnglishLearningPathPage() {
           {levels
             .filter(({ packs }) => packs.length)
             .map(({ level, packs }) => {
-              const mastered = packs.reduce(
-                (total, pack) => total + pack.progress.mastered,
+              const completed = packs.reduce(
+                (total, pack) =>
+                  total + (pack.progress.completed ?? pack.progress.mastered),
                 0,
               );
               const count = packs.reduce(
@@ -169,16 +231,16 @@ export function EnglishLearningPathPage() {
                     </div>
                     <span>
                       {t("englishPath.levelProgress", {
-                        mastered,
+                        mastered: completed,
                         total: count,
                       })}
                     </span>
                   </div>
                   <progress
                     max={count || 1}
-                    value={mastered}
+                    value={completed}
                     aria-label={t("englishPath.levelProgress", {
-                      mastered,
+                      mastered: completed,
                       total: count,
                     })}
                   />
@@ -206,6 +268,9 @@ export function EnglishLearningPathPage() {
                           <span className="english-path-unit-level">
                             {t(`englishPath.levels.${level}`)}
                           </span>
+                          <h3 className="english-path-unit-name">
+                            {pack.title.replace(/^יחידה\s+\d+:\s*/u, "")}
+                          </h3>
                           <strong>
                             {t("englishPath.unitSize", {
                               count: pack.wordCount,
@@ -213,19 +278,44 @@ export function EnglishLearningPathPage() {
                           </strong>
                           <span>
                             {t("englishPath.unitProgress", {
-                              mastered: pack.progress.mastered,
+                              mastered:
+                                pack.progress.completed ??
+                                pack.progress.mastered,
                               total: pack.wordCount,
                             })}
                           </span>
                           <progress
                             max={pack.wordCount || 1}
-                            value={pack.progress.mastered}
+                            value={
+                              pack.progress.completed ?? pack.progress.mastered
+                            }
                             aria-label={t("englishPath.unitProgress", {
-                              mastered: pack.progress.mastered,
+                              mastered:
+                                pack.progress.completed ??
+                                pack.progress.mastered,
                               total: pack.wordCount,
                             })}
                           />
+                          {(pack.progress.known ?? 0) > 0 && (
+                            <span>
+                              {t("englishPath.knownCount", {
+                                count: pack.progress.known,
+                              })}
+                            </span>
+                          )}
                           <div className="english-path-unit-actions">
+                            <button
+                              type="button"
+                              className="button secondary"
+                              disabled={busy || detailLoading}
+                              onClick={() => void setUnitKnown(pack)}
+                            >
+                              {t(
+                                (pack.progress.known ?? 0) === pack.wordCount
+                                  ? "englishPath.unmarkUnitKnown"
+                                  : "englishPath.markUnitKnown",
+                              )}
+                            </button>
                             <button
                               type="button"
                               className="button ghost"
@@ -257,7 +347,7 @@ export function EnglishLearningPathPage() {
         onClose={() => !busy && setPreview(undefined)}
         title={
           preview
-            ? `${t(`englishPath.levels.${preview.pack.track.levelCode}`)} · ${t("englishPath.unit", { number: preview.pack.moduleNumber })}`
+            ? `${t(`englishPath.levels.${preview.pack.track.levelCode}`)} · ${preview.pack.title}`
             : t("englishPath.title")
         }
         size="lg"
@@ -272,11 +362,28 @@ export function EnglishLearningPathPage() {
               </p>
               <div className="pack-word-list">
                 {preview.entries.map((entry) => (
-                  <div className="pack-word-row" key={entry.id}>
+                  <div
+                    className={`pack-word-row${entry.known ? " known" : ""}`}
+                    key={entry.id}
+                  >
                     <span>
                       <b dir="auto">{entry.sourceText}</b>
                       <span dir="auto">{entry.translationText}</span>
                     </span>
+                    <button
+                      type="button"
+                      className="button ghost"
+                      disabled={busy}
+                      onClick={() =>
+                        void setKnown(preview.pack, [entry.id], !entry.known)
+                      }
+                    >
+                      {t(
+                        entry.known
+                          ? "englishPath.unmarkKnown"
+                          : "englishPath.markKnown",
+                      )}
+                    </button>
                   </div>
                 ))}
               </div>
@@ -289,26 +396,37 @@ export function EnglishLearningPathPage() {
               >
                 {t("common.close")}
               </button>
-              {!preview.pack.installed && (
-                <button
-                  type="button"
-                  className="button primary"
-                  disabled={
-                    busy || preview.entries.length !== preview.pack.wordCount
-                  }
-                  onClick={() => void startUnit()}
-                >
-                  {t("englishPath.addAndPractice")}
-                </button>
-              )}
-              {preview.pack.installed && (
-                <Link
-                  className="button primary"
-                  to={`/learn/session/smart?pack=${preview.pack.id}`}
-                >
-                  {t("englishPath.practice")}
-                </Link>
-              )}
+              {preview.entries.some((entry) => !entry.known) &&
+                (!preview.pack.installed ||
+                  preview.entries.some(
+                    (entry) =>
+                      !entry.known &&
+                      (!entry.learningItemId || entry.excludedAt),
+                  )) && (
+                  <button
+                    type="button"
+                    className="button primary"
+                    disabled={
+                      busy || preview.entries.length !== preview.pack.wordCount
+                    }
+                    onClick={() => void startUnit()}
+                  >
+                    {t("englishPath.addAndPractice")}
+                  </button>
+                )}
+              {preview.pack.installed &&
+                preview.entries.some((entry) => !entry.known) &&
+                preview.entries.every(
+                  (entry) =>
+                    entry.known || (entry.learningItemId && !entry.excludedAt),
+                ) && (
+                  <Link
+                    className="button primary"
+                    to={`/learn/session/smart?pack=${preview.pack.id}`}
+                  >
+                    {t("englishPath.practice")}
+                  </Link>
+                )}
             </div>
           </>
         )}

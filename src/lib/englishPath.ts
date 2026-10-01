@@ -28,5 +28,4 @@ export function englishPathLevels(packs: WordPack[]) {
 
 export const completedEnglishUnit = (pack: WordPack) =>
   pack.wordCount > 0 &&
-  pack.progress.linked === pack.wordCount &&
-  pack.progress.mastered === pack.wordCount;
+  (pack.progress.completed ?? pack.progress.mastered) === pack.wordCount;

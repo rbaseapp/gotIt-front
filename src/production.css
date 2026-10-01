@@ -3801,6 +3801,12 @@ progress::-webkit-progress-value {
 .english-path-unit-level {
   font-weight: 700;
 }
+.english-path-unit-name {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
 .english-path-unit-actions {
   justify-content: flex-start;
   flex-wrap: wrap;
@@ -4363,6 +4369,10 @@ html[dir="ltr"] .pack-search input {
 .pack-word-row:has(input:checked) {
   border-color: #9bc9a9;
   background: #f6fbf7;
+}
+.pack-word-row.known {
+  border-color: #9bc9a9;
+  background: #f1faf3;
 }
 .pack-word-row > span {
   display: grid;

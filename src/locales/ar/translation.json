@@ -1912,8 +1912,8 @@
     "unit": "Unit {{number}}",
     "unitSize": "{{count}} words and expressions",
     "levelNumber": "Level {{number}} of 3",
-    "levelProgress": "{{mastered}} of {{total}} learned",
-    "unitProgress": "{{mastered}} of {{total}} learned",
+    "levelProgress": "{{mastered}} of {{total}} completed",
+    "unitProgress": "{{mastered}} of {{total}} completed",
     "levels": {
       "beginner": "Basic English",
       "intermediate": "Good English",
@@ -1930,6 +1930,11 @@
     "start": "Start unit",
     "continue": "Continue learning",
     "practice": "Practice unit",
-    "addAndPractice": "Add and start practicing"
+    "addAndPractice": "Add and start practicing",
+    "knownCount": "{{count}} marked as known",
+    "markUnitKnown": "I know this unit",
+    "unmarkUnitKnown": "Undo known unit",
+    "markKnown": "I know this",
+    "unmarkKnown": "Undo known"
   }
 }

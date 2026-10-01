@@ -1888,4 +1888,132 @@ describe("live server-backed flows", () => {
       expect(JSON.parse(String(call?.[1]?.body)).entryIds).toHaveLength(50);
     });
   });
+  it("marks a named English unit or one word as known and skips known words when starting", async () => {
+    const known = new Set<string>();
+    const entryIds = Array.from(
+      { length: 50 },
+      (_, index) =>
+        `60000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+    );
+    const pack = {
+      id: exerciseId,
+      slug: "daily-english-basic-01-en-he",
+      title: "יחידה 1: Building Your First Sentences",
+      description: "First sentences",
+      moduleNumber: 1,
+      version: 2,
+      wordCount: 50,
+      installed: false,
+      installedVersion: null,
+      topic: {
+        id: itemId,
+        slug: "english-learning-path-en-he",
+        title: "מסלול לימוד אנגלית",
+      },
+      track: {
+        id: sessionId,
+        slug: "daily-english-basic-en-he",
+        title: "אנגלית בסיסית",
+        levelCode: "beginner",
+        cefrFrom: "A1",
+        cefrTo: "A2",
+        sourceLanguageCode: "en",
+        translationLanguageCode: "he",
+      },
+      progress: {
+        linked: 0,
+        new: 0,
+        learning: 0,
+        reviewing: 0,
+        mastered: 0,
+        known: known.size,
+        completed: known.size,
+        due: 0,
+      },
+    };
+    const currentPack = () => ({
+      ...pack,
+      progress: { ...pack.progress, known: known.size, completed: known.size },
+    });
+    const entries = () =>
+      entryIds.map((id, index) => ({
+        id,
+        sourceText: index === 0 ? "I" : `word ${index}`,
+        translationText: index === 0 ? "אני" : "מילה",
+        itemType: "word",
+        partOfSpeech: null,
+        exampleText: null,
+        learningItemId: null,
+        excludedAt: null,
+        known: known.has(id),
+      }));
+    const fetchMock = mount("/english-learning", async (url, init) => {
+      if (
+        url.endsWith("/word-packs") &&
+        (!init?.method || init.method === "GET")
+      )
+        return json({ packs: [currentPack()] });
+      if (
+        url.endsWith(`/word-packs/${pack.id}/known`) &&
+        init?.method === "PUT"
+      ) {
+        const body = JSON.parse(String(init.body)) as {
+          entryIds: string[];
+          known: boolean;
+        };
+        body.entryIds.forEach((id) =>
+          body.known ? known.add(id) : known.delete(id),
+        );
+        return json({ packId: pack.id, knownCount: known.size });
+      }
+      if (url.endsWith(`/word-packs/${pack.id}`))
+        return json({ pack: currentPack(), entries: entries() });
+      if (url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST")
+        return json(
+          {
+            packId: pack.id,
+            added: 49,
+            linkedExisting: 0,
+            restored: 0,
+            excluded: 1,
+            total: 50,
+          },
+          201,
+        );
+      return json({}, 500);
+    });
+    const card = (
+      await screen.findByText("Building Your First Sentences")
+    ).closest("article")!;
+    await userEvent.click(
+      within(card).getByRole("button", { name: /כבר יודע.*היחידה/ }),
+    );
+    await waitFor(() => expect(known.size).toBe(50));
+    expect(within(card).getByRole("progressbar")).toHaveValue(50);
+    await userEvent.click(
+      within(card).getByRole("button", { name: /ביטול סימון היחידה/ }),
+    );
+    await waitFor(() => expect(known.size).toBe(0));
+    await userEvent.click(
+      within(card).getByRole("button", { name: /הצגת היחידה/ }),
+    );
+    const row = (await screen.findByText("I")).closest(".pack-word-row")!;
+    await userEvent.click(
+      within(row).getByRole("button", { name: /כבר יודע/ }),
+    );
+    await waitFor(() => expect(known.size).toBe(1));
+    await userEvent.click(
+      screen.getByRole("button", { name: "הוספה ותחילת תרגול" }),
+    );
+    await waitFor(() => {
+      const addCall = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST",
+      );
+      expect(addCall).toBeDefined();
+      const body = JSON.parse(String(addCall?.[1]?.body));
+      expect(body.entryIds).toHaveLength(49);
+      expect(body.entryIds).not.toContain(entryIds[0]);
+    });
+  });
 });

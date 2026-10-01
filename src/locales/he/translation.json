@@ -44,8 +44,8 @@
     "unit": "יחידה {{number}}",
     "unitSize": "{{count}} מילים וביטויים",
     "levelNumber": "רמה {{number}} מתוך 3",
-    "levelProgress": "{{mastered}} מתוך {{total}} נלמדו",
-    "unitProgress": "{{mastered}} מתוך {{total}} נלמדו",
+    "levelProgress": "{{mastered}} מתוך {{total}} הושלמו",
+    "unitProgress": "{{mastered}} מתוך {{total}} הושלמו",
     "levels": {
       "beginner": "אנגלית בסיסית",
       "intermediate": "אנגלית טובה",
@@ -62,7 +62,12 @@
     "start": "התחלת היחידה",
     "continue": "המשך ללמוד",
     "practice": "תרגול היחידה",
-    "addAndPractice": "הוספה ותחילת תרגול"
+    "addAndPractice": "הוספה ותחילת תרגול",
+    "knownCount": "{{count}} סומנו כידועות",
+    "markUnitKnown": "אני כבר יודע/ת את היחידה",
+    "unmarkUnitKnown": "ביטול סימון היחידה כידועה",
+    "markKnown": "אני כבר יודע/ת",
+    "unmarkKnown": "ביטול סימון כידועה"
   },
   "privateLesson": {
     "preparingRecommendation": "מכינים עבורך שיעור…",

@@ -299,6 +299,8 @@ export const wordPackSchema = z.object({
     learning: count,
     reviewing: count,
     mastered: count,
+    known: count.optional(),
+    completed: count.optional(),
     due: count,
   }),
 });
@@ -313,6 +315,7 @@ export const wordPackEntrySchema = z.object({
   exampleText: z.string().nullable(),
   learningItemId: uuid.nullable(),
   excludedAt: nullableDate,
+  known: z.boolean().optional(),
 });
 export type WordPackEntry = z.infer<typeof wordPackEntrySchema>;
 export const wordPackDetailSchema = z.object({
@@ -326,6 +329,10 @@ export const wordPackAddReceiptSchema = z.object({
   restored: count,
   excluded: count,
   total: count,
+});
+export const wordPackKnownReceiptSchema = z.object({
+  packId: uuid,
+  knownCount: count,
 });
 export const wordPackRemoveReceiptSchema = z.object({
   packId: uuid,
