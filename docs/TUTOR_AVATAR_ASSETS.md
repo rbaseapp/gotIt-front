@@ -21,7 +21,7 @@ Female (`tutor-female-speaking-rounded.png`), edit target `tutor-female-listenin
 
 `avatarMotion.ts` owns amplitude thresholds and frame-rate independent audio
 smoothing, with a gentle onset/release to damp rapid syllable changes and a
-110ms mouth crossfade. The connection adapter publishes at approximately 30 Hz. Adjacent
+160ms mouth crossfade and a 110ms audio envelope time constant. The connection adapter publishes at approximately 30 Hz. Adjacent
 pose contributions are converted into source-over opacity rather than applying
 independent alpha weights that leak the closed mouth through open poses. The
 animation follows the playback envelope; it does not recognize spoken phonemes.

@@ -41,7 +41,7 @@ export function smoothAvatarLevel(
   const duration = Number.isFinite(elapsedMs)
     ? Math.max(0, Math.min(100, elapsedMs))
     : 0;
-  const timeConstant = target > current ? 75 : 85;
+  const timeConstant = 110;
   const level =
     current + (target - current) * (1 - Math.exp(-duration / timeConstant));
   return target === 0 && level < 0.008 ? 0 : level;
