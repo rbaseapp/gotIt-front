@@ -21,7 +21,7 @@ describe("audio-driven avatar motion", () => {
     }
   });
 
-  it("has a fast speech onset and closes during a short pause at different refresh rates", () => {
+  it("slows rapid mouth openings while still closing on a pause at different refresh rates", () => {
     const run = (
       hz: number,
       target: number,
@@ -37,10 +37,20 @@ describe("audio-driven avatar motion", () => {
         );
       return level;
     };
-    expect(run(60, 1, 0, 60)).toBeGreaterThan(0.85);
-    expect(run(60, 0, 1, 220)).toBeLessThan(0.025);
+    expect(run(60, 1, 0, 60)).toBeGreaterThan(0.4);
+    expect(run(60, 1, 0, 60)).toBeLessThan(0.6);
+    expect(run(60, 0, 1, 320)).toBeLessThan(0.025);
     expect(run(30, 0.6, 0, 100)).toBeCloseTo(run(144, 0.6, 0, 100), 6);
-    expect(run(60, 0, 1, 400)).toBe(0);
+    expect(run(60, 0, 1, 450)).toBe(0);
+  });
+
+  it("dampens alternating loud/quiet 32ms samples instead of snapping the lips", () => {
+    let level = 0.5;
+    const levels = Array.from({ length: 20 }, (_, index) => {
+      level = smoothAvatarLevel(level, index % 2 === 0 ? 1 : 0, 32);
+      return level;
+    });
+    expect(Math.max(...levels) - Math.min(...levels)).toBeLessThan(0.25);
   });
 
   it("bounds corrupt samples and a stalled animation clock", () => {

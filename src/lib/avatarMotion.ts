@@ -26,7 +26,7 @@ export function avatarMouth(level: number) {
   return { soft, rounded, wide, speaking: safeLevel > stops[0] };
 }
 
-/** Fast onset and short release, independent of the display refresh rate. */
+/** Gentle onset/release filter rapid syllable flicker at any refresh rate. */
 export function smoothAvatarLevel(
   previous: number,
   measured: number,
@@ -41,7 +41,7 @@ export function smoothAvatarLevel(
   const duration = Number.isFinite(elapsedMs)
     ? Math.max(0, Math.min(100, elapsedMs))
     : 0;
-  const timeConstant = target > current ? 28 : 55;
+  const timeConstant = target > current ? 75 : 85;
   const level =
     current + (target - current) * (1 - Math.exp(-duration / timeConstant));
   return target === 0 && level < 0.008 ? 0 : level;

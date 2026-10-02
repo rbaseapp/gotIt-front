@@ -676,7 +676,7 @@
     #000 70%,
     transparent 100%
   );
-  transition: opacity 32ms linear;
+  transition: opacity 110ms ease-out;
 }
 .teacher-avatar.thinking .teacher-avatar-thinking-frame {
   animation: teacher-avatar-thinking-glance 9.5s ease-in-out 2.5s infinite;

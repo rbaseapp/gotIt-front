@@ -108,9 +108,10 @@ it("connects through the product backend and asks the server to end the call", a
   for (const timestamp of [16, 32, 48, 64, 80, 96]) frame?.(timestamp);
   // The previous 70ms publication cadence misses these syllable updates.
   expect(onAudioLevel).toHaveBeenCalledTimes(3);
-  expect(onAudioLevel.mock.calls[2][0]).toBeGreaterThan(0.8);
+  expect(onAudioLevel.mock.calls[2][0]).toBeGreaterThan(0.6);
+  expect(onAudioLevel.mock.calls[2][0]).toBeLessThan(0.8);
   sampleValue = 128;
-  for (let timestamp = 112; timestamp <= 416; timestamp += 16)
+  for (let timestamp = 112; timestamp <= 560; timestamp += 16)
     frame?.(timestamp);
   expect(onAudioLevel.mock.lastCall?.[0]).toBe(0);
   connection.close();

@@ -30,6 +30,7 @@ test("mouth blending stays local to the face and respects reduced motion on mobi
   await expect(rounded).toHaveCSS("opacity", "0.35");
   await expect(wide).toHaveCSS("opacity", "0");
   await expect(rounded).not.toHaveCSS("mask-image", "none");
+  await expect(rounded).toHaveCSS("transition-duration", "0.11s");
   await expect(blink).not.toHaveCSS("display", "none");
   await expect(blink).not.toHaveCSS("mask-image", "none");
   await expect(page.locator(".teacher-avatar-portrait")).toHaveCSS(
