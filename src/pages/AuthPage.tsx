@@ -1,17 +1,13 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import {
-  ArrowLeft,
   BookOpenCheck,
   Brain,
   Check,
-  Eye,
-  EyeOff,
-  LoaderCircle,
-  LockKeyhole,
   Mail,
   MessageCircle,
   Sparkles,
 } from "lucide-react";
+import { EmailAuthForm } from "../components/EmailAuthForm";
 import { Logo } from "../components/Logo";
 import { useApp } from "../context/AppContext";
 import { GoogleSignIn } from "../components/GoogleSignIn";
@@ -23,25 +19,10 @@ import { supportEmailHref, supportWhatsappHref } from "../lib/supportContact";
 
 export function AuthPage() {
   const { t } = useTranslation();
-  const { authenticate, authenticateGoogle, authenticateFacebook, startDemo } = useApp();
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const { authenticate, authenticateGoogle, authenticateFacebook, startDemo } =
+    useApp();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await authenticate(mode, email, password);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : t("auth.genericError"));
-    } finally {
-      setLoading(false);
-    }
-  };
   return (
     <div className="auth-page">
       <UiLanguageSelect compact />
@@ -59,9 +40,7 @@ export function AuthPage() {
             <br />
             <em>{t("auth.headlineEmphasis")}</em>
           </h1>
-          <p>
-            {t("auth.description")}
-          </p>
+          <p>{t("auth.description")}</p>
           <ul>
             <li>
               <Check size={17} />
@@ -95,68 +74,12 @@ export function AuthPage() {
         </div>
         <div className="auth-card">
           <p className="eyebrow">{t("auth.welcome")}</p>
-          <h2>{mode === "login" ? t("auth.loginTitle") : t("auth.registerTitle")}</h2>
-          <p>
-            {mode === "login"
-              ? t("auth.loginDescription")
-              : t("auth.registerDescription")}
-          </p>
-          <form onSubmit={submit} className="form-stack">
-            <label className="field">
-              <span>{t("auth.email")}</span>
-              <div className="input-with-icon">
-                <Mail size={18} />
-                <input
-                  type="email"
-                  autoComplete="email"
-                  maxLength={320}
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  dir="ltr"
-                  disabled={loading}
-                />
-              </div>
-            </label>
-            <label className="field">
-              <span>{t("auth.password")}</span>
-              <div className="input-with-icon">
-                <LockKeyhole size={18} />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={
-                    mode === "login" ? "current-password" : "new-password"
-                  }
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t("auth.passwordHint")}
-                  dir="ltr"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
-                  onClick={() => setShowPassword((value) => !value)}
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              </div>
-            </label>
-            {error && (
-              <div className="form-error" role="alert">
-                {error}
-              </div>
-            )}
-            <button className="button primary auth-submit" disabled={loading}>
-              {loading && <LoaderCircle size={18} className="spin" />}
-              {mode === "login" ? t("auth.loginSubmit") : t("auth.registerSubmit")}
-              <ArrowLeft size={18} />
-            </button>
-          </form>
+          <EmailAuthForm authenticate={authenticate} onBusy={setLoading} />
+          {error && (
+            <div className="form-error" role="alert">
+              {error}
+            </div>
+          )}
           <div className="or-divider">
             <span>{t("auth.or")}</span>
           </div>
@@ -200,29 +123,17 @@ export function AuthPage() {
                 onClick={startDemo}
               >
                 <BookOpenCheck size={19} />
-                {t("auth.demoSubmit")}<span>{t("auth.noRegistration")}</span>
+                {t("auth.demoSubmit")}
+                <span>{t("auth.noRegistration")}</span>
               </button>
-              <p className="auth-footnote">
-                {t("auth.demoNote")}
-              </p>
+              <p className="auth-footnote">{t("auth.demoNote")}</p>
             </>
           )}
-          <p className="auth-switch">
-            {mode === "login" ? t("auth.noAccount") : t("auth.hasAccount")}{" "}
-            <button
-              disabled={loading}
-              onClick={() => {
-                setMode(mode === "login" ? "register" : "login");
-                setError("");
-              }}
-            >
-              {mode === "login" ? t("auth.register") : t("auth.login")}
-            </button>
-          </p>
-          <p className="auth-footnote">
-            {t("auth.socialNote")}
-          </p>
-          <nav className="auth-support-links" aria-label={t("help.contactTitle")}>
+          <p className="auth-footnote">{t("auth.socialNote")}</p>
+          <nav
+            className="auth-support-links"
+            aria-label={t("help.contactTitle")}
+          >
             <a href={supportEmailHref(t("help.emailSubject"))}>
               <Mail size={15} aria-hidden="true" />
               {t("help.contactEmail")}
@@ -236,7 +147,10 @@ export function AuthPage() {
               {t("help.contactWhatsapp")}
             </a>
           </nav>
-          <nav className="auth-legal-links" aria-label={t("auth.legalNavigation")}>
+          <nav
+            className="auth-legal-links"
+            aria-label={t("auth.legalNavigation")}
+          >
             <Link to="/terms-of-service">{t("auth.terms")}</Link>
             <Link to="/privacy-policy">{t("auth.privacy")}</Link>
             <Link to="/refund-policy">{t("auth.refunds")}</Link>

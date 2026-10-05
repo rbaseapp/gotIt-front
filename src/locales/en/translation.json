@@ -414,7 +414,25 @@
     "refunds": "Refund policy",
     "genericError": "We couldn't sign you in",
     "googleError": "Google sign-in failed",
-    "facebookError": "Facebook sign-in failed"
+    "facebookError": "Facebook sign-in failed",
+    "verifyTitle": "Verify your email",
+    "resetTitle": "Reset your password",
+    "codeInstructions": "Enter the six-digit code and choose your password. The code expires in 10 minutes.",
+    "forgotInstructions": "Enter your email to request a password reset code.",
+    "emailCode": "Email verification code",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "passwordMismatch": "The passwords do not match.",
+    "emailCodeRequested": "If this address is eligible, a code will arrive shortly. Check your spam folder too.",
+    "emailVerified": "Email verified. You can now sign in.",
+    "passwordReset": "Password updated. Sign in with your new password.",
+    "verifySubmit": "Verify email",
+    "resetSubmit": "Save new password",
+    "sendCode": "Send code",
+    "resendCode": "Resend code",
+    "resendCountdown": "Resend in {{seconds}} seconds",
+    "forgotPassword": "Forgot password?",
+    "backToLogin": "Back to sign in"
   },
   "google": {
     "timeout": "Google took too long to load. Please try again.",
@@ -1604,7 +1622,11 @@
     "signInRequired": "Sign in to your account.",
     "audioUnavailable": "Audio is currently unavailable. Try again later.",
     "invalidAudio": "The audio file is invalid.",
-    "invalidBillingResponse": "Your subscription details could not be loaded. Try again."
+    "invalidBillingResponse": "Your subscription details could not be loaded. Try again.",
+    "EMAIL_VERIFICATION_REQUIRED": "Verify your email before signing in.",
+    "EMAIL_CODE_INVALID": "The code is incorrect, expired or already used. Request a new code.",
+    "EMAIL_RATE_LIMITED": "Too many requests. Wait before trying again.",
+    "EMAIL_DELIVERY_UNAVAILABLE": "Email delivery is temporarily unavailable. Please try again later."
   },
   "validation": {
     "skills": "Choose at least one skill, without duplicates.",

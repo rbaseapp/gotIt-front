@@ -90,3 +90,14 @@ Paddle chooses which enabled payment methods to show at runtime. Google Pay appe
 - בדיקת Browser חזותית לא רצה כי סביבת Browser לא הייתה זמינה. יש לבצע את checklist ב־[Frontend status](docs/FRONTEND_STATUS.md).
 
 לא בוצעו מכאן deploy, שינוי Core, שינוי backend, migration, יצירת חשבון, commit או push.
+# Email verification and recovery
+
+Email registration requests a six-digit code and remains signed out until mailbox
+proof succeeds. Verification and password reset require a matching new-password
+confirmation and return to login. The form includes resend cooldown, provider/network
+errors and existing-unverified-account verification in all eight UI languages.
+`/?auth=register` and `/?auth=reset` open the matching signed-out flow for Chrome;
+no credentials appear in those URLs. The gateway permits only the four named new Core
+routes. Deploy with Core's email challenge migration and configured Resend sender.
+Tests: `test/email-auth.test.tsx`, `test/e2e/email-auth.spec.ts`, and gateway allowlist
+coverage. Production mailbox acceptance is tracked in the project specification.

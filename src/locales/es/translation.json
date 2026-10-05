@@ -368,7 +368,25 @@
     "refunds": "Política de reembolso",
     "genericError": "No pudimos iniciar tu sesión",
     "googleError": "El inicio de sesión con Google falló",
-    "facebookError": "El inicio de sesión con Facebook falló"
+    "facebookError": "El inicio de sesión con Facebook falló",
+    "verifyTitle": "Verifica tu correo",
+    "resetTitle": "Restablece tu contraseña",
+    "codeInstructions": "Introduce el código de seis dígitos y elige tu contraseña. El código caduca en 10 minutos.",
+    "forgotInstructions": "Introduce tu correo para solicitar un código de restablecimiento.",
+    "emailCode": "Código de verificación",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "emailCodeRequested": "Si la dirección es válida para este proceso, recibirás un código pronto. Revisa también el correo no deseado.",
+    "emailVerified": "Correo verificado. Ya puedes iniciar sesión.",
+    "passwordReset": "Contraseña actualizada. Inicia sesión con la nueva contraseña.",
+    "verifySubmit": "Verificar correo",
+    "resetSubmit": "Guardar nueva contraseña",
+    "sendCode": "Enviar código",
+    "resendCode": "Reenviar código",
+    "resendCountdown": "Reenviar en {{seconds}} segundos",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "backToLogin": "Volver al inicio de sesión"
   },
   "google": {
     "timeout": "Google tardó demasiado en cargar. Intenta de nuevo.",
@@ -1558,7 +1576,11 @@
     "signInRequired": "Inicia sesión en tu cuenta.",
     "audioUnavailable": "El audio no está disponible. Asegúrate de que hay un proveedor de voz configurado en el servidor.",
     "invalidAudio": "El archivo de audio es inválido.",
-    "invalidBillingResponse": "El servicio de suscripción devolvió una respuesta inválida."
+    "invalidBillingResponse": "El servicio de suscripción devolvió una respuesta inválida.",
+    "EMAIL_VERIFICATION_REQUIRED": "Verifica tu correo antes de iniciar sesión.",
+    "EMAIL_CODE_INVALID": "El código es incorrecto, ha caducado o ya se usó. Solicita otro.",
+    "EMAIL_RATE_LIMITED": "Demasiadas solicitudes. Espera antes de reintentarlo.",
+    "EMAIL_DELIVERY_UNAVAILABLE": "El envío de correos no está disponible temporalmente. Inténtalo más tarde."
   },
   "validation": {
     "skills": "Elige al menos una habilidad, sin duplicados.",

@@ -368,7 +368,25 @@
     "refunds": "Politique de remboursement",
     "genericError": "Nous n'avons pas pu vous connecter",
     "googleError": "Échec de la connexion Google",
-    "facebookError": "Échec de la connexion Facebook"
+    "facebookError": "Échec de la connexion Facebook",
+    "verifyTitle": "Vérifiez votre e-mail",
+    "resetTitle": "Réinitialiser le mot de passe",
+    "codeInstructions": "Saisissez le code à six chiffres et choisissez votre mot de passe. Le code expire dans 10 minutes.",
+    "forgotInstructions": "Saisissez votre e-mail pour demander un code de réinitialisation.",
+    "emailCode": "Code de vérification",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "emailCodeRequested": "Si cette adresse est éligible, un code arrivera bientôt. Vérifiez aussi les courriers indésirables.",
+    "emailVerified": "E-mail vérifié. Vous pouvez vous connecter.",
+    "passwordReset": "Mot de passe modifié. Connectez-vous avec le nouveau mot de passe.",
+    "verifySubmit": "Vérifier l’e-mail",
+    "resetSubmit": "Enregistrer le mot de passe",
+    "sendCode": "Envoyer le code",
+    "resendCode": "Renvoyer le code",
+    "resendCountdown": "Renvoyer dans {{seconds}} secondes",
+    "forgotPassword": "Mot de passe oublié ?",
+    "backToLogin": "Retour à la connexion"
   },
   "google": {
     "timeout": "Google a mis trop de temps à charger. Veuillez réessayer.",
@@ -1558,7 +1576,11 @@
     "signInRequired": "Connectez-vous à votre compte.",
     "audioUnavailable": "L'audio n'est pas disponible. Assurez-vous qu'un fournisseur de synthèse vocale est configuré sur le serveur.",
     "invalidAudio": "Le fichier audio est invalide.",
-    "invalidBillingResponse": "Le service d'abonnement a renvoyé une réponse invalide."
+    "invalidBillingResponse": "Le service d'abonnement a renvoyé une réponse invalide.",
+    "EMAIL_VERIFICATION_REQUIRED": "Vérifiez votre e-mail avant de vous connecter.",
+    "EMAIL_CODE_INVALID": "Le code est incorrect, expiré ou déjà utilisé. Demandez-en un nouveau.",
+    "EMAIL_RATE_LIMITED": "Trop de demandes. Patientez avant de réessayer.",
+    "EMAIL_DELIVERY_UNAVAILABLE": "L’envoi d’e-mails est temporairement indisponible. Réessayez plus tard."
   },
   "validation": {
     "skills": "Choisissez au moins une compétence, sans doublons.",

@@ -368,7 +368,25 @@
     "refunds": "Rückerstattungsrichtlinie",
     "genericError": "Wir konnten dich nicht anmelden",
     "googleError": "Google-Anmeldung fehlgeschlagen",
-    "facebookError": "Facebook-Anmeldung fehlgeschlagen"
+    "facebookError": "Facebook-Anmeldung fehlgeschlagen",
+    "verifyTitle": "E-Mail bestätigen",
+    "resetTitle": "Passwort zurücksetzen",
+    "codeInstructions": "Gib den sechsstelligen Code ein und wähle dein Passwort. Der Code gilt 10 Minuten.",
+    "forgotInstructions": "Gib deine E-Mail ein, um einen Code zum Zurücksetzen anzufordern.",
+    "emailCode": "E-Mail-Bestätigungscode",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+    "emailCodeRequested": "Wenn diese Adresse berechtigt ist, kommt bald ein Code. Prüfe auch den Spamordner.",
+    "emailVerified": "E-Mail bestätigt. Du kannst dich jetzt anmelden.",
+    "passwordReset": "Passwort aktualisiert. Melde dich mit dem neuen Passwort an.",
+    "verifySubmit": "E-Mail bestätigen",
+    "resetSubmit": "Neues Passwort speichern",
+    "sendCode": "Code senden",
+    "resendCode": "Code erneut senden",
+    "resendCountdown": "Erneut senden in {{seconds}} Sekunden",
+    "forgotPassword": "Passwort vergessen?",
+    "backToLogin": "Zurück zur Anmeldung"
   },
   "google": {
     "timeout": "Google hat zu lange zum Laden gebraucht. Versuche es bitte erneut.",
@@ -1558,7 +1576,11 @@
     "signInRequired": "Melden Sie sich bei Ihrem Konto an.",
     "audioUnavailable": "Audio ist nicht verfügbar. Vergewissern Sie sich, dass ein Sprachanbieter auf dem Server konfiguriert ist.",
     "invalidAudio": "Die Audiodatei ist ungültig.",
-    "invalidBillingResponse": "Der Abonnementdienst hat eine ungültige Antwort zurückgegeben."
+    "invalidBillingResponse": "Der Abonnementdienst hat eine ungültige Antwort zurückgegeben.",
+    "EMAIL_VERIFICATION_REQUIRED": "Bestätige deine E-Mail vor der Anmeldung.",
+    "EMAIL_CODE_INVALID": "Der Code ist falsch, abgelaufen oder bereits verwendet. Fordere einen neuen an.",
+    "EMAIL_RATE_LIMITED": "Zu viele Anfragen. Warte vor dem nächsten Versuch.",
+    "EMAIL_DELIVERY_UNAVAILABLE": "E-Mail-Versand ist vorübergehend nicht verfügbar. Versuche es später."
   },
   "validation": {
     "skills": "Wählen Sie mindestens eine Fertigkeit aus, ohne Duplikate.",

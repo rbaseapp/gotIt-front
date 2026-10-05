@@ -368,7 +368,25 @@
     "refunds": "سياسة الاسترجاع",
     "genericError": "تعذر تسجيل دخولك",
     "googleError": "فشل تسجيل الدخول عبر Google",
-    "facebookError": "فشل تسجيل الدخول عبر Facebook"
+    "facebookError": "فشل تسجيل الدخول عبر Facebook",
+    "verifyTitle": "تأكيد البريد الإلكتروني",
+    "resetTitle": "إعادة تعيين كلمة المرور",
+    "codeInstructions": "أدخل الرمز المكوّن من 6 أرقام واختر كلمة المرور. تنتهي صلاحيته بعد 10 دقائق.",
+    "forgotInstructions": "أدخل بريدك لطلب رمز إعادة تعيين كلمة المرور.",
+    "emailCode": "رمز التحقق من البريد",
+    "newPassword": "كلمة مرور جديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+    "emailCodeRequested": "إذا كان العنوان مؤهلاً، سيصلك رمز قريباً. تحقق أيضاً من البريد غير المرغوب فيه.",
+    "emailVerified": "تم تأكيد البريد. يمكنك تسجيل الدخول الآن.",
+    "passwordReset": "تم تحديث كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.",
+    "verifySubmit": "تأكيد البريد",
+    "resetSubmit": "حفظ كلمة المرور الجديدة",
+    "sendCode": "إرسال الرمز",
+    "resendCode": "إعادة إرسال الرمز",
+    "resendCountdown": "إعادة الإرسال بعد {{seconds}} ثانية",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "backToLogin": "العودة لتسجيل الدخول"
   },
   "google": {
     "timeout": "استغرق Google وقتاً طويلاً في التحميل. يرجى المحاولة مرة أخرى.",
@@ -1594,7 +1612,11 @@
     "signInRequired": "تسجيل الدخول إلى حسابك.",
     "audioUnavailable": "الصوت غير متاح. تأكد من تكوين موفر الكلام على الخادم.",
     "invalidAudio": "ملف الصوت غير صحيح.",
-    "invalidBillingResponse": "أرجعت خدمة الاشتراك رداً غير صحيح."
+    "invalidBillingResponse": "أرجعت خدمة الاشتراك رداً غير صحيح.",
+    "EMAIL_VERIFICATION_REQUIRED": "أكد بريدك قبل تسجيل الدخول.",
+    "EMAIL_CODE_INVALID": "الرمز غير صحيح أو منتهي أو مستخدم. اطلب رمزاً جديداً.",
+    "EMAIL_RATE_LIMITED": "طلبات كثيرة جداً. انتظر قبل المحاولة مجدداً.",
+    "EMAIL_DELIVERY_UNAVAILABLE": "إرسال البريد غير متاح مؤقتاً. حاول لاحقاً."
   },
   "validation": {
     "skills": "اختر مهارة واحدة على الأقل، بدون نسخ مكررة.",

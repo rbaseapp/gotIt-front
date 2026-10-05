@@ -414,7 +414,25 @@
     "refunds": "מדיניות החזרים",
     "genericError": "לא הצלחנו להתחבר",
     "googleError": "כניסת Google נכשלה",
-    "facebookError": "כניסת Facebook נכשלה"
+    "facebookError": "כניסת Facebook נכשלה",
+    "verifyTitle": "אימות האימייל",
+    "resetTitle": "איפוס סיסמה",
+    "codeInstructions": "יש להזין את הקוד בן 6 הספרות ולבחור סיסמה. הקוד תקף ל־10 דקות.",
+    "forgotInstructions": "יש להזין את האימייל לקבלת קוד לאיפוס הסיסמה.",
+    "emailCode": "קוד אימות מהאימייל",
+    "newPassword": "סיסמה חדשה",
+    "confirmPassword": "אישור הסיסמה",
+    "passwordMismatch": "הסיסמאות אינן תואמות.",
+    "emailCodeRequested": "אם הכתובת מתאימה לתהליך, קוד יישלח אליה בקרוב. כדאי לבדוק גם בתיקיית הספאם.",
+    "emailVerified": "האימייל אומת. אפשר להיכנס לחשבון.",
+    "passwordReset": "הסיסמה עודכנה. יש להיכנס עם הסיסמה החדשה.",
+    "verifySubmit": "אימות האימייל",
+    "resetSubmit": "שמירת סיסמה חדשה",
+    "sendCode": "שליחת קוד",
+    "resendCode": "שליחת קוד מחדש",
+    "resendCountdown": "שליחה חוזרת בעוד {{seconds}} שניות",
+    "forgotPassword": "שכחתי סיסמה",
+    "backToLogin": "חזרה לכניסה"
   },
   "google": {
     "timeout": "טעינת Google ארכה זמן רב. נסו שוב.",
@@ -1604,7 +1622,11 @@
     "signInRequired": "יש להיכנס לחשבון.",
     "audioUnavailable": "השמעה אינה זמינה כרגע. נסו שוב מאוחר יותר.",
     "invalidAudio": "קובץ השמע אינו תקין.",
-    "invalidBillingResponse": "לא ניתן לטעון את פרטי המנוי כרגע. נסו שוב."
+    "invalidBillingResponse": "לא ניתן לטעון את פרטי המנוי כרגע. נסו שוב.",
+    "EMAIL_VERIFICATION_REQUIRED": "יש לאמת את האימייל לפני הכניסה.",
+    "EMAIL_CODE_INVALID": "הקוד שגוי, פג תוקף או שכבר נוצל. יש לבקש קוד חדש.",
+    "EMAIL_RATE_LIMITED": "יותר מדי בקשות. יש להמתין לפני ניסיון נוסף.",
+    "EMAIL_DELIVERY_UNAVAILABLE": "שליחת האימייל אינה זמינה כרגע. יש לנסות שוב מאוחר יותר."
   },
   "validation": {
     "skills": "יש לבחור לפחות כישור אחד, ללא כפילויות.",

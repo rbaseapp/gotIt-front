@@ -368,7 +368,25 @@
     "genericError": "我们无法让您登录",
     "googleError": "谷歌登录失败",
     "socialNote": "Google 和 Facebook 使用同一个按钮处理登录和注册。密码重置和邮箱验证在当前 Core 版本中不可用。",
-    "facebookError": "Facebook 登录失败"
+    "facebookError": "Facebook 登录失败",
+    "verifyTitle": "验证邮箱",
+    "resetTitle": "重置密码",
+    "codeInstructions": "输入六位验证码并设置密码。验证码在10分钟后过期。",
+    "forgotInstructions": "输入邮箱以请求密码重置验证码。",
+    "emailCode": "邮箱验证码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认密码",
+    "passwordMismatch": "两次输入的密码不一致。",
+    "emailCodeRequested": "如果该邮箱符合此操作条件，将很快收到验证码。也请检查垃圾邮件。",
+    "emailVerified": "邮箱已验证，现在可以登录。",
+    "passwordReset": "密码已更新，请使用新密码登录。",
+    "verifySubmit": "验证邮箱",
+    "resetSubmit": "保存新密码",
+    "sendCode": "发送验证码",
+    "resendCode": "重新发送验证码",
+    "resendCountdown": "{{seconds}}秒后重新发送",
+    "forgotPassword": "忘记密码？",
+    "backToLogin": "返回登录"
   },
   "google": {
     "timeout": "谷歌加载时间太长。请再试一次。",
@@ -1548,7 +1566,11 @@
     "FACEBOOK_AUTH_NOT_CONFIGURED": "此环境中未配置 Facebook 登录。",
     "FACEBOOK_TOKEN_INVALID": "Facebook 授权无效或已过期。请重试。",
     "FACEBOOK_EMAIL_REQUIRED": "Facebook 未提供邮箱地址。请授予邮箱访问权限或使用邮箱和密码。",
-    "invalidFacebookCredential": "Facebook 授权无效。请重试。"
+    "invalidFacebookCredential": "Facebook 授权无效。请重试。",
+    "EMAIL_VERIFICATION_REQUIRED": "请先验证邮箱再登录。",
+    "EMAIL_CODE_INVALID": "验证码错误、已过期或已使用。请请求新验证码。",
+    "EMAIL_RATE_LIMITED": "请求过多，请稍后重试。",
+    "EMAIL_DELIVERY_UNAVAILABLE": "邮件发送暂时不可用，请稍后重试。"
   },
   "validation": {
     "skills": "至少选择一项技能，不能重复。",

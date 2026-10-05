@@ -303,3 +303,14 @@ export function profilePayload(profile: ProfilePatch): ProfilePatch {
     ),
   };
 }
+
+export function parseEmailAccepted(payload: unknown) {
+  const value = object(payload);
+  if (
+    value.status !== "accepted" ||
+    value.expiresIn !== 600 ||
+    value.retryAfter !== 60
+  )
+    throw new Error("Invalid API response");
+  return { expiresIn: 600, retryAfter: 60 };
+}
