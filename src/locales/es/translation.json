@@ -1001,6 +1001,7 @@
     "speechUnavailable": "La reproducción de audio no está disponible en este dispositivo.",
     "playFailed": "No pudimos reproducir la palabra en este momento.",
     "invalidItems": "La lista de palabras no es válida.",
+    "languageMismatch": "Esta sesión pertenece a otro idioma. Vuelve a Aprender e inicia una práctica en el idioma seleccionado.",
     "invalidPack": "El pack seleccionado no es válido.",
     "openReadingFirst": "Abre un texto antes de comenzar la práctica de lectura.",
     "stoppedToast": "Práctica detenida. Se guardaron las respuestas confirmadas.",

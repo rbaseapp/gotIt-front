@@ -1001,6 +1001,7 @@
     "speechUnavailable": "Sprachausgabe ist auf diesem Gerät nicht verfügbar.",
     "playFailed": "Das Wort konnte gerade nicht abgespielt werden.",
     "invalidItems": "Die Wortliste ist ungültig.",
+    "languageMismatch": "Diese Sitzung gehört zu einer anderen Sprache. Kehre zu Lernen zurück und starte eine Übung in der gewählten Sprache.",
     "invalidPack": "Das ausgewählte Paket ist ungültig.",
     "openReadingFirst": "Öffne einen Text, bevor du mit dem Leseverständnistraining beginnst.",
     "stoppedToast": "Training beendet. Bestätigte Antworten wurden gespeichert.",

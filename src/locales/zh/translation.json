@@ -991,6 +991,7 @@
     "speechUnavailable": "此设备上无法播放语音。",
     "playFailed": "我们现在无法播放这个词。",
     "invalidItems": "单词列表无效。",
+    "languageMismatch": "此练习属于另一种语言。请返回学习页面，开始所选语言的练习。",
     "invalidPack": "所选包无效。",
     "openReadingFirst": "在开始阅读练习之前打开文本。",
     "stoppedToast": "练习停止了。已确认的答案已保存。",

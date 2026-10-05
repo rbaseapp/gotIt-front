@@ -48,6 +48,8 @@ async function completeSession(page: Page) {
         },
       };
     else if (path.endsWith("/profile")) response = { profile: seedProfile };
+    else if (path.endsWith("/dashboard/languages"))
+      response = { languages: [{ code: "en", count: words.length }] };
     else if (path.endsWith("/billing/status"))
       response = {
         tier: "paid",

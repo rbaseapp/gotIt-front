@@ -1047,6 +1047,7 @@
     "speechUnavailable": "Speech playback is unavailable on this device.",
     "playFailed": "We could not play the word right now.",
     "invalidItems": "The word list is invalid.",
+    "languageMismatch": "This session belongs to another language. Return to Learn and start practice in the selected language.",
     "invalidPack": "The selected pack is invalid.",
     "openReadingFirst": "Open a text before starting reading practice.",
     "stoppedToast": "Practice stopped. Answers already confirmed were saved.",

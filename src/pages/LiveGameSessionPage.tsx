@@ -29,6 +29,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Logo } from "../components/Logo";
+import { RemoteState } from "../components/RemoteState";
 import { LetterBoxesInput } from "../components/LetterBoxesInput";
 import { api } from "../lib/api";
 import {
@@ -122,6 +123,14 @@ export function LiveGameSessionPage() {
   const { type = "" } = useParams();
   const [params] = useSearchParams();
   const language = useLearningLanguage();
+  const needsLanguage =
+    !params.get("language") &&
+    !params.get("items") &&
+    !params.get("reading") &&
+    !params.get("pack");
+  const languagePending =
+    needsLanguage &&
+    (language.loading || Boolean(language.error) || !language.code);
   const navigate = useNavigate();
   const { profile, updateProfile } = useApp();
   const { confirm, toast } = useFeedback();
@@ -312,18 +321,17 @@ export function LiveGameSessionPage() {
       setFlipped(false);
     }
   };
-  const loadStudy = async (value: Session) => {
-    const result = await product(
-      studyCardsSchema,
-      `practice/sessions/${value.id}/study`,
-    );
+  const loadStudy = async (value: Session, cards?: StudyCard[]) => {
+    const result = cards
+      ? { cards }
+      : await product(studyCardsSchema, `practice/sessions/${value.id}/study`);
     if (mounted.current) {
       setStudyCards(result.cards);
       setStudyIndex(0);
     }
   };
   const start = async () => {
-    if (lock.current) return;
+    if (lock.current || languagePending) return;
     lock.current = true;
     setBusy(true);
     setError("");
@@ -351,16 +359,32 @@ export function LiveGameSessionPage() {
           },
         });
       let value = session;
+      let resumedCards: StudyCard[] | undefined;
       if (!value) {
         const resume = params.get("resume");
-        if (resume && uuid.safeParse(resume).success)
+        if (resume && uuid.safeParse(resume).success) {
           value = (
             await product(
               z.object({ session: sessionSchema }),
               `practice/sessions/${resume}`,
             )
           ).session;
-        else {
+          if (value.status === "active") {
+            resumedCards = (
+              await product(
+                studyCardsSchema,
+                `practice/sessions/${value.id}/study`,
+              )
+            ).cards;
+            const expectedLanguage = params.get("language") || language.code;
+            if (
+              resumedCards.some(
+                (card) => card.sourceLanguageCode !== expectedLanguage,
+              )
+            )
+              throw new Error(t("game.languageMismatch"));
+          }
+        } else {
           const ids = params.get("items")?.split(",");
           if (
             ids &&
@@ -398,7 +422,7 @@ export function LiveGameSessionPage() {
       }
       if (value.status === "active") {
         if (type === "smart" && value.attemptCount === 0)
-          await loadStudy(value);
+          await loadStudy(value, resumedCards);
         else await issue(value);
       }
     } catch (reason) {
@@ -959,7 +983,7 @@ export function LiveGameSessionPage() {
             )}
             <button
               className="button primary launch-button"
-              disabled={busy}
+              disabled={busy || languagePending}
               onClick={() => void start()}
             >
               {busy
@@ -971,6 +995,13 @@ export function LiveGameSessionPage() {
                     : t("game.start")}
               {!busy && <ArrowLeft size={19} />}
             </button>
+            {needsLanguage && (
+              <RemoteState
+                loading={language.loading}
+                error={language.error}
+                retry={() => void language.reload()}
+              />
+            )}
             {creation.current && !session && (
               <p>{t("game.retryCreationHelp")}</p>
             )}

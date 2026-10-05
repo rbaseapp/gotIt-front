@@ -32,19 +32,20 @@ export function useLearningLanguage() {
     [resource.data],
   );
   const code = useMemo(() => {
+    if (!resource.data) return chosen || profile.defaultSourceLanguage || "";
     if (languages.some((entry) => entry.code === chosen)) return chosen;
     if (languages.some((entry) => entry.code === profile.defaultSourceLanguage))
       return profile.defaultSourceLanguage || "";
     return languages[0]?.code || profile.defaultSourceLanguage || "";
-  }, [chosen, languages, profile.defaultSourceLanguage]);
+  }, [chosen, languages, profile.defaultSourceLanguage, resource.data]);
   useEffect(() => {
-    if (!code) return;
+    if (!code || !resource.data || resource.loading || resource.error) return;
     try {
       window.localStorage.setItem(storageKey, code);
     } catch {
       /* storage unavailable */
     }
-  }, [code]);
+  }, [code, resource.data, resource.loading, resource.error]);
   return {
     code,
     languages,

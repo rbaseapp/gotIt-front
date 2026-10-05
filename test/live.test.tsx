@@ -87,7 +87,9 @@ function mount(
   path: string,
   handler: (url: string, init?: RequestInit) => Promise<Response>,
   profile = seedProfile,
-  languages: Array<{ code: string; count: number }> = [],
+  languages:
+    | Array<{ code: string; count: number }>
+    | Promise<Array<{ code: string; count: number }>> = [],
 ) {
   clearTokens();
   vi.stubEnv("VITE_DEMO_MODE", "false");
@@ -96,7 +98,8 @@ function mount(
     if (url.endsWith("/auth/me")) return json({ user: identity });
     if (url.endsWith("/profile") && (!init?.method || init.method === "GET"))
       return json({ profile });
-    if (url.endsWith("/dashboard/languages")) return json({ languages });
+    if (url.endsWith("/dashboard/languages"))
+      return json({ languages: await languages });
     return handler(url, init);
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -115,6 +118,112 @@ function mount(
 }
 afterEach(clearTokens);
 describe("live server-backed flows", () => {
+  it.each([0, 2])(
+    "rejects an Arabic resumed session with %i attempts while English is selected",
+    async (attemptCount) => {
+      const fetchMock = mount(
+        `/learn/session/smart?resume=${sessionId}&language=en`,
+        async (url) => {
+          if (url.endsWith(`/practice/sessions/${sessionId}`))
+            return json({
+              session: {
+                ...session,
+                sessionType: "smart_review",
+                attemptCount,
+              },
+            });
+          if (url.endsWith(`/practice/sessions/${sessionId}/study`))
+            return json({
+              cards: [
+                {
+                  learningItemId: itemId,
+                  sourceText: "إليك",
+                  translationText: "הנה",
+                  sourceLanguageCode: "ar",
+                  translationLanguageCode: "he",
+                  context: null,
+                  audioUrl: null,
+                },
+              ],
+            });
+          throw new Error(
+            "Must not issue exercises or load images for another language",
+          );
+        },
+      );
+      await userEvent
+        .setup()
+        .click(await screen.findByRole("button", { name: "מתחילים" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "התרגול הזה שייך לשפה אחרת",
+      );
+      expect(screen.queryByText("إليك")).not.toBeInTheDocument();
+      expect(
+        fetchMock.mock.calls.some(
+          ([url]) => url.endsWith("/exercises") || url.endsWith("/image"),
+        ),
+      ).toBe(false);
+    },
+  );
+  it("waits for the selected English language before creating smart practice with an Arabic-default profile", async () => {
+    localStorage.setItem("gotit.learningLanguage", "en");
+    let resolve!: (value: Array<{ code: string; count: number }>) => void;
+    const languages = new Promise<Array<{ code: string; count: number }>>(
+      (done) => {
+        resolve = done;
+      },
+    );
+    const fetchMock = mount(
+      "/learn/session/smart",
+      async (url, init) => {
+        if (url.endsWith("/practice/sessions")) {
+          expect(JSON.parse(String(init?.body)).sourceLanguageCode).toBe("en");
+          return json({ session: { ...session, sessionType: "smart_review" } });
+        }
+        if (url.endsWith(`/practice/sessions/${sessionId}/study`))
+          return json({
+            cards: [
+              {
+                learningItemId: itemId,
+                sourceText: "remember",
+                translationText: "לזכור",
+                sourceLanguageCode: "en",
+                translationLanguageCode: "he",
+                context: null,
+                audioUrl: null,
+              },
+            ],
+          });
+        if (url.endsWith("/image")) return json({ image: null });
+        throw new Error("Unexpected route");
+      },
+      { ...seedProfile, defaultSourceLanguage: "ar" },
+      languages,
+    );
+    const start = await screen.findByRole("button", { name: "מתחילים" });
+    expect(start).toBeDisabled();
+    fireEvent.click(start);
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith("/practice/sessions")),
+    ).toBe(false);
+    expect(localStorage.getItem("gotit.learningLanguage")).toBe("en");
+    await act(async () => {
+      resolve([
+        { code: "ar", count: 12 },
+        { code: "en", count: 146 },
+      ]);
+    });
+    await waitFor(() => expect(start).toBeEnabled());
+    await userEvent.setup().click(start);
+    expect(
+      await screen.findByRole("heading", { name: "remember" }),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        url.endsWith("/practice/sessions"),
+      ),
+    ).toHaveLength(1);
+  });
   it("moves through memorization cards and offers one prominent review skip", async () => {
     const smartSession = { ...session, sessionType: "smart_review" };
     const fetchMock = mount("/learn/session/smart", async (url) => {

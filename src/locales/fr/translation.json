@@ -1001,6 +1001,7 @@
     "speechUnavailable": "La lecture audio n'est pas disponible sur cet appareil.",
     "playFailed": "Nous n'avons pas pu lire le mot pour le moment.",
     "invalidItems": "La liste de mots n'est pas valide.",
+    "languageMismatch": "Cette session est dans une autre langue. Revenez à Apprendre et commencez un exercice dans la langue sélectionnée.",
     "invalidPack": "Le pack sélectionné n'est pas valide.",
     "openReadingFirst": "Ouvrez un texte avant de commencer la pratique de lecture.",
     "stoppedToast": "Pratique arrêtée. Les réponses confirmées ont été enregistrées.",

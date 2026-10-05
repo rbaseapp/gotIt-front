@@ -300,7 +300,7 @@ export function LiveLearnPage() {
               {s.status === "active" && (
                 <Link
                   className="button ghost"
-                  to={`/learn/session/${s.sessionType === "smart_review" ? "smart" : s.sessionType === "listening_spelling" ? "listening" : s.sessionType}?resume=${s.id}`}
+                  to={`/learn/session/${s.sessionType === "smart_review" ? "smart" : s.sessionType === "listening_spelling" ? "listening" : s.sessionType}?resume=${s.id}&language=${encodeURIComponent(language.code)}`}
                 >
                   {t("learn.continue")}
                 </Link>
