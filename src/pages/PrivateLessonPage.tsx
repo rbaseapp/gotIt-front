@@ -37,6 +37,8 @@ import { TeacherAvatar } from "../components/TeacherAvatar";
 import { LanguageCombobox } from "../components/LanguageCombobox";
 import { PrivateLessonFlow } from "../lib/privateLessonFlow";
 import { Modal } from "../components/Modal";
+import { speak } from "../lib/utils";
+import { readLessonDraft, saveLessonDraft } from "../lib/lessonDraft";
 import { courseApi, type Course } from "../lib/courses";
 import { LessonHomeworkCard } from "./HomeworkPage";
 import "../courses.css";
@@ -105,7 +107,7 @@ export function PrivateLessonPage() {
   const [courseData, setCourseData] = useState<Course | null>(null);
   const [courseError, setCourseError] = useState("");
   const [courseRetry, setCourseRetry] = useState(0);
-  const { profile, retryProfile } = useApp();
+  const { profile, retryProfile, user } = useApp();
   const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
     searchParams.get("language") ||
@@ -180,6 +182,9 @@ export function PrivateLessonPage() {
   const [showLevelDetails, setShowLevelDetails] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [showLessonOptions, setShowLessonOptions] = useState(false);
+  const [showTextAlternative, setShowTextAlternative] = useState(false);
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  const [replayError, setReplayError] = useState("");
   const [selectedHistory, setSelectedHistory] = useState<SavedPrivateLesson>();
   const [savedSuggestions, setSavedSuggestions] = useState<Set<string>>(
     new Set(),
@@ -346,7 +351,9 @@ export function PrivateLessonPage() {
     const finishWhenQuiet = () => {
       const quietFor = Date.now() - lastTutorAudioAt.current;
       if (quietFor < 1_200) {
-        timers.current.push(window.setTimeout(finishWhenQuiet, 1_200 - quietFor));
+        timers.current.push(
+          window.setTimeout(finishWhenQuiet, 1_200 - quietFor),
+        );
         return;
       }
       finish(
@@ -518,12 +525,18 @@ export function PrivateLessonPage() {
   useEffect(() => {
     let active = true;
     void listPrivateLessons(50, courseId ?? undefined)
-      .then((lessons) => active && setHistory(lessons))
+      .then((lessons) => {
+        if (!active) return;
+        setHistory(lessons);
+        const requested = searchParams.get("lesson");
+        if (searchParams.get("view") === "history" && requested)
+          setSelectedHistory(lessons.find((lesson) => lesson.id === requested));
+      })
       .catch((reason) => active && setHistoryError(errorMessage(reason)));
     return () => {
       active = false;
     };
-  }, [courseId]);
+  }, [courseId, searchParams]);
 
   useEffect(() => {
     let active = true;
@@ -533,7 +546,11 @@ export function PrivateLessonPage() {
       .then((setup) => {
         if (!active) return;
         setLessonSetup(setup);
-        const saved = setup.preferences;
+        const preparation =
+          searchParams.get("prep") === "warmup"
+            ? readLessonDraft(user, targetLanguage, courseId)
+            : undefined;
+        const saved = preparation?.preferences ?? setup.preferences;
         if (saved) {
           setSupportLanguage(saved.supportLanguageCode ?? "");
           setLessonMode(saved.lessonMode);
@@ -555,7 +572,13 @@ export function PrivateLessonPage() {
         const currentMilestone = setup.roadmap?.milestones.find(
           (item) => item.status === "current",
         );
-        if (currentMilestone && !personalizationTouched.current) {
+        if (preparation) {
+          setTopic(preparation.topic);
+          setGrammarFocus(preparation.grammarFocus);
+          setLevel(preparation.level);
+          setCourseTeachingLanguage(preparation.courseTeachingLanguage);
+          personalizationTouched.current = true;
+        } else if (currentMilestone && !personalizationTouched.current) {
           setTopic(currentMilestone.communicationObjective);
           setGrammarFocus(currentMilestone.grammarTopics.join(", "));
         }
@@ -565,7 +588,7 @@ export function PrivateLessonPage() {
     return () => {
       active = false;
     };
-  }, [targetLanguage]);
+  }, [targetLanguage, courseId, searchParams, user]);
 
   const coursePreferences = courseData
     ? (courseData.versions.find(
@@ -922,6 +945,62 @@ export function PrivateLessonPage() {
     }
   };
 
+  const teacherChoices = (
+    <fieldset
+      className="teacher-choice-row plain-fieldset"
+      disabled={setupLoading || phase === "preparing"}
+    >
+      <legend>{t("ux.chooseTeacher")}</legend>
+      {(["female", "male"] as const).map((voice) => (
+        <button
+          type="button"
+          key={voice}
+          className={`teacher-choice${teacherVoice === voice ? " selected" : ""}`}
+          aria-pressed={teacherVoice === voice}
+          onClick={() => setTeacherVoice(voice)}
+        >
+          <TeacherAvatar
+            variant={voice}
+            activity="idle"
+            active={false}
+            audioLevel={0}
+            label={t(`privateLesson.voiceOptions.${voice}`)}
+          />
+          <span>{t(`privateLesson.voiceOptions.${voice}`)}</span>
+        </button>
+      ))}
+    </fieldset>
+  );
+  const warmup = () => {
+    saveLessonDraft(user, lessonTargetLanguage, courseId, {
+      topic,
+      grammarFocus,
+      level,
+      courseTeachingLanguage,
+      preferences: {
+        supportLanguageCode: lessonSupportLanguage || null,
+        lessonMode,
+        teachingLanguage: lessonTeachingLanguage,
+        requestedDurationMinutes: lessonDurationMinutes,
+        teacherVoice,
+        speechRate,
+        focusAreas,
+        customFocus: customFocus || null,
+        correctionMode,
+        vocabularyMode,
+      },
+    });
+    const back = new URLSearchParams({
+      language: lessonTargetLanguage,
+      prep: "warmup",
+    });
+    if (courseId) back.set("course", courseId);
+    else back.set("practice", "free");
+    navigate(
+      `/learn?language=${encodeURIComponent(lessonTargetLanguage)}&return=${encodeURIComponent("/private-lesson?" + back)}`,
+    );
+  };
+
   return (
     <div
       className={`private-lesson-page live-page page-enter${sessionFullscreen ? " session-fullscreen" : ""}`}
@@ -962,6 +1041,7 @@ export function PrivateLessonPage() {
               </p>
               <h2 dir="auto">{courseData?.nextLesson?.title}</h2>
               <p dir="auto">{courseData?.nextLesson?.objective}</p>
+              {teacherChoices}
               {courseError && (
                 <div className="course-error" role="alert">
                   <p>{courseError}</p>
@@ -1028,6 +1108,14 @@ export function PrivateLessonPage() {
                   {t("privateLesson.start")}
                 </button>
               </form>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={setupLoading || !courseData?.nextLesson}
+                onClick={warmup}
+              >
+                {t("ux.warmup")}
+              </button>
               <button
                 className="course-text-link"
                 onClick={() => navigate(`/courses/${courseId}`)}
@@ -1192,6 +1280,7 @@ export function PrivateLessonPage() {
                   </article>
                 )}
 
+                {teacherChoices}
                 <form onSubmit={(event) => void startLesson(event)}>
                   <button
                     className="button primary private-lesson-start"
@@ -1226,6 +1315,40 @@ export function PrivateLessonPage() {
                   })}
                 </button>
 
+                <button
+                  type="button"
+                  className="button secondary"
+                  disabled={setupLoading}
+                  onClick={warmup}
+                >
+                  {t("ux.warmup")}
+                </button>
+                <button
+                  type="button"
+                  className="button ghost"
+                  onClick={() => setShowTextAlternative(true)}
+                >
+                  {t("ux.textAlternative")}
+                </button>
+                <Modal
+                  open={showTextAlternative}
+                  onClose={() => setShowTextAlternative(false)}
+                  title={t("ux.textAlternative")}
+                >
+                  <div className="modal-body">
+                    <p>{t("ux.textUnavailable")}</p>
+                    <button
+                      className="button primary"
+                      onClick={() =>
+                        navigate(
+                          `/learn?language=${encodeURIComponent(targetLanguage)}&return=%2Fprivate-lesson`,
+                        )
+                      }
+                    >
+                      {t("ux.writtenPractice")}
+                    </button>
+                  </div>
+                </Modal>
                 <div className="private-lesson-quick-links">
                   <button
                     type="button"
@@ -1400,7 +1523,9 @@ export function PrivateLessonPage() {
                               </option>
                             ))}
                           </select>
-                          <small>{t("privateLesson.minutesChargePolicy")}</small>
+                          <small>
+                            {t("privateLesson.minutesChargePolicy")}
+                          </small>
                         </label>
                       </div>
                       <details className="private-lesson-advanced">
@@ -1940,7 +2065,13 @@ export function PrivateLessonPage() {
             <div className="private-lesson-history-heading">
               <div>
                 <p className="eyebrow">{t("privateLesson.history.eyebrow")}</p>
-                <h2>{t(courseId ? "courses.courseHistory" : "privateLesson.history.title")}</h2>
+                <h2>
+                  {t(
+                    courseId
+                      ? "courses.courseHistory"
+                      : "privateLesson.history.title",
+                  )}
+                </h2>
               </div>
               <BookOpen size={24} aria-hidden="true" />
             </div>
@@ -2007,7 +2138,13 @@ export function PrivateLessonPage() {
                 ))}
               </div>
             ) : (
-              <p>{t(courseId ? "courses.noCourseHistory" : "privateLesson.history.empty")}</p>
+              <p>
+                {t(
+                  courseId
+                    ? "courses.noCourseHistory"
+                    : "privateLesson.history.empty",
+                )}
+              </p>
             )}
           </section>
           <Modal
@@ -2069,7 +2206,7 @@ export function PrivateLessonPage() {
                   <Menu size={20} />
                 </button>
                 <button
-                  className={`private-lesson-mute${microphoneMuted ? " muted" : ""}`}
+                  className={`private-lesson-mute${microphoneMuted ? " muted" : phase === "active" && microphoneReady ? " ux-recording" : ""}`}
                   type="button"
                   aria-label={
                     microphoneMuted
@@ -2097,41 +2234,46 @@ export function PrivateLessonPage() {
               </div>
             </header>
 
-            <div className="private-lesson-meta">
-              <span>
-                <Languages size={16} /> {session?.lesson.targetLanguageCode}
-              </span>
-              <span>{session?.lesson.level}</span>
-              <span>
-                <UserRound size={16} />
-                {session &&
-                  t(
-                    `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
-                  )}
-              </span>
-              <span>
-                <Gauge size={16} />
-                {session &&
-                  t(`privateLesson.speedOptions.${session.lesson.speechRate}`)}
-              </span>
-              <span>
-                <MessageCircleMore size={16} />
-                {session &&
-                  t(
-                    `privateLesson.correctionMode.options.${session.lesson.correctionMode}.title`,
-                  )}
-              </span>
-              <span>
-                <BookOpen size={16} />
-                {session &&
-                  t(
-                    `privateLesson.vocabularyMode.options.${session.lesson.vocabularyMode}.title`,
-                  )}
-              </span>
-              {session?.lesson.grammarFocus && (
-                <span dir="auto">{session.lesson.grammarFocus}</span>
-              )}
-            </div>
+            <details className="private-lesson-settings-details">
+              <summary>{t("ux.learningDetails")}</summary>
+              <div className="private-lesson-meta">
+                <span>
+                  <Languages size={16} /> {session?.lesson.targetLanguageCode}
+                </span>
+                <span>{session?.lesson.level}</span>
+                <span>
+                  <UserRound size={16} />
+                  {session &&
+                    t(
+                      `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
+                    )}
+                </span>
+                <span>
+                  <Gauge size={16} />
+                  {session &&
+                    t(
+                      `privateLesson.speedOptions.${session.lesson.speechRate}`,
+                    )}
+                </span>
+                <span>
+                  <MessageCircleMore size={16} />
+                  {session &&
+                    t(
+                      `privateLesson.correctionMode.options.${session.lesson.correctionMode}.title`,
+                    )}
+                </span>
+                <span>
+                  <BookOpen size={16} />
+                  {session &&
+                    t(
+                      `privateLesson.vocabularyMode.options.${session.lesson.vocabularyMode}.title`,
+                    )}
+                </span>
+                {session?.lesson.grammarFocus && (
+                  <span dir="auto">{session.lesson.grammarFocus}</span>
+                )}
+              </div>
+            </details>
 
             {phase === "ended" && reportRequested ? (
               <div className="private-lesson-report-shell">
@@ -2211,41 +2353,97 @@ export function PrivateLessonPage() {
                   </div>
                 </div>
 
-                <div
-                  className="private-lesson-transcript"
-                  aria-live="polite"
-                  ref={transcriptRef}
-                >
-                  <div className="private-lesson-transcript-title">
-                    <MessageCircleMore size={18} />
-                    <strong>{t("privateLesson.transcriptTitle")}</strong>
-                  </div>
-                  {turns.length ? (
-                    turns.map((turn) => (
-                      <div
-                        className={`private-lesson-turn ${turn.role}`}
-                        key={turn.id}
-                      >
-                        <small>{t(`privateLesson.roles.${turn.role}`)}</small>
-                        <p dir="auto">{turn.text}</p>
+                {phase !== "ended" &&
+                  turns.some((turn) => turn.role === "tutor") && (
+                    <div className="lesson-current-message" aria-live="polite">
+                      <p dir="auto">
+                        {
+                          turns.filter((turn) => turn.role === "tutor").at(-1)
+                            ?.text
+                        }
+                      </p>
+                      <div className="lesson-replay-controls">
+                        {[1, 0.65].map((rate) => (
+                          <button
+                            type="button"
+                            className="button secondary"
+                            key={rate}
+                            disabled={responding || phase !== "active"}
+                            onClick={() => {
+                              const text = turns
+                                .filter((turn) => turn.role === "tutor")
+                                .at(-1)?.text;
+                              const replayLanguage =
+                                session?.lesson.teachingLanguage === "support"
+                                  ? supportLanguage
+                                  : targetLanguage;
+                              setReplayError(
+                                text && speak(text, replayLanguage, rate)
+                                  ? ""
+                                  : t("ux.audioUnavailable"),
+                              );
+                            }}
+                          >
+                            <Headphones size={17} />
+                            {t(rate === 1 ? "ux.replay" : "ux.replaySlow")}
+                          </button>
+                        ))}
                       </div>
-                    ))
-                  ) : (
-                    <div className="private-lesson-listening">
-                      {phase === "connecting" ? (
-                        <LoaderCircle className="spin" size={24} />
-                      ) : (
-                        <span
-                          className="private-lesson-wave"
-                          aria-hidden="true"
-                        >
-                          <i /> <i /> <i /> <i /> <i />
-                        </span>
-                      )}
-                      <p>{status}</p>
+                      {replayError && <p role="alert">{replayError}</p>}
                     </div>
                   )}
-                </div>
+                <details
+                  className="lesson-transcript-details"
+                  open={phase === "ended" || undefined}
+                >
+                  <summary>{t("ux.fullConversation")}</summary>
+                  <div
+                    className="private-lesson-transcript"
+                    aria-live="polite"
+                    ref={transcriptRef}
+                  >
+                    <div className="private-lesson-transcript-title">
+                      <MessageCircleMore size={18} />
+                      <strong>{t("privateLesson.transcriptTitle")}</strong>
+                    </div>
+                    {turns.length ? (
+                      turns
+                        .filter(
+                          (turn) =>
+                            phase === "ended" ||
+                            turn.id !==
+                              turns
+                                .filter((item) => item.role === "tutor")
+                                .at(-1)?.id,
+                        )
+                        .map((turn) => (
+                          <div
+                            className={`private-lesson-turn ${turn.role}`}
+                            key={turn.id}
+                          >
+                            <small>
+                              {t(`privateLesson.roles.${turn.role}`)}
+                            </small>
+                            <p dir="auto">{turn.text}</p>
+                          </div>
+                        ))
+                    ) : (
+                      <div className="private-lesson-listening">
+                        {phase === "connecting" ? (
+                          <LoaderCircle className="spin" size={24} />
+                        ) : (
+                          <span
+                            className="private-lesson-wave"
+                            aria-hidden="true"
+                          >
+                            <i /> <i /> <i /> <i /> <i />
+                          </span>
+                        )}
+                        <p>{status}</p>
+                      </div>
+                    )}
+                  </div>
+                </details>
               </>
             )}
 

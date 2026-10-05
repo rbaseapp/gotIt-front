@@ -149,7 +149,9 @@ export function EnglishLearningPathPage() {
       );
       setPreview(undefined);
       await resource.reload();
-      navigate(`/learn/session/smart?pack=${pack.id}`);
+      navigate(
+        `/learn/session/smart?pack=${pack.id}&return=%2Fenglish-learning`,
+      );
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
     } finally {
@@ -244,7 +246,7 @@ export function EnglishLearningPathPage() {
               {next.installed ? (
                 <Link
                   className="button primary"
-                  to={`/learn/session/smart?pack=${next.id}`}
+                  to={`/learn/session/smart?pack=${next.id}&return=%2Fenglish-learning`}
                 >
                   <Play size={17} /> {t("englishPath.continue")}
                 </Link>
@@ -273,12 +275,16 @@ export function EnglishLearningPathPage() {
                 0,
               );
               return (
-                <section
+                <details
                   className="english-path-level"
                   key={level}
+                  open={
+                    level === (next?.track.levelCode ?? levels[0]?.level) ||
+                    undefined
+                  }
                   aria-labelledby={`english-path-${level}`}
                 >
-                  <div className="english-path-level-heading">
+                  <summary className="english-path-level-heading">
                     <div>
                       <p className="eyebrow">
                         {t("englishPath.levelNumber", {
@@ -298,7 +304,7 @@ export function EnglishLearningPathPage() {
                         total: count,
                       })}
                     </span>
-                  </div>
+                  </summary>
                   <progress
                     max={count || 1}
                     value={completed}
@@ -390,7 +396,7 @@ export function EnglishLearningPathPage() {
                             {pack.installed && (
                               <Link
                                 className="button secondary"
-                                to={`/learn/session/smart?pack=${pack.id}`}
+                                to={`/learn?pack=${pack.id}&return=%2Fenglish-learning`}
                               >
                                 <Play size={16} /> {t("englishPath.practice")}
                               </Link>
@@ -400,9 +406,28 @@ export function EnglishLearningPathPage() {
                       );
                     })}
                   </div>
-                </section>
+                </details>
               );
             })}
+          <div className="english-path-next-links ux-inline-actions">
+            <Link
+              className="button secondary"
+              to="/private-lesson?language=en&practice=free"
+            >
+              {t("ux.freeChat")}
+            </Link>
+            <Link className="button ghost" to="/history">
+              {t("ux.history")}
+            </Link>
+            <Link className="button ghost" to="/courses">
+              {t("ux.allPrograms")}
+            </Link>
+          </div>
+          <details className="ux-card">
+            <summary>{t("ux.learningDetails")}</summary>
+            <p>{t("ux.knownHelp")}</p>
+            <p>{t("ux.lessonAvailability")}</p>
+          </details>
         </>
       )}
       <Modal

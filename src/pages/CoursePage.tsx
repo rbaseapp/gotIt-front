@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
@@ -36,6 +41,8 @@ export function CoursePage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
   const { courseId } = useParams();
+  const [searchParams] = useSearchParams();
+  const newCourse = searchParams.get("new") === "1";
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]),
     [homework, setHomework] = useState<HomeworkSummary[]>([]);
@@ -49,6 +56,11 @@ export function CoursePage() {
     [resumeConversation, setResumeConversation] = useState(false),
     [editingPlan, setEditingPlan] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
+  const [showIntakeHistory, setShowIntakeHistory] = useState(false);
+  const [unitWords, setUnitWords] = useState<{
+    title: string;
+    words: string[];
+  } | null>(null);
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [message, setMessage] = useState("");
   const [editAnswerIndex, setEditAnswerIndex] = useState<number | null>(null);
@@ -95,7 +107,7 @@ export function CoursePage() {
           setHomework(list.homework);
           setAvailable(list.available);
           setCourse(selected?.course ?? null);
-          setCreating(false);
+          setCreating(newCourse);
         }
       })
       .catch((err) => {
@@ -107,7 +119,7 @@ export function CoursePage() {
     return () => {
       live = false;
     };
-  }, [courseId]);
+  }, [courseId, newCourse]);
   async function run(action: () => Promise<void>) {
     if (lock.current) return;
     lock.current = true;
@@ -271,7 +283,10 @@ export function CoursePage() {
                   {t("courses.newCourse")}
                 </button>
               )}
-              <Link className="course-text-link" to="/private-lesson?practice=free">
+              <Link
+                className="course-text-link"
+                to="/private-lesson?practice=free"
+              >
                 {t("courses.freePractice")}
               </Link>
             </>
@@ -457,52 +472,66 @@ export function CoursePage() {
                   }}
                 />
               )}
+              <button
+                type="button"
+                className="button ghost"
+                aria-expanded={showIntakeHistory}
+                onClick={() => setShowIntakeHistory((value) => !value)}
+              >
+                {t("ux.fullConversation")}
+              </button>
               <div
                 className="course-intake-thread"
                 role="log"
                 aria-live="polite"
                 ref={intakeThread}
               >
-                {course.messages.map((turn, index) => (
-                  <div
-                    className={`course-message ${turn.role}`}
-                    key={index}
-                    dir="auto"
-                  >
-                    <strong>
-                      {t(
-                        turn.role === "tutor"
-                          ? "courses.teacher"
-                          : "courses.you",
-                      )}
-                    </strong>
-                    <span>{turn.text}</span>
-                    {turn.role === "learner" &&
-                      course.intakeAnswers &&
-                      course.messages
-                        .slice(0, index)
-                        .filter((item) => item.role === "learner").length <
-                        course.intakeAnswers.length && (
-                        <button
-                          type="button"
-                          className="course-text-link"
-                          disabled={busy || voiceActive}
-                          onClick={() => {
-                            setEditAnswerIndex(
-                              course.messages
-                                .slice(0, index)
-                                .filter((item) => item.role === "learner")
-                                .length,
-                            );
-                            setMessage(turn.text);
-                          }}
-                        >
-                          <Pencil size={14} />
-                          {t("courses.correctAnswer")}
-                        </button>
-                      )}
-                  </div>
-                ))}
+                {course.messages.map(
+                  (turn, index) =>
+                    (showIntakeHistory ||
+                      resumeConversation ||
+                      editAnswerIndex !== null ||
+                      index === course.messages.length - 1) && (
+                      <div
+                        className={`course-message ${turn.role}`}
+                        key={index}
+                        dir="auto"
+                      >
+                        <strong>
+                          {t(
+                            turn.role === "tutor"
+                              ? "courses.teacher"
+                              : "courses.you",
+                          )}
+                        </strong>
+                        <span>{turn.text}</span>
+                        {turn.role === "learner" &&
+                          course.intakeAnswers &&
+                          course.messages
+                            .slice(0, index)
+                            .filter((item) => item.role === "learner").length <
+                            course.intakeAnswers.length && (
+                            <button
+                              type="button"
+                              className="course-text-link"
+                              disabled={busy || voiceActive}
+                              onClick={() => {
+                                setEditAnswerIndex(
+                                  course.messages
+                                    .slice(0, index)
+                                    .filter((item) => item.role === "learner")
+                                    .length,
+                                );
+                                setMessage(turn.text);
+                              }}
+                            >
+                              <Pencil size={14} />
+                              {t("courses.correctAnswer")}
+                            </button>
+                          )}
+                      </div>
+                    ),
+                )}
               </div>
               {!voiceActive && (
                 <details
@@ -782,7 +811,12 @@ export function CoursePage() {
                 {displayed.plan.units.map((unit, index) => {
                   const independent = new Set(
                     course.evidence
-                      .filter((e) => e.unitKey === unit.key && e.independent)
+                      .filter(
+                        (e) =>
+                          e.version === displayed.version &&
+                          e.unitKey === unit.key &&
+                          e.independent,
+                      )
                       .map((e) => e.lessonIndex),
                   ).size;
                   const isCurrent =
@@ -825,6 +859,7 @@ export function CoursePage() {
                               ? []
                               : course.evidence.filter(
                                   (e) =>
+                                    e.version === displayed.version &&
                                     e.unitKey === unit.key &&
                                     e.lessonIndex === lessonIndex &&
                                     e.covered,
@@ -884,7 +919,18 @@ export function CoursePage() {
                           {unit.vocabulary.length > 0 && (
                             <div>
                               <h3>{t("courses.vocabulary")}</h3>
-                              <p dir="auto">{unit.vocabulary.join(" · ")}</p>
+                              <button
+                                type="button"
+                                className="button secondary"
+                                onClick={() =>
+                                  setUnitWords({
+                                    title: unit.title,
+                                    words: unit.vocabulary,
+                                  })
+                                }
+                              >
+                                {t("ux.unitWords")}
+                              </button>
                             </div>
                           )}
                         </div>
@@ -925,6 +971,30 @@ export function CoursePage() {
                   );
                 })}
               </div>
+              <Modal
+                open={Boolean(unitWords)}
+                onClose={() => setUnitWords(null)}
+                title={unitWords?.title || t("ux.unitWords")}
+              >
+                <div className="modal-body">
+                  <h2>{t("ux.unitWords")}</h2>
+                  <ul
+                    className="ux-unit-words"
+                    lang={course.preferences.targetLanguageCode}
+                    dir="auto"
+                  >
+                    {unitWords?.words.map((word) => (
+                      <li key={word}>{word}</li>
+                    ))}
+                  </ul>
+                </div>
+              </Modal>
+              <Link
+                className="button ghost"
+                to={`/history?course=${course.id}`}
+              >
+                {t("ux.history")}
+              </Link>
               <details className="course-adjust">
                 <summary>{t("courses.savedPreferences")}</summary>
                 <PreferenceReview

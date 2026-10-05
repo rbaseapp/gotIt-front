@@ -1,347 +1,270 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Brain,
-  ChevronLeft,
-  ChevronRight,
-  Headphones,
   Layers3,
   Mic2,
   Move,
   MousePointer2,
   PenLine,
-  LockKeyhole,
+  Headphones,
+  SpellCheck,
 } from "lucide-react";
-import { RemoteState } from "../components/RemoteState";
-import { CourseContinueCard } from "../components/CourseContinueCard";
-import {
-  capabilitiesSchema,
-  page,
-  product,
-  query,
-  queueSchema,
-  sessionSchema,
-} from "../lib/product";
-import { useResource } from "../lib/useResource";
-import { useSubscription } from "../context/SubscriptionContext";
 import { useTranslation } from "react-i18next";
-import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { useSubscription } from "../context/SubscriptionContext";
 import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
+import { RemoteState } from "../components/RemoteState";
+import { Modal } from "../components/Modal";
+import { ExploreActions } from "../components/ExploreActions";
+import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { useResource } from "../lib/useResource";
+import {
+  product,
+  capabilitiesSchema,
+  queueSchema,
+  wordPacksSchema,
+} from "../lib/product";
+import { practiceLink } from "../lib/learningNavigation";
+
 const games = [
-  {
-    id: "flashcards",
-    icon: Layers3,
-    tone: "mint",
-  },
-  {
-    id: "recall",
-    icon: PenLine,
-    tone: "violet",
-  },
-  {
-    id: "matching",
-    icon: MousePointer2,
-    tone: "orange",
-  },
-  {
-    id: "drag_drop",
-    icon: Move,
-    tone: "violet",
-  },
-  {
-    id: "listening",
-    icon: Headphones,
-    tone: "blue",
-  },
-  {
-    id: "pronunciation",
-    icon: Mic2,
-    tone: "rose",
-  },
-];
-const gameOrder = [
-  "matching",
-  "drag_drop",
-  "flashcards",
-  "pronunciation",
-  "recall",
-  "listening",
-] as const;
-const smartPath = [
-  "matching",
-  "drag_drop",
-  "flashcards",
-  "pronunciation",
-  "recall",
-  "listening",
+  { id: "recall", icon: PenLine, skill: "recall" },
+  { id: "matching", icon: MousePointer2, skill: "recognition" },
+  { id: "drag_drop", icon: Move, skill: "recognition" },
+  { id: "listening", icon: Headphones, skill: "listening" },
+  { id: "spelling", icon: SpellCheck, skill: "recall" },
+  { id: "flashcards", icon: Layers3, skill: "recognition" },
+  { id: "pronunciation", icon: Mic2, skill: "pronunciation" },
 ] as const;
 export function LiveLearnPage() {
-  const { t, i18n } = useTranslation();
-  const { status, loading, hasEntitlement } = useSubscription();
+  const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
   const language = useLearningLanguage();
+  const { status, loading, hasEntitlement } = useSubscription();
+  const [scopeOpen, setScopeOpen] = useState(false);
+  const code = params.get("language") || language.code;
+  const capabilities = useResource(
+    useCallback(() => product(capabilitiesSchema, "capabilities"), []),
+  );
   const queue = useResource(
     useCallback(
       async () => ({
         ...(await product(
           queueSchema,
-          `learning/queue?limit=10${language.code ? `&sourceLanguageCode=${encodeURIComponent(language.code)}` : ""}`,
+          `learning/queue?limit=10${code ? `&sourceLanguageCode=${encodeURIComponent(code)}` : ""}`,
         )),
-        languageCode: language.code,
+        languageCode: code,
       }),
-      [language.code],
+      [code],
     ),
   );
-  const capabilities = useResource(
-    useCallback(() => product(capabilitiesSchema, "capabilities"), []),
+  const packs = useResource(
+    useCallback(() => product(wordPacksSchema, "word-packs"), []),
   );
-  const [cursor, setCursor] = useState<string>();
-  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>(
-    [],
-  );
-  const sessionsUrl = `practice/sessions${query({ limit: "10", cursor, sourceLanguageCode: language.code || undefined })}`;
-  const sessions = useResource(
-    useCallback(
-      async () => ({
-        ...(await product(page(sessionSchema), sessionsUrl)),
-        languageCode: language.code,
-      }),
-      [sessionsUrl, language.code],
-    ),
-  );
-  if (
-    language.loading ||
-    language.error ||
-    (queue.data && queue.data.languageCode !== language.code) ||
-    (sessions.data && sessions.data.languageCode !== language.code)
-  )
+  const pack = packs.data?.packs.find((item) => item.id === params.get("pack"));
+  const scopeLanguage = pack?.track.sourceLanguageCode ?? code;
+  const skills = capabilities.data?.learningLanguages.find(
+    (item) => item.languageCode === scopeLanguage,
+  )?.enabledSkills;
+  const scoped = params.has("items") || params.has("pack");
+  const scopeTitle =
+    pack?.title ??
+    (params.has("items")
+      ? t("ux.selectedWords", { count: params.get("items")!.split(",").length })
+      : t("ux.allWords"));
+  const enabled = loading || !status || hasEntitlement("practice.play");
+  const selectScope = (packId?: string) => {
+    const next = new URLSearchParams();
+    if (params.has("return")) next.set("return", params.get("return")!);
+    if (packId) next.set("pack", packId);
+    else if (language.code) next.set("language", language.code);
+    navigate(`/learn?${next}`);
+    setScopeOpen(false);
+  };
+  if (language.loading || language.error)
     return (
       <RemoteState
-        loading={
-          language.loading ||
-          Boolean(queue.data && queue.data.languageCode !== language.code) ||
-          Boolean(sessions.data && sessions.data.languageCode !== language.code)
-        }
+        loading={language.loading}
         error={language.error}
         retry={() => void language.reload()}
       />
     );
-  if (!loading && status && !hasEntitlement("practice.play"))
-    return (
-      <div className="learn-page live-page page-enter">
-        <section className="live-panel locked-feature">
-          <span className="locked-feature-icon">
-            <LockKeyhole size={30} />
-          </span>
-          <p className="eyebrow">{t("learn.proFeature")}</p>
-          <h1>{t("learn.lockedTitle")}</h1>
-          <p>{t("learn.lockedDescription")}</p>
-          <Link className="button primary" to="/billing">
-            {t("subscription.upgrade")}
-          </Link>
-        </section>
-      </div>
-    );
   return (
-    <div className="learn-page live-page page-enter">
-      <section className="page-heading-row">
+    <div className="ux-page ux-game-hub page-enter">
+      <header className="page-heading-row">
         <div>
-          <p className="eyebrow">{t("learn.eyebrow")}</p>
-          <h1>{t("learn.title")}</h1>
-          <p>{t("learn.description")}</p>
+          <h1>{t("ux.gameHubTitle")}</h1>
+          <p dir="auto">{scopeTitle}</p>
         </div>
-      </section>
-      <LearningLanguageSelect
-        code={language.code}
-        languages={language.languages}
-        onChange={(code) => {
-          language.setCode(code);
-          setCursor(undefined);
-          setCursorHistory([]);
-        }}
-      />
+      </header>
+      {!scoped && (
+        <LearningLanguageSelect
+          code={code}
+          languages={language.languages}
+          onChange={(next) => {
+            language.setCode(next);
+            const p = new URLSearchParams(params);
+            p.set("language", next);
+            navigate(`/learn?${p}`);
+          }}
+        />
+      )}
       <RemoteState
         loading={capabilities.loading}
         error={capabilities.error}
         retry={() => void capabilities.reload()}
       />
-      <section className="smart-session-card">
-        <div className="smart-visual">
-          <Brain size={48} />
-        </div>
-        <div className="smart-copy">
-          <h2>{t("learn.smartTitle")}</h2>
-          <p>{t("learn.smartDescription")}</p>
-          <RemoteState
-            loading={queue.loading}
-            error={queue.error}
-            retry={() => void queue.reload()}
-          />
-          {queue.data && (
-            <p>
-              {t("learn.queueSummary", {
-                count: queue.data.items.length,
-                algorithm: queue.data.algorithmVersion,
-              })}
-            </p>
-          )}
-          <div className="learning-path" aria-label={t("learn.learningPath")}>
-            {smartPath.map((step, index) => (
-              <span key={step}>
-                <b>{index + 1}</b>
-                {t(`learn.games.${step}.name`)}
-              </span>
-            ))}
-          </div>
-          <small className="learning-path-help">
-            {t("learn.learningPathHelp")}
-          </small>
-        </div>
-        <Link
-          className="button smart-start"
-          to={`/learn/session/smart?language=${encodeURIComponent(language.code)}`}
-        >
-          {t("learn.startSession")}
-        </Link>
-      </section>
-      <CourseContinueCard />
-      <div className="game-grid">
-        {gameOrder
-          .map((id) => games.find((game) => game.id === id)!)
-          .map(({ icon: Icon, ...game }) => {
-            const providerMode = ["listening", "pronunciation"].includes(
-              game.id,
-            );
-            const available =
-              !providerMode || Boolean(capabilities.data?.configured.speech);
-            return available ? (
-              <Link
-                className="game-card"
-                to={`/learn/session/${game.id}?language=${encodeURIComponent(language.code)}`}
-                key={game.id}
-              >
-                <span className={`game-icon ${game.tone}`}>
-                  <Icon size={28} />
-                </span>
-                <span className="game-card-copy">
-                  <b>{t(`learn.games.${game.id}.name`)}</b>
-                  <small>{t(`learn.games.${game.id}.description`)}</small>
-                </span>
-              </Link>
-            ) : (
-              <div
-                className="game-card disabled"
-                aria-disabled="true"
-                key={game.id}
-              >
-                <span className={`game-icon ${game.tone}`}>
-                  <Icon size={28} />
-                </span>
-                <span className="game-card-copy">
-                  <b>{t(`learn.games.${game.id}.name`)}</b>
-                  <small>{t("learn.speechUnavailable")}</small>
-                </span>
-              </div>
-            );
-          })}
-      </div>
-      <section className="live-panel">
-        <h2>{t("learn.nextWords")}</h2>
-        {queue.data?.items.map((i) => (
-          <Link
-            className="live-weak-word"
-            key={i.id}
-            to={`/vocabulary?item=${i.id}`}
-          >
-            <b dir="auto">{i.sourceText}</b>
-            <span dir="auto">{i.primaryTranslation}</span>
-            <small>{t(`labels.${i.learningStatus}`)}</small>
+      {!enabled ? (
+        <section className="ux-card">
+          <h2>{t("learn.lockedTitle")}</h2>
+          <p>{t("learn.lockedDescription")}</p>
+          <Link className="button primary" to="/billing">
+            {t("subscription.upgrade")}
           </Link>
-        ))}
-        {queue.data && !queue.data.items.length && (
-          <p>{t("learn.emptyQueue")}</p>
-        )}
-      </section>
-      <section className="live-panel">
-        <h2>{t("learn.sessionHistory")}</h2>
-        <RemoteState
-          loading={sessions.loading}
-          error={sessions.error}
-          retry={() => void sessions.reload()}
-        />
-        <div className="session-history-list">
-          {sessions.data?.items.map((s) => (
-            <article className="session-history-row" key={s.id}>
-              <div>
-                <b>
-                  {t(`labels.${s.sessionType}`, {
-                    defaultValue: s.sessionType,
-                  })}
-                </b>
-                {s.scope && <span>{s.scope.title}</span>}
-              </div>
-              <span className={`practice-result ${s.status}`}>
-                {s.status === "active"
-                  ? t("learn.statusActive")
-                  : s.status === "completed"
-                    ? t("learn.statusCompleted")
-                    : t("learn.statusStopped")}
+        </section>
+      ) : (
+        <>
+          <section className="ux-card mint smart-session-card">
+            <div className="ux-card-heading">
+              <span className="ux-icon">
+                <Brain size={28} />
               </span>
-              <div className="session-history-meta">
-                <time dateTime={s.startedAt}>
-                  {new Date(s.startedAt).toLocaleString(i18n.resolvedLanguage)}
-                </time>
-                <small>
-                  {t("learn.attemptsXp", {
-                    count: s.attemptCount,
-                    xp: s.xpEarned,
-                  })}
-                </small>
+              <div>
+                <h2>{t("ux.smartChoice")}</h2>
+                <p>{t("ux.smartHelp")}</p>
               </div>
-              {s.status === "active" && (
-                <Link
-                  className="button ghost"
-                  to={`/learn/session/${s.sessionType === "smart_review" ? "smart" : s.sessionType === "listening_spelling" ? "listening" : s.sessionType}?resume=${s.id}&language=${encodeURIComponent(language.code)}`}
-                >
-                  {t("learn.continue")}
+            </div>
+            {!scoped && (
+              <RemoteState
+                loading={queue.loading}
+                error={queue.error}
+                retry={() => void queue.reload()}
+              />
+            )}
+            {scoped ||
+            (queue.data?.languageCode === code &&
+              queue.data.items.length > 0) ? (
+              <Link
+                className="button primary"
+                to={practiceLink("smart", params, code)}
+              >
+                {t("ux.startSmart")}
+              </Link>
+            ) : !queue.loading && !queue.error ? (
+              <>
+                <p>{t("learn.emptyQueue")}</p>
+                <Link className="button secondary" to="/vocabulary">
+                  {t("ux.words")}
                 </Link>
-              )}
-            </article>
-          ))}
-        </div>
-        {(cursorHistory.length > 0 || sessions.data?.nextCursor) && (
-          <nav
-            className="live-pagination compact"
-            aria-label={t("learn.sessionPaginationAria")}
+              </>
+            ) : null}
+          </section>
+          <section
+            className="game-grid ux-game-grid"
+            aria-label={t("ux.chooseGame")}
           >
-            <button
-              className="button ghost pagination-arrow"
-              disabled={!cursorHistory.length}
-              aria-label={t("learn.previousSessions")}
-              onClick={() => {
-                const previous = cursorHistory.at(-1);
-                setCursorHistory((history) => history.slice(0, -1));
-                setCursor(previous);
-              }}
-            >
-              <ChevronRight size={18} />
-            </button>
-            <span>
-              {t("learn.sessionPage", { page: cursorHistory.length + 1 })}
-            </span>
-            <button
-              className="button secondary pagination-arrow"
-              disabled={!sessions.data?.nextCursor}
-              aria-label={t("learn.moreSessions")}
-              onClick={() => {
-                setCursorHistory((history) => [...history, cursor]);
-                setCursor(sessions.data!.nextCursor!);
-              }}
-            >
-              <ChevronLeft size={18} />
-            </button>
-          </nav>
-        )}
-      </section>
+            {games.map(({ id, icon: Icon, skill }) => {
+              const speech = id === "listening" || id === "pronunciation";
+              const available =
+                Boolean(capabilities.data?.configured.practice) &&
+                (!speech || capabilities.data?.configured.speech) &&
+                (!skills || skills.includes(skill));
+              const name =
+                id === "spelling"
+                  ? t("ux.spelling")
+                  : t(`learn.games.${id}.name`);
+              return available ? (
+                <Link
+                  className={`game-card game-${id}`}
+                  key={id}
+                  to={practiceLink(id, params, code)}
+                >
+                  <Icon size={24} aria-hidden="true" />
+                  <span>
+                    <b>{name}</b>
+                    <small>
+                      {id === "spelling"
+                        ? t("ux.letterKeyboardHelp")
+                        : t(`learn.games.${id}.description`)}
+                    </small>
+                  </span>
+                </Link>
+              ) : (
+                <div
+                  className="game-card disabled"
+                  aria-disabled="true"
+                  key={id}
+                >
+                  <Icon size={24} />
+                  <span>
+                    <b>{name}</b>
+                    <small>
+                      {t(
+                        speech
+                          ? "learn.speechUnavailable"
+                          : "ux.practiceUnavailable",
+                      )}
+                    </small>
+                  </span>
+                </div>
+              );
+            })}
+          </section>
+        </>
+      )}
+      <button className="button ghost" onClick={() => setScopeOpen(true)}>
+        {t("ux.changeWords")}
+      </button>
+      <ExploreActions />
+      <Link className="button ghost" to="/history">
+        {t("ux.history")}
+      </Link>
+      <Modal
+        open={scopeOpen}
+        onClose={() => setScopeOpen(false)}
+        title={t("ux.chooseWords")}
+      >
+        <div className="modal-body ux-choice-list">
+          <button className="ux-choice" onClick={() => selectScope()}>
+            {t("ux.allWords")}
+          </button>
+          <Link
+            className="ux-choice"
+            to="/vocabulary"
+            onClick={() => setScopeOpen(false)}
+          >
+            {t("ux.chooseSpecificWords")}
+          </Link>
+          <RemoteState
+            loading={packs.loading}
+            error={packs.error}
+            retry={() => void packs.reload()}
+          />
+          {packs.data?.packs
+            .filter((item) => item.installed && item.progress.linked > 0)
+            .map((item) => (
+              <button
+                className="ux-choice"
+                onClick={() => selectScope(item.id)}
+                key={item.id}
+              >
+                <BookPack title={item.title} words={item.progress.linked} />
+              </button>
+            ))}
+          <Link className="button ghost" to="/word-packs">
+            {t("nav.wordPacks")}
+          </Link>
+        </div>
+      </Modal>
     </div>
+  );
+}
+function BookPack({ title, words }: { title: string; words: number }) {
+  const { t } = useTranslation();
+  return (
+    <span>
+      <b dir="auto">{title}</b>
+      <small>{t("ux.collectionWords", { count: words })}</small>
+    </span>
   );
 }

@@ -87,6 +87,17 @@ const CoursePage = lazy(() =>
 const HomeworkPage = lazy(() =>
   import("./pages/HomeworkPage").then((m) => ({ default: m.HomeworkPage })),
 );
+const ProgramsPage = lazy(() =>
+  import("./pages/ProgramsPage").then((m) => ({ default: m.ProgramsPage })),
+);
+const AchievementsPage = lazy(() =>
+  import("./pages/AchievementsPage").then((m) => ({
+    default: m.AchievementsPage,
+  })),
+);
+const HistoryPage = lazy(() =>
+  import("./pages/HistoryPage").then((m) => ({ default: m.HistoryPage })),
+);
 
 export default function App() {
   const { t } = useTranslation();
@@ -189,6 +200,20 @@ export default function App() {
                   />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route
+                    path="/achievements"
+                    element={
+                      mode === "live" ? <AchievementsPage /> : <DashboardPage />
+                    }
+                  />
+                  <Route
+                    path="/history"
+                    element={mode === "live" ? <HistoryPage /> : <LearnPage />}
+                  />
+                  <Route
+                    path="/programs"
+                    element={<Navigate to="/courses" replace />}
+                  />
+                  <Route
                     path="/reading"
                     element={
                       mode === "live" ? <LiveReadingPage /> : <ReadingPage />
@@ -216,7 +241,11 @@ export default function App() {
                     element={
                       mode === "live" ? (
                         <LiveGameAccess>
-                          <CoursePage />
+                          {location.search.includes("new=1") ? (
+                            <CoursePage />
+                          ) : (
+                            <ProgramsPage />
+                          )}
                         </LiveGameAccess>
                       ) : (
                         <Navigate to="/learn" replace />

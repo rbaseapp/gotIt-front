@@ -8,6 +8,7 @@ import { FeedbackProvider } from "./components/Feedback";
 import "./i18n";
 import "./styles.css";
 import "./production.css";
+import "./ux.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

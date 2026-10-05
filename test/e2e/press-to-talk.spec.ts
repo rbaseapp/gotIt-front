@@ -80,42 +80,28 @@ test("press to talk stays in place through hold, release and cancellation", asyn
               role: "user",
             },
           }
-        : path.endsWith("/profile")
-          ? { profile: seedProfile }
-          : path.endsWith("/billing/status")
-            ? {
-                tier: "paid",
-                access: true,
-                plan: { key: "paid", name: "Paid", kind: "paid" },
-                entitlements: ["practice.play"],
-                subscription: null,
-                trial: null,
-              }
-            : path.endsWith("/practice/sessions")
+        : path.endsWith("/dashboard/languages")
+          ? { languages: [{ code: "en", count: 1 }] }
+          : path.endsWith("/profile")
+            ? { profile: seedProfile }
+            : path.endsWith("/billing/status")
               ? {
-                  session: {
-                    id: sessionId,
-                    sessionType: "pronunciation",
-                    status: "active",
-                    startedAt: "2026-09-15T10:00:00.000Z",
-                    endedAt: null,
-                    durationSeconds: null,
-                    itemCount: 1,
-                    attemptCount: 0,
-                    correctCount: 0,
-                    xpEarned: 0,
-                    algorithmVersion: "server-v1",
-                  },
+                  tier: "paid",
+                  access: true,
+                  plan: { key: "paid", name: "Paid", kind: "paid" },
+                  entitlements: ["practice.play"],
+                  subscription: null,
+                  trial: null,
                 }
-              : path.endsWith(`/practice/sessions/${sessionId}`)
+              : path.endsWith("/practice/sessions")
                 ? {
                     session: {
                       id: sessionId,
                       sessionType: "pronunciation",
-                      status: "abandoned",
+                      status: "active",
                       startedAt: "2026-09-15T10:00:00.000Z",
-                      endedAt: "2026-09-15T10:01:00.000Z",
-                      durationSeconds: 60,
+                      endedAt: null,
+                      durationSeconds: null,
                       itemCount: 1,
                       attemptCount: 0,
                       correctCount: 0,
@@ -123,27 +109,43 @@ test("press to talk stays in place through hold, release and cancellation", asyn
                       algorithmVersion: "server-v1",
                     },
                   }
-                : path.endsWith("/exercises")
+                : path.endsWith(`/practice/sessions/${sessionId}`)
                   ? {
-                      exercises: [
-                        {
-                          id: exerciseId,
-                          learningItemId: itemId,
-                          exerciseType: "pronunciation",
-                          kind: "provider",
-                          direction: "source_to_translation",
-                          prompt: {
-                            text: "remember",
-                            languageCode: "en",
-                            context: null,
-                            letterCount: 8,
-                          },
-                          expiresAt: "2026-10-01T10:00:00.000Z",
-                        },
-                      ],
-                      algorithmVersion: "server-v1",
+                      session: {
+                        id: sessionId,
+                        sessionType: "pronunciation",
+                        status: "abandoned",
+                        startedAt: "2026-09-15T10:00:00.000Z",
+                        endedAt: "2026-09-15T10:01:00.000Z",
+                        durationSeconds: 60,
+                        itemCount: 1,
+                        attemptCount: 0,
+                        correctCount: 0,
+                        xpEarned: 0,
+                        algorithmVersion: "server-v1",
+                      },
                     }
-                  : null;
+                  : path.endsWith("/exercises")
+                    ? {
+                        exercises: [
+                          {
+                            id: exerciseId,
+                            learningItemId: itemId,
+                            exerciseType: "pronunciation",
+                            kind: "provider",
+                            direction: "source_to_translation",
+                            prompt: {
+                              text: "remember",
+                              languageCode: "en",
+                              context: null,
+                              letterCount: 8,
+                            },
+                            expiresAt: "2026-10-01T10:00:00.000Z",
+                          },
+                        ],
+                        algorithmVersion: "server-v1",
+                      }
+                    : null;
     if (path.endsWith("/pronunciation/assessments")) assessmentCalls++;
     if (response) await route.fulfill({ json: response });
     else

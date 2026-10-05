@@ -43,6 +43,7 @@ import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
+import { libraryReturn, readLibraryContext } from "../lib/libraryContext";
 
 const actions = [
   "pause",
@@ -77,15 +78,28 @@ export function LiveVocabularyPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const language = useLearningLanguage();
   const itemId = searchParams.get("item");
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({
-    userStatus: "all",
-    sort: "alphabetical",
-  });
-  const [pageNumber, setPageNumber] = useState(1);
+  const [restored] = useState(() => readLibraryContext(searchParams));
+  const [search, setSearch] = useState(restored.filters.search || "");
+  const [filters, setFilters] = useState<Record<string, string>>(
+    restored.filters,
+  );
+  const [pageNumber, setPageNumber] = useState(restored.page);
   const [tagCursor, setTagCursor] = useState<string>();
   const [tagHistory, setTagHistory] = useState<Array<string | undefined>>([]);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(restored.selected);
+  const restoredLanguage = useRef(false);
+  useEffect(() => {
+    if (restoredLanguage.current || language.loading) return;
+    restoredLanguage.current = true;
+    if (
+      restored.language &&
+      language.languages.some((entry) => entry.code === restored.language)
+    )
+      language.setCode(restored.language);
+  }, [language, restored.language]);
+  const returnTo = encodeURIComponent(
+    libraryReturn(filters, pageNumber, selected, language.code),
+  );
   const [action, setAction] = useState("pause");
   const [add, setAdd] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
@@ -279,6 +293,22 @@ export function LiveVocabularyPage() {
         languages={language.languages}
         onChange={chooseLanguage}
       />
+      <section className="ux-card mint ux-library-practice">
+        <h2>{t("ux.smartChoice")}</h2>
+        <p>{t("ux.smartHelp")}</p>
+        <Link
+          className="button primary"
+          to={`/learn/session/smart?language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+        >
+          {t("ux.startSmart")}
+        </Link>
+        <Link
+          className="button ghost"
+          to={`/learn?language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+        >
+          {t("ux.chooseWordsAndGame")}
+        </Link>
+      </section>
       <section className="live-panel">
         <form
           className="live-search"
@@ -585,9 +615,17 @@ export function LiveVocabularyPage() {
             {selected.length > 0 && filters.userStatus !== "deleted" && (
               <Link
                 className="button primary"
-                to={`/learn/session/smart?items=${selected.join(",")}`}
+                to={`/learn/session/smart?items=${selected.join(",")}&return=${returnTo}`}
               >
                 {t("vocabulary.practiceSelected")}
+              </Link>
+            )}
+            {selected.length > 0 && filters.userStatus !== "deleted" && (
+              <Link
+                className="button secondary"
+                to={`/learn?items=${encodeURIComponent(selected.join(","))}&return=${returnTo}`}
+              >
+                {t("ux.chooseGame")}
               </Link>
             )}
           </div>
@@ -641,7 +679,8 @@ export function LiveVocabularyPage() {
                   </span>
                   <span className="pill">{labels[item.learningStatus]}</span>
                 </div>
-                <div className="live-word-progress">
+                <details className="live-word-progress">
+                  <summary>{t("ux.learningDetails")}</summary>
                   <b>{Math.round(item.overallMasteryScore)}%</b>
                   <progress
                     value={item.overallMasteryScore}
@@ -664,7 +703,7 @@ export function LiveVocabularyPage() {
                       {masteryRequirementText(item.masteryRequirements)}
                     </small>
                   )}
-                </div>
+                </details>
                 {filters.userStatus === "deleted" && (
                   <button
                     className="button ghost"

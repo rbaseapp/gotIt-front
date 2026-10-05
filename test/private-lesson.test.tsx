@@ -347,7 +347,7 @@ describe("private voice lesson", () => {
     );
   });
 
-  it("shows the existing Rachel portrait for a child course and leaves adult setup unchanged", async () => {
+  it("keeps the child course portrait and offers teacher choices for adult courses", async () => {
     mocks.course.mockReset();
     const child = courseWithPlan(true);
     child.preferences.ageGroup = "child";
@@ -363,9 +363,10 @@ describe("private voice lesson", () => {
     mocks.course.mockResolvedValueOnce({ course: adult });
     renderPage(`/private-lesson?course=${adult.id}`);
     await screen.findByText(adult.nextLesson!.title);
+    expect(document.querySelector(".course-teacher")).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("img", { name: /רייצ/u }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("group", { name: "בחירת המורה" }),
+    ).toBeInTheDocument();
   });
 
   it("lets a grammar course use its approved support language for explanations", async () => {
@@ -1045,6 +1046,15 @@ describe("private voice lesson", () => {
     await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "סיום השיעור" });
+    const settings = document.querySelector(
+      ".private-lesson-settings-details",
+    )!;
+    expect(settings).not.toHaveAttribute("open");
+    await user.click(settings.querySelector("summary")!);
+    expect(settings).toHaveAttribute("open");
+    expect(settings.querySelector(".private-lesson-meta")).toHaveTextContent(
+      session.lesson.targetLanguageCode,
+    );
     act(() =>
       onEvent?.({
         type: "response.output_audio_transcript.done",

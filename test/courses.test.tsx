@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -267,6 +273,10 @@ describe("personal course experience", () => {
     mocks.get.mockResolvedValue({ course: intake });
     renderRoute(`/courses/${intake.id}`);
     const thread = await screen.findByRole("log");
+    expect(thread).not.toHaveTextContent("לדבר בעבודה");
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "השיחה המלאה" }));
     expect(thread).toHaveTextContent("מה תרצה ללמוד?");
     expect(thread).toHaveTextContent("לדבר בעבודה");
     expect(thread).toHaveTextContent("מה כבר למדת?");
@@ -519,9 +529,13 @@ describe("personal course experience", () => {
     vi.mocked(recordVoice).mockImplementation(
       (cancel, release) =>
         new Promise<string>((resolve, reject) => {
-          cancel.addEventListener("abort", () => reject(new Error("cancelled")), {
-            once: true,
-          });
+          cancel.addEventListener(
+            "abort",
+            () => reject(new Error("cancelled")),
+            {
+              once: true,
+            },
+          );
           release.addEventListener("abort", () => resolve("recorded-wav"), {
             once: true,
           });

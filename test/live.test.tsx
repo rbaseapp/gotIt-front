@@ -118,6 +118,134 @@ function mount(
 }
 afterEach(clearTokens);
 describe("live server-backed flows", () => {
+  it.each(["translation_to_source", "source_to_translation"])(
+    "offers clickable answer-language letters in an ordinary %s writing game",
+    async (direction) => {
+      mount(
+        `/learn/session/recall?items=${itemId}&input=letters`,
+        async (url) => {
+          if (url.endsWith("/practice/sessions")) return json({ session });
+          if (url.endsWith("/exercises"))
+            return json({
+              exercises: [
+                {
+                  ...exercise,
+                  direction,
+                  prompt: {
+                    ...exercise.prompt,
+                    text: "A prompt",
+                    languageCode:
+                      direction === "translation_to_source" ? "fr" : "he",
+                    letterCount: 4,
+                  },
+                },
+              ],
+              algorithmVersion: "server-v1",
+            });
+          if (url.endsWith("/study"))
+            return json({
+              cards: [
+                {
+                  learningItemId: itemId,
+                  sourceText: "hidden answer",
+                  translationText: "hidden translation",
+                  sourceLanguageCode: "he",
+                  translationLanguageCode: "fr",
+                  context: null,
+                  audioUrl: null,
+                },
+              ],
+            });
+          throw new Error("Unexpected route");
+        },
+      );
+      const user = userEvent.setup();
+      await user.click(
+        await screen.findByRole("button", { name: i18n.t("game.start") }),
+      );
+      const keyboard = await screen.findByRole("group", {
+        name: i18n.t("ux.letterKeyboard"),
+      });
+      // Choosing on-screen letters must not summon a phone's native keyboard.
+      expect(
+        screen.getByLabelText(i18n.t("game.yourAnswer")),
+      ).not.toHaveFocus();
+      const letter = direction === "translation_to_source" ? "א" : "é";
+      await user.click(
+        within(keyboard).getByRole("button", { name: letter, exact: true }),
+      );
+      expect(screen.getByLabelText(i18n.t("game.yourAnswer"))).toHaveValue(
+        letter,
+      );
+      expect(document.querySelector(".letter-answer")).toHaveAttribute(
+        "lang",
+        direction === "translation_to_source" ? "he" : "fr",
+      );
+      expect(screen.queryByText("hidden answer")).not.toBeInTheDocument();
+      expect(screen.queryByText("hidden translation")).not.toBeInTheDocument();
+    },
+  );
+
+  it("keeps a generated article readable after a publication failure and retries the same intent", async () => {
+    const reading = {
+      id: itemId,
+      title: "A single generated article",
+      bodyText: "Read this once.",
+      contentType: "article",
+      targetLanguageCode: "fr",
+      effectiveLevel: "A1",
+      targets: [],
+    };
+    const publications: RequestInit[] = [];
+    const fetchMock = mount("/reading", async (url, init) => {
+      if (url.includes("/reading?"))
+        return json({ items: [], nextCursor: null });
+      if (url.endsWith("/reading/preview"))
+        return json({
+          reading,
+          publicationToken: "same-ticket",
+          expiresAt: date,
+          provider: { name: "fixture", model: "fixture" },
+        });
+      if (url.endsWith("/reading") && init?.method === "POST") {
+        publications.push(init);
+        return publications.length === 1
+          ? json({ error: { code: "PROVIDER_UNAVAILABLE" } }, 503)
+          : json({ reading: { ...reading, openedAt: date } });
+      }
+      throw new Error("Unexpected route");
+    });
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole("button", {
+        name: i18n.t("reading.createPreview"),
+      }),
+    );
+    await screen.findByRole("alert");
+    expect(document.querySelector(".live-reading-body")).toHaveTextContent(
+      reading.bodyText,
+    );
+    expect(
+      screen.queryByRole("link", { name: i18n.t("reading.practice") }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: i18n.t("reading.retryOpen") }),
+    );
+    await waitFor(() => expect(publications).toHaveLength(2));
+    expect(publications[0].body).toEqual(publications[1].body);
+    expect(new Headers(publications[0].headers).get("Idempotency-Key")).toBe(
+      new Headers(publications[1].headers).get("Idempotency-Key"),
+    );
+    expect(
+      fetchMock.mock.calls.filter(([url]) => url.endsWith("/reading/preview")),
+    ).toHaveLength(1);
+    expect(document.querySelector(".live-reading-body")).toHaveTextContent(
+      reading.bodyText,
+    );
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith("/practice/attempts")),
+    ).toBe(false);
+  });
   it.each([0, 2])(
     "rejects an Arabic resumed session with %i attempts while English is selected",
     async (attemptCount) => {
@@ -358,7 +486,10 @@ describe("live server-backed flows", () => {
       "/learn",
       async (url) => {
         if (url.endsWith("/capabilities"))
-          return json({ configured: { speech: true }, learningLanguages: [] });
+          return json({
+            configured: { speech: true, practice: true },
+            learningLanguages: [],
+          });
         if (url.includes("/learning/queue"))
           return json({ items: [], algorithmVersion: "server-v1" });
         if (url.includes("/practice/sessions"))
@@ -380,14 +511,10 @@ describe("live server-backed flows", () => {
       ).toBe(true),
     );
     expect(
-      fetchMock.mock.calls.some(
-        ([url]) =>
-          url.includes("/practice/sessions?") &&
-          url.includes("sourceLanguageCode=fr"),
-      ),
-    ).toBe(true);
-    expect(
       document.querySelector('a[href="/learn/session/smart?language=fr"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      await screen.findByText(i18n.t("learn.emptyQueue")),
     ).toBeInTheDocument();
     await act(async () => {
       languages.push({ code: "de", count: 1 });
@@ -398,6 +525,21 @@ describe("live server-backed flows", () => {
         screen.getByRole("combobox").querySelector('option[value="de"]'),
       ).toBeInTheDocument(),
     );
+    await user.click(
+      within(document.querySelector(".ux-game-hub")!).getByRole("link", {
+        name: i18n.t("ux.history"),
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url]) =>
+            url.includes("/practice/sessions?") &&
+            url.includes("sourceLanguageCode=fr"),
+        ),
+      ).toBe(true),
+    );
+    expect(screen.getByRole("combobox")).toHaveValue("fr");
   });
   it("does not hydrate a persisted demo when production demo mode is disabled", async () => {
     localStorage.setItem("gotit.mode", JSON.stringify("demo"));
@@ -1376,7 +1518,7 @@ describe("live server-backed flows", () => {
       }),
     );
   });
-  it("records a reading only on explicit opening and offers a server quiz afterward", async () => {
+  it("opens the generated reading automatically and offers a server quiz after publication", async () => {
     const reading = {
       id: itemId,
       title: "A memory",
@@ -1413,14 +1555,18 @@ describe("live server-backed flows", () => {
       await screen.findByRole("button", { name: "יצירת תצוגה מקדימה" }),
     );
     await screen.findByRole("heading", { name: "A memory" });
-    expect(screen.queryByText(reading.bodyText)).not.toBeInTheDocument();
+    expect(document.querySelector(".live-reading-body")).toHaveTextContent(
+      reading.bodyText,
+    );
     expect(
       fetchMock.mock.calls.filter(([url]) => url.endsWith("/reading")),
-    ).toHaveLength(0);
-    await user.click(screen.getByRole("button", { name: "פתיחת הקטע" }));
+    ).toHaveLength(1);
     expect(
       await screen.findByRole("link", { name: "תרגול המילים מתוך הקטע" }),
-    ).toHaveAttribute("href", `/learn/session/article_quiz?reading=${itemId}`);
+    ).toHaveAttribute(
+      "href",
+      `/learn/session/article_quiz?reading=${itemId}&return=%2Freading`,
+    );
     await user.click(screen.getByRole("button", { name: "remember" }));
     expect(screen.getByRole("dialog")).toHaveTextContent("remember");
     expect(screen.getByRole("dialog")).toHaveTextContent("לזכור");
@@ -1493,13 +1639,18 @@ describe("live server-backed flows", () => {
     });
     const user = userEvent.setup();
     expect(
-      await screen.findByRole("link", { name: "התחלת תרגול מילים" }),
-    ).toHaveAttribute("href", "/learn/session/smart?language=en");
+      await screen.findByRole("link", { name: "מתחילים תרגול חכם" }),
+    ).toHaveAttribute(
+      "href",
+      "/learn/session/smart?language=en&return=%2Fdashboard",
+    );
     expect(
-      screen.getByRole("link", { name: "מעבר לשיעור פרטי" }),
-    ).toHaveAttribute("href", "/private-lesson");
+      within(document.querySelector(".ux-explore")!).getByRole("link", {
+        name: "שיחה עם מורה",
+      }),
+    ).toHaveAttribute("href", "/private-lesson?practice=free");
     expect(
-      screen.getAllByRole("link", { name: "התחלת תרגול מילים" }),
+      screen.getAllByRole("link", { name: "מתחילים תרגול חכם" }),
     ).toHaveLength(1);
     const moreSummary = await screen.findByText("נתוני התקדמות נוספים במילים");
     const more = moreSummary.closest("details");
@@ -1512,7 +1663,7 @@ describe("live server-backed flows", () => {
     await user.click(wordButton);
     expect(screen.getByRole("dialog")).toHaveTextContent("subscription");
     expect(screen.getByRole("dialog")).toHaveTextContent("מנוי");
-    expect(screen.getByRole("heading", { name: /שלום/u })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /היי/u })).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/word-packs")),
     ).toBe(false);
@@ -1568,11 +1719,13 @@ describe("live server-backed flows", () => {
       throw new Error("Unexpected route");
     });
     expect(
-      await screen.findByRole("link", { name: "הוספת מילים לתרגול" }),
+      await screen.findByRole("link", { name: "מילה חדשה" }),
     ).toHaveAttribute("href", "/vocabulary");
     expect(
-      screen.getByRole("link", { name: "מעבר לשיעור פרטי" }),
-    ).toHaveAttribute("href", "/private-lesson");
+      within(document.querySelector(".ux-explore")!).getByRole("link", {
+        name: "שיחה עם מורה",
+      }),
+    ).toHaveAttribute("href", "/private-lesson?practice=free");
     expect(
       screen.queryByText("מסלול השיעורים הפרטיים שלך"),
     ).not.toBeInTheDocument();
