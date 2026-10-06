@@ -176,7 +176,7 @@ export function ProgramsPage() {
         error={packs.error}
         retry={() => void packs.reload()}
       />
-      {[...groups].map(([code, items], index) => (
+      {[...groups].map(([code, items]) => (
         <section
           className="program-language"
           key={code}
@@ -186,20 +186,18 @@ export function ProgramsPage() {
             <Globe size={22} aria-hidden="true" />
             {languageName(code)}
           </h2>
-          <div
-            className={`program-grid${index > 0 && items.length === 1 ? " program-grid-compact" : ""}`}
-          >
+          <div className="program-grid">
             {code === "en" &&
               path.length > 0 &&
               (completedOpen ? !next : Boolean(next)) && (
                 <article className="program-card structured">
-                  {selectedProgram(user) === "english-path" && (
-                    <header className="program-card-tools">
+                  <header className="program-card-tools">
+                    {selectedProgram(user) === "english-path" && (
                       <span className="program-selected pill">
                         {t("ux.selectedProgram")}
                       </span>
-                    </header>
-                  )}
+                    )}
+                  </header>
                   <span className="ux-icon mint">
                     <BookOpen size={28} />
                   </span>

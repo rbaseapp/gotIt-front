@@ -279,18 +279,25 @@
   gap: 14px;
 }
 .programs-page .program-grid {
+  grid-template-columns: 1fr;
   gap: 26px;
 }
 .programs-page .program-card {
   position: relative;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "tools tools tools"
+    "icon content action";
   padding: 28px;
-  min-height: 428px;
+  min-height: 128px;
   gap: 20px;
   border-radius: 24px;
-  text-align: center;
+  text-align: start;
   align-items: center;
 }
 .programs-page .program-card .ux-icon {
+  grid-area: icon;
   width: 92px;
   height: 92px;
   border-radius: 50%;
@@ -300,17 +307,19 @@
   height: 42px;
 }
 .programs-page .program-card > div {
+  grid-area: content;
   width: 100%;
   min-width: 0;
+  padding: 0;
   overflow-wrap: anywhere;
 }
 .programs-page .program-card h3 {
-  font-size: calc(40px * var(--text-scale, 1));
+  font-size: calc(32px * var(--text-scale, 1));
   line-height: 1.25;
   margin: 0 0 12px;
 }
 .programs-page .program-card p {
-  font-size: calc(26px * var(--text-scale, 1));
+  font-size: calc(24px * var(--text-scale, 1));
   line-height: 1.45;
   margin: 0 0 12px;
 }
@@ -319,18 +328,22 @@
   line-height: 1.4;
 }
 .programs-page .program-card .button {
+  grid-area: action;
   font-size: calc(24px * var(--text-scale, 1));
-  width: 100%;
+  width: auto;
+  max-width: 260px;
+  white-space: normal;
   min-height: 60px;
-  margin-top: auto;
+  margin: 0;
 }
 .programs-page .program-card-tools {
+  grid-area: tools;
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
   min-width: 0;
-  grid-column: 1/-1;
+  min-height: 44px;
 }
 .programs-page .program-card .program-selected {
   position: static;
@@ -359,29 +372,6 @@
   min-width: 44px;
   min-height: 44px;
   margin-inline-start: auto;
-}
-.programs-page .program-grid-compact {
-  grid-template-columns: 1fr;
-}
-.programs-page .program-grid-compact .program-card {
-  min-height: 128px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  text-align: start;
-}
-.programs-page .program-grid-compact .program-card > div {
-  flex: 1;
-}
-.programs-page .program-grid-compact .program-card h3 {
-  font-size: calc(32px * var(--text-scale, 1));
-}
-.programs-page .program-grid-compact .program-card p {
-  font-size: calc(24px * var(--text-scale, 1));
-}
-.programs-page .program-grid-compact .program-card .button {
-  width: auto;
-  margin: 0;
 }
 
 /* Preparation: lesson first, preferences second. Focus header replaces sidebar. */
@@ -846,18 +836,6 @@ html body.private-lesson-session-open .private-lesson-mute span {
   .private-lesson-page .lesson-teacher-picker {
     font-size: calc(16px * var(--text-scale, 1));
     min-height: 48px;
-  }
-  .programs-page .program-grid-compact .program-card {
-    grid-template-columns: 48px minmax(0, 1fr);
-  }
-  .programs-page .program-grid-compact .program-card h3 {
-    font-size: calc(20px * var(--text-scale, 1));
-  }
-  .programs-page .program-grid-compact .program-card p {
-    font-size: calc(16px * var(--text-scale, 1));
-  }
-  .programs-page .program-grid-compact .program-card .button {
-    width: 100%;
   }
   .app-layout.focus-shell > .main-column > .topbar {
     height: 72px;
@@ -2261,6 +2239,10 @@ html body.private-lesson-session-open .private-lesson-mute span {
   .programs-page .program-card {
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-areas:
+      "tools tools"
+      "icon content"
+      "action action";
     gap: 12px;
     padding: 16px;
     min-height: 0;
@@ -2270,16 +2252,10 @@ html body.private-lesson-session-open .private-lesson-mute span {
   .programs-page .program-card .ux-icon {
     width: 48px;
     height: 48px;
-    grid-column: 1;
-    grid-row: 1;
   }
   .programs-page .program-card .ux-icon svg {
     width: 24px;
     height: 24px;
-  }
-  .programs-page .program-card > div {
-    grid-column: 2;
-    grid-row: 1;
   }
   .programs-page .program-card h3 {
     font-size: calc(18px * var(--text-scale, 1));
@@ -2293,19 +2269,13 @@ html body.private-lesson-session-open .private-lesson-mute span {
     margin-bottom: 4px;
   }
   .programs-page .program-card .button {
-    grid-column: 1/-1;
+    width: 100%;
+    max-width: none;
     min-height: 44px;
     font-size: calc(16px * var(--text-scale, 1));
   }
   .programs-page .program-card .program-selected {
-    position: static;
-    grid-column: 1/-1;
     font-size: calc(13px * var(--text-scale, 1));
-    justify-self: start;
-  }
-  .programs-page .program-card:has(.program-card-tools) .ux-icon,
-  .programs-page .program-card:has(.program-card-tools) > div {
-    grid-row: 2;
   }
   .programs-page .program-card .program-next-step {
     margin: 6px 0 0;

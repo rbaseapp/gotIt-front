@@ -388,13 +388,9 @@ for (const [locale, text] of [
       await page.goto("/courses");
       await expect(page.locator(".program-card")).toHaveCount(1);
       if (width === 1440) {
-        await expect(page.locator(".program-card h3")).toHaveCSS(
-          "font-size",
-          "40px",
-        );
-        expect(
-          (await page.locator(".program-card").boundingBox())?.height,
-        ).toBeGreaterThanOrEqual(428);
+        const card = await page.locator(".program-card").boundingBox();
+        const grid = await page.locator(".program-grid").boundingBox();
+        expect(card?.width).toBeCloseTo(grid?.width ?? 0, 0);
       }
       await page.getByRole("button", { name: text.ux.newProgram }).click();
       await expect(
