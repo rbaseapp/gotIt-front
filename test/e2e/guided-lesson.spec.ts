@@ -162,6 +162,26 @@ async function fixture(page: Page) {
       return;
     } else if (path.endsWith("/private-lessons")) payload = { lessons: [] };
     else if (path.endsWith("/complete")) payload = { lesson: guidedReport };
+    else if (path.endsWith(`/courses/homework/${id}`))
+      payload = {
+        homework: {
+          id,
+          lessonId: id,
+          courseId: null,
+          unitKey: null,
+          title: "תרגול המשך",
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          createdAt: "2026-10-06T00:00:00Z",
+          status: "pending",
+          taskCount: 0,
+          completedCount: 0,
+          revision: 0,
+          objective: null,
+          estimatedMinutes: null,
+          tasks: [],
+        },
+      };
     else if (
       path.endsWith("/activity") &&
       route.request().method() === "POST"
@@ -269,6 +289,35 @@ for (const width of [320, 390, 1487])
     await expect(page.locator(".lesson-summary > header p")).toContainText(
       "3 דקות",
     );
+    const homework = page.locator(".lesson-summary .lesson-homework-card");
+    await expect(homework).toBeVisible();
+    const contrast = await homework.evaluate((card) => {
+      const luminance = (color: string) => {
+        const rgb = color
+          .match(/[\d.]+/g)!
+          .slice(0, 3)
+          .map(Number)
+          .map((value) => {
+            const channel = value / 255;
+            return channel <= 0.04045
+              ? channel / 12.92
+              : ((channel + 0.055) / 1.055) ** 2.4;
+          });
+        return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+      };
+      const background = luminance(getComputedStyle(card).backgroundColor);
+      const foreground = luminance(
+        getComputedStyle(card.querySelector("small")!).color,
+      );
+      return (
+        (Math.max(background, foreground) + 0.05) /
+        (Math.min(background, foreground) + 0.05)
+      );
+    });
+    expect(
+      contrast,
+      "homework helper text must be readable on the canonical green card",
+    ).toBeGreaterThanOrEqual(4.5);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,

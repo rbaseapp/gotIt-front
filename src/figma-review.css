@@ -3619,6 +3619,9 @@ html[data-reduce-motion="true"] *::after {
   background: var(--green);
   color: white;
 }
+.lesson-summary .lesson-homework-card small {
+  color: inherit;
+}
 .lesson-summary details > summary {
   color: var(--green);
   cursor: pointer;
