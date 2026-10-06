@@ -151,6 +151,7 @@ export function LiveGameSessionPage() {
   const { confirm, toast } = useFeedback();
   const [session, setSession] = useState<Session>();
   const [studyCards, setStudyCards] = useState<StudyCard[]>([]);
+  const [pronunciationCards, setPronunciationCards] = useState<StudyCard[]>([]);
   const [answerLanguages, setAnswerLanguages] = useState<
     Record<string, { source: string; translation: string }>
   >({});
@@ -204,6 +205,7 @@ export function LiveGameSessionPage() {
   const recordingPointer = useRef<number | null>(null);
   const audio = useRef<HTMLAudioElement | undefined>(undefined);
   const audioUrl = useRef<string | undefined>(undefined);
+  const playbackRequest = useRef({ generation: 0 });
   const shownAt = useRef(performance.now());
   const countedAttempts = useRef(new Set<string>());
   const mistakeIds = useRef(new Set<string>());
@@ -261,8 +263,10 @@ export function LiveGameSessionPage() {
   );
   useEffect(() => {
     mounted.current = true;
+    const playback = playbackRequest.current;
     return () => {
       mounted.current = false;
+      playback.generation++;
       recordingPointer.current = null;
       recordingController.current?.abort();
       if (momentTimer.current) clearTimeout(momentTimer.current);
@@ -274,6 +278,7 @@ export function LiveGameSessionPage() {
     };
   }, []);
   useEffect(() => {
+    playbackRequest.current.generation++;
     audio.current?.pause();
     shownAt.current = performance.now();
   }, [exercise?.id]);
@@ -354,14 +359,27 @@ export function LiveGameSessionPage() {
     );
     // Ordinary writing games skip the study phase. Resolve their language pair
     // separately: prompt.languageCode identifies the prompt, not the answer.
-    // Only language metadata is retained; no expected answer is rendered.
-    if (result.exercises.some((item) => item.kind === "typed")) {
+    // Typed exercises retain only language metadata; pronunciation also shows meaning.
+    if (
+      result.exercises.some(
+        (item) => item.kind === "typed" || item.kind === "provider",
+      )
+    ) {
       try {
         const metadata = await product(
           studyCardsSchema,
           `practice/sessions/${value.id}/study`,
         );
-        if (mounted.current)
+        if (mounted.current) {
+          setPronunciationCards(
+            metadata.cards.filter((card) =>
+              result.exercises.some(
+                (item) =>
+                  item.kind === "provider" &&
+                  item.learningItemId === card.learningItemId,
+              ),
+            ),
+          );
           setAnswerLanguages(
             Object.fromEntries(
               metadata.cards.map((card) => [
@@ -373,6 +391,7 @@ export function LiveGameSessionPage() {
               ]),
             ),
           );
+        }
       } catch {
         // Native typing remains available when optional alphabet metadata fails.
       }
@@ -828,23 +847,28 @@ export function LiveGameSessionPage() {
     if (approved) void close("abandoned");
   };
   const play = async (playbackRate = 1) => {
-    if (!exercise || busy) return;
+    if (!exercise || busy || recording) return;
+    const request = ++playbackRequest.current.generation;
     setError("");
     try {
       audio.current?.pause();
       if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
       const blob = await api.audio(exercise.learningItemId);
-      if (!mounted.current) return;
+      if (!mounted.current || request !== playbackRequest.current.generation)
+        return;
       audioUrl.current = URL.createObjectURL(blob);
       audio.current = new Audio(audioUrl.current);
       audio.current.playbackRate = playbackRate;
       await audio.current.play();
     } catch (reason) {
-      if (mounted.current) setError(errorMessage(reason));
+      if (mounted.current && request === playbackRequest.current.generation)
+        setError(errorMessage(reason));
     }
   };
   const record = async () => {
     if (recordingController.current || pending || busy) return;
+    playbackRequest.current.generation++;
+    audio.current?.pause();
     const controller = new AbortController();
     const release = new AbortController();
     recordingController.current = controller;
@@ -878,6 +902,28 @@ export function LiveGameSessionPage() {
   submitRef.current = submit;
   playRef.current = play;
   useEffect(() => {
+    if (
+      exercise?.kind !== "provider" ||
+      !exercise.prompt.audioUrl ||
+      sessionCompleted ||
+      receipt
+    )
+      return;
+    const timer = window.setTimeout(() => void playRef.current(), 250);
+    const playback = playbackRequest.current;
+    return () => {
+      window.clearTimeout(timer);
+      playback.generation++;
+      audio.current?.pause();
+    };
+  }, [
+    exercise?.id,
+    exercise?.kind,
+    exercise?.prompt.audioUrl,
+    sessionCompleted,
+    receipt,
+  ]);
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
@@ -907,7 +953,7 @@ export function LiveGameSessionPage() {
       ) {
         event.preventDefault();
         void submitRef.current({
-          selfRating: ["again", "hard", "good"][optionIndex],
+          selfRating: ["good", "hard", "again"][optionIndex],
         });
       } else if (event.key === " " && exercise.prompt.audioUrl) {
         event.preventDefault();
@@ -1357,6 +1403,19 @@ export function LiveGameSessionPage() {
                   <h1 dir="auto">
                     {exercise.prompt.text || t("game.listenAndType")}
                   </h1>
+                  {exercise.kind === "provider" &&
+                    pronunciationCards.find(
+                      (card) => card.learningItemId === exercise.learningItemId,
+                    )?.translationText && (
+                      <p className="practice-translation" dir="auto">
+                        {
+                          pronunciationCards.find(
+                            (card) =>
+                              card.learningItemId === exercise.learningItemId,
+                          )?.translationText
+                        }
+                      </p>
+                    )}
                   {exercise.prompt.context && (
                     <blockquote dir="auto">
                       {exercise.prompt.context}
@@ -1366,7 +1425,7 @@ export function LiveGameSessionPage() {
                     <div className="audio-actions">
                       <button
                         className="listen-button"
-                        disabled={busy}
+                        disabled={busy || recording}
                         onClick={() => void play()}
                       >
                         <span className="listen-button-icon">
@@ -1403,10 +1462,10 @@ export function LiveGameSessionPage() {
                               <p className="live-revealed" dir="auto">
                                 {exercise.prompt.answer}
                               </p>
-                              <div className="live-options">
-                                {["again", "hard", "good"].map((selfRating) => (
+                              <div className="live-options recall-ratings">
+                                {["good", "hard", "again"].map((selfRating) => (
                                   <button
-                                    className="button secondary"
+                                    className={`button recall-rating rating-${selfRating}`}
                                     key={selfRating}
                                     disabled={busy || !!pending}
                                     onClick={() => void submit({ selfRating })}
@@ -1494,9 +1553,25 @@ export function LiveGameSessionPage() {
                             onContextMenu={(event) => event.preventDefault()}
                           >
                             <Mic size={19} />
-                            {recording
-                              ? t("game.releaseToSend")
-                              : t("game.holdToTalk")}
+                            <span className="hold-to-talk-label">
+                              <span
+                                className="hold-to-talk-measure"
+                                aria-hidden="true"
+                              >
+                                {t("game.holdToTalk")}
+                              </span>
+                              <span
+                                className="hold-to-talk-measure"
+                                aria-hidden="true"
+                              >
+                                {t("game.releaseToSend")}
+                              </span>
+                              <span>
+                                {recording
+                                  ? t("game.releaseToSend")
+                                  : t("game.holdToTalk")}
+                              </span>
+                            </span>
                           </button>
                           <button
                             className={`button ghost hold-to-talk-cancel${recording ? "" : " is-inactive"}`}
@@ -1517,7 +1592,9 @@ export function LiveGameSessionPage() {
                         >
                           <div className="field">
                             <span>{t("game.yourAnswer")}</span>
-                            {exercise.prompt.letterCount ? (
+                            {exercise.prompt.letterCount &&
+                            (type !== "recall" ||
+                              params.get("input") === "letters") ? (
                               <LetterBoxesInput
                                 autoFocus={params.get("input") !== "letters"}
                                 label={t("game.yourAnswer")}

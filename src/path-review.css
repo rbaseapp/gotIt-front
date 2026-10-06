@@ -782,6 +782,127 @@
     padding: 18px;
   }
 }
+.live-session .live-exercise > h1,
+.live-exercise .live-revealed,
+.live-exercise .practice-translation {
+  width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.live-session .live-exercise > h1,
+.live-exercise .live-revealed,
+.live-exercise .practice-translation {
+  font-size: calc(clamp(32px, 4vw, 44px) * var(--text-scale, 1));
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 20px 0;
+  color: var(--ink);
+}
+.live-exercise .recall-ratings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.recall-ratings .recall-rating {
+  min-height: 60px;
+  color: #fff;
+  border: 2px solid transparent;
+}
+.recall-ratings .rating-good {
+  background: #247044;
+}
+.recall-ratings .rating-hard {
+  background: #a44b08;
+}
+.recall-ratings .rating-again {
+  background: #b42e32;
+}
+.live-exercise .hold-to-talk {
+  width: min(100%, 360px);
+  height: auto;
+  min-height: 88px;
+  padding: 16px 20px;
+  font-size: calc(22px * var(--text-scale, 1));
+  line-height: 1.4;
+  white-space: normal;
+}
+.live-exercise .hold-to-talk svg {
+  flex-shrink: 0;
+}
+.hold-to-talk-label {
+  display: grid;
+  min-width: 0;
+}
+.hold-to-talk-label > span {
+  grid-area: 1 / 1;
+}
+.hold-to-talk-measure {
+  visibility: hidden;
+}
+.letter-answer .letter-boxes {
+  column-gap: 32px;
+  row-gap: 24px;
+}
+.letter-answer .letter-box-word {
+  gap: 8px;
+}
+.letter-answer .letter-box {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 64px;
+  font-size: 30px;
+}
+.letter-answer .letter-tiles {
+  grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+  max-width: 680px;
+  gap: 10px;
+}
+.letter-answer .letter-tile {
+  min-height: 58px;
+  height: auto;
+  font-size: 28px;
+}
+.vocabulary-page .live-word-button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 8px 24px;
+}
+.vocabulary-page .live-word-button .live-word-reading {
+  grid-column: 1;
+  grid-row: 1;
+  overflow-wrap: anywhere;
+}
+.vocabulary-page .live-word-button .live-word-translation {
+  grid-column: 2;
+  grid-row: 1;
+  overflow-wrap: anywhere;
+}
+.vocabulary-page .live-word-button > small {
+  grid-column: 1 / -1;
+}
+.vocabulary-page .live-word-transliteration {
+  font-size: calc(18px * var(--text-scale, 1));
+}
+.unit-map-selectors {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (max-width: 600px) {
+  .letter-answer .letter-box {
+    flex-basis: 48px;
+    width: 48px;
+    height: 58px;
+  }
+  .letter-answer .letter-tiles {
+    grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  }
+  .letter-answer .letter-tile {
+    min-height: 52px;
+  }
+  .vocabulary-page .live-word-button {
+    gap: 6px 16px;
+  }
+}
 .session-unit-context {
   flex-shrink: 0;
   width: min(100%, 48rem);

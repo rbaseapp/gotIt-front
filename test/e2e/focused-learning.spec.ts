@@ -25,7 +25,9 @@ for (const width of [320, 390, 1487])
       fullPage: true,
       animations: "disabled",
     });
-    await page.goto(`/learn/session/recall?items=${id}&language=he`);
+    await page.goto(
+      `/learn/session/recall?items=${id}&language=he&input=letters`,
+    );
     await page.locator(".session-launch > .button.primary").click();
     await expect(page.locator(".session-screen-title")).toHaveText(
       he.gameUi.recallTitle,
