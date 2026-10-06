@@ -438,7 +438,7 @@ export function EnglishLearningPathPage() {
                   onClick={() =>
                     current.installed
                       ? navigate(
-                          `/learn/session/smart?pack=${current.id}&return=${encodeURIComponent(`/english-learning?unit=${current.id}`)}`,
+                          `/learn/smart?pack=${current.id}&language=${encodeURIComponent(current.track.sourceLanguageCode)}&return=${encodeURIComponent(`/english-learning?unit=${current.id}`)}`,
                         )
                       : void openUnit(current)
                   }
@@ -580,7 +580,7 @@ export function EnglishLearningPathPage() {
               {next.installed ? (
                 <Link
                   className="button primary"
-                  to={`/learn/session/smart?pack=${next.id}&return=%2Fenglish-learning`}
+                  to={`/learn/smart?pack=${next.id}&language=${encodeURIComponent(next.track.sourceLanguageCode)}&return=%2Fenglish-learning`}
                 >
                   <Play size={17} /> {t("englishPath.continue")}
                 </Link>

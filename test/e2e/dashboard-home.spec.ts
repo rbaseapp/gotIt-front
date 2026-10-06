@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { courseWithPlan } from "../course-fixtures";
-import { seedProfile } from '../../src/data/seed';
+import { seedProfile } from "../../src/data/seed";
 
 for (const viewport of [
   { width: 390, height: 844 },
@@ -107,7 +107,7 @@ for (const viewport of [
       .getByRole("link", { name: "שיחה עם מורה" });
     await expect(words).toHaveAttribute(
       "href",
-      "/learn/session/smart?language=en&return=%2Fdashboard",
+      "/learn/smart?language=en&return=%2Fdashboard",
     );
     await expect(lesson).toHaveAttribute(
       "href",

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { seedProfile } from "../../src/data/seed";
 
 test.use({ hasTouch: true });
 
@@ -38,6 +39,7 @@ for (const viewport of [
           : path.endsWith("/profile")
             ? {
                 profile: {
+                  ...seedProfile,
                   name: "Learner",
                   defaultSourceLanguage: "en",
                   defaultTranslationLanguage: "he",
@@ -82,6 +84,7 @@ for (const viewport of [
       );
     });
     await page.goto("/vocabulary");
+    await page.locator(".library-filters > summary").click();
     const filters = page.locator(".vocabulary-advanced-filters");
     await expect(filters).toBeVisible();
     if (!(await filters.evaluate((element) => element.hasAttribute("open"))))
@@ -137,6 +140,7 @@ for (const viewport of [
     await sourceLanguage.selectOption("fr");
     await expect(sourceLanguage).toHaveValue("fr");
     const bulkAction = page.locator(".live-toolbar select");
+    await page.locator(".library-management > summary").click();
     await bulkAction.selectOption("archive");
     await expect(bulkAction).toHaveValue("archive");
   });

@@ -63,6 +63,7 @@ for (const width of [320, 390, 1487])
       return route.fallback();
     });
     const cases = [
+      ["library", "/vocabulary", ".vocabulary-page"],
       ["account", "/account", ".account-page"],
       ["settings", "/settings", ".settings-page"],
       ["minutes", "/billing/minutes", ".minutes-page"],
@@ -137,6 +138,21 @@ for (const width of [320, 390, 1487])
         await expect(
           page.getByRole("textbox", { name: he.capture.sourceText }),
         ).toHaveValue("coffee");
+      }
+      if (name === "library") {
+        const sourceLanguage = await page
+          .locator(".learning-language-select select")
+          .inputValue();
+        await page
+          .getByRole("link", { name: he.ux.startSmart, exact: true })
+          .click();
+        await expect(page.locator(".ux-smart-ready")).toBeVisible();
+        expect(new URL(page.url()).searchParams.get("language")).toBe(
+          sourceLanguage,
+        );
+        await expect(
+          page.getByRole("link", { name: he.smartUi.start, exact: true }),
+        ).toHaveAttribute("href", new RegExp(`language=${sourceLanguage}`));
       }
       if (name === "personal-prep") {
         if (width < 861) {

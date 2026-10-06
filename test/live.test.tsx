@@ -1816,10 +1816,7 @@ describe("live server-backed flows", () => {
     const user = userEvent.setup();
     expect(
       await screen.findByRole("link", { name: "מתחילים תרגול חכם" }),
-    ).toHaveAttribute(
-      "href",
-      "/learn/session/smart?language=en&return=%2Fdashboard",
-    );
+    ).toHaveAttribute("href", "/learn/smart?language=en&return=%2Fdashboard");
     expect(
       within(document.querySelector(".ux-explore")!).getByRole("link", {
         name: "שיחה עם מורה",

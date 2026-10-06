@@ -18,11 +18,13 @@ export function TeacherVoicePreview({ voice }: { voice: "female" | "male" }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const audio = useRef<HTMLAudioElement | undefined>(undefined);
+  const audioUrl = useRef<string | undefined>(undefined);
   const generation = useRef(0);
   useEffect(
     () => () => {
       generation.current++;
       audio.current?.pause();
+      if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
     },
     [],
   );
@@ -32,6 +34,10 @@ export function TeacherVoicePreview({ voice }: { voice: "female" | "male" }) {
     setBusy(true);
     setError("");
     audio.current?.pause();
+    if (audioUrl.current) {
+      URL.revokeObjectURL(audioUrl.current);
+      audioUrl.current = undefined;
+    }
     try {
       const result = await product(
         sample,
@@ -40,9 +46,13 @@ export function TeacherVoicePreview({ voice }: { voice: "female" | "male" }) {
         { teacherVoice: voice },
       );
       if (request !== generation.current) return;
-      audio.current = new Audio(
-        `data:${result.contentType};base64,${result.audioBase64}`,
+      const bytes = Uint8Array.from(atob(result.audioBase64), (character) =>
+        character.charCodeAt(0),
       );
+      audioUrl.current = URL.createObjectURL(
+        new Blob([bytes], { type: result.contentType }),
+      );
+      audio.current = new Audio(audioUrl.current);
       await audio.current.play();
     } catch (reason) {
       if (request === generation.current) setError(errorMessage(reason));

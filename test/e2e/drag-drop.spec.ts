@@ -113,12 +113,29 @@ for (const viewport of [
     await page.locator(".practice-card").evaluate((el) => {
       (el as HTMLElement).style.transform = "translateY(12px)";
     });
+    // The compact board scrolls internally. Bring both endpoints into its
+    // visible clip before synthesizing a real screen-coordinate gesture.
+    await slot.scrollIntoViewIfNeeded();
+    expect(
+      await card.evaluate((el) => {
+        const bounds = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          bounds.x + bounds.width / 2,
+          bounds.y + bounds.height / 2,
+        );
+        return hit !== null && el.contains(hit);
+      }),
+    ).toBe(true);
+    await expect(slot).toBeInViewport({ ratio: 1 });
     const start = (await card.boundingBox())!;
     const end = (await slot.boundingBox())!;
     const x = start.x + start.width / 2,
       y = start.y + start.height / 2;
     const tx = end.x + end.width / 2,
       ty = end.y + end.height / 2;
+    expect(tx).toBeGreaterThan(0);
+    expect(ty).toBeGreaterThan(0);
+    expect(ty).toBeLessThan(viewport.height);
     const cdp = await page.context().newCDPSession(page);
     await cdp.send("Input.dispatchTouchEvent", {
       type: "touchStart",

@@ -81,7 +81,7 @@ export function LiveDashboardPage() {
       : resumable?.sessionType === "listening_spelling"
         ? "listening"
         : resumable?.sessionType;
-  const smart = `/learn/session/smart?language=${encodeURIComponent(code)}`;
+  const smart = `/learn/smart?language=${encodeURIComponent(code)}`;
   const returnSuffix = "&return=%2Fdashboard";
   const isProgram =
     Boolean(course?.nextLesson) ||

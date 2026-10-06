@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
   product: vi.fn(),
   play: vi.fn(),
   pause: vi.fn(),
+  audioSource: vi.fn(),
+  createUrl: vi.fn(() => "blob:https://gotit.test/voice-sample"),
+  revokeUrl: vi.fn(),
 }));
 vi.mock("../src/lib/product", async (original) => ({
   ...(await original<typeof import("../src/lib/product")>()),
@@ -26,9 +29,16 @@ it("voice sample failure allows retry without microphone, a lesson or changing t
       sampleLanguageCode: "en",
     });
   mocks.play.mockResolvedValue(undefined);
+  vi.stubGlobal("URL", {
+    createObjectURL: mocks.createUrl,
+    revokeObjectURL: mocks.revokeUrl,
+  });
   vi.stubGlobal(
     "Audio",
     class {
+      constructor(source: string) {
+        mocks.audioSource(source);
+      }
       play = mocks.play;
       pause = mocks.pause;
     },
@@ -43,6 +53,14 @@ it("voice sample failure allows retry without microphone, a lesson or changing t
     screen.getByRole("button", { name: i18n.t("lessonUi.voiceSample") }),
   );
   await waitFor(() => expect(mocks.play).toHaveBeenCalledOnce());
+  expect(mocks.createUrl).toHaveBeenCalledWith(expect.any(Blob));
+  expect(mocks.createUrl.mock.calls[0]?.[0]).toMatchObject({
+    type: "audio/mpeg",
+    size: 3,
+  });
+  expect(mocks.audioSource).toHaveBeenCalledWith(
+    "blob:https://gotit.test/voice-sample",
+  );
   expect(
     mocks.product.mock.calls.every(
       (call) =>
@@ -52,4 +70,7 @@ it("voice sample failure allows retry without microphone, a lesson or changing t
   ).toBe(true);
   view.unmount();
   expect(mocks.pause).toHaveBeenCalled();
+  expect(mocks.revokeUrl).toHaveBeenCalledWith(
+    "blob:https://gotit.test/voice-sample",
+  );
 });

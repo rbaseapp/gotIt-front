@@ -294,7 +294,7 @@ export function LiveVocabularyPage() {
         <p>{t("lessonUi.libraryPracticeHelp")}</p>
         <Link
           className="button primary"
-          to={`/learn/session/smart?language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+          to={`/learn/smart?language=${encodeURIComponent(language.code)}&return=${returnTo}`}
         >
           {t("ux.startSmart")}
         </Link>
@@ -626,7 +626,7 @@ export function LiveVocabularyPage() {
               {selected.length > 0 && filters.userStatus !== "deleted" && (
                 <Link
                   className="button primary"
-                  to={`/learn/session/smart?items=${selected.join(",")}&return=${returnTo}`}
+                  to={`/learn/smart?items=${selected.join(",")}&language=${encodeURIComponent(language.code)}&return=${returnTo}`}
                 >
                   {t("vocabulary.practiceSelected")}
                 </Link>
@@ -634,7 +634,7 @@ export function LiveVocabularyPage() {
               {selected.length > 0 && filters.userStatus !== "deleted" && (
                 <Link
                   className="button secondary"
-                  to={`/learn?items=${encodeURIComponent(selected.join(","))}&return=${returnTo}`}
+                  to={`/learn?items=${encodeURIComponent(selected.join(","))}&language=${encodeURIComponent(language.code)}&return=${returnTo}`}
                 >
                   {t("ux.chooseGame")}
                 </Link>
@@ -1045,7 +1045,7 @@ function DetailForm({
       </p>
       <Link
         className="button primary"
-        to={`/learn/session/smart?items=${item.id}`}
+        to={`/learn/smart?items=${item.id}&language=${encodeURIComponent(item.sourceLanguageCode)}`}
       >
         {t("vocabulary.practiceWord")}
       </Link>
