@@ -155,6 +155,11 @@ progress::-moz-progress-bar {
 .page-enter {
   animation: ux-enter 0.28s ease both;
 }
+/* A full-viewport game has no gutter to absorb a horizontal translation.
+   Keep its frame stationary throughout entry, including RTL scroll geometry. */
+.session-page.page-enter {
+  animation-name: ux-fade;
+}
 .app-layout {
   min-height: 100dvh;
 }
