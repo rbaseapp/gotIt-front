@@ -74,16 +74,20 @@ export function useReadingGuides(items: GuideItem[]) {
     let active = true;
     // Deferring allows StrictMode cleanup to cancel the duplicate mount request.
     const timer = window.setTimeout(() => {
-      void product(
-        z.object({ guides: z.array(guideSchema) }),
-        "learning-items/reading-guides",
-        "POST",
-        { ids: missing.slice(0, 30).map((item) => item.id) },
-      )
-        .then((result) => {
-          if (active) setResolved({ key, native, guides: result.guides });
-        })
-        .catch(() => {}); // Missing provider data must never be replaced with a translation.
+      void (async () => {
+        const guides: Guide[] = [];
+        for (let offset = 0; active && offset < missing.length; offset += 30) {
+          const result = await product(
+            z.object({ guides: z.array(guideSchema) }),
+            "learning-items/reading-guides",
+            "POST",
+            { ids: missing.slice(offset, offset + 30).map((item) => item.id) },
+          );
+          if (!active) return;
+          guides.push(...result.guides);
+          setResolved({ key, native, guides: [...guides] });
+        }
+      })().catch(() => {}); // Missing provider data must never be replaced with a translation.
     }, 100);
     return () => {
       active = false;
