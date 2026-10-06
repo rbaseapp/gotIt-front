@@ -5,6 +5,7 @@ import {
   type DragEvent as ReactDragEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { Check, GripVertical, Sparkles, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { AttemptReceipt, Exercise } from "../lib/product";
@@ -123,6 +124,8 @@ export function LiveDragDropBoard({
     text: string,
   ) => {
     if (event.pointerType === "mouse" || busy || checking || results) return;
+    if (touchDrag.current) return;
+    suppressClick.current = undefined;
     event.currentTarget.setPointerCapture(event.pointerId);
     touchDrag.current = {
       pointerId: event.pointerId,
@@ -145,6 +148,7 @@ export function LiveDragDropBoard({
       ) > 7
     ) {
       current.active = true;
+      setSelectedChoice(undefined);
       setDraggingChoice(current.choiceId);
     }
     if (!current.active) return;
@@ -153,19 +157,29 @@ export function LiveDragDropBoard({
     setOverTarget(targetAt(event.clientX, event.clientY));
   };
 
+  const clearTouchDrag = () => {
+    touchDrag.current = undefined;
+    setTouchGhost(undefined);
+    setDraggingChoice(undefined);
+    setOverTarget(undefined);
+  };
+
+  const cancelTouchDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (touchDrag.current?.pointerId !== event.pointerId) return;
+    suppressClick.current = touchDrag.current.choiceId;
+    clearTouchDrag();
+  };
+
   const finishTouchDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const current = touchDrag.current;
     if (!current || current.pointerId !== event.pointerId) return;
     if (current.active) {
       event.preventDefault();
       suppressClick.current = current.choiceId;
-      const target = targetAt(event.clientX, event.clientY) ?? overTarget;
+      const target = targetAt(event.clientX, event.clientY);
       if (target) place(target, current.choiceId);
     }
-    touchDrag.current = undefined;
-    setTouchGhost(undefined);
-    setDraggingChoice(undefined);
-    setOverTarget(undefined);
+    clearTouchDrag();
   };
 
   const startNativeDrag = (
@@ -257,6 +271,10 @@ export function LiveDragDropBoard({
                       : t("game.dropForWord", { word: exercise.prompt.text })
                   }
                   onClick={() => {
+                    if (suppressClick.current) {
+                      suppressClick.current = undefined;
+                      return;
+                    }
                     if (selectedChoice) place(exercise.id, selectedChoice);
                     else if (placedChoice) setSelectedChoice(placedChoice.id);
                   }}
@@ -273,7 +291,8 @@ export function LiveDragDropBoard({
                   }}
                   onPointerMove={moveTouchDrag}
                   onPointerUp={finishTouchDrag}
-                  onPointerCancel={finishTouchDrag}
+                  onPointerCancel={cancelTouchDrag}
+                  onLostPointerCapture={cancelTouchDrag}
                   onDragEnter={(event) => {
                     event.preventDefault();
                     setOverTarget(exercise.id);
@@ -375,7 +394,8 @@ export function LiveDragDropBoard({
                   }
                   onPointerMove={moveTouchDrag}
                   onPointerUp={finishTouchDrag}
-                  onPointerCancel={finishTouchDrag}
+                  onPointerCancel={cancelTouchDrag}
+                  onLostPointerCapture={cancelTouchDrag}
                 >
                   <GripVertical size={18} aria-hidden="true" />
                   <span>{choice.text}</span>
@@ -415,17 +435,19 @@ export function LiveDragDropBoard({
         )}
       </div>
 
-      {touchGhost && (
-        <div
-          className="meaning-drag-ghost"
-          dir="auto"
-          style={{ left: touchGhost.x, top: touchGhost.y }}
-          aria-hidden="true"
-        >
-          <GripVertical size={18} />
-          {touchGhost.text}
-        </div>
-      )}
+      {touchGhost &&
+        createPortal(
+          <div
+            className="meaning-drag-ghost"
+            dir="auto"
+            style={{ left: touchGhost.x, top: touchGhost.y }}
+            aria-hidden="true"
+          >
+            <GripVertical size={18} />
+            {touchGhost.text}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

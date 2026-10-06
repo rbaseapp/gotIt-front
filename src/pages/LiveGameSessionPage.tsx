@@ -165,7 +165,7 @@ export function LiveGameSessionPage() {
   });
   const [direction, setDirection] = useState("translation_to_source");
   const [kind, setKind] = useState("typed");
-  const [count, setCount] = useState(type === "drag_drop" ? 3 : 10);
+  const [count, setCount] = useState(10);
   const [pending, setPending] = useState<Submission>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -195,6 +195,12 @@ export function LiveGameSessionPage() {
   const exercise = exercises[index];
   const studyCard = studyCards[studyIndex];
   const sessionCompleted = session?.status === "completed";
+  const roundBased = type === "smart" || type === "drag_drop";
+  const sessionTarget = Math.min(
+    session?.scope?.type === "pack" ? session.itemCount : count,
+    session?.itemCount ?? count,
+  );
+  const completedCount = (session?.attemptCount ?? 0) + outcomes.length;
   // The last exercise is retained for results/restart. It must not keep the
   // active-game layout (and its scroll lock) after the session has ended.
   const activeCard = !sessionCompleted && Boolean(exercise || studyCard);
@@ -276,16 +282,24 @@ export function LiveGameSessionPage() {
     const baseRequestedCount =
       learningItemIds?.length ??
       (value.scope?.type === "pack" ? value.itemCount : count);
+    const remaining = Math.max(
+      1,
+      Math.min(baseRequestedCount, value.itemCount) -
+        value.attemptCount -
+        countedAttempts.current.size,
+    );
     const smartDragDropRound =
       type === "smart" &&
       !standardSmartRound &&
       !learningItemIds &&
-      value.attemptCount === 0 &&
-      value.itemCount >= 3;
-    const requestedCount = smartDragDropRound
-      ? 3
-      : standardSmartRound && type === "smart"
-        ? Math.max(1, Math.min(baseRequestedCount, value.itemCount) - 3)
+      remaining >= 2;
+    const boardRound = type === "drag_drop" || smartDragDropRound;
+    const requestedCount = learningItemIds
+      ? baseRequestedCount
+      : roundBased
+        ? boardRound && remaining <= 4
+          ? remaining
+          : Math.min(3, remaining)
         : baseRequestedCount;
     const result = await product(
       z.object({
@@ -633,7 +647,7 @@ export function LiveGameSessionPage() {
   };
   const advance = async () => {
     if (!session || busy || cardLeaving) return;
-    if (index + 1 < exercises.length) {
+    if (!dragDropBoard && index + 1 < exercises.length) {
       setCardLeaving(true);
       if (cardTransitionTimer.current)
         clearTimeout(cardTransitionTimer.current);
@@ -646,6 +660,10 @@ export function LiveGameSessionPage() {
         setMoment(undefined);
         setCardLeaving(false);
       }, 170);
+      return;
+    }
+    if (roundBased && !remedialRound && completedCount < sessionTarget) {
+      await nextRound();
       return;
     }
     const retryIds = [...mistakeIds.current];
@@ -695,22 +713,25 @@ export function LiveGameSessionPage() {
     setCelebration(undefined);
     setCardLeaving(false);
   };
-  const finishDragDropBoard = async () => {
-    if (type !== "smart" || (session?.itemCount ?? 0) <= 3) {
-      await close("completed");
-      return;
-    }
+  const nextRound = async (standardSmartRound = false) => {
     if (!session || lock.current) return;
     lock.current = true;
     setBusy(true);
     setError("");
     try {
-      await issue(session, undefined, true);
+      await issue(session, undefined, standardSmartRound);
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
     } finally {
       lock.current = false;
       if (mounted.current) setBusy(false);
+    }
+  };
+  const finishDragDropBoard = async () => {
+    if (completedCount < sessionTarget) {
+      await nextRound(type === "smart");
+    } else {
+      await advance();
     }
   };
   const advanceStudy = () => {
@@ -1179,8 +1200,14 @@ export function LiveGameSessionPage() {
               <div className="live-toolbar">
                 <span>
                   {t("game.exerciseProgress", {
-                    current: index + 1,
-                    total: exercises.length,
+                    current:
+                      roundBased && !remedialRound
+                        ? Math.min(completedCount + 1, sessionTarget)
+                        : index + 1,
+                    total:
+                      roundBased && !remedialRound
+                        ? sessionTarget
+                        : exercises.length,
                   })}
                 </span>
                 <span className="round-label">
@@ -1201,9 +1228,17 @@ export function LiveGameSessionPage() {
               <progress
                 className="live-session-progress"
                 value={
-                  type === "matching" || dragDropBoard ? outcomes.length : index
+                  roundBased && !remedialRound
+                    ? completedCount
+                    : type === "matching"
+                      ? outcomes.length
+                      : index
                 }
-                max={exercises.length}
+                max={
+                  roundBased && !remedialRound
+                    ? sessionTarget
+                    : exercises.length
+                }
                 aria-label={t("game.exerciseProgressAria")}
               />
               {type === "matching" ? (
@@ -1228,7 +1263,8 @@ export function LiveGameSessionPage() {
                     }
                     onDone={() => void finishDragDropBoard()}
                     doneLabel={
-                      type === "smart" && (session?.itemCount ?? 0) > 3
+                      completedCount < sessionTarget ||
+                      (type === "smart" && mistakeIds.current.size > 0)
                         ? t("learn.continue")
                         : undefined
                     }
@@ -1550,13 +1586,18 @@ export function LiveGameSessionPage() {
                         disabled={busy || cardLeaving}
                         onClick={() => void advance()}
                       >
-                        {index + 1 === exercises.length
-                          ? !remedialRound && mistakeIds.current.size
-                            ? t("game.reviewMistakes", {
-                                count: mistakeIds.current.size,
-                              })
-                            : t("game.finish")
-                          : t("game.nextWord")}
+                        {index + 1 === exercises.length &&
+                        roundBased &&
+                        !remedialRound &&
+                        completedCount < sessionTarget
+                          ? t("learn.continue")
+                          : index + 1 === exercises.length
+                            ? !remedialRound && mistakeIds.current.size
+                              ? t("game.reviewMistakes", {
+                                  count: mistakeIds.current.size,
+                                })
+                              : t("game.finish")
+                            : t("game.nextWord")}
                         <ArrowLeft size={18} />
                       </button>
                     </div>
