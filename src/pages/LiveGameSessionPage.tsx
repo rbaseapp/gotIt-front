@@ -519,7 +519,11 @@ export function LiveGameSessionPage() {
         if (mounted.current) setSession(value);
       }
       if (value.status === "active") {
-        if (type === "smart" && value.attemptCount === 0)
+        if (
+          type === "smart" &&
+          value.attemptCount === 0 &&
+          !(unitId && params.get("batch") === "1")
+        )
           await loadStudy(value, resumedCards);
         else await issue(value);
       }
@@ -1042,105 +1046,115 @@ export function LiveGameSessionPage() {
             {error}
           </div>
         )}
-        {!activeCard && !sessionCompleted && (
-          <section className="live-panel session-launch">
-            <span className="launch-icon" aria-hidden="true">
-              <Sparkles size={30} />
-            </span>
-            <p className="eyebrow">{t("game.readyEyebrow")}</p>
-            <h1>
-              {type === "drag_drop"
-                ? t("learn.games.drag_drop.name")
-                : t(`labels.${modes[type]}`)}
-            </h1>
-            <p>
-              {type === "drag_drop"
-                ? t("game.dragDropLaunch")
-                : t("game.quickStartDescription", { count })}
-            </p>
-            {type !== "drag_drop" && (
-              <details className="session-settings">
-                <summary>
-                  <Settings2 size={17} />
-                  {t("game.customize")}
-                </summary>
-                <fieldset
-                  className="plain-fieldset form-stack"
-                  disabled={busy || !!creation.current || !!session}
-                >
-                  <label className="field">
-                    <span>{t("game.maxWords")}</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={count}
-                      onChange={(e) =>
-                        setCount(
-                          Math.max(1, Math.min(20, Number(e.target.value))),
-                        )
-                      }
-                    />
-                  </label>
-                  {!["listening", "pronunciation", "smart"].includes(type) && (
+        {!activeCard &&
+          !sessionCompleted &&
+          busy &&
+          params.get("ready") === "1" && (
+            <RemoteState loading error="" retry={() => void start()} />
+          )}
+        {!activeCard &&
+          !sessionCompleted &&
+          !(busy && params.get("ready") === "1") && (
+            <section className="live-panel session-launch">
+              <span className="launch-icon" aria-hidden="true">
+                <Sparkles size={30} />
+              </span>
+              <p className="eyebrow">{t("game.readyEyebrow")}</p>
+              <h1>
+                {type === "drag_drop"
+                  ? t("learn.games.drag_drop.name")
+                  : t(`labels.${modes[type]}`)}
+              </h1>
+              <p>
+                {type === "drag_drop"
+                  ? t("game.dragDropLaunch")
+                  : t("game.quickStartDescription", { count })}
+              </p>
+              {type !== "drag_drop" && (
+                <details className="session-settings">
+                  <summary>
+                    <Settings2 size={17} />
+                    {t("game.customize")}
+                  </summary>
+                  <fieldset
+                    className="plain-fieldset form-stack"
+                    disabled={busy || !!creation.current || !!session}
+                  >
                     <label className="field">
-                      <span>{t("game.direction")}</span>
-                      <select
-                        value={direction}
-                        onChange={(e) => setDirection(e.target.value)}
-                      >
-                        <option value="translation_to_source">
-                          {t("game.meaningToSource")}
-                        </option>
-                        <option value="source_to_translation">
-                          {t("game.sourceToMeaning")}
-                        </option>
-                      </select>
+                      <span>{t("game.maxWords")}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={count}
+                        onChange={(e) =>
+                          setCount(
+                            Math.max(1, Math.min(20, Number(e.target.value))),
+                          )
+                        }
+                      />
                     </label>
-                  )}
-                  {["recall", "article_quiz"].includes(type) && (
-                    <label className="field">
-                      <span>{t("game.answerType")}</span>
-                      <select
-                        value={kind}
-                        onChange={(e) => setKind(e.target.value)}
-                      >
-                        <option value="typed">{t("game.typed")}</option>
-                        <option value="multiple_choice">
-                          {t("game.multipleChoice")}
-                        </option>
-                      </select>
-                    </label>
-                  )}
-                </fieldset>
-              </details>
-            )}
-            <button
-              className="button primary launch-button"
-              disabled={busy || languagePending}
-              onClick={() => void start()}
-            >
-              {busy
-                ? t("game.preparing")
-                : session
-                  ? t("game.issueQuestions")
-                  : creation.current
-                    ? t("game.retryCreation")
-                    : t("game.start")}
-              {!busy && <ArrowLeft size={19} />}
-            </button>
-            {needsLanguage && (
-              <RemoteState
-                loading={language.loading}
-                error={language.error}
-                retry={() => void language.reload()}
-              />
-            )}
-            {creation.current && !session && (
-              <p>{t("game.retryCreationHelp")}</p>
-            )}
-          </section>
-        )}
+                    {!["listening", "pronunciation", "smart"].includes(
+                      type,
+                    ) && (
+                      <label className="field">
+                        <span>{t("game.direction")}</span>
+                        <select
+                          value={direction}
+                          onChange={(e) => setDirection(e.target.value)}
+                        >
+                          <option value="translation_to_source">
+                            {t("game.meaningToSource")}
+                          </option>
+                          <option value="source_to_translation">
+                            {t("game.sourceToMeaning")}
+                          </option>
+                        </select>
+                      </label>
+                    )}
+                    {["recall", "article_quiz"].includes(type) && (
+                      <label className="field">
+                        <span>{t("game.answerType")}</span>
+                        <select
+                          value={kind}
+                          onChange={(e) => setKind(e.target.value)}
+                        >
+                          <option value="typed">{t("game.typed")}</option>
+                          <option value="multiple_choice">
+                            {t("game.multipleChoice")}
+                          </option>
+                        </select>
+                      </label>
+                    )}
+                  </fieldset>
+                </details>
+              )}
+              <button
+                className="button primary launch-button"
+                disabled={busy || languagePending}
+                onClick={() => void start()}
+              >
+                {busy
+                  ? t("game.preparing")
+                  : session
+                    ? t("game.issueQuestions")
+                    : creation.current
+                      ? t("game.retryCreation")
+                      : t("game.start")}
+                {!busy && <ArrowLeft size={19} />}
+              </button>
+              {needsLanguage && (
+                <RemoteState
+                  loading={language.loading}
+                  error={language.error}
+                  retry={() => void language.reload()}
+                />
+              )}
+              {creation.current && !session && (
+                <p>{t("game.retryCreationHelp")}</p>
+              )}
+            </section>
+          )}
         {sessionCompleted ? (
           <section className="live-panel live-empty session-results">
             <span className="result-trophy" aria-hidden="true">

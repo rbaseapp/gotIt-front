@@ -1,4 +1,36 @@
-import type { AuthUser } from "../types";
+import type { AuthUser, UserProfile } from "../types";
+
+export function unitPracticeLink(
+  packId: string,
+  language: string,
+  profile: UserProfile,
+  user?: Pick<AuthUser, "applicationId" | "id"> | null,
+  returnTo = `/english-learning?unit=${packId}&tab=words`,
+) {
+  let pace: string | null = null;
+  try {
+    pace = localStorage.getItem(
+      `${selectedProgramKey(user)}.practicePace.${language}`,
+    );
+  } catch {
+    /* The saved daily preference remains available in the profile. */
+  }
+  const count =
+    pace === "long"
+      ? 20
+      : pace
+        ? 10
+        : Math.max(10, Math.min(20, profile.defaultNewItemsPerDay));
+  return `/learn/session/smart?${new URLSearchParams({
+    pack: packId,
+    language,
+    count: String(count),
+    includeNew: pace === "review" ? "0" : "1",
+    batch: "1",
+    ready: "1",
+    return: learningReturn(returnTo),
+  })}`;
+}
 
 // A destination is presentation context, never learning authority. Keep it local.
 export function learningReturn(value: string | null, fallback = "/learn") {

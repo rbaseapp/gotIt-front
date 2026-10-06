@@ -130,8 +130,65 @@ async function fixture(page: Page, allKnown = false) {
           generated: true,
         },
       });
-    if (path.endsWith("/practice/sessions") && method === "POST")
+    if (path.endsWith("/practice/sessions") && method === "POST") {
       created.push(route.request().postDataJSON());
+      return route.fulfill({
+        json: {
+          session: {
+            id: "22222222-2222-4222-8222-222222222222",
+            sessionType: "smart_review",
+            status: "active",
+            startedAt: "2026-10-01T10:00:00Z",
+            endedAt: null,
+            durationSeconds: null,
+            itemCount: 1,
+            attemptCount: 0,
+            correctCount: 0,
+            xpEarned: 0,
+            algorithmVersion: "fixture",
+            scope: { type: "pack", id: packId, title: pack.title },
+          },
+        },
+      });
+    }
+    if (path.endsWith("/exercises"))
+      return route.fulfill({
+        json: {
+          exercises: [
+            {
+              id: "33333333-3333-4333-8333-333333333333",
+              learningItemId: second,
+              exerciseType: "recall",
+              kind: "typed",
+              direction: "translation_to_source",
+              prompt: {
+                text: "you",
+                languageCode: "en",
+                context: null,
+                letterCount: 3,
+              },
+              expiresAt: "2030-10-01T00:00:00Z",
+            },
+          ],
+          algorithmVersion: "fixture",
+        },
+      });
+    if (path.endsWith("/study"))
+      return route.fulfill({
+        json: {
+          cards: [
+            {
+              learningItemId: second,
+              sourceText: "you",
+              translationText: "you meaning",
+              sourceLanguageCode: "en",
+              translationLanguageCode: "he",
+              context: null,
+              audioUrl: null,
+            },
+          ],
+        },
+      });
     return route.fallback();
   });
   return { created, added };
@@ -180,37 +237,33 @@ for (const width of [320, 1487])
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(width + 1);
     await page.getByRole("button", { name: he.unitStudy.chooseGame }).click();
-    await expect(page).toHaveURL(new RegExp(`/learn\\?pack=${packId}`));
+    await expect(page).toHaveURL(
+      new RegExp(`/learn/session/smart\\?pack=${packId}`),
+    );
     await expect(page.getByText(he.unitStudy.scopeHelp)).toBeVisible();
     expect(added).toEqual([[second]]);
-    const links = await page
-      .locator('a[href*="/learn/session/"]')
-      .evaluateAll((elements) =>
-        elements.map((e) => (e as HTMLAnchorElement).href),
-      );
-    expect(links.length).toBeGreaterThanOrEqual(4);
-    for (const link of links) {
-      const params = new URL(link).searchParams;
-      expect(params.get("pack")).toBe(packId);
-      expect(params.get("language")).toBe("en");
-      expect(params.get("return")).toContain(`unit=${packId}&tab=words`);
-    }
-    await page.locator('a[href*="/learn/session/recall"]').first().click();
+    const params = new URL(page.url()).searchParams;
+    expect(params.get("language")).toBe("en");
+    expect(params.get("count")).toBe("10");
+    expect(params.get("ready")).toBe("1");
+    expect(params.get("batch")).toBe("1");
+    expect(params.get("return")).toContain(`unit=${packId}&tab=words`);
     await expect(page.getByTestId("unit-session-context")).toContainText(
       "יחידה 1: Building Your First Sentences",
     );
     await expect(page.getByTestId("unit-session-context")).toContainText(
       he.unitStudy.scopeHelp,
     );
-    await page
-      .getByRole("button", { name: he.game.start, exact: true })
-      .click();
     await expect.poll(() => created.length).toBe(1);
     expect(created[0]).toMatchObject({
-      sessionType: "recall",
+      sessionType: "smart_review",
+      count: 10,
       sourceLanguageCode: "en",
       scope: { type: "pack", id: packId },
     });
+    await expect(
+      page.getByRole("button", { name: he.game.start, exact: true }),
+    ).toHaveCount(0);
     await expect(page.getByTestId("unit-session-context")).toBeVisible();
   });
 

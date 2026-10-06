@@ -24,11 +24,13 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { listPrivateLessons } from "../lib/privateLesson";
-import { learningReturn } from "../lib/learningNavigation";
+import { learningReturn, unitPracticeLink } from "../lib/learningNavigation";
+import { useApp } from "../context/AppContext";
 
 type Preview = { pack: WordPack; entries: WordPackEntry[] };
 export function EnglishLearningPathPage() {
   const { t } = useTranslation();
+  const { profile, user } = useApp();
   const { toast } = useFeedback();
   const { hasEntitlement } = useSubscription();
   const navigate = useNavigate();
@@ -209,18 +211,18 @@ export function EnglishLearningPathPage() {
     }
     setBusy(true);
     try {
-      await product(
-        wordPackAddReceiptSchema,
-        `word-packs/${pack.id}/add`,
-        "POST",
-        {
-          entryIds: toLearn.map(({ id }) => id),
-        },
-      );
+      if (toLearn.some((entry) => !entry.learningItemId || entry.excludedAt))
+        await product(
+          wordPackAddReceiptSchema,
+          `word-packs/${pack.id}/add`,
+          "POST",
+          {
+            entryIds: toLearn.map(({ id }) => id),
+          },
+        );
       setPreview(undefined);
-      await resource.reload();
       navigate(
-        `/learn?pack=${pack.id}&language=${encodeURIComponent(pack.track.sourceLanguageCode)}&return=${encodeURIComponent(`/english-learning?unit=${pack.id}&tab=words`)}`,
+        unitPracticeLink(pack.id, pack.track.sourceLanguageCode, profile, user),
       );
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
@@ -282,7 +284,13 @@ export function EnglishLearningPathPage() {
     ? `/english-learning?unit=${current.id}`
     : "/english-learning";
   const practiceUrl = current
-    ? `/learn/smart?pack=${current.id}&language=${encodeURIComponent(current.track.sourceLanguageCode)}&return=${encodeURIComponent(currentUrl)}`
+    ? unitPracticeLink(
+        current.id,
+        current.track.sourceLanguageCode,
+        profile,
+        user,
+        currentUrl,
+      )
     : "/learn";
   const selectUnit = (pack: WordPack, value = "map") => {
     setBulkOpen(false);
@@ -898,7 +906,13 @@ export function EnglishLearningPathPage() {
                 ) && (
                   <Link
                     className="button primary"
-                    to={`/learn/smart?pack=${preview.pack.id}&language=${encodeURIComponent(preview.pack.track.sourceLanguageCode)}&return=${encodeURIComponent(practiceReturn)}`}
+                    to={unitPracticeLink(
+                      preview.pack.id,
+                      preview.pack.track.sourceLanguageCode,
+                      profile,
+                      user,
+                      practiceReturn,
+                    )}
                   >
                     {t("englishPath.practice")}
                   </Link>

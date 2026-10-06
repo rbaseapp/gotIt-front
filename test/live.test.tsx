@@ -2244,111 +2244,174 @@ describe("live server-backed flows", () => {
       entryIds: [itemId],
     });
   });
-  it("opens a dedicated English path and starts a complete 50-item unit", async () => {
-    const pack = {
-      id: exerciseId,
-      slug: "daily-english-basic-01-en-he",
-      title: "Unit 1",
-      description: "First unit",
-      moduleNumber: 1,
-      version: 1,
-      wordCount: 50,
-      installed: false,
-      installedVersion: null,
-      topic: {
-        id: itemId,
-        slug: "english-learning-path-en-he",
-        title: "מסלול לימוד אנגלית",
-      },
-      track: {
-        id: sessionId,
-        slug: "daily-english-basic-en-he",
-        title: "אנגלית בסיסית",
-        levelCode: "beginner",
-        cefrFrom: "A1",
-        cefrTo: "A2",
-        sourceLanguageCode: "en",
-        translationLanguageCode: "he",
-      },
-      progress: {
-        linked: 0,
-        new: 0,
-        learning: 0,
-        reviewing: 0,
-        mastered: 0,
-        due: 0,
-      },
-    };
-    const advancedPack = {
-      ...pack,
-      id: remedialExerciseId,
-      slug: "daily-english-advanced-05-en-he",
-      moduleNumber: 5,
-      track: {
-        ...pack.track,
-        slug: "daily-english-advanced-en-he",
-        levelCode: "advanced",
-      },
-    };
-    const entries = Array.from({ length: 50 }, (_, index) => ({
-      id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
-      sourceText: index === 0 ? "good morning" : `word ${index}`,
-      translationText: index === 0 ? "בוקר טוב" : "מילה",
-      itemType: "word",
-      partOfSpeech: null,
-      exampleText: null,
-      learningItemId: null,
-      excludedAt: null,
-    }));
-    const fetchMock = mount("/english-learning?all=1", async (url, init) => {
-      if (
-        url.endsWith("/word-packs") &&
-        (!init?.method || init.method === "GET")
-      )
-        return json({ packs: [pack, advancedPack] });
-      if (url.endsWith(`/word-packs/${pack.id}`))
-        return json({ pack, entries });
-      if (url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST")
-        return json(
-          {
-            packId: pack.id,
-            added: 50,
-            linkedExisting: 0,
-            restored: 0,
-            excluded: 0,
-            total: 50,
-          },
-          201,
-        );
-      return json({}, 500);
-    });
-    expect(
-      await screen.findByRole("heading", {
-        name: i18n.t("structuredUi.allUnits"),
-      }),
-    ).toBeInTheDocument();
-    await userEvent.click(
-      await screen.findByRole("button", {
-        name: i18n.t("structuredUi.words"),
-        exact: true,
-      }),
-    );
-    expect(
-      await screen.findByRole("heading", { name: "good morning" }),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    await userEvent.click(
-      screen.getByRole("button", { name: i18n.t("unitStudy.chooseGame") }),
-    );
-    await waitFor(() => {
-      const call = fetchMock.mock.calls.find(
-        ([url, init]) =>
-          url.endsWith(`/word-packs/${pack.id}/add`) && init?.method === "POST",
+  it.each([10, 20])(
+    "starts a %i-word unit batch directly from the English path",
+    async (count) => {
+      const pack = {
+        id: exerciseId,
+        slug: "daily-english-basic-01-en-he",
+        title: "Unit 1",
+        description: "First unit",
+        moduleNumber: 1,
+        version: 1,
+        wordCount: 50,
+        installed: false,
+        installedVersion: null,
+        topic: {
+          id: itemId,
+          slug: "english-learning-path-en-he",
+          title: "מסלול לימוד אנגלית",
+        },
+        track: {
+          id: sessionId,
+          slug: "daily-english-basic-en-he",
+          title: "אנגלית בסיסית",
+          levelCode: "beginner",
+          cefrFrom: "A1",
+          cefrTo: "A2",
+          sourceLanguageCode: "en",
+          translationLanguageCode: "he",
+        },
+        progress: {
+          linked: 0,
+          new: 0,
+          learning: 0,
+          reviewing: 0,
+          mastered: 0,
+          due: 0,
+        },
+      };
+      const advancedPack = {
+        ...pack,
+        id: remedialExerciseId,
+        slug: "daily-english-advanced-05-en-he",
+        moduleNumber: 5,
+        track: {
+          ...pack.track,
+          slug: "daily-english-advanced-en-he",
+          levelCode: "advanced",
+        },
+      };
+      const entries = Array.from({ length: 50 }, (_, index) => ({
+        id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+        sourceText: index === 0 ? "good morning" : `word ${index}`,
+        translationText: index === 0 ? "בוקר טוב" : "מילה",
+        itemType: "word",
+        partOfSpeech: null,
+        exampleText: null,
+        learningItemId: null,
+        excludedAt: null,
+      }));
+      const fetchMock = mount(
+        "/english-learning?all=1",
+        async (url, init) => {
+          if (
+            url.endsWith("/word-packs") &&
+            (!init?.method || init.method === "GET")
+          )
+            return json({ packs: [pack, advancedPack] });
+          if (url.endsWith(`/word-packs/${pack.id}`))
+            return json({ pack, entries });
+          if (
+            url.endsWith(`/word-packs/${pack.id}/add`) &&
+            init?.method === "POST"
+          )
+            return json(
+              {
+                packId: pack.id,
+                added: 50,
+                linkedExisting: 0,
+                restored: 0,
+                excluded: 0,
+                total: 50,
+              },
+              201,
+            );
+          if (url.endsWith("/practice/sessions") && init?.method === "POST")
+            return json({
+              session: {
+                ...session,
+                sessionType: "smart_review",
+                itemCount: count,
+                scope: { type: "pack", id: pack.id, title: pack.title },
+              },
+            });
+          if (url.endsWith("/exercises"))
+            return json({
+              exercises: [
+                {
+                  ...exercise,
+                  exerciseType: "matching",
+                  kind: "multiple_choice",
+                  prompt: {
+                    ...exercise.prompt,
+                    text: "good morning",
+                    choices: [{ id: secondItemId, text: "unit meaning" }],
+                  },
+                },
+              ],
+              algorithmVersion: "server-v1",
+            });
+          return json({}, 500);
+        },
+        { ...seedProfile, defaultNewItemsPerDay: count },
       );
-      expect(call).toBeDefined();
-      expect(JSON.parse(String(call?.[1]?.body)).entryIds).toHaveLength(50);
-    });
-  });
+      expect(
+        await screen.findByRole("heading", {
+          name: i18n.t("structuredUi.allUnits"),
+        }),
+      ).toBeInTheDocument();
+      await userEvent.click(
+        await screen.findByRole("button", {
+          name: i18n.t("structuredUi.words"),
+          exact: true,
+        }),
+      );
+      expect(
+        await screen.findByRole("heading", { name: "good morning" }),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      await userEvent.click(
+        screen.getByRole("button", { name: i18n.t("unitStudy.chooseGame") }),
+      );
+      await waitFor(() => {
+        const call = fetchMock.mock.calls.find(
+          ([url, init]) =>
+            url.endsWith(`/word-packs/${pack.id}/add`) &&
+            init?.method === "POST",
+        );
+        expect(call).toBeDefined();
+        expect(JSON.parse(String(call?.[1]?.body)).entryIds).toHaveLength(50);
+      });
+      await screen.findByRole("heading", {
+        name: i18n.t("learn.games.drag_drop.name"),
+      });
+      const calls = fetchMock.mock.calls.filter(
+        ([url, init]) =>
+          url.endsWith("/practice/sessions") && init?.method === "POST",
+      );
+      expect(calls).toHaveLength(1);
+      expect(JSON.parse(String(calls[0][1]?.body))).toMatchObject({
+        sessionType: "smart_review",
+        count,
+        scope: { type: "pack", id: pack.id },
+        sourceLanguageCode: "en",
+        includeNewItems: true,
+      });
+      expect(fetchMock.mock.calls.some(([url]) => url.endsWith("/study"))).toBe(
+        false,
+      );
+      expect(
+        screen.queryByRole("heading", { name: i18n.t("ux.whatPlay") }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", {
+          name: i18n.t("game.start"),
+          exact: true,
+        }),
+      ).not.toBeInTheDocument();
+    },
+  );
   it("adds checked English words and bulk marks or unmarks only selected words as known", async () => {
     await i18n.changeLanguage("en");
     const ids = [itemId, secondItemId, remedialExerciseId];

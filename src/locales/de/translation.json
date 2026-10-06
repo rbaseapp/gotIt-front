@@ -2249,7 +2249,7 @@
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
   "unitStudy": {
-    "chooseGame": "Spiel für diese Einheit wählen",
+    "chooseGame": "Wörter dieser Einheit üben",
     "knownLabel": "Ich kenne das Wort – im Training überspringen",
     "knownHelp": "Das Wort wird im Einheitstraining ausgelassen und im Programm als bekannt gezählt. Das vergibt keine Punkte und belegt keine Beherrschung. Entferne den Haken, um es wieder zu üben.",
     "allKnown": "Alle Wörter sind als bekannt markiert. Entferne die Markierung bei Wörtern, die du üben möchtest.",
