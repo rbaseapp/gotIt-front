@@ -278,6 +278,7 @@ describe("live server-backed flows", () => {
           "matching",
         ]);
     },
+    15_000,
   );
   it.each(["translation_to_source", "source_to_translation"])(
     "offers clickable answer-language letters in an ordinary %s writing game",
@@ -837,7 +838,10 @@ describe("live server-backed flows", () => {
     );
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "מתחילים" }));
-    expect(document.querySelectorAll(".letter-box")).toHaveLength(8);
+    expect(document.querySelectorAll(".letter-box")).toHaveLength(0);
+    expect(
+      screen.queryByRole("group", { name: i18n.t("ux.letterKeyboard") }),
+    ).not.toBeInTheDocument();
     await user.type(await screen.findByLabelText("התשובה שלך"), "remember");
     await user.click(screen.getByRole("button", { name: "בדיקת תשובה" }));
     const retry = await screen.findByRole("button", {

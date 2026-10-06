@@ -44,6 +44,7 @@ import { useSubscription } from "../context/SubscriptionContext";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
 import { libraryReturn, readLibraryContext } from "../lib/libraryContext";
+import { useReadingGuides } from "../lib/useReadingGuides";
 
 const actions = [
   "pause",
@@ -160,6 +161,7 @@ export function LiveVocabularyPage() {
     );
   }, [packs.data, language.code]);
   const reloadLibrary = resource.reload;
+  const readingGuide = useReadingGuides(resource.data?.items ?? []);
   useEffect(() => {
     if (resource.data?.pageCount && pageNumber > resource.data.pageCount)
       setPageNumber(resource.data.pageCount);
@@ -675,18 +677,17 @@ export function LiveVocabularyPage() {
                 >
                   <span className="live-word-reading" dir="ltr">
                     <strong dir="auto">{item.sourceText}</strong>
-                    {item.phoneticScheme?.startsWith("transliteration:") &&
-                      item.phoneticText && (
-                        <span
-                          className="live-word-transliteration"
-                          lang={item.phoneticScheme.slice(16)}
-                          dir="auto"
-                        >
-                          {item.phoneticText}
-                        </span>
-                      )}
+                    {readingGuide(item) && (
+                      <span
+                        className="live-word-transliteration"
+                        lang={readingGuide(item)!.language}
+                        dir="auto"
+                      >
+                        {readingGuide(item)!.text}
+                      </span>
+                    )}
                   </span>
-                  <span dir="auto">
+                  <span className="live-word-translation" dir="auto">
                     {item.primaryTranslation || t("vocabulary.noMeaning")}
                   </span>
                   <small>
@@ -910,6 +911,7 @@ function DetailForm({
   const { t, i18n } = useTranslation();
   const { confirm, toast } = useFeedback();
   const primary = item.translations.find((t) => t.isPrimary)?.text || "";
+  const readingGuide = useReadingGuides([item])(item);
   const [source, setSource] = useState(item.sourceText);
   const [sourceLanguage, setSourceLanguage] = useState(item.sourceLanguageCode);
   const [targetLanguage, setTargetLanguage] = useState(
@@ -998,16 +1000,15 @@ function DetailForm({
       <div className="live-detail-title">
         <div className="live-word-reading" dir="ltr">
           <h2 dir="auto">{item.sourceText}</h2>
-          {item.phoneticScheme?.startsWith("transliteration:") &&
-            item.phoneticText && (
-              <p
-                className="live-word-transliteration"
-                lang={item.phoneticScheme.slice(16)}
-                dir="auto"
-              >
-                {item.phoneticText}
-              </p>
-            )}
+          {readingGuide && (
+            <p
+              className="live-word-transliteration"
+              lang={readingGuide.language}
+              dir="auto"
+            >
+              {readingGuide.text}
+            </p>
+          )}
         </div>
         <p dir="auto">{primary}</p>
         <span className="pill">

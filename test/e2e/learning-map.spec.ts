@@ -107,6 +107,11 @@ for (const width of [320, 390, 768, 1487])
       .getByRole("button", { name: he.ux.openMap, exact: true })
       .click();
     await expect(page.locator(".unit-roadmap-card")).toBeVisible();
+    await expect(page.locator(".path-level-tabs button")).toHaveCount(3);
+    for (const level of Object.values(he.englishPath.levels))
+      await expect(
+        page.locator(".path-level-tabs").getByText(level, { exact: true }),
+      ).toBeVisible();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator(".unit-word-station")).toContainText(
       he.pathUi.firstWords,
@@ -144,7 +149,7 @@ for (const width of [320, 390, 768, 1487])
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator(".unit-browser-list")).toHaveCount(0);
     await page
-      .getByRole("button", { name: he.structuredUi.allUnits, exact: true })
+      .getByRole("button", { name: new RegExp(he.englishPath.levels.beginner) })
       .click();
     await expect(page.locator(".path-level-tabs")).toBeVisible();
     await page.getByPlaceholder(he.pathUi.searchUnits).fill("אין יחידה");

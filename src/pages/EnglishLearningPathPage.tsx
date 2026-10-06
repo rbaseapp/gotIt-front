@@ -299,10 +299,11 @@ export function EnglishLearningPathPage() {
     .find((step) => step.available && !completedStations.has(step.station));
   const introduced = current?.progress.introduced ?? 0;
   const showWords = () => current && selectUnit(current, "words");
-  const showAll = () => {
+  const showAll = (level?: string) => {
     const query = new URLSearchParams(params);
     query.set("all", "1");
     query.set("tab", "map");
+    if (level) query.set("level", level);
     setParams(query);
   };
   const title = showLevels
@@ -376,6 +377,8 @@ export function EnglishLearningPathPage() {
           )}
           {showLevels ? (
             <UnitLevels
+              key={params.get("level") || "default"}
+              initialLevel={params.get("level") || undefined}
               packs={resource.data?.packs ?? []}
               current={current}
               onOpen={(pack) => selectUnit(pack)}
@@ -385,6 +388,25 @@ export function EnglishLearningPathPage() {
             <>
               {current && tab === "map" && (
                 <>
+                  <div
+                    className="path-level-tabs"
+                    role="group"
+                    aria-label={t("structuredUi.allUnits")}
+                  >
+                    {levels.map(({ level, packs }) => (
+                      <button key={level} onClick={() => showAll(level)}>
+                        <span className="ux-icon mint">
+                          <BookOpen />
+                        </span>
+                        <span>
+                          <strong>{t(`englishPath.levels.${level}`)}</strong>
+                          <small>
+                            {t("pathUi.unitCount", { count: packs.length })}
+                          </small>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                   <div className="unit-map-selectors">
                     <label className="field">
                       <span>{t("structuredUi.currentUnit")}</span>
@@ -413,9 +435,6 @@ export function EnglishLearningPathPage() {
                           ))}
                       </select>
                     </label>
-                    <button className="button secondary" onClick={showAll}>
-                      {t("structuredUi.allUnits")}
-                    </button>
                   </div>
                   <section
                     className="unit-roadmap-card"
@@ -582,7 +601,7 @@ export function EnglishLearningPathPage() {
                     </ol>
                     <button
                       className="button secondary unit-future"
-                      onClick={showAll}
+                      onClick={() => showAll()}
                     >
                       {t("structuredUi.nextUnits")}
                     </button>

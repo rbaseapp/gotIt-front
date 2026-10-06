@@ -16,15 +16,19 @@ export function UnitLevels({
   current,
   onOpen,
   onWords,
+  initialLevel,
 }: {
   packs: WordPack[];
   current?: WordPack;
   onOpen: (pack: WordPack) => void;
   onWords: (pack: WordPack) => void;
+  initialLevel?: string;
 }) {
   const { t } = useTranslation();
   const levels = englishPathLevels(packs);
-  const [level, setLevel] = useState(current?.track.levelCode ?? "beginner");
+  const [level, setLevel] = useState(
+    initialLevel ?? current?.track.levelCode ?? "beginner",
+  );
   const [query, setQuery] = useState("");
   const visible = levels.find((item) => item.level === level)?.packs ?? [];
   const featured =
