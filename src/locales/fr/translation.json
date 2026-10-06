@@ -2247,5 +2247,14 @@
     "newProgramHelp": "Choose a language, then the path that suits you",
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
+  },
+  "unitStudy": {
+    "chooseGame": "Choisir un jeu pour cette unité",
+    "knownLabel": "Je connais ce mot : passer pendant la pratique",
+    "knownHelp": "Le mot est exclu de la pratique de l’unité et compté comme connu dans le programme. Cela ne donne aucun point et ne prouve pas la maîtrise. Décochez pour le pratiquer à nouveau.",
+    "allKnown": "Tous les mots sont marqués comme connus. Décochez ceux que vous souhaitez pratiquer.",
+    "scopeHelp": "Ces jeux utilisent uniquement les mots de cette unité, sauf ceux marqués comme connus.",
+    "noImage": "Aucune image n’est disponible pour ce mot actuellement.",
+    "listenExample": "Écouter la phrase"
   }
 }

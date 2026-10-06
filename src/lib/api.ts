@@ -92,7 +92,8 @@ async function request(
       ? 95000
       : path === "pronunciation/assessments"
         ? 60000
-        : path.includes("/study/") && path.endsWith("/image")
+        : (path.includes("/study/") || path.includes("/entries/")) &&
+            path.endsWith("/image")
           ? 120000
           : path === "private-lessons/realtime-sessions"
             ? 90000

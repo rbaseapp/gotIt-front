@@ -266,6 +266,12 @@
   height: 22px;
   accent-color: var(--green);
 }
+.unit-known-help {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
 .path-word-tools {
   display: flex;
   gap: 16px;

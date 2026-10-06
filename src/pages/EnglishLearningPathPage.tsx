@@ -220,7 +220,7 @@ export function EnglishLearningPathPage() {
       setPreview(undefined);
       await resource.reload();
       navigate(
-        `/learn/smart?pack=${pack.id}&language=${encodeURIComponent(pack.track.sourceLanguageCode)}&return=${encodeURIComponent(practiceReturn)}`,
+        `/learn?pack=${pack.id}&language=${encodeURIComponent(pack.track.sourceLanguageCode)}&return=${encodeURIComponent(`/english-learning?unit=${pack.id}&tab=words`)}`,
       );
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
@@ -336,11 +336,19 @@ export function EnglishLearningPathPage() {
         {tab === "words" && current && (
           <button
             className="button primary path-practice"
-            disabled={busy || detailLoading}
+            disabled={
+              busy ||
+              detailLoading ||
+              !preview ||
+              preview.entries.every((entry) => entry.known)
+            }
             onClick={() => void startUnit()}
           >
-            {t("pathUi.practiceWords")}
+            {t("unitStudy.chooseGame")}
           </button>
+        )}
+        {tab === "words" && preview?.entries.every((entry) => entry.known) && (
+          <p role="status">{t("unitStudy.allKnown")}</p>
         )}
       </header>
       <RemoteState

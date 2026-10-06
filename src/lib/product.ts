@@ -380,6 +380,10 @@ export const studyImageSchema = z.object({
     .nullable(),
 });
 export type StudyImage = z.infer<typeof studyImageSchema>["image"];
+export const wordExampleSchema = z.object({
+  exampleText: z.string().max(300).nullable(),
+  generated: z.boolean(),
+});
 export const exerciseSchema = z.object({
   id: uuid,
   learningItemId: uuid,

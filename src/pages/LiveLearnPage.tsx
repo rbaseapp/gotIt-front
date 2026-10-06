@@ -24,7 +24,7 @@ import {
   queueSchema,
   wordPacksSchema,
 } from "../lib/product";
-import { practiceLink } from "../lib/learningNavigation";
+import { practiceLink, learningReturn } from "../lib/learningNavigation";
 
 const games = [
   { id: "recall", icon: PenLine, skill: "recall" },
@@ -89,12 +89,29 @@ export function LiveLearnPage() {
         retry={() => void language.reload()}
       />
     );
+  if (params.has("pack") && (packs.loading || packs.error || !pack?.installed))
+    return (
+      <RemoteState
+        loading={packs.loading}
+        error={packs.error || (!packs.loading ? t("game.invalidPack") : "")}
+        retry={() => void packs.reload()}
+      />
+    );
   return (
     <div className="ux-page ux-game-hub page-enter">
       <header className="page-heading-row">
         <div>
+          {params.has("return") && (
+            <Link
+              className="button ghost"
+              to={learningReturn(params.get("return"))}
+            >
+              {t("common.back")}
+            </Link>
+          )}
           <h1>{t("ux.gameHubTitle")}</h1>
           <p dir="auto">{scopeTitle}</p>
+          {pack && <p>{t("unitStudy.scopeHelp")}</p>}
         </div>
       </header>
       {!scoped && (
