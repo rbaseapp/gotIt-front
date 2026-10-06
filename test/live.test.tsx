@@ -2294,28 +2294,21 @@ describe("live server-backed flows", () => {
     });
     expect(
       await screen.findByRole("heading", {
-        name: i18n.t("structuredUi.mapTitle"),
+        name: i18n.t("structuredUi.allUnits"),
       }),
     ).toBeInTheDocument();
-    expect(
-      await screen.findByRole("heading", { name: "אנגלית בסיסית" }),
-    ).toBeInTheDocument();
-    const basicCard = screen
-      .getByText("יחידה 1", { exact: true })
-      .closest("article");
-    const advancedCard = screen
-      .getByText("יחידה 5", { exact: true })
-      .closest("article");
-    expect(basicCard).not.toBeNull();
-    expect(advancedCard).not.toBeNull();
-    expect(within(basicCard!).getByText("אנגלית בסיסית")).toBeInTheDocument();
-    expect(
-      within(advancedCard!).getByText("אנגלית מתקדמת"),
-    ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "התחלת היחידה" }));
-    expect(await screen.findByText("good morning")).toBeInTheDocument();
     await userEvent.click(
-      screen.getByRole("button", { name: "הוספה ותחילת תרגול" }),
+      await screen.findByRole("button", {
+        name: i18n.t("structuredUi.words"),
+        exact: true,
+      }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "good morning" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: i18n.t("pathUi.practiceWords") }),
     );
     await waitFor(() => {
       const call = fetchMock.mock.calls.find(
@@ -2437,11 +2430,14 @@ describe("live server-backed flows", () => {
       }
       return json({}, 500);
     });
-    const card = (
-      await screen.findByRole("heading", { name: "Unit 1", level: 3 })
-    ).closest("article")!;
     await userEvent.click(
-      within(card).getByRole("button", { name: /Preview unit/ }),
+      await screen.findByRole("button", {
+        name: i18n.t("structuredUi.words"),
+        exact: true,
+      }),
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: i18n.t("pathUi.manageWords") }),
     );
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Select word 2" }),
@@ -2622,22 +2618,30 @@ describe("live server-backed flows", () => {
         );
       return json({}, 500);
     });
-    const card = (
-      await screen.findByText("Building Your First Sentences")
-    ).closest("article")!;
     await userEvent.click(
-      within(card).getByRole("button", { name: /כבר יודע.*היחידה/ }),
+      await screen.findByRole("button", {
+        name: i18n.t("structuredUi.words"),
+        exact: true,
+      }),
+    );
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: i18n.t("englishPath.markUnitKnown"),
+      }),
     );
     await waitFor(() => expect(known.size).toBe(50));
-    expect(within(card).getByRole("progressbar")).toHaveValue(50);
     await userEvent.click(
-      within(card).getByRole("button", { name: /ביטול סימון היחידה/ }),
+      await screen.findByRole("button", {
+        name: i18n.t("englishPath.unmarkUnitKnown"),
+      }),
     );
     await waitFor(() => expect(known.size).toBe(0));
     await userEvent.click(
-      within(card).getByRole("button", { name: /הצגת היחידה/ }),
+      await screen.findByRole("button", { name: i18n.t("pathUi.manageWords") }),
     );
-    const row = (await screen.findByText("I")).closest(".pack-word-row")!;
+    const row = within(screen.getByRole("dialog"))
+      .getByText("I")
+      .closest(".pack-word-row")!;
     expect(row).toHaveClass("english-path-word-row");
     expect(screen.getByRole("dialog")).toHaveClass("english-path-word-modal");
     await userEvent.click(

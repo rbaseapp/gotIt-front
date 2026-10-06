@@ -399,11 +399,11 @@ for (const [locale, text] of [
       await page.getByRole("button", { name: text.ux.newProgram }).click();
       await expect(
         page
-          .getByRole("dialog")
+          .locator(".new-program-page")
           .getByRole("link", { name: new RegExp(text.ux.wordsOnly) }),
       ).toBeVisible();
       await withinViewport(page);
-      await page.keyboard.press("Escape");
+      await page.goto("/courses");
       if (locale === "he")
         await page.screenshot({
           path: testInfo.outputPath(`programs-${width}.png`),

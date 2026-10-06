@@ -161,6 +161,12 @@ export function PrivateLessonPage() {
     useState<PrivateLessonSpeechRate>("normal");
   const [lessonDurationMinutes, setLessonDurationMinutes] =
     useState<PrivateLessonDurationMinutes>(5);
+  const selectedUnitStation = unit?.teacherStations?.find(
+    (step) => step.station === (searchParams.get("station") || "supported"),
+  );
+  const plannedMinutes = packId
+    ? (selectedUnitStation?.durationMinutes ?? 5)
+    : lessonDurationMinutes;
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [grammarFocus, setGrammarFocus] = useState("");
   const [focusAreas, setFocusAreas] = useState<PrivateLessonFocusArea[]>([
@@ -735,7 +741,9 @@ export function PrivateLessonPage() {
               station:
                 searchParams.get("station") === "review"
                   ? ("review" as const)
-                  : ("supported" as const),
+                  : searchParams.get("station") === "midpoint"
+                    ? ("midpoint" as const)
+                    : ("supported" as const),
             }
           : {}),
         targetLanguageCode: targetLanguage.trim(),
@@ -743,7 +751,8 @@ export function PrivateLessonPage() {
         lessonMode,
         teachingLanguage: lessonTeachingLanguage,
         ...(level ? { requestedLevel: level } : {}),
-        requestedDurationMinutes: lessonDurationMinutes,
+        requestedDurationMinutes:
+          plannedMinutes as PrivateLessonDurationMinutes,
         teacherVoice,
         speechRate,
         ...(topic.trim() ? { topic: topic.trim() } : {}),
@@ -861,7 +870,7 @@ export function PrivateLessonPage() {
     setReportRequested(false);
     setReportError("");
     setError("");
-    setRemaining(lessonDurationMinutes * 60);
+    setRemaining(plannedMinutes * 60);
     setStatus(t("privateLesson.ready"));
     setPhase("setup");
   };
@@ -1243,7 +1252,8 @@ export function PrivateLessonPage() {
         supportLanguageCode: lessonSupportLanguage || null,
         lessonMode,
         teachingLanguage: lessonTeachingLanguage,
-        requestedDurationMinutes: lessonDurationMinutes,
+        requestedDurationMinutes:
+          plannedMinutes as PrivateLessonDurationMinutes,
         teacherVoice,
         speechRate,
         focusAreas,
@@ -1386,7 +1396,7 @@ export function PrivateLessonPage() {
                 <h2 dir="auto">{unit?.title}</h2>
                 <p>
                   {t("privateLesson.durationMinutes", {
-                    count: lessonDurationMinutes,
+                    count: plannedMinutes,
                   })}
                 </p>
                 <p
@@ -1407,11 +1417,27 @@ export function PrivateLessonPage() {
                 {!unit && !unitError && (
                   <p role="status">{t("common.loading")}</p>
                 )}
+                {selectedUnitStation && !selectedUnitStation.available && (
+                  <p role="status">
+                    {t("pathUi.remaining", {
+                      count: Math.max(
+                        0,
+                        selectedUnitStation.requiredWords -
+                          (unit?.introduced ?? 0),
+                      ),
+                    })}
+                  </p>
+                )}
                 <form onSubmit={(event) => void startLesson(event)}>
                   <button
                     className="button primary"
                     type="submit"
-                    disabled={!unit || phase === "preparing" || setupLoading}
+                    disabled={
+                      !unit ||
+                      !selectedUnitStation?.available ||
+                      phase === "preparing" ||
+                      setupLoading
+                    }
                   >
                     {phase === "preparing" && (
                       <LoaderCircle size={18} className="spin" />
@@ -1478,27 +1504,11 @@ export function PrivateLessonPage() {
                 </label>
                 <details>
                   <summary>{t("accountUi.morePreferences")}</summary>
-                  <label className="field">
-                    <span>{t("privateLesson.duration")}</span>
-                    <select
-                      value={lessonDurationMinutes}
-                      onChange={(event) =>
-                        setLessonDurationMinutes(
-                          Number(
-                            event.target.value,
-                          ) as PrivateLessonDurationMinutes,
-                        )
-                      }
-                    >
-                      {[1, 5, 10, 15, 20].map((minutes) => (
-                        <option key={minutes} value={minutes}>
-                          {t("privateLesson.durationMinutes", {
-                            count: minutes,
-                          })}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <p>
+                    {t("privateLesson.durationMinutes", {
+                      count: plannedMinutes,
+                    })}
+                  </p>
                   <details className="unit-lesson-words">
                     <summary>{t("ux.unitWords")}</summary>
                     {unit?.words.map((word) => (

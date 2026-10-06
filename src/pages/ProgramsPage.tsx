@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BookOpen, MessageCircle, Globe, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { RemoteState } from "../components/RemoteState";
-import { Modal } from "../components/Modal";
+import { LanguageCombobox } from "../components/LanguageCombobox";
 import { useFeedback } from "../components/Feedback";
 import { courseApi, type Course } from "../lib/courses";
 import { useResource } from "../lib/useResource";
@@ -18,7 +18,13 @@ export function ProgramsPage() {
   const { user } = useApp();
   const navigate = useNavigate();
   const { confirm, toast } = useFeedback();
-  const [newOpen, setNewOpen] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const newOpen = params.get("choose") === "1";
+  const setNewOpen = (open: boolean) => setParams(open ? { choose: "1" } : {});
+  const [target, setTarget] = useState("en");
+  const [support, setSupport] = useState(
+    i18n.resolvedLanguage?.split("-")[0] || "he",
+  );
   const [completedOpen, setCompletedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const courses = useResource(useCallback(() => courseApi.list(), []));
@@ -70,6 +76,84 @@ export function ProgramsPage() {
       setBusy(false);
     }
   };
+  if (newOpen)
+    return (
+      <div
+        className="ux-page new-program-page page-enter"
+        data-figma-desktop="43:2182"
+      >
+        <header className="page-heading-row">
+          <div>
+            <h1>{t("ux.newProgram")}</h1>
+            <p>{t("pathUi.newProgramHelp")}</p>
+          </div>
+          <button className="button ghost" onClick={() => setNewOpen(false)}>
+            {t("common.back")}
+          </button>
+        </header>
+        <section className="ux-card new-program-languages">
+          <label className="field">
+            <span>{t("courses.targetLanguage")}</span>
+            <LanguageCombobox
+              ariaLabel={t("courses.targetLanguage")}
+              value={target}
+              onChange={setTarget}
+            />
+          </label>
+          <label className="field">
+            <span>{t("courses.supportLanguage")}</span>
+            <LanguageCombobox
+              ariaLabel={t("courses.supportLanguage")}
+              value={support}
+              onChange={setSupport}
+            />
+          </label>
+        </section>
+        <section className="ux-card">
+          <h2>{t("englishPath.title")}</h2>
+          <p>{t("ux.structuredHelp")}</p>
+          <button
+            className="button primary"
+            disabled={
+              !path.some(
+                (pack) =>
+                  pack.track.sourceLanguageCode === target &&
+                  pack.track.translationLanguageCode === support,
+              )
+            }
+            onClick={() => open("/english-learning", "english-path", target)}
+          >
+            {t("pathUi.openFromZero")}
+          </button>
+          {!path.some(
+            (pack) =>
+              pack.track.sourceLanguageCode === target &&
+              pack.track.translationLanguageCode === support,
+          ) && <p>{t("pathUi.pairUnavailable")}</p>}
+        </section>
+        <section className="ux-card">
+          <h2>{t("ux.personalProgram")}</h2>
+          <p>{t("ux.personalHelp")}</p>
+          <Link
+            className="button secondary"
+            to={`/courses?new=1&language=${encodeURIComponent(target)}&support=${encodeURIComponent(support)}`}
+          >
+            {t("ux.personalProgram")}
+          </Link>
+        </section>
+        <div className="ux-inline-actions">
+          <Link
+            className="button ghost"
+            to={`/private-lesson?practice=free&language=${encodeURIComponent(target)}`}
+          >
+            {t("ux.freeChat")}
+          </Link>
+          <Link className="button ghost" to="/vocabulary">
+            {t("ux.wordsOnly")}
+          </Link>
+        </div>
+      </div>
+    );
   return (
     <div className="ux-page programs-page page-enter">
       <header className="page-heading-row">
@@ -244,51 +328,6 @@ export function ProgramsPage() {
       >
         {t(completedOpen ? "ux.activePrograms" : "ux.completedPrograms")}
       </button>
-      <Modal
-        open={newOpen}
-        onClose={() => setNewOpen(false)}
-        title={t("ux.chooseStart")}
-      >
-        <div className="modal-body ux-choice-list">
-          {path.length > 0 && (
-            <button
-              className="ux-choice"
-              onClick={() => open("/english-learning", "english-path", "en")}
-            >
-              <BookOpen size={24} />
-              <span>
-                <b>{t("englishPath.title")}</b>
-                <small>{t("ux.structuredHelp")}</small>
-              </span>
-            </button>
-          )}
-          <Link
-            className="ux-choice"
-            to="/courses?new=1"
-            onClick={() => setNewOpen(false)}
-          >
-            <MessageCircle size={24} />
-            <span>
-              <b>{t("ux.personalProgram")}</b>
-              <small>{t("ux.personalHelp")}</small>
-            </span>
-          </Link>
-          <Link className="ux-choice" to="/private-lesson?practice=free">
-            <MessageCircle size={24} />
-            <span>
-              <b>{t("ux.freeChat")}</b>
-              <small>{t("ux.noEnrollment")}</small>
-            </span>
-          </Link>
-          <Link className="ux-choice" to="/vocabulary">
-            <BookOpen size={24} />
-            <span>
-              <b>{t("ux.wordsOnly")}</b>
-              <small>{t("ux.noEnrollment")}</small>
-            </span>
-          </Link>
-        </div>
-      </Modal>
     </div>
   );
 }

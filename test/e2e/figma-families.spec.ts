@@ -132,6 +132,12 @@ for (const width of [320, 390, 1487])
           }),
         ).toHaveAttribute("href", new RegExp(`items=${item}.*language=en`));
         await page
+          .locator(".unit-browser-row")
+          .filter({ hasText: "coffee" })
+          .getByRole("button")
+          .first()
+          .click();
+        await page
           .getByRole("button", { name: he.capture.title, exact: true })
           .click();
         await expect(page.getByRole("dialog")).toBeVisible();

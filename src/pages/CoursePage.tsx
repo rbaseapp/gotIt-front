@@ -68,10 +68,14 @@ export function CoursePage() {
   const [message, setMessage] = useState("");
   const [editAnswerIndex, setEditAnswerIndex] = useState<number | null>(null);
   const [target, setTarget] = useState(
-    profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
+    searchParams.get("language") ||
+      profile.languages[0]?.languageCode ||
+      profile.defaultSourceLanguage ||
+      "en",
   );
   const [support, setSupport] = useState(() => {
-    const uiLanguage = i18n.resolvedLanguage?.split("-")[0];
+    const uiLanguage =
+      searchParams.get("support") || i18n.resolvedLanguage?.split("-")[0];
     return getBilingualLanguageOptions().some(([code]) => code === uiLanguage)
       ? uiLanguage!
       : profile.defaultTranslationLanguage || "en";

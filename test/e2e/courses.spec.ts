@@ -166,7 +166,7 @@ test("multiple courses in two languages stay grouped on a narrow screen", async 
   await expect(createButton).toBeInViewport();
   await createButton.click();
   await page
-    .getByRole("dialog")
+    .locator(".new-program-page")
     .getByRole("link", { name: /תוכנית אישית/ })
     .click();
   await expect(page.locator(".course-welcome")).toBeVisible();

@@ -253,7 +253,18 @@ export const lessonUnitSchema = z.object({
   targetLanguageCode: z.string(),
   supportLanguageCode: z.string(),
   level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
-  station: z.enum(["supported", "review"]),
+  station: z.enum(["supported", "midpoint", "review"]),
+  introduced: z.number().int().nonnegative().optional(),
+  teacherStations: z
+    .array(
+      z.object({
+        station: z.enum(["supported", "midpoint", "review"]),
+        requiredWords: z.number(),
+        durationMinutes: z.number(),
+        available: z.boolean(),
+      }),
+    )
+    .optional(),
   completed: z.number().int().nonnegative(),
   total: z.number().int().positive(),
   words: z
@@ -330,7 +341,7 @@ export type PrivateLessonInput = {
   interactionMode?: "guided" | "conversation";
   courseId?: string;
   packId?: string;
-  station?: "supported" | "review";
+  station?: "supported" | "midpoint" | "review";
   targetLanguageCode: string;
   supportLanguageCode?: string | null;
   lessonMode?: PrivateLessonMode;

@@ -145,6 +145,15 @@ async function fixture(page: Page) {
           station: "supported",
           completed: 1,
           total: 6,
+          introduced: 6,
+          teacherStations: [
+            {
+              station: "supported",
+              requiredWords: 6,
+              durationMinutes: 5,
+              available: true,
+            },
+          ],
           words: [
             {
               sourceText: "coffee",

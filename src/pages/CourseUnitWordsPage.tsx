@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { ReadAloud } from "../components/CourseComposer";
 import { RemoteState } from "../components/RemoteState";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
 import { product, uuid } from "../lib/product";
@@ -32,6 +33,9 @@ export function CourseUnitWordsPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [capture, setCapture] = useState<string>();
   const data = words.data;
+  const [wordText, setWordText] = useState<string>();
+  const activeWord =
+    data?.words.find((word) => word.sourceText === wordText) ?? data?.words[0];
   const activeIds = new Set(
     data?.words.flatMap((word) => word.choices.map((choice) => choice.id)) ??
       [],
@@ -57,38 +61,78 @@ export function CourseUnitWordsPage() {
         error={words.error}
         retry={() => void words.reload()}
       />
-      {data?.words.map((word) => (
-        <section className="ux-card" key={word.sourceText}>
-          <h2 dir="auto" lang={data.targetLanguageCode}>
-            {word.sourceText}
-          </h2>
-          {word.choices.map((choice) => (
-            <label key={choice.id} className="course-word-choice">
-              <input
-                type="checkbox"
-                checked={ids.includes(choice.id)}
-                onChange={(event) =>
-                  setSelected((previous) =>
-                    event.target.checked
-                      ? [...new Set([...previous, choice.id])]
-                      : previous.filter((value) => value !== choice.id),
-                  )
-                }
+      <div className="unit-browser">
+        <section className="ux-card unit-browser-list">
+          <p>{t("pathUi.chooseWord")}</p>
+          {data?.words.map((word) => (
+            <div
+              className={`unit-browser-row${activeWord?.sourceText === word.sourceText ? " selected" : ""}`}
+              key={word.sourceText}
+            >
+              <button
+                aria-pressed={activeWord?.sourceText === word.sourceText}
+                onClick={() => setWordText(word.sourceText)}
+              >
+                <span aria-hidden="true">‹</span>
+                <b dir="auto">{word.sourceText}</b>
+                <span dir="auto">
+                  {word.choices
+                    .map((choice) => choice.translationText)
+                    .join(" · ")}
+                </span>
+              </button>
+              <ReadAloud
+                text={word.sourceText}
+                language={data.targetLanguageCode}
+                label={word.sourceText}
               />
-              <span dir="auto" lang={data.supportLanguageCode}>
-                {choice.translationText}
-              </span>
-            </label>
+            </div>
           ))}
-          <button
-            type="button"
-            className="button ghost"
-            onClick={() => setCapture(word.sourceText)}
-          >
-            {t(word.choices.length ? "capture.createSense" : "capture.title")}
-          </button>
         </section>
-      ))}
+        {data &&
+          activeWord &&
+          [activeWord].map((word) => (
+            <section className="ux-card unit-word-detail" key={word.sourceText}>
+              <h2 dir="auto" lang={data.targetLanguageCode}>
+                {word.sourceText}
+              </h2>
+              <ReadAloud
+                text={word.sourceText}
+                language={data.targetLanguageCode}
+                label={t("pathUi.listenWord")}
+                className="button secondary"
+                showLabel
+              />
+              {word.choices.map((choice) => (
+                <label key={choice.id} className="course-word-choice">
+                  <input
+                    type="checkbox"
+                    checked={ids.includes(choice.id)}
+                    onChange={(event) =>
+                      setSelected((previous) =>
+                        event.target.checked
+                          ? [...new Set([...previous, choice.id])]
+                          : previous.filter((value) => value !== choice.id),
+                      )
+                    }
+                  />
+                  <span dir="auto" lang={data.supportLanguageCode}>
+                    {choice.translationText}
+                  </span>
+                </label>
+              ))}
+              <button
+                type="button"
+                className="button ghost"
+                onClick={() => setCapture(word.sourceText)}
+              >
+                {t(
+                  word.choices.length ? "capture.createSense" : "capture.title",
+                )}
+              </button>
+            </section>
+          ))}
+      </div>
       {ids.length > 0 && (
         <>
           <Link className="button primary" to={`/learn/smart?${scope}`}>

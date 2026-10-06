@@ -2,16 +2,16 @@ import { useCallback, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RemoteState } from "../components/RemoteState";
-import { Modal } from "../components/Modal";
+import { UnitActivities } from "../components/UnitActivities";
 import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
 import { useResource } from "../lib/useResource";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
-import { product, page, sessionSchema, type Session } from "../lib/product";
+import { product, page, sessionSchema } from "../lib/product";
 import { listPrivateLessons } from "../lib/privateLesson";
 import { courseApi } from "../lib/courses";
 
 export function HistoryPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const language = useLearningLanguage();
   const code = params.get("language") || language.code;
@@ -24,7 +24,6 @@ export function HistoryPage() {
       ? params.get("view")!
       : "practice",
   );
-  const [selected, setSelected] = useState<Session>();
   const courseId = params.get("course");
   const packId = params.get("pack");
   const sessions = useResource(
@@ -73,12 +72,6 @@ export function HistoryPage() {
       ].map((entry) => [entry.code, entry]),
     ).values(),
   ];
-  const mode = (value: string) =>
-    value === "smart_review"
-      ? "smart"
-      : value === "listening_spelling"
-        ? "listening"
-        : value;
   return (
     <div className="ux-page ux-history page-enter">
       <header className="page-heading-row">
@@ -126,49 +119,16 @@ export function HistoryPage() {
             }}
           />
           {sessions.data?.languageCode === code &&
-            sessions.data.items.map((session) => (
-              <article className="ux-card ux-history-row" key={session.id}>
-                <div>
-                  <h2>
-                    {t(`labels.${session.sessionType}`, {
-                      defaultValue: session.sessionType,
-                    })}
-                  </h2>
-                  <p dir="auto">{session.scope?.title}</p>
-                  <time dateTime={session.startedAt}>
-                    {new Date(session.startedAt).toLocaleString(
-                      i18n.resolvedLanguage,
-                    )}
-                  </time>
-                  <span className="pill">
-                    {t(
-                      session.status === "completed"
-                        ? "learn.statusCompleted"
-                        : session.status === "active"
-                          ? "learn.statusActive"
-                          : "learn.statusStopped",
-                    )}
-                  </span>
-                </div>
-                <button
-                  className="button secondary"
-                  onClick={() => setSelected(session)}
-                >
-                  {t("ux.details")}
-                </button>
-                {session.status === "active" && (
-                  <Link
-                    className="button primary"
-                    to={`/learn/session/${mode(session.sessionType)}?resume=${session.id}&language=${encodeURIComponent(code)}&return=%2Flearn`}
-                  >
-                    {t("learn.continue")}
-                  </Link>
-                )}
-              </article>
-            ))}
-          {sessions.data?.languageCode === code &&
-            !sessions.data.items.length && (
-              <p className="ux-card">{t("ux.historyEmpty")}</p>
+            !sessions.loading &&
+            !sessions.error && (
+              <UnitActivities
+                language={code}
+                sessions={sessions.data.items}
+                lessons={[]}
+                unitId={packId ?? undefined}
+                practiceUrl={`/learn?language=${encodeURIComponent(code)}`}
+                returnUrl={`/history?${params}`}
+              />
             )}
           <div className="ux-inline-actions">
             {cursorHistory.length > 0 && (
@@ -204,26 +164,24 @@ export function HistoryPage() {
             retry={() => void lessons.reload()}
           />
           <p className="ux-caption">{t("ux.latestLessons")}</p>
-          {lessons.data
-            ?.filter((item) => !code || item.targetLanguageCode === code)
-            .map((lesson) => (
-              <article className="ux-card ux-history-row" key={lesson.id}>
-                <div>
-                  <h2 dir="auto">{lesson.topic}</h2>
-                  <p>{t(`privateLesson.history.status.${lesson.status}`)}</p>
-                </div>
-                <Link
-                  className="button secondary"
-                  to={`/private-lesson?view=history&lesson=${lesson.id}${courseId ? `&course=${encodeURIComponent(courseId)}` : ""}`}
-                >
-                  {t("ux.details")}
-                </Link>
-              </article>
-            ))}
-          {lessons.data &&
-            !lessons.data.some(
-              (item) => !code || item.targetLanguageCode === code,
-            ) && <p className="ux-card">{t("ux.historyEmpty")}</p>}
+          {lessons.data && !lessons.loading && !lessons.error && (
+            <UnitActivities
+              language={code}
+              sessions={[]}
+              lessons={lessons.data.filter(
+                (item) => !code || item.targetLanguageCode === code,
+              )}
+              unitId={packId ?? undefined}
+              practiceUrl={
+                courseId
+                  ? `/courses/${courseId}`
+                  : packId
+                    ? `/english-learning?unit=${packId}`
+                    : `/private-lesson?practice=free&language=${encodeURIComponent(code)}`
+              }
+              returnUrl={`/history?${params}`}
+            />
+          )}
         </>
       )}
       {type === "homework" && (
@@ -260,29 +218,6 @@ export function HistoryPage() {
             ) && <p className="ux-card">{t("ux.historyEmpty")}</p>}
         </>
       )}
-      <Modal
-        open={Boolean(selected)}
-        onClose={() => setSelected(undefined)}
-        title={t("ux.activityDetails")}
-      >
-        {selected && (
-          <div className="modal-body">
-            <p>
-              {t("learn.attemptsXp", {
-                count: selected.attemptCount,
-                xp: selected.xpEarned,
-              })}
-            </p>
-            <p>{t("ux.activityReadOnly")}</p>
-            <button
-              className="button primary"
-              onClick={() => setSelected(undefined)}
-            >
-              {t("common.close")}
-            </button>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }
