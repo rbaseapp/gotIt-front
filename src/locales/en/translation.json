@@ -2272,6 +2272,8 @@
     "allKnown": "All unit words are marked familiar. Uncheck the words you want to practise.",
     "scopeHelp": "These games use only this unit’s words, excluding words marked familiar.",
     "noImage": "No image is available for this word right now.",
-    "listenExample": "Listen to the sentence"
+    "listenExample": "Listen to the sentence",
+    "learned": "Learned",
+    "learnedHelp": "Learned in this unit — successfully practised."
   }
 }

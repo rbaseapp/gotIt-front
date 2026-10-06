@@ -395,7 +395,7 @@ test("activity selection shows actual results and preserves resume scope", async
   await expect(page.locator(".unit-activity-detail")).toContainText("32");
   await expect(
     page.locator(".unit-activity-detail .button.primary"),
-  ).toHaveAttribute("href", /\/learn\/smart\?pack=/);
+  ).toHaveAttribute("href", /\/learn\/session\/smart\?pack=/);
   await page.screenshot({
     path: info.outputPath("populated-activities.png"),
     fullPage: true,

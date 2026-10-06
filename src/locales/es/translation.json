@@ -2273,6 +2273,8 @@
     "allKnown": "Todas las palabras están marcadas como conocidas. Desmarca las que quieras practicar.",
     "scopeHelp": "Estos juegos usan solo las palabras de esta unidad, salvo las marcadas como conocidas.",
     "noImage": "No hay una imagen disponible para esta palabra ahora.",
-    "listenExample": "Escuchar la frase"
+    "listenExample": "Escuchar la frase",
+    "learned": "Aprendida",
+    "learnedHelp": "Aprendida en esta unidad — ejercicio completado con éxito."
   }
 }

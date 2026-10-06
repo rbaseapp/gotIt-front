@@ -37,13 +37,13 @@ import { listPrivateLessons } from "../lib/privateLesson";
 import {
   chooseProgram,
   learningReturn,
-  smartSessionLink,
+  unitPracticeLink,
 } from "../lib/learningNavigation";
 
 type Preview = { pack: WordPack; entries: WordPackEntry[] };
 export function EnglishLearningPathPage() {
   const { t } = useTranslation();
-  const { user } = useApp();
+  const { profile, user } = useApp();
   const { toast } = useFeedback();
   const { hasEntitlement, loading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
@@ -147,6 +147,36 @@ export function EnglishLearningPathPage() {
     void openUnit(current);
   }, [tab, current, openUnit]);
 
+  useEffect(() => {
+    const packId = current?.id;
+    if (tab !== "words" || !packId) return;
+    let cancelled = false;
+    let pending = false;
+    const refreshProgress = async () => {
+      if (pending || document.visibilityState === "hidden") return;
+      pending = true;
+      try {
+        const detail = await product(
+          wordPackDetailSchema,
+          `word-packs/${packId}`,
+        );
+        if (!cancelled)
+          setPreview({ pack: detail.pack, entries: detail.entries });
+      } catch {
+        // Keep the current words visible; normal page loading still offers retry.
+      } finally {
+        pending = false;
+      }
+    };
+    window.addEventListener("focus", refreshProgress);
+    document.addEventListener("visibilitychange", refreshProgress);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refreshProgress);
+      document.removeEventListener("visibilitychange", refreshProgress);
+    };
+  }, [tab, current?.id]);
+
   const setKnown = async (
     pack: WordPack,
     entryIds: string[],
@@ -228,24 +258,19 @@ export function EnglishLearningPathPage() {
     }
     setBusy(true);
     try {
-      await product(
-        wordPackAddReceiptSchema,
-        `word-packs/${pack.id}/add`,
-        "POST",
-        {
-          entryIds: toLearn.map(({ id }) => id),
-        },
-      );
+      if (toLearn.some((entry) => !entry.learningItemId || entry.excludedAt))
+        await product(
+          wordPackAddReceiptSchema,
+          `word-packs/${pack.id}/add`,
+          "POST",
+          {
+            entryIds: toLearn.map(({ id }) => id),
+          },
+        );
       setPreview(undefined);
       await resource.reload();
       navigate(
-        smartSessionLink(
-          new URLSearchParams({
-            pack: pack.id,
-            language: pack.track.sourceLanguageCode,
-            return: `/english-learning?unit=${pack.id}&tab=words`,
-          }),
-        ),
+        unitPracticeLink(pack.id, pack.track.sourceLanguageCode, profile, user),
       );
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
@@ -324,7 +349,13 @@ export function EnglishLearningPathPage() {
     ? `/english-learning?unit=${current.id}`
     : "/english-learning";
   const practiceUrl = current
-    ? `/learn/smart?pack=${current.id}&language=${encodeURIComponent(current.track.sourceLanguageCode)}&return=${encodeURIComponent(currentUrl)}`
+    ? unitPracticeLink(
+        current.id,
+        current.track.sourceLanguageCode,
+        profile,
+        user,
+        currentUrl,
+      )
     : "/learn";
   const selectUnit = (pack: WordPack, value = "map") => {
     setBulkOpen(false);
@@ -743,7 +774,13 @@ export function EnglishLearningPathPage() {
                 ) && (
                   <Link
                     className="button primary"
-                    to={`/learn/smart?pack=${preview.pack.id}&language=${encodeURIComponent(preview.pack.track.sourceLanguageCode)}&return=${encodeURIComponent(practiceReturn)}`}
+                    to={unitPracticeLink(
+                      preview.pack.id,
+                      preview.pack.track.sourceLanguageCode,
+                      profile,
+                      user,
+                      practiceReturn,
+                    )}
                   >
                     {t("englishPath.practice")}
                   </Link>

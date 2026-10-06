@@ -2273,6 +2273,8 @@
     "allKnown": "本单元的所有单词都已标记为认识。请取消勾选想要练习的单词。",
     "scopeHelp": "这些游戏仅使用本单元的单词，不包括已标记为认识的单词。",
     "noImage": "此单词目前没有可用图片。",
-    "listenExample": "听例句"
+    "listenExample": "听例句",
+    "learned": "已学",
+    "learnedHelp": "已在本单元成功完成练习。"
   }
 }

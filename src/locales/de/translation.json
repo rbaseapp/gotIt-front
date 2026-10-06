@@ -2273,6 +2273,8 @@
     "allKnown": "Alle Wörter sind als bekannt markiert. Entferne die Markierung bei Wörtern, die du üben möchtest.",
     "scopeHelp": "Diese Spiele verwenden nur Wörter dieser Einheit, ausgenommen als bekannt markierte Wörter.",
     "noImage": "Für dieses Wort ist derzeit kein Bild verfügbar.",
-    "listenExample": "Satz anhören"
+    "listenExample": "Satz anhören",
+    "learned": "Gelernt",
+    "learnedHelp": "In dieser Einheit erfolgreich geübt."
   }
 }
