@@ -500,6 +500,9 @@ export function LiveGameSessionPage() {
             ...(ids ? { learningItemIds: ids } : {}),
             ...(readingId && type === "article_quiz" ? { readingId } : {}),
             ...(packId ? { scope: { type: "pack", id: packId } } : {}),
+            ...(packId && type === "smart" && params.get("batch") === "1"
+              ? { curriculumOrder: true }
+              : {}),
           });
           value = (
             await product(

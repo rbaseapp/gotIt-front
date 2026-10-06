@@ -193,6 +193,22 @@
   color: var(--ink);
   overflow-wrap: anywhere;
 }
+.unit-learned-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+}
+.unit-learned-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+}
 .unit-browser-row span {
   font-size: 24px;
   color: var(--muted);

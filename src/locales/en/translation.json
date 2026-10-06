@@ -2248,6 +2248,8 @@
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
   "unitStudy": {
+    "learned": "Learned",
+    "learnedHelp": "Learned in this unit — successfully practised.",
     "chooseGame": "Practice unit words",
     "knownLabel": "I know this word — skip it in unit practice",
     "knownHelp": "This excludes the word from unit practice and counts it as familiar in the program. It awards no points and is not proof of mastery. Uncheck it any time to practise the word again.",

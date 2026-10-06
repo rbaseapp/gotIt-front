@@ -130,6 +130,36 @@ export function EnglishLearningPathPage() {
     void openUnit(current);
   }, [tab, current, openUnit]);
 
+  useEffect(() => {
+    const packId = current?.id;
+    if (tab !== "words" || !packId) return;
+    let cancelled = false;
+    let pending = false;
+    const refreshProgress = async () => {
+      if (pending || document.visibilityState === "hidden") return;
+      pending = true;
+      try {
+        const detail = await product(
+          wordPackDetailSchema,
+          `word-packs/${packId}`,
+        );
+        if (!cancelled)
+          setPreview({ pack: detail.pack, entries: detail.entries });
+      } catch {
+        // Keep the current words visible; normal page loading still offers retry.
+      } finally {
+        pending = false;
+      }
+    };
+    window.addEventListener("focus", refreshProgress);
+    document.addEventListener("visibilitychange", refreshProgress);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refreshProgress);
+      document.removeEventListener("visibilitychange", refreshProgress);
+    };
+  }, [tab, current?.id]);
+
   const setKnown = async (
     pack: WordPack,
     entryIds: string[],

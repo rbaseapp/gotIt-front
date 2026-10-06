@@ -57,6 +57,7 @@ async function fixture(page: Page, allKnown = false) {
     learningItemId: null,
     excludedAt: null,
     known: allKnown,
+    learned: false,
   }));
   const created: Record<string, unknown>[] = [];
   const added: string[][] = [];
@@ -191,8 +192,31 @@ async function fixture(page: Page, allKnown = false) {
       });
     return route.fallback();
   });
-  return { created, added };
+  return { created, added, entries };
 }
+
+for (const width of [320, 1487])
+  test(`unit learned badges refresh from server progress at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 1058 });
+    const { entries } = await fixture(page);
+    await page.goto(`/english-learning?unit=${packId}&tab=words`);
+    await expect(page.locator(".unit-browser-row")).toHaveCount(2);
+    await expect(page.locator(".unit-learned-badge")).toHaveCount(0);
+    entries[0].learned = true;
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await expect(page.getByTestId(`unit-learned-${first}`)).toHaveText(
+      he.unitStudy.learned,
+    );
+    await expect(page.getByText(he.unitStudy.learnedHelp)).toBeVisible();
+    await expect(page.getByTestId(`unit-learned-${second}`)).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId(`unit-learned-${first}`)).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width + 1);
+  });
 
 for (const width of [320, 1487])
   test(`unit media, known explanation and game scope at ${width}px`, async ({
@@ -258,6 +282,7 @@ for (const width of [320, 1487])
     expect(created[0]).toMatchObject({
       sessionType: "smart_review",
       count: 10,
+      curriculumOrder: true,
       sourceLanguageCode: "en",
       scope: { type: "pack", id: packId },
     });

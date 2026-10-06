@@ -2294,6 +2294,8 @@
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
   "unitStudy": {
+    "learned": "تم تعلمها",
+    "learnedHelp": "تم تعلمها في هذه الوحدة — أُكمل التدريب بنجاح.",
     "chooseGame": "تدريب كلمات الوحدة",
     "knownLabel": "أعرف هذه الكلمة — تخطّيها في التدريب",
     "knownHelp": "يستبعد هذا الكلمة من تدريب الوحدة ويحسبها معروفة في البرنامج. لا يمنح نقاطًا ولا يثبت الإتقان. ألغِ التحديد للتدرّب عليها مجددًا.",

@@ -2279,6 +2279,8 @@
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
   "unitStudy": {
+    "learned": "Изучено",
+    "learnedHelp": "Изучено в этом разделе — упражнение выполнено успешно.",
     "chooseGame": "Практика слов раздела",
     "knownLabel": "Я знаю это слово — пропускать в тренировке",
     "knownHelp": "Слово исключается из тренировок раздела и учитывается как знакомое в программе. Это не даёт баллов и не доказывает владение. Снимите отметку, чтобы снова тренировать слово.",

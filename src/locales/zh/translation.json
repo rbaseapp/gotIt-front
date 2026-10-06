@@ -2249,6 +2249,8 @@
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
   "unitStudy": {
+    "learned": "已学",
+    "learnedHelp": "已在本单元成功完成练习。",
     "chooseGame": "练习本单元单词",
     "knownLabel": "我认识这个词——练习时跳过",
     "knownHelp": "此标记会将单词排除在本单元练习之外，并在课程中计为已认识。它不会奖励积分，也不代表已掌握。取消勾选即可重新练习。",
