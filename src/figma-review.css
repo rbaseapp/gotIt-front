@@ -301,6 +301,8 @@
 }
 .programs-page .program-card > div {
   width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .programs-page .program-card h3 {
   font-size: calc(40px * var(--text-scale, 1));
@@ -322,10 +324,21 @@
   min-height: 60px;
   margin-top: auto;
 }
+.programs-page .program-card-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  grid-column: 1/-1;
+}
 .programs-page .program-card .program-selected {
-  position: absolute;
-  top: 24px;
-  inset-inline-start: 24px;
+  position: static;
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-size: calc(16px * var(--text-scale, 1));
   color: var(--green);
   background: #d8f0e6;
@@ -338,16 +351,22 @@
   border-radius: 12px;
   margin-top: 16px;
 }
-.programs-page .program-delete {
-  top: 16px;
-  inset-inline-end: 16px;
+.programs-page .program-card .program-delete {
+  position: static;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin-inline-start: auto;
 }
 .programs-page .program-grid-compact {
   grid-template-columns: 1fr;
 }
 .programs-page .program-grid-compact .program-card {
   min-height: 128px;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   text-align: start;
 }
@@ -363,9 +382,6 @@
 .programs-page .program-grid-compact .program-card .button {
   width: auto;
   margin: 0;
-}
-.programs-page .personal:has(.program-selected) .program-delete {
-  top: 66px;
 }
 
 /* Preparation: lesson first, preferences second. Focus header replaces sidebar. */
@@ -832,8 +848,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
     min-height: 48px;
   }
   .programs-page .program-grid-compact .program-card {
-    flex-direction: column;
-    align-items: flex-start;
+    grid-template-columns: 48px minmax(0, 1fr);
   }
   .programs-page .program-grid-compact .program-card h3 {
     font-size: calc(20px * var(--text-scale, 1));
@@ -1023,11 +1038,8 @@ html body.private-lesson-session-open .private-lesson-mute span {
     min-height: 48px;
   }
   .programs-page .program-card .program-selected {
-    top: 20px;
-    inset-inline-start: 20px;
     font-size: calc(13px * var(--text-scale, 1));
     padding: 6px 8px;
-    max-width: calc(100% - 108px);
   }
   .programs-page .program-card .program-next-step {
     font-size: calc(16px * var(--text-scale, 1));
@@ -2291,8 +2303,8 @@ html body.private-lesson-session-open .private-lesson-mute span {
     font-size: calc(13px * var(--text-scale, 1));
     justify-self: start;
   }
-  .programs-page .program-card:has(.program-selected) .ux-icon,
-  .programs-page .program-card:has(.program-selected) > div {
+  .programs-page .program-card:has(.program-card-tools) .ux-icon,
+  .programs-page .program-card:has(.program-card-tools) > div {
     grid-row: 2;
   }
   .programs-page .program-card .program-next-step {
@@ -2300,12 +2312,6 @@ html body.private-lesson-session-open .private-lesson-mute span {
     padding: 0;
     background: transparent;
     font-size: calc(14px * var(--text-scale, 1));
-  }
-  .programs-page .program-delete {
-    top: 8px;
-    inset-inline-end: 8px;
-    width: 32px;
-    height: 32px;
   }
   .ux-game-hub .ux-game-grid {
     gap: 12px;

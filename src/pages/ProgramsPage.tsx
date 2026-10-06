@@ -194,9 +194,11 @@ export function ProgramsPage() {
               (completedOpen ? !next : Boolean(next)) && (
                 <article className="program-card structured">
                   {selectedProgram(user) === "english-path" && (
-                    <span className="program-selected pill">
-                      {t("ux.selectedProgram")}
-                    </span>
+                    <header className="program-card-tools">
+                      <span className="program-selected pill">
+                        {t("ux.selectedProgram")}
+                      </span>
+                    </header>
                   )}
                   <span className="ux-icon mint">
                     <BookOpen size={28} />
@@ -246,11 +248,23 @@ export function ProgramsPage() {
                 ) ?? 0;
               return (
                 <article className="program-card personal" key={course.id}>
-                  {selectedProgram(user) === course.id && (
-                    <span className="program-selected pill">
-                      {t("ux.selectedProgram")}
-                    </span>
-                  )}
+                  <header className="program-card-tools">
+                    {selectedProgram(user) === course.id && (
+                      <span className="program-selected pill">
+                        {t("ux.selectedProgram")}
+                      </span>
+                    )}
+                    <button
+                      className="icon-button program-delete"
+                      disabled={busy}
+                      aria-label={t("courses.deleteCourse", {
+                        title: plan?.plan.title ?? t("ux.personalProgram"),
+                      })}
+                      onClick={() => void remove(course)}
+                    >
+                      <Trash2 size={18} aria-hidden="true" />
+                    </button>
+                  </header>
                   <span className="ux-icon lavender">
                     <MessageCircle size={28} />
                   </span>
@@ -288,16 +302,6 @@ export function ProgramsPage() {
                     }
                   >
                     {t("ux.openProgram")}
-                  </button>
-                  <button
-                    className="icon-button program-delete"
-                    disabled={busy}
-                    aria-label={t("courses.deleteCourse", {
-                      title: plan?.plan.title ?? t("ux.personalProgram"),
-                    })}
-                    onClick={() => void remove(course)}
-                  >
-                    <Trash2 size={18} />
                   </button>
                 </article>
               );
