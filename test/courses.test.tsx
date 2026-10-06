@@ -284,8 +284,7 @@ describe("personal course experience", () => {
     expect(
       screen.getByRole("button", { name: "מתחילים ראיון חי" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("textbox")).not.toBeVisible();
-    await userEvent.setup().click(screen.getByText("מעדיפים לכתוב תשובה?"));
+    expect(screen.getByRole("textbox")).toBeVisible();
     expect(screen.getByRole("textbox")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "תשובה בקול" }),
@@ -359,7 +358,14 @@ describe("personal course experience", () => {
     const user = userEvent.setup();
     renderRoute(`/courses/${fixtureCourse.id}`);
     await screen.findByRole("link", { name: /מתחילים את השיעור הבא/ });
-    await user.click(screen.getByText("מנהלים שיחה עצמאית"));
+    const full = screen.getByRole("button", { name: "התוכנית המלאה" });
+    expect(full).toHaveAttribute("aria-expanded", "false");
+    await user.click(full);
+    await user.click(
+      within(
+        document.querySelector(".course-full-syllabus") as HTMLElement,
+      ).getByText("מנהלים שיחה עצמאית"),
+    );
     expect(
       screen
         .getAllByText(
@@ -464,7 +470,14 @@ describe("personal course experience", () => {
     mocks.get.mockResolvedValue({ course: selected });
     renderRoute(`/courses/${selected.id}`);
     await screen.findByText("כל מה שנלמד בקורס");
-    const firstUnit = screen.getByText("מציגים את עצמנו").closest("details")!;
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "התוכנית המלאה" }));
+    const firstUnit = within(
+      document.querySelector(".course-full-syllabus") as HTMLElement,
+    )
+      .getByText("מציגים את עצמנו")
+      .closest("details")!;
     expect(within(firstUnit).getByText(/השיעור בוצע/)).toBeInTheDocument();
     expect(within(firstUnit).getByText("השיעור הבא")).toBeInTheDocument();
     expect(screen.getAllByText("בהמשך התוכנית").length).toBeGreaterThan(0);

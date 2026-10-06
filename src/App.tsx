@@ -42,6 +42,14 @@ const LiveDashboardPage = lazy(() =>
 const LiveLearnPage = lazy(() =>
   import("./pages/LiveLearnPage").then((m) => ({ default: m.LiveLearnPage })),
 );
+const AccountPage = lazy(() =>
+  import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })),
+);
+const SmartPracticeReadyPage = lazy(() =>
+  import("./pages/SmartPracticeReadyPage").then((m) => ({
+    default: m.SmartPracticeReadyPage,
+  })),
+);
 const LiveVocabularyPage = lazy(() =>
   import("./pages/LiveVocabularyPage").then((m) => ({
     default: m.LiveVocabularyPage,
@@ -68,6 +76,9 @@ const EnglishLearningPathPage = lazy(() =>
     default: m.EnglishLearningPathPage,
   })),
 );
+const MinutesPage = lazy(() =>
+  import("./pages/MinutesPage").then((m) => ({ default: m.MinutesPage })),
+);
 const BillingPage = lazy(() =>
   import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
 );
@@ -79,6 +90,11 @@ const BillingCheckoutPage = lazy(() =>
 const PrivateLessonPage = lazy(() =>
   import("./pages/PrivateLessonPage").then((m) => ({
     default: m.PrivateLessonPage,
+  })),
+);
+const CourseUnitWordsPage = lazy(() =>
+  import("./pages/CourseUnitWordsPage").then((m) => ({
+    default: m.CourseUnitWordsPage,
   })),
 );
 const CoursePage = lazy(() =>
@@ -173,6 +189,12 @@ export default function App() {
               <AppShell onLogout={() => void logout()}>
                 <Routes>
                   <Route
+                    path="/courses/:id/units/:unitKey/words"
+                    element={<CourseUnitWordsPage />}
+                  />
+                  <Route path="/account" element={<AccountPage />} />
+                  <Route path="/billing/minutes" element={<MinutesPage />} />
+                  <Route
                     path="/dashboard"
                     element={
                       mode === "live" ? (
@@ -199,6 +221,16 @@ export default function App() {
                     }
                   />
                   <Route path="/settings" element={<SettingsPage />} />
+                  <Route
+                    path="/learn/smart"
+                    element={
+                      mode === "live" ? (
+                        <SmartPracticeReadyPage />
+                      ) : (
+                        <LearnPage />
+                      )
+                    }
+                  />
                   <Route
                     path="/achievements"
                     element={
@@ -227,6 +259,7 @@ export default function App() {
                         <PrivateLessonEntry
                           preferLesson={
                             location.search.includes("course=") ||
+                            location.search.includes("pack=") ||
                             location.search.includes("practice=free") ||
                             location.search.includes("view=")
                           }

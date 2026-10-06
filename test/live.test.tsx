@@ -382,6 +382,12 @@ describe("live server-backed flows", () => {
         name: i18n.t("reading.createPreview"),
       }),
     );
+    expect(publications).toHaveLength(0);
+    await user.click(
+      await screen.findByRole("button", {
+        name: i18n.t("lessonUi.saveArticle"),
+      }),
+    );
     await screen.findByRole("alert");
     expect(document.querySelector(".live-reading-body")).toHaveTextContent(
       reading.bodyText,
@@ -1679,7 +1685,7 @@ describe("live server-backed flows", () => {
       }),
     );
   });
-  it("opens the generated reading automatically and offers a server quiz after publication", async () => {
+  it("previews the generated reading before explicit saving and offers a server quiz after publication", async () => {
     const reading = {
       id: itemId,
       title: "A memory",
@@ -1716,6 +1722,15 @@ describe("live server-backed flows", () => {
       await screen.findByRole("button", { name: "יצירת תצוגה מקדימה" }),
     );
     await screen.findByRole("heading", { name: "A memory" });
+    expect(
+      fetchMock.mock.calls.filter(
+        ([url, init]) => url.endsWith("/reading") && init?.method === "POST",
+      ),
+    ).toHaveLength(0);
+    await user.click(
+      screen.getByRole("button", { name: i18n.t("lessonUi.saveArticle") }),
+    );
+    await screen.findByRole("link", { name: i18n.t("reading.practiceWords") });
     expect(document.querySelector(".live-reading-body")).toHaveTextContent(
       reading.bodyText,
     );
@@ -2258,7 +2273,7 @@ describe("live server-backed flows", () => {
       learningItemId: null,
       excludedAt: null,
     }));
-    const fetchMock = mount("/english-learning", async (url, init) => {
+    const fetchMock = mount("/english-learning?all=1", async (url, init) => {
       if (
         url.endsWith("/word-packs") &&
         (!init?.method || init.method === "GET")
@@ -2281,7 +2296,9 @@ describe("live server-backed flows", () => {
       return json({}, 500);
     });
     expect(
-      await screen.findByRole("heading", { name: "לימוד שפה מאפס" }),
+      await screen.findByRole("heading", {
+        name: i18n.t("structuredUi.mapTitle"),
+      }),
     ).toBeInTheDocument();
     expect(
       await screen.findByRole("heading", { name: "אנגלית בסיסית" }),
@@ -2373,7 +2390,7 @@ describe("live server-backed flows", () => {
       }));
     const requests: string[][] = [];
     const knownRequests: { entryIds: string[]; known: boolean }[] = [];
-    const fetchMock = mount("/english-learning", async (url, init) => {
+    const fetchMock = mount("/english-learning?all=1", async (url, init) => {
       if (url.endsWith("/word-packs")) return json({ packs: [currentPack()] });
       if (url.endsWith(`/word-packs/${pack.id}`))
         return json({ pack: currentPack(), entries: entries() });
@@ -2424,7 +2441,7 @@ describe("live server-backed flows", () => {
       return json({}, 500);
     });
     const card = (
-      await screen.findByRole("heading", { name: "Unit 1" })
+      await screen.findByRole("heading", { name: "Unit 1", level: 3 })
     ).closest("article")!;
     await userEvent.click(
       within(card).getByRole("button", { name: /Preview unit/ }),
@@ -2573,7 +2590,7 @@ describe("live server-backed flows", () => {
         excludedAt: null,
         known: known.has(id),
       }));
-    const fetchMock = mount("/english-learning", async (url, init) => {
+    const fetchMock = mount("/english-learning?all=1", async (url, init) => {
       if (
         url.endsWith("/word-packs") &&
         (!init?.method || init.method === "GET")

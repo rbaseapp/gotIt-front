@@ -124,7 +124,7 @@ export function EmailAuthForm({
           ? "verifyTitle"
           : "resetTitle";
   return (
-    <>
+    <div className="email-auth-flow" data-auth-state={mode}>
       <h2 ref={heading} tabIndex={-1}>
         {t(`auth.${title}`)}
       </h2>
@@ -263,6 +263,6 @@ export function EmailAuthForm({
           {t(mode === "login" ? "auth.register" : "auth.backToLogin")}
         </button>
       </p>
-    </>
+    </div>
   );
 }

@@ -12,34 +12,67 @@ import { courseApi } from "../lib/courses";
 
 export function HistoryPage() {
   const { t, i18n } = useTranslation();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const language = useLearningLanguage();
+  const code = params.get("language") || language.code;
   const [cursor, setCursor] = useState<string>();
   const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>(
     [],
   );
-  const [type, setType] = useState("practice");
+  const [type, setType] = useState(() =>
+    ["lessons", "homework"].includes(params.get("view") ?? "")
+      ? params.get("view")!
+      : "practice",
+  );
   const [selected, setSelected] = useState<Session>();
   const courseId = params.get("course");
+  const packId = params.get("pack");
   const sessions = useResource(
     useCallback(
       async () => ({
         ...(await product(
           page(sessionSchema),
-          `practice/sessions?limit=10${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}${language.code ? `&sourceLanguageCode=${encodeURIComponent(language.code)}` : ""}`,
+          `practice/sessions?limit=10${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}${code ? `&sourceLanguageCode=${encodeURIComponent(code)}` : ""}${packId ? `&packId=${encodeURIComponent(packId)}` : ""}`,
         )),
-        languageCode: language.code,
+        languageCode: code,
       }),
-      [cursor, language.code],
+      [cursor, code, packId],
     ),
   );
   const lessons = useResource(
     useCallback(
-      () => listPrivateLessons(50, courseId ?? undefined),
-      [courseId],
+      () =>
+        listPrivateLessons(
+          50,
+          courseId ?? undefined,
+          packId ?? undefined,
+          code || undefined,
+        ),
+      [courseId, packId, code],
     ),
   );
   const courses = useResource(useCallback(() => courseApi.list(), []));
+  const availableLanguages = [
+    ...new Map(
+      [
+        ...(courses.data?.courses ?? []).map((course) => ({
+          code: course.preferences.targetLanguageCode,
+          count: 0,
+        })),
+        ...language.languages,
+        ...(code
+          ? [
+              {
+                code,
+                count:
+                  language.languages.find((entry) => entry.code === code)
+                    ?.count ?? 0,
+              },
+            ]
+          : []),
+      ].map((entry) => [entry.code, entry]),
+    ).values(),
+  ];
   const mode = (value: string) =>
     value === "smart_review"
       ? "smart"
@@ -55,10 +88,13 @@ export function HistoryPage() {
         </div>
       </header>
       <LearningLanguageSelect
-        code={language.code}
-        languages={language.languages}
+        code={code}
+        languages={availableLanguages}
         onChange={(code) => {
           language.setCode(code);
+          const next = new URLSearchParams(params);
+          next.set("language", code);
+          setParams(next);
           setCursor(undefined);
           setCursorHistory([]);
         }}
@@ -89,7 +125,7 @@ export function HistoryPage() {
               void language.reload();
             }}
           />
-          {sessions.data?.languageCode === language.code &&
+          {sessions.data?.languageCode === code &&
             sessions.data.items.map((session) => (
               <article className="ux-card ux-history-row" key={session.id}>
                 <div>
@@ -123,14 +159,14 @@ export function HistoryPage() {
                 {session.status === "active" && (
                   <Link
                     className="button primary"
-                    to={`/learn/session/${mode(session.sessionType)}?resume=${session.id}&language=${encodeURIComponent(language.code)}&return=%2Flearn`}
+                    to={`/learn/session/${mode(session.sessionType)}?resume=${session.id}&language=${encodeURIComponent(code)}&return=%2Flearn`}
                   >
                     {t("learn.continue")}
                   </Link>
                 )}
               </article>
             ))}
-          {sessions.data?.languageCode === language.code &&
+          {sessions.data?.languageCode === code &&
             !sessions.data.items.length && (
               <p className="ux-card">{t("ux.historyEmpty")}</p>
             )}
@@ -169,10 +205,7 @@ export function HistoryPage() {
           />
           <p className="ux-caption">{t("ux.latestLessons")}</p>
           {lessons.data
-            ?.filter(
-              (item) =>
-                !language.code || item.targetLanguageCode === language.code,
-            )
+            ?.filter((item) => !code || item.targetLanguageCode === code)
             .map((lesson) => (
               <article className="ux-card ux-history-row" key={lesson.id}>
                 <div>
@@ -189,8 +222,7 @@ export function HistoryPage() {
             ))}
           {lessons.data &&
             !lessons.data.some(
-              (item) =>
-                !language.code || item.targetLanguageCode === language.code,
+              (item) => !code || item.targetLanguageCode === code,
             ) && <p className="ux-card">{t("ux.historyEmpty")}</p>}
         </>
       )}
@@ -204,7 +236,7 @@ export function HistoryPage() {
           {courses.data?.homework
             .filter(
               (item) =>
-                (!language.code || item.targetLanguageCode === language.code) &&
+                (!code || item.targetLanguageCode === code) &&
                 (!courseId || item.courseId === courseId),
             )
             .map((item) => (
@@ -223,7 +255,7 @@ export function HistoryPage() {
           {courses.data &&
             !courses.data.homework.some(
               (item) =>
-                (!language.code || item.targetLanguageCode === language.code) &&
+                (!code || item.targetLanguageCode === code) &&
                 (!courseId || item.courseId === courseId),
             ) && <p className="ux-card">{t("ux.historyEmpty")}</p>}
         </>

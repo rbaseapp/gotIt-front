@@ -30,7 +30,7 @@ export function practiceLink(
     params.set("language", fallbackLanguage);
   // Spelling uses the existing typed recall contract, with a full alphabet keyboard.
   if (game === "spelling") params.set("input", "letters");
-  return `/learn/session/${game === "spelling" ? "recall" : game}${params.size ? `?${params}` : ""}`;
+  return `${game === "smart" ? "/learn/smart" : `/learn/session/${game === "spelling" ? "recall" : game}`}${params.size ? `?${params}` : ""}`;
 }
 
 export function selectedProgramKey(

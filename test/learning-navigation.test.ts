@@ -29,7 +29,7 @@ describe("learning context navigation", () => {
       "/learn/session/matching?items=a",
     );
     expect(practiceLink("smart", new URLSearchParams(), "fr")).toBe(
-      "/learn/session/smart?language=fr",
+      "/learn/smart?language=fr",
     );
   });
   it.each([

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { BookOpenText, Sparkles } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -30,12 +30,23 @@ import {
 export function LiveReadingPage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
+  const [params] = useSearchParams();
+  const selectedIds = params.get("items")?.split(",").filter(Boolean);
+  const selection = z
+    .array(uuid)
+    .min(1)
+    .max(20)
+    .refine((items) => new Set(items).size === items.length)
+    .safeParse(selectedIds);
   const { hasEntitlement } = useSubscription();
   const canGenerate = hasEntitlement("reading.ai");
   const { confirm, toast } = useFeedback();
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [language, setLanguage] = useState(
-    profile.languages[0]?.languageCode || "en",
+    params.get("language") ||
+      profile.languages[0]?.languageCode ||
+      profile.defaultSourceLanguage ||
+      "en",
   );
   const [level, setLevel] = useState("");
   const [length, setLength] = useState("short");
@@ -72,6 +83,20 @@ export function LiveReadingPage() {
     ),
   );
   const generate = async () => {
+    if (
+      selection.success &&
+      (chosenWords.loading ||
+        chosenWords.error ||
+        !chosenWords.data?.length ||
+        chosenWords.data.some((word) => word.sourceLanguageCode !== language))
+    ) {
+      setError(t("game.languageMismatch"));
+      return;
+    }
+    if (params.has("items") && !selection.success) {
+      setError(t("lessonUi.articleSelectionLimit"));
+      return;
+    }
     if (!canGenerate) {
       setError(t("reading.proRequired"));
       return;
@@ -84,13 +109,13 @@ export function LiveReadingPage() {
     try {
       const result = await product(readingPreview, "reading/preview", "POST", {
         targetLanguageCode: language,
+        ...(selection.success ? { learningItemIds: selection.data } : {}),
         ...(topic.trim() ? { topic } : {}),
         ...(level ? { requestedLevel: level } : {}),
         contentType,
         lengthPreset: length,
       });
       setPreview(result);
-      await publish(result);
       await quota.reload();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -168,6 +193,26 @@ export function LiveReadingPage() {
     }
   };
   const displayed = reading || preview?.reading;
+  const selectionKey = selection.success ? selection.data.join(",") : "";
+  const chosenWords = useResource(
+    useCallback(async () => {
+      if (!selectionKey) return [];
+      const results = await Promise.all(
+        selectionKey.split(",").map((id) =>
+          product(
+            z.object({
+              learningItem: z.object({
+                sourceText: z.string(),
+                sourceLanguageCode: z.string(),
+              }),
+            }),
+            `learning-items/${id}`,
+          ),
+        ),
+      );
+      return results.map((result) => result.learningItem);
+    }, [selectionKey]),
+  );
   return (
     <div className="reading-page live-page page-enter">
       <section className="page-heading-row">
@@ -178,6 +223,27 @@ export function LiveReadingPage() {
         </div>
         <BookOpenText size={36} />
       </section>
+      {!displayed && selection.success && (
+        <section className="ux-card mint reading-selected-words">
+          <h2>{t("lessonUi.selectedArticleWords")}</h2>
+          <RemoteState
+            loading={chosenWords.loading}
+            error={chosenWords.error}
+            retry={() => void chosenWords.reload()}
+          />
+          <p dir="auto">
+            {chosenWords.data?.map((word) => word.sourceText).join(" · ")}
+          </p>
+          <Link className="button ghost" to="/vocabulary">
+            {t("ux.changeWords")}
+          </Link>
+        </section>
+      )}
+      {params.has("items") && !selection.success && (
+        <p className="form-error" role="alert">
+          {t("lessonUi.articleSelectionLimit")}
+        </p>
+      )}
       <details
         className="ux-card reading-options"
         open={!displayed || undefined}
@@ -250,7 +316,16 @@ export function LiveReadingPage() {
               </label>
               <button
                 className="button primary"
-                disabled={!language.trim()}
+                disabled={
+                  !language.trim() ||
+                  (selection.success &&
+                    (chosenWords.loading ||
+                      Boolean(chosenWords.error) ||
+                      !chosenWords.data?.length ||
+                      chosenWords.data.some(
+                        (word) => word.sourceLanguageCode !== language,
+                      )))
+                }
                 onClick={() => void generate()}
               >
                 <Sparkles size={17} />
@@ -325,18 +400,6 @@ export function LiveReadingPage() {
           {error}
         </p>
       )}
-      {preview && (
-        <section className="live-panel">
-          <p>{t("ux.readingPublicationPending")}</p>
-          <button
-            className="button primary"
-            disabled={busy}
-            onClick={() => void open()}
-          >
-            {pending ? t("reading.retryOpen") : t("reading.open")}
-          </button>
-        </section>
-      )}
       {displayed && (
         <article className="live-panel live-reading">
           <p className="eyebrow">
@@ -383,6 +446,18 @@ export function LiveReadingPage() {
             </Link>
           )}
         </article>
+      )}
+      {preview && (
+        <section className="live-panel">
+          <p>{t("ux.readingPublicationPending")}</p>
+          <button
+            className="button primary"
+            disabled={busy}
+            onClick={() => void open()}
+          >
+            {pending ? t("reading.retryOpen") : t("lessonUi.saveArticle")}
+          </button>
+        </section>
       )}
       <WordPreviewModal
         word={selectedWord}

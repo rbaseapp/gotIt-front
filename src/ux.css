@@ -13,9 +13,11 @@
   --cream: #f7f8f5;
   --surface: #fff;
   --line: #dce3eb;
+  --border: var(--line);
   --green: #006f58;
   --green-dark: #005542;
   --green-soft: #e7f4ef;
+  --mint: var(--green-soft);
   --purple: #6632dc;
   --purple-soft: #f2eeff;
   --shadow-sm: 0 2px 8px rgb(11 37 41 / 3%);
@@ -830,13 +832,13 @@ progress::-moz-progress-bar {
 .hold-to-talk.recording::after {
   animation: ux-recording 1.6s ease-out infinite;
 }
-html body .course-page {
+html body .course-page:not(.personal-map) {
   max-width: 980px;
 }
 html body .course-page-heading {
   margin-bottom: 24px;
 }
-html body .course-page .course-hero,
+html body .course-page:not(.personal-map) .course-hero,
 html body .course-chat-card,
 html body .course-unit,
 html body .homework-page .homework-card {
@@ -844,15 +846,15 @@ html body .homework-page .homework-card {
   border-radius: 20px;
   box-shadow: none;
 }
-html body .course-page .course-hero {
+html body .course-page:not(.personal-map) .course-hero {
   background: var(--green-soft);
   padding: 24px;
 }
-html body .course-page .course-hero h2 {
+html body .course-page:not(.personal-map) .course-hero h2 {
   font-size: 30px;
   line-height: 1.3;
 }
-html body .course-page p {
+html body .course-page:not(.personal-map) p {
   line-height: 1.4;
 }
 html body .course-unit summary {
@@ -863,7 +865,7 @@ html body .course-unit-body {
   line-height: 1.4;
 }
 html body .course-page .course-note,
-html body .course-page small {
+html body .course-page:not(.personal-map) small {
   font-size: 14px;
   line-height: 1.4;
 }
@@ -1552,10 +1554,10 @@ html body.private-lesson-session-open .private-lesson-session .button {
   .session-page .session-brand > span {
     font-size: 14px;
   }
-  html body .course-page .course-hero {
+  html body .course-page:not(.personal-map) .course-hero {
     padding: 16px;
   }
-  html body .course-page .course-hero h2 {
+  html body .course-page:not(.personal-map) .course-hero h2 {
     font-size: 20px;
     line-height: 26px;
   }

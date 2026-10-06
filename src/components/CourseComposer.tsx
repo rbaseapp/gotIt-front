@@ -11,11 +11,15 @@ export function ReadAloud({
   language,
   label,
   autoPlay = false,
+  showLabel = false,
+  className = "course-icon-button",
 }: {
   text: string;
   language: string;
   label?: string;
   autoPlay?: boolean;
+  showLabel?: boolean;
+  className?: string;
 }) {
   const { t } = useTranslation();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -62,7 +66,7 @@ export function ReadAloud({
   return (
     <button
       type="button"
-      className="course-icon-button"
+      className={className}
       aria-label={`${t(speaking ? "courses.stopAudio" : "courses.readAloud")}${label ? `: ${label}` : ""}`}
       onClick={() => {
         window.speechSynthesis.cancel();
@@ -74,6 +78,8 @@ export function ReadAloud({
       }}
     >
       {speaking ? <Square size={17} /> : <Volume2 size={17} />}
+      {showLabel &&
+        (speaking ? t("courses.stopAudio") : label || t("courses.readAloud"))}
     </button>
   );
 }
@@ -302,7 +308,11 @@ export function CourseComposer({
       </div>
       {recording && (
         <small role="status">
-          {t(holdToTalk ? "courses.releaseToTranscribe" : "courses.recordingHint")}
+          {t(
+            holdToTalk
+              ? "courses.releaseToTranscribe"
+              : "courses.recordingHint",
+          )}
         </small>
       )}
       {channel.current === "voice" && value && (

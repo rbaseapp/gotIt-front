@@ -89,6 +89,13 @@ const lessonRoadmapContextSchema = z
   .nullable();
 
 export const privateLessonSetupSchema = z.object({
+  interactionCapabilities: z
+    .object({
+      guidedTasks: z.boolean(),
+      textAnswers: z.boolean(),
+      billingPause: z.boolean(),
+    })
+    .optional(),
   preferences: z
     .object({
       supportLanguageCode: z.string().nullable(),
@@ -160,8 +167,114 @@ const instructionEventSchema = z
   })
   .strict();
 
+export const lessonActivitySchema = z.object({
+  lastAnswer: z
+    .object({
+      question: z.string(),
+      answer: z.string(),
+      channel: z.enum(["text", "voice"]),
+    })
+    .optional(),
+  review: z
+    .object({
+      originalAnswer: z.string(),
+      correctedAnswer: z.string(),
+      feedback: z.string(),
+      status: z.literal("reviewed"),
+    })
+    .optional(),
+  interactionMode: z.enum(["guided", "conversation"]).optional(),
+  title: z.string().min(2).max(80).optional(),
+  revision: z.number().int().min(0).max(100),
+  stage: z.enum(["learn", "try", "chat"]),
+  attempts: z.number().int().nonnegative(),
+  tutorText: z.string().min(1).max(2000),
+  question: z.string().min(1).max(350),
+  example: z
+    .object({
+      targetText: z.string().max(240),
+      meaningAndReason: z.string().max(350),
+    })
+    .nullable(),
+  feedback: z.string().max(700).nullable(),
+  hintUsed: z.boolean(),
+  turns: z
+    .array(
+      z.object({
+        role: z.enum(["learner", "tutor"]),
+        text: z.string().min(1).max(2000),
+      }),
+    )
+    .max(100),
+});
+export type LessonActivity = z.infer<typeof lessonActivitySchema>;
+export type LessonActivityCommand = {
+  eventId: string;
+  revision: number;
+  action: "answer" | "hint" | "continue" | "review";
+  answer?: string;
+  correctedAnswer?: string;
+  channel?: "text" | "voice";
+};
+const lessonActivityResponseSchema = z.object({
+  activity: lessonActivitySchema,
+  tutorEvent: instructionEventSchema,
+});
+export const lessonActivityApi = {
+  replay: (
+    id: string,
+    kind: "original" | "translation",
+    rate: "normal" | "slow",
+  ) =>
+    product(
+      z.object({
+        revision: z.number().int(),
+        tutorEvent: instructionEventSchema,
+      }),
+      `private-lessons/${id}/replay`,
+      "POST",
+      { kind, rate },
+    ),
+  get: (id: string) =>
+    product(lessonActivityResponseSchema, `private-lessons/${id}/activity`),
+  act: (id: string, command: LessonActivityCommand) =>
+    product(
+      lessonActivityResponseSchema,
+      `private-lessons/${id}/activity`,
+      "POST",
+      command,
+    ),
+};
+
+export const lessonUnitSchema = z.object({
+  packId: uuid,
+  title: z.string(),
+  moduleNumber: z.number().int(),
+  targetLanguageCode: z.string(),
+  supportLanguageCode: z.string(),
+  level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+  station: z.enum(["supported", "review"]),
+  completed: z.number().int().nonnegative(),
+  total: z.number().int().positive(),
+  words: z
+    .array(
+      z.object({
+        sourceText: z.string(),
+        translationText: z.string(),
+        exampleText: z.string().nullable(),
+        introduced: z.boolean(),
+      }),
+    )
+    .max(12),
+});
+export type LessonUnit = z.infer<typeof lessonUnitSchema>;
+export const getLessonUnit = (id: string) =>
+  product(z.object({ unit: lessonUnitSchema }), `private-lessons/units/${id}`);
+
 export const privateLessonSessionSchema = z.object({
+  activity: lessonActivitySchema.nullable().optional().default(null),
   lesson: z.object({
+    wordPack: lessonUnitSchema.nullable().optional().default(null),
     id: uuid,
     durationSeconds: z
       .number()
@@ -214,7 +327,10 @@ export const privateLessonSessionSchema = z.object({
 export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
 export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15 | 20;
 export type PrivateLessonInput = {
+  interactionMode?: "guided" | "conversation";
   courseId?: string;
+  packId?: string;
+  station?: "supported" | "review";
   targetLanguageCode: string;
   supportLanguageCode?: string | null;
   lessonMode?: PrivateLessonMode;
@@ -417,6 +533,7 @@ export const privateLessonReportSchema = z.object({
 });
 
 export const savedPrivateLessonSchema = z.object({
+  wordPack: lessonUnitSchema.nullable().optional(),
   id: uuid,
   course: z.object({ courseId: uuid }).passthrough().nullable().optional(),
   targetLanguageCode: z.string(),
@@ -474,9 +591,16 @@ export function completePrivateLessonSession(
   ).then((result) => result.lesson);
 }
 
-export function listPrivateLessons(limit = 20, courseId?: string) {
+export function listPrivateLessons(
+  limit = 20,
+  courseId?: string,
+  packId?: string,
+  targetLanguageCode?: string,
+) {
   const query = new URLSearchParams({ limit: String(limit) });
   if (courseId) query.set("courseId", courseId);
+  if (packId) query.set("packId", packId);
+  if (targetLanguageCode) query.set("targetLanguageCode", targetLanguageCode);
   return product(
     z.object({ lessons: z.array(savedPrivateLessonSchema) }),
     `private-lessons?${query}`,
@@ -526,6 +650,7 @@ export function deletePrivateLesson(id: string) {
 export type PrivateLessonConnection = {
   send: (event: unknown) => boolean;
   setMicrophoneMuted: (muted: boolean) => boolean;
+  enableMicrophone?: () => Promise<boolean>;
   close: () => void;
 };
 
@@ -546,10 +671,12 @@ type RealtimeHandlers = {
   onClose: () => void;
   onEvent: (event: Record<string, unknown>) => void;
   onAudioLevel?: (level: number) => void;
+  onMicrophoneUnavailable?: () => void;
 };
 
 export async function connectPrivateLesson(
   session: {
+    activity?: LessonActivity | null;
     realtime: Pick<
       PrivateLessonSession["realtime"],
       "openingEvent" | "connectionUrl" | "clientSecret"
@@ -558,8 +685,9 @@ export async function connectPrivateLesson(
   audioElement: HTMLAudioElement,
   handlers: RealtimeHandlers,
   signal: AbortSignal,
+  inputMode: "voice" | "text" = "voice",
 ): Promise<PrivateLessonConnection> {
-  if (!window.RTCPeerConnection || !navigator.mediaDevices?.getUserMedia)
+  if (!window.RTCPeerConnection)
     throw new PrivateLessonConnectionError("BROWSER_UNSUPPORTED");
 
   const peer = new RTCPeerConnection();
@@ -568,6 +696,37 @@ export async function connectPrivateLesson(
   let audioContext: AudioContext | undefined;
   let meterFrame: number | undefined;
   const channel = peer.createDataChannel("oai-events");
+  let sender: RTCRtpSender | undefined;
+  const enableMicrophone = async () => {
+    if (stream?.getAudioTracks()[0]?.readyState === "live") return true;
+    if (!navigator.mediaDevices?.getUserMedia) return false;
+    try {
+      const captured = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: false,
+      });
+      if (closed || signal.aborted) {
+        captured.getTracks().forEach((track) => track.stop());
+        return false;
+      }
+      stream = captured;
+      if (session.activity)
+        captured.getAudioTracks().forEach((track) => {
+          track.enabled = false;
+        });
+      if (sender) await sender.replaceTrack(captured.getAudioTracks()[0]!);
+      return true;
+    } catch {
+      stream?.getTracks().forEach((track) => track.stop());
+      stream = undefined;
+      handlers.onMicrophoneUnavailable?.();
+      return false;
+    }
+  };
   const stopAudioMeter = () => {
     if (meterFrame !== undefined) window.cancelAnimationFrame(meterFrame);
     meterFrame = undefined;
@@ -635,19 +794,14 @@ export async function connectPrivateLesson(
   signal.addEventListener("abort", abort, { once: true });
 
   try {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: false,
-      });
-    } catch {
-      if (signal.aborted) throw new PrivateLessonConnectionError("CANCELLED");
+    const microphoneAvailable =
+      inputMode === "voice" ? await enableMicrophone() : false;
+    if (
+      inputMode === "voice" &&
+      !microphoneAvailable &&
+      !handlers.onMicrophoneUnavailable
+    )
       throw new PrivateLessonConnectionError("MICROPHONE_UNAVAILABLE");
-    }
     if (signal.aborted) throw new PrivateLessonConnectionError("CANCELLED");
 
     peer.ontrack = (event) => {
@@ -656,7 +810,9 @@ export async function connectPrivateLesson(
       startAudioMeter(remoteStream);
       void audioElement.play().catch(() => undefined);
     };
-    peer.addTrack(stream.getAudioTracks()[0]!, stream);
+    sender = stream
+      ? peer.addTrack(stream.getAudioTracks()[0]!, stream)
+      : peer.addTransceiver("audio", { direction: "sendrecv" }).sender;
     channel.addEventListener("message", (message) => {
       if (typeof message.data !== "string") return;
       try {
@@ -702,6 +858,7 @@ export async function connectPrivateLesson(
     });
 
     return {
+      enableMicrophone,
       send(event) {
         if (channel.readyState !== "open") return false;
         try {

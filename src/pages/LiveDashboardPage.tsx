@@ -83,19 +83,22 @@ export function LiveDashboardPage() {
         : resumable?.sessionType;
   const smart = `/learn/session/smart?language=${encodeURIComponent(code)}`;
   const returnSuffix = "&return=%2Fdashboard";
-  const destination = resumable
-    ? `/learn/session/${resumableType}?resume=${resumable.id}&language=${encodeURIComponent(code)}${returnSuffix}`
-    : course?.nextLesson
-      ? lessonLink(course)
-      : selected === "english-path" && code === "en"
-        ? "/english-learning"
-        : d?.counts.total === 0
-          ? "/vocabulary"
-          : smart + returnSuffix;
   const isProgram =
-    !resumable &&
-    (Boolean(course?.nextLesson) ||
-      (selected === "english-path" && code === "en"));
+    Boolean(course?.nextLesson) ||
+    (selected === "english-path" && code === "en");
+  const destination = isProgram
+    ? course?.nextLesson
+      ? lessonLink(course)
+      : "/english-learning"
+    : resumable
+      ? `/learn/session/${resumableType}?resume=${resumable.id}&language=${encodeURIComponent(code)}${returnSuffix}`
+      : course?.nextLesson
+        ? lessonLink(course)
+        : selected === "english-path" && code === "en"
+          ? "/english-learning"
+          : d?.counts.total === 0
+            ? "/vocabulary"
+            : smart + returnSuffix;
   const languageNames = new Map(
     getLanguageOptions(i18n.resolvedLanguage || "en"),
   );

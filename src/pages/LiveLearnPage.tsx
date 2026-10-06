@@ -163,52 +163,74 @@ export function LiveLearnPage() {
             className="game-grid ux-game-grid"
             aria-label={t("ux.chooseGame")}
           >
-            {games.map(({ id, icon: Icon, skill }) => {
-              const speech = id === "listening" || id === "pronunciation";
-              const available =
-                Boolean(capabilities.data?.configured.practice) &&
-                (!speech || capabilities.data?.configured.speech) &&
-                (!skills || skills.includes(skill));
-              const name =
-                id === "spelling"
-                  ? t("ux.spelling")
-                  : t(`learn.games.${id}.name`);
-              return available ? (
-                <Link
-                  className={`game-card game-${id}`}
-                  key={id}
-                  to={practiceLink(id, params, code)}
-                >
-                  <Icon size={24} aria-hidden="true" />
-                  <span>
-                    <b>{name}</b>
-                    <small>
-                      {id === "spelling"
-                        ? t("ux.letterKeyboardHelp")
-                        : t(`learn.games.${id}.description`)}
-                    </small>
-                  </span>
-                </Link>
-              ) : (
-                <div
-                  className="game-card disabled"
-                  aria-disabled="true"
-                  key={id}
-                >
-                  <Icon size={24} />
-                  <span>
-                    <b>{name}</b>
-                    <small>
-                      {t(
-                        speech
-                          ? "learn.speechUnavailable"
-                          : "ux.practiceUnavailable",
-                      )}
-                    </small>
-                  </span>
+            {[
+              {
+                title: t("learn.games.matching.name"),
+                description: t("learn.games.matching.description"),
+                ids: ["matching"],
+              },
+              {
+                title: t("lessonUi.recallAndListening"),
+                description: t("lessonUi.recallAndListeningHelp"),
+                ids: ["recall", "listening"],
+              },
+              {
+                title: t("lessonUi.moreGames"),
+                description: t("lessonUi.moreGamesHelp"),
+                ids: ["drag_drop", "flashcards", "spelling", "pronunciation"],
+              },
+            ].map((group) => (
+              <article className="game-group-card" key={group.title}>
+                <h2>{group.title}</h2>
+                <p>{group.description}</p>
+                <div className="game-group-actions">
+                  {games
+                    .filter((game) => group.ids.includes(game.id))
+                    .map(({ id, icon: Icon, skill }) => {
+                      const speech =
+                        id === "listening" || id === "pronunciation";
+                      const available =
+                        Boolean(capabilities.data?.configured.practice) &&
+                        (!speech || capabilities.data?.configured.speech) &&
+                        (!skills || skills.includes(skill));
+                      const name =
+                        id === "spelling"
+                          ? t("ux.spelling")
+                          : t(`learn.games.${id}.name`);
+                      return available ? (
+                        <Link
+                          className={`button secondary game-choice game-${id}`}
+                          key={id}
+                          to={practiceLink(id, params, code)}
+                        >
+                          <Icon size={24} aria-hidden="true" />
+                          <span>
+                            <b>{name}</b>
+                          </span>
+                        </Link>
+                      ) : (
+                        <div
+                          className="button secondary game-choice disabled"
+                          aria-disabled="true"
+                          key={id}
+                        >
+                          <Icon size={24} />
+                          <span>
+                            <b>{name}</b>
+                            <small>
+                              {t(
+                                speech
+                                  ? "learn.speechUnavailable"
+                                  : "ux.practiceUnavailable",
+                              )}
+                            </small>
+                          </span>
+                        </div>
+                      );
+                    })}
                 </div>
-              );
-            })}
+              </article>
+            ))}
           </section>
         </>
       )}

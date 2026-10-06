@@ -83,7 +83,9 @@ export function AppShell({
   const focusedLearning =
     /^\/(courses\/[^/]+|homework\/[^/]+)(\/|$)/.test(location.pathname) ||
     location.pathname === "/private-lesson";
-  const focusShell = location.pathname === "/private-lesson";
+  const focusShell =
+    location.pathname === "/private-lesson" ||
+    location.pathname === "/achievements";
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
   const canWriteVocabulary = hasEntitlement("vocabulary.write");
@@ -319,7 +321,7 @@ export function AppShell({
           type="button"
           onClick={() => {
             setMobileOpen(false);
-            setUserOpen((value) => !value);
+            navigate("/account");
           }}
         >
           <UserRound size={20} />
@@ -361,7 +363,14 @@ export function AppShell({
           </div>
           <div className="topbar-actions">
             {focusShell && (
-              <Link className="button ghost focus-back" to="/dashboard">
+              <Link
+                className="button ghost focus-back"
+                to={
+                  location.pathname === "/achievements"
+                    ? "/account"
+                    : "/courses"
+                }
+              >
                 {t("ux.backHome")}
               </Link>
             )}
@@ -464,9 +473,9 @@ export function AppShell({
         <div className="page-content">
           {mode === "live" &&
             user?.role !== "admin" &&
-            /^\/(?:billing|settings|transfer)(?:\/|$)/u.test(
-              location.pathname,
-            ) && <SubscriptionBanner />}
+            /^\/(?:transfer)(?:\/|$)/u.test(location.pathname) && (
+              <SubscriptionBanner />
+            )}
           {(!focusedLearning || mode === "demo") &&
             (mode === "demo" ||
               (user?.role !== "admin" && status?.tier === "free")) && (

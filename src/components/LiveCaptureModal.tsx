@@ -18,33 +18,49 @@ export function LiveCaptureModal({
   open,
   onClose,
   onSaved,
+  initial,
 }: {
   open: boolean;
   onClose: () => void;
   onSaved?: () => void;
+  initial?: {
+    sourceText: string;
+    sourceLanguageCode: string;
+    translationLanguageCode: string;
+  };
 }) {
   const { t } = useTranslation();
   return (
     <Modal open={open} onClose={onClose} title={t("capture.title")} size="lg">
-      {open && <CaptureForm onClose={onClose} onSaved={onSaved} />}
+      {open && (
+        <CaptureForm onClose={onClose} onSaved={onSaved} initial={initial} />
+      )}
     </Modal>
   );
 }
 function CaptureForm({
   onClose,
   onSaved,
+  initial,
 }: {
   onClose: () => void;
   onSaved?: () => void;
+  initial?: {
+    sourceText: string;
+    sourceLanguageCode: string;
+    translationLanguageCode: string;
+  };
 }) {
   const { t } = useTranslation();
   const { profile } = useApp();
-  const [source, setSource] = useState("");
+  const [source, setSource] = useState(initial?.sourceText || "");
   const [sourceLanguage, setSourceLanguage] = useState(
-    profile.defaultSourceLanguage || "",
+    initial?.sourceLanguageCode || profile.defaultSourceLanguage || "",
   );
   const [targetLanguage, setTargetLanguage] = useState(
-    profile.defaultTranslationLanguage || "he",
+    initial?.translationLanguageCode ||
+      profile.defaultTranslationLanguage ||
+      "",
   );
   const [translation, setTranslation] = useState("");
   const [variants, setVariants] = useState("");
@@ -338,14 +354,17 @@ function CaptureForm({
                   {t("capture.chooseMeaning")}
                 </option>
                 {!preview.existingSenses.items.length && (
-                  <option value="auto">
-                    {t("capture.autoCreate")}
-                  </option>
+                  <option value="auto">{t("capture.autoCreate")}</option>
                 )}
-                <option value="create_new_sense">{t("capture.createSense")}</option>
+                <option value="create_new_sense">
+                  {t("capture.createSense")}
+                </option>
                 {preview.existingSenses.items.map((s) => (
                   <option key={s.learningItemId} value={s.learningItemId}>
-                    {t("capture.mergeInto", { meaning: s.primaryTranslation || s.sourceText, status: s.userStatus })}
+                    {t("capture.mergeInto", {
+                      meaning: s.primaryTranslation || s.sourceText,
+                      status: s.userStatus,
+                    })}
                   </option>
                 ))}
               </select>
@@ -359,9 +378,7 @@ function CaptureForm({
               <p>{t("capture.moreMeanings")}</p>
             )}
             {candidate !== undefined && (
-              <p className="auth-footnote">
-                {t("capture.verifiedSuggestion")}
-              </p>
+              <p className="auth-footnote">{t("capture.verifiedSuggestion")}</p>
             )}
           </>
         )}
@@ -371,9 +388,7 @@ function CaptureForm({
           {error}
         </p>
       )}
-      {pending && (
-        <p>{t("capture.lockedRequest")}</p>
-      )}
+      {pending && <p>{t("capture.lockedRequest")}</p>}
       <button
         className="button primary"
         disabled={
@@ -382,7 +397,11 @@ function CaptureForm({
         }
         onClick={() => void save()}
       >
-        {busy ? t("capture.saving") : pending ? t("capture.retrySave") : t("capture.saveWord")}
+        {busy
+          ? t("capture.saving")
+          : pending
+            ? t("capture.retrySave")
+            : t("capture.saveWord")}
       </button>
     </div>
   );

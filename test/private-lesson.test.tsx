@@ -364,6 +364,9 @@ describe("private voice lesson", () => {
     renderPage(`/private-lesson?course=${adult.id}`);
     await screen.findByText(adult.nextLesson!.title);
     expect(document.querySelector(".course-teacher")).not.toBeInTheDocument();
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "בחירת המורה" }));
     expect(
       screen.getByRole("group", { name: "בחירת המורה" }),
     ).toBeInTheDocument();
@@ -568,6 +571,7 @@ describe("private voice lesson", () => {
     }
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith({
+        interactionMode: "guided",
         targetLanguageCode: "en",
         supportLanguageCode: "he",
         lessonMode: "standard",
@@ -983,7 +987,7 @@ describe("private voice lesson", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("Other English course")).not.toBeInTheDocument();
     expect(screen.queryByText("Free English lesson")).not.toBeInTheDocument();
-    expect(mocks.list).toHaveBeenCalledWith(50, course.id);
+    expect(mocks.list).toHaveBeenCalledWith(50, course.id, undefined);
   });
 
   it("saves a suggested word from the lesson report", async () => {
