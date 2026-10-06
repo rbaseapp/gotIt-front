@@ -37,10 +37,7 @@ export function UnitWordBrowser({
     useCallback(async () => {
       if (!entryId) return { image: null, entryId };
       const path = `word-packs/${packId}/entries/${entryId}/image`;
-      const cached = await product(studyImageSchema, path);
-      const value = cached.image
-        ? cached
-        : await product(studyImageSchema, path, "POST", {});
+      const value = await product(studyImageSchema, path, "POST", {});
       return { ...value, entryId };
     }, [packId, entryId]),
   );

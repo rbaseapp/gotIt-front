@@ -196,6 +196,12 @@ for (const width of [320, 1487])
       expect(params.get("return")).toContain(`unit=${packId}&tab=words`);
     }
     await page.locator('a[href*="/learn/session/recall"]').first().click();
+    await expect(page.getByTestId("unit-session-context")).toContainText(
+      "יחידה 1: Building Your First Sentences",
+    );
+    await expect(page.getByTestId("unit-session-context")).toContainText(
+      he.unitStudy.scopeHelp,
+    );
     await page
       .getByRole("button", { name: he.game.start, exact: true })
       .click();
@@ -205,6 +211,7 @@ for (const width of [320, 1487])
       sourceLanguageCode: "en",
       scope: { type: "pack", id: packId },
     });
+    await expect(page.getByTestId("unit-session-context")).toBeVisible();
   });
 
 test("all-known units do not launch general practice", async ({ page }) => {
