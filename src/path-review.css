@@ -903,3 +903,19 @@
     gap: 6px 16px;
   }
 }
+.session-unit-context {
+  flex-shrink: 0;
+  width: min(100%, 48rem);
+  margin: 0 auto 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: #e8f2ed;
+  color: #245647;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.session-unit-context strong,
+.session-unit-context small {
+  display: block;
+}

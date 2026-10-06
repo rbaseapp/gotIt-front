@@ -44,6 +44,7 @@ import {
   studyCardsSchema,
   studyImageSchema,
   uuid,
+  wordPackDetailSchema,
   type AttemptReceipt,
   type Exercise,
   type Intent,
@@ -61,6 +62,7 @@ import { LiveDragDropBoard } from "../components/LiveDragDropBoard";
 import { useGameViewport } from "../hooks/useGameViewport";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { learningReturn } from "../lib/learningNavigation";
+import { useResource } from "../lib/useResource";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -124,6 +126,13 @@ export function LiveGameSessionPage() {
   const { t, i18n } = useTranslation();
   const { type = "" } = useParams();
   const [params] = useSearchParams();
+  const unitId = params.get("pack");
+  const unit = useResource(
+    useCallback(async () => {
+      if (!unitId || !uuid.safeParse(unitId).success) return null;
+      return product(wordPackDetailSchema, `word-packs/${unitId}`);
+    }, [unitId]),
+  );
   const returnTo = learningReturn(
     params.get("return"),
     params.has("pack") ? "/word-packs" : "/learn",
@@ -994,6 +1003,17 @@ export function LiveGameSessionPage() {
       <main
         className={`live-session-main${activeCard ? " session-active" : ""}${activeCard && exercise?.kind === "provider" ? " provider-active" : ""}`}
       >
+        {unitId && (
+          <aside
+            className="session-unit-context"
+            data-testid="unit-session-context"
+          >
+            {unit.data?.pack.id === unitId && (
+              <strong dir="auto">{unit.data.pack.title}</strong>
+            )}
+            <small>{t("unitStudy.scopeHelp")}</small>
+          </aside>
+        )}
         {activeCard && !sessionCompleted && (
           <h1 className="session-screen-title">
             {t(
