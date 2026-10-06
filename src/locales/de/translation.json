@@ -2203,6 +2203,22 @@
     "studyNote": "Kennenlernen ist ein Lernschritt. Selbstständiges Erinnern wird beim Üben geprüft."
   },
   "pathUi": {
+    "programTitle": "Englisch von Anfang an",
+    "levelNames": {
+      "beginner": "Grundlagen",
+      "intermediate": "Mittelstufe",
+      "advanced": "Fortgeschritten"
+    },
+    "toggleUnit": "Einheitsdetails öffnen oder schließen",
+    "completedWords": "{{count}}/{{total}} Wörter abgeschlossen",
+    "practicedWords": "{{count}}/{{total}} Wörter geübt",
+    "completedActivities": "{{count}} abgeschlossene Aktivitäten · Details",
+    "upcoming": "Später in dieser Einheit",
+    "continueWords": "Mit Wörtern und Sätzen fortfahren",
+    "moreWordsHelp": "Weitere Wörter lernen und Sätze bilden.",
+    "allUnits": "Alle Einheiten",
+    "scrollUnits": "Scrollen, um alle {{count}} Einheiten zu sehen",
+    "continueHere": "Hier geht es weiter",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",

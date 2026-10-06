@@ -2202,6 +2202,22 @@
     "studyNote": "היכרות עם המילה היא שלב לימוד. הצלחה עצמאית נבדקת בתרגול."
   },
   "pathUi": {
+    "programTitle": "אנגלית מאפס",
+    "levelNames": {
+      "beginner": "בסיס",
+      "intermediate": "ביניים",
+      "advanced": "מתקדמים"
+    },
+    "toggleUnit": "פתיחה וסגירה של פרטי היחידה",
+    "completedWords": "{{count}}/{{total}} מילים הושלמו",
+    "practicedWords": "תרגלנו {{count}}/{{total}} מילים",
+    "completedActivities": "{{count}} פעילויות שהושלמו · לפרטים",
+    "upcoming": "בהמשך היחידה",
+    "continueWords": "ממשיכים עם מילים ומשפטים",
+    "moreWordsHelp": "נלמד עוד מילים ונבנה משפטים.",
+    "allUnits": "כל היחידות",
+    "scrollUnits": "גללו לצפייה בכל {{count}} היחידות",
+    "continueHere": "כאן ממשיכים",
     "chooseWord": "לוחצים על מילה כדי לשמוע ולראות דוגמה",
     "word": "המילה",
     "meaning": "הפירוש",

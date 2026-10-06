@@ -2248,6 +2248,22 @@
     "studyNote": "التعرف على الكلمة خطوة تعلم. يتم اختبار التذكر المستقل في التدريب."
   },
   "pathUi": {
+    "programTitle": "الإنجليزية من الصفر",
+    "levelNames": {
+      "beginner": "الأساسيات",
+      "intermediate": "المتوسط",
+      "advanced": "المتقدم"
+    },
+    "toggleUnit": "فتح أو إغلاق تفاصيل الوحدة",
+    "completedWords": "اكتملت {{count}}/{{total}} كلمة",
+    "practicedWords": "تدرّبنا على {{count}}/{{total}} كلمة",
+    "completedActivities": "{{count}} أنشطة مكتملة · التفاصيل",
+    "upcoming": "لاحقًا في هذه الوحدة",
+    "continueWords": "متابعة الكلمات والجمل",
+    "moreWordsHelp": "نتعلم كلمات أخرى ونبني جملًا.",
+    "allUnits": "كل الوحدات",
+    "scrollUnits": "مرّر لعرض الوحدات الـ {{count}}",
+    "continueHere": "نتابع هنا",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",

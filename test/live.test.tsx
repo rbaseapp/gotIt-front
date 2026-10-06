@@ -2174,7 +2174,7 @@ describe("live server-backed flows", () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await userEvent.click(
-      screen.getByRole("button", { name: i18n.t("unitStudy.chooseGame") }),
+      screen.getByRole("button", { name: i18n.t("dashboard.smartPractice") }),
     );
     await waitFor(() => {
       const call = fetchMock.mock.calls.find(

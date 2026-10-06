@@ -2203,6 +2203,22 @@
     "studyNote": "Familiarizarse es un paso de aprendizaje. El recuerdo independiente se comprueba al practicar."
   },
   "pathUi": {
+    "programTitle": "Inglés desde cero",
+    "levelNames": {
+      "beginner": "Fundamentos",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "toggleUnit": "Abrir o cerrar los detalles de la unidad",
+    "completedWords": "{{count}}/{{total}} palabras completadas",
+    "practicedWords": "Practicamos {{count}}/{{total}} palabras",
+    "completedActivities": "{{count}} actividades completadas · Detalles",
+    "upcoming": "Más adelante en esta unidad",
+    "continueWords": "Continuar con palabras y frases",
+    "moreWordsHelp": "Aprender más palabras y formar frases.",
+    "allUnits": "Todas las unidades",
+    "scrollUnits": "Desplázate para ver las {{count}} unidades",
+    "continueHere": "Continuamos aquí",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",

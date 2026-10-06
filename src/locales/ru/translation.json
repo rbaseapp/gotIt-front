@@ -2233,6 +2233,22 @@
     "studyNote": "Знакомство со словом — этап обучения. Самостоятельное вспоминание проверяется в практике."
   },
   "pathUi": {
+    "programTitle": "Английский с нуля",
+    "levelNames": {
+      "beginner": "Основы",
+      "intermediate": "Средний",
+      "advanced": "Продвинутый"
+    },
+    "toggleUnit": "Открыть или закрыть подробности раздела",
+    "completedWords": "Завершено {{count}}/{{total}} слов",
+    "practicedWords": "Отработано {{count}}/{{total}} слов",
+    "completedActivities": "{{count}} завершённых занятий · Подробнее",
+    "upcoming": "Далее в этом разделе",
+    "continueWords": "Продолжить со словами и предложениями",
+    "moreWordsHelp": "Учить новые слова и строить предложения.",
+    "allUnits": "Все разделы",
+    "scrollUnits": "Прокрутите, чтобы увидеть все {{count}} разделов",
+    "continueHere": "Продолжаем здесь",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",
