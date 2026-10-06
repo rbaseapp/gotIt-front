@@ -176,12 +176,7 @@ export function LiveGameSessionPage() {
   });
   const [direction, setDirection] = useState("translation_to_source");
   const [kind, setKind] = useState("typed");
-  const [count, setCount] = useState(() => {
-    const requested = Number(params.get("count"));
-    return Number.isInteger(requested) && requested >= 1 && requested <= 20
-      ? requested
-      : 10;
-  });
+  const [count, setCount] = useState(10);
   const [pending, setPending] = useState<Submission>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
