@@ -32,17 +32,25 @@ import {
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { createPortal } from "react-dom";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Logo } from "../components/Logo";
 import { TeacherAvatar } from "../components/TeacherAvatar";
+import { TeacherVoicePreview } from "../components/TeacherVoicePreview";
+import { LessonWorkspace } from "../components/LessonWorkspace";
 import { LanguageCombobox } from "../components/LanguageCombobox";
 import { PrivateLessonFlow } from "../lib/privateLessonFlow";
 import { Modal } from "../components/Modal";
+import { speak } from "../lib/utils";
+import { readLessonDraft, saveLessonDraft } from "../lib/lessonDraft";
 import { courseApi, type Course } from "../lib/courses";
+import { LessonSummary } from "../components/LessonSummary";
+import { learningReturn } from "../lib/learningNavigation";
 import { LessonHomeworkCard } from "./HomeworkPage";
 import "../courses.css";
 import { useApp } from "../context/AppContext";
 import { getBilingualLanguageOptions } from "../lib/languages";
 import { captureReceipt, errorMessage, product } from "../lib/product";
+import { ApiError } from "../lib/api";
 import {
   completePrivateLessonSession,
   connectPrivateLesson,
@@ -51,7 +59,12 @@ import {
   deletePrivateLesson,
   listPrivateLessons,
   getPrivateLessonSetup,
+  getLessonUnit,
+  type LessonUnit,
   getSavedPrivateLessonLanguage,
+  lessonActivityApi,
+  type LessonActivity,
+  type LessonActivityCommand,
   PrivateLessonConnectionError,
   type PrivateLessonConnection,
   type PrivateLessonDurationMinutes,
@@ -102,10 +115,29 @@ export function PrivateLessonPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("course");
+  const packId = searchParams.get("pack");
+  const [unit, setUnit] = useState<LessonUnit>();
+  const [unitError, setUnitError] = useState("");
+  useEffect(() => {
+    setUnit(undefined);
+    setUnitError("");
+    if (!packId) return;
+    let live = true;
+    getLessonUnit(packId)
+      .then((result) => {
+        if (live) setUnit(result.unit);
+      })
+      .catch((reason) => {
+        if (live) setUnitError(errorMessage(reason));
+      });
+    return () => {
+      live = false;
+    };
+  }, [packId]);
   const [courseData, setCourseData] = useState<Course | null>(null);
   const [courseError, setCourseError] = useState("");
   const [courseRetry, setCourseRetry] = useState(0);
-  const { profile, retryProfile } = useApp();
+  const { profile, retryProfile, user } = useApp();
   const languageOptions = getBilingualLanguageOptions();
   const [targetLanguage, setTargetLanguage] = useState(
     searchParams.get("language") ||
@@ -129,6 +161,12 @@ export function PrivateLessonPage() {
     useState<PrivateLessonSpeechRate>("normal");
   const [lessonDurationMinutes, setLessonDurationMinutes] =
     useState<PrivateLessonDurationMinutes>(5);
+  const selectedUnitStation = unit?.teacherStations?.find(
+    (step) => step.station === (searchParams.get("station") || "supported"),
+  );
+  const plannedMinutes = packId
+    ? (selectedUnitStation?.durationMinutes ?? 5)
+    : lessonDurationMinutes;
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [grammarFocus, setGrammarFocus] = useState("");
   const [focusAreas, setFocusAreas] = useState<PrivateLessonFocusArea[]>([
@@ -161,6 +199,7 @@ export function PrivateLessonPage() {
   const phaseRef = useRef<Phase>(phase);
   phaseRef.current = phase;
   const [status, setStatus] = useState(t("privateLesson.ready"));
+  const [translatedTurn, setTranslatedTurn] = useState("");
   const [error, setError] = useState("");
   const [session, setSession] = useState<PrivateLessonSession>();
   const [remaining, setRemaining] = useState(300);
@@ -180,6 +219,10 @@ export function PrivateLessonPage() {
   const [showLevelDetails, setShowLevelDetails] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [showLessonOptions, setShowLessonOptions] = useState(false);
+  const [showTextAlternative, setShowTextAlternative] = useState(false);
+  const [showTeacherPicker, setShowTeacherPicker] = useState(false);
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  const [replayError, setReplayError] = useState("");
   const [selectedHistory, setSelectedHistory] = useState<SavedPrivateLesson>();
   const [savedSuggestions, setSavedSuggestions] = useState<Set<string>>(
     new Set(),
@@ -192,6 +235,13 @@ export function PrivateLessonPage() {
   const [microphoneMuted, setMicrophoneMuted] = useState(false);
   const [microphoneReady, setMicrophoneReady] = useState(false);
   const [needsContinue, setNeedsContinue] = useState(false);
+  const [inputMode, setInputMode] = useState<"voice" | "text">("voice");
+  const [activity, setActivity] = useState<LessonActivity | null>(null);
+  const activityRef = useRef<LessonActivity | null>(null);
+  const pendingActivity = useRef<LessonActivityCommand | null>(null);
+  const [activityBusy, setActivityBusy] = useState(false);
+  const activityBusyRef = useRef(false);
+  const [activityError, setActivityError] = useState("");
   const flowRef = useRef<PrivateLessonFlow | undefined>(undefined);
   const microphoneMutedRef = useRef(false);
   const turnId = useRef(0);
@@ -294,6 +344,7 @@ export function PrivateLessonPage() {
     message: string,
     includeTimeMessage = false,
     reason: "completed" | "stopped" | "disconnected" = "completed",
+    activeSession?: PrivateLessonSession,
   ) => {
     if (includeTimeMessage) addTurn("system", t("privateLesson.timeFinished"));
     completionReason.current = reason;
@@ -301,6 +352,10 @@ export function PrivateLessonPage() {
     setRemaining(0);
     setStatus(message);
     setPhase("ended");
+    if (activeSession?.activity) {
+      setReportRequested(true);
+      void finalizeLesson(activeSession);
+    }
   };
   const requestWrapUp = (
     activeSession: PrivateLessonSession,
@@ -346,7 +401,9 @@ export function PrivateLessonPage() {
     const finishWhenQuiet = () => {
       const quietFor = Date.now() - lastTutorAudioAt.current;
       if (quietFor < 1_200) {
-        timers.current.push(window.setTimeout(finishWhenQuiet, 1_200 - quietFor));
+        timers.current.push(
+          window.setTimeout(finishWhenQuiet, 1_200 - quietFor),
+        );
         return;
       }
       finish(
@@ -355,6 +412,7 @@ export function PrivateLessonPage() {
           : t("privateLesson.ended"),
         true,
         completionReason.current,
+        activeSession,
       );
     };
     timers.current.push(
@@ -480,8 +538,15 @@ export function PrivateLessonPage() {
     if (
       event.type === "conversation.item.input_audio_transcription.completed" &&
       typeof event.transcript === "string"
-    )
-      addTurn("learner", event.transcript);
+    ) {
+      if (!activeSession.activity) addTurn("learner", event.transcript);
+      if (activeSession.activity) {
+        connectionRef.current?.setMicrophoneMuted(true);
+        microphoneMutedRef.current = true;
+        setMicrophoneMuted(true);
+        void submitActivity(activeSession, "answer", event.transcript, "voice");
+      }
+    }
     if (
       event.type === "response.output_audio_transcript.delta" &&
       typeof event.delta === "string"
@@ -493,6 +558,7 @@ export function PrivateLessonPage() {
           ? event.transcript
           : assistantBuffer.current;
       addTurn("tutor", transcript);
+      if (translationRequested.current) setTranslatedTurn(transcript);
       if (wrapResponseStarted.current) wrapTranscript.current = transcript;
       assistantBuffer.current = "";
     }
@@ -517,23 +583,37 @@ export function PrivateLessonPage() {
 
   useEffect(() => {
     let active = true;
-    void listPrivateLessons(50, courseId ?? undefined)
-      .then((lessons) => active && setHistory(lessons))
+    void listPrivateLessons(50, courseId ?? undefined, packId ?? undefined)
+      .then((lessons) => {
+        if (!active) return;
+        setHistory(lessons);
+        const requested = searchParams.get("lesson");
+        if (searchParams.get("view") === "history" && requested)
+          setSelectedHistory(lessons.find((lesson) => lesson.id === requested));
+      })
       .catch((reason) => active && setHistoryError(errorMessage(reason)));
     return () => {
       active = false;
     };
-  }, [courseId]);
+  }, [courseId, packId, searchParams]);
 
   useEffect(() => {
     let active = true;
     setSetupLoading(true);
     setError("");
-    void getPrivateLessonSetup(targetLanguage)
+    void getPrivateLessonSetup(
+      unit?.targetLanguageCode ??
+        courseData?.preferences.targetLanguageCode ??
+        targetLanguage,
+    )
       .then((setup) => {
         if (!active) return;
         setLessonSetup(setup);
-        const saved = setup.preferences;
+        const preparation =
+          searchParams.get("prep") === "warmup"
+            ? readLessonDraft(user, targetLanguage, courseId)
+            : undefined;
+        const saved = preparation?.preferences ?? setup.preferences;
         if (saved) {
           setSupportLanguage(saved.supportLanguageCode ?? "");
           setLessonMode(saved.lessonMode);
@@ -555,7 +635,13 @@ export function PrivateLessonPage() {
         const currentMilestone = setup.roadmap?.milestones.find(
           (item) => item.status === "current",
         );
-        if (currentMilestone && !personalizationTouched.current) {
+        if (preparation) {
+          setTopic(preparation.topic);
+          setGrammarFocus(preparation.grammarFocus);
+          setLevel(preparation.level);
+          setCourseTeachingLanguage(preparation.courseTeachingLanguage);
+          personalizationTouched.current = true;
+        } else if (currentMilestone && !personalizationTouched.current) {
           setTopic(currentMilestone.communicationObjective);
           setGrammarFocus(currentMilestone.grammarTopics.join(", "));
         }
@@ -565,7 +651,14 @@ export function PrivateLessonPage() {
     return () => {
       active = false;
     };
-  }, [targetLanguage]);
+  }, [
+    targetLanguage,
+    courseId,
+    unit?.targetLanguageCode,
+    courseData?.preferences.targetLanguageCode,
+    searchParams,
+    user,
+  ]);
 
   const coursePreferences = courseData
     ? (courseData.versions.find(
@@ -573,12 +666,15 @@ export function PrivateLessonPage() {
       )?.preferences ?? courseData.preferences)
     : null;
   const lessonTargetLanguage =
-    coursePreferences?.targetLanguageCode ?? targetLanguage;
+    coursePreferences?.targetLanguageCode ??
+    unit?.targetLanguageCode ??
+    targetLanguage;
   const lessonSupportLanguage = coursePreferences
     ? coursePreferences.supportLanguageCode
-    : supportLanguage;
+    : (unit?.supportLanguageCode ?? supportLanguage);
   const lessonTeachingLanguage =
     coursePreferences?.absoluteBeginner ||
+    unit?.level === "A1" ||
     (!coursePreferences && lessonMode === "absolute_beginner")
       ? "support"
       : coursePreferences
@@ -611,6 +707,11 @@ export function PrivateLessonPage() {
     setTurns([]);
     turnsRef.current = [];
     setSession(undefined);
+    setActivity(null);
+    activityRef.current = null;
+    pendingActivity.current = null;
+    setActivityError("");
+    setTranslatedTurn("");
     setCompletedLesson(undefined);
     setReportRequested(false);
     setReportError("");
@@ -629,13 +730,29 @@ export function PrivateLessonPage() {
     abortRef.current = controller;
     try {
       const created = await createPrivateLessonSession({
+        interactionMode:
+          !courseId && !packId && searchParams.get("practice") === "free"
+            ? "conversation"
+            : "guided",
         ...(courseId ? { courseId } : {}),
+        ...(packId
+          ? {
+              packId,
+              station:
+                searchParams.get("station") === "review"
+                  ? ("review" as const)
+                  : searchParams.get("station") === "midpoint"
+                    ? ("midpoint" as const)
+                    : ("supported" as const),
+            }
+          : {}),
         targetLanguageCode: targetLanguage.trim(),
         supportLanguageCode: supportLanguage.trim() || null,
         lessonMode,
         teachingLanguage: lessonTeachingLanguage,
         ...(level ? { requestedLevel: level } : {}),
-        requestedDurationMinutes: lessonDurationMinutes,
+        requestedDurationMinutes:
+          plannedMinutes as PrivateLessonDurationMinutes,
         teacherVoice,
         speechRate,
         ...(topic.trim() ? { topic: topic.trim() } : {}),
@@ -656,6 +773,8 @@ export function PrivateLessonPage() {
       });
       if (controller.signal.aborted) return;
       setSession(created);
+      setActivity(created.activity);
+      activityRef.current = created.activity;
       setRemaining(created.lesson.durationSeconds);
       setPhase("connecting");
       setStatus(t("privateLesson.microphoneRequest"));
@@ -689,6 +808,7 @@ export function PrivateLessonPage() {
                 t("privateLesson.connectionClosed"),
                 false,
                 "disconnected",
+                created,
               );
             }
           },
@@ -702,13 +822,28 @@ export function PrivateLessonPage() {
             flowRef.current?.audioLevel(level);
             setTutorAudioLevel(level);
           },
+          ...(created.activity
+            ? {
+                onMicrophoneUnavailable() {
+                  setInputMode("text");
+                  setMicrophoneMuted(true);
+                  microphoneMutedRef.current = true;
+                },
+              }
+            : {}),
         },
         controller.signal,
+        created.activity ? inputMode : "voice",
       );
       if (controller.signal.aborted) connection.close();
       else {
         connectionRef.current = connection;
         setMicrophoneReady(true);
+        if (created.activity) {
+          connection.setMicrophoneMuted(true);
+          setMicrophoneMuted(true);
+          microphoneMutedRef.current = true;
+        }
       }
     } catch (reason) {
       if (controller.signal.aborted) return;
@@ -726,13 +861,16 @@ export function PrivateLessonPage() {
   const reset = () => {
     dispose();
     setSession(undefined);
+    setActivity(null);
+    activityRef.current = null;
+    pendingActivity.current = null;
     setTurns([]);
     turnsRef.current = [];
     setCompletedLesson(undefined);
     setReportRequested(false);
     setReportError("");
     setError("");
-    setRemaining(lessonDurationMinutes * 60);
+    setRemaining(plannedMinutes * 60);
     setStatus(t("privateLesson.ready"));
     setPhase("setup");
   };
@@ -740,7 +878,7 @@ export function PrivateLessonPage() {
     const ids = lesson.report?.recommendedReviewItemIds ?? [];
     if (ids.length)
       navigate(
-        `/learn/session/smart?items=${encodeURIComponent(ids.join(","))}`,
+        `/learn/smart?items=${encodeURIComponent(ids.join(","))}&language=${encodeURIComponent(lesson.targetLanguageCode)}&return=${encodeURIComponent(lesson.course?.courseId ? `/courses/${lesson.course.courseId}` : "/history")}`,
       );
   };
   const saveSuggestion = async (
@@ -809,6 +947,155 @@ export function PrivateLessonPage() {
       if (nextMuted) flowRef.current?.microphoneMuted();
       flowRef.current?.setPaused(nextMuted);
       setMicrophoneMuted(nextMuted);
+    }
+  };
+
+  const submitActivity = async (
+    activeSession: PrivateLessonSession,
+    action: LessonActivityCommand["action"],
+    answer?: string,
+    channel: "text" | "voice" = "text",
+  ): Promise<boolean> => {
+    const current = activityRef.current;
+    if (!current || activityBusyRef.current || phaseRef.current !== "active")
+      return false;
+    const text = answer?.trim();
+    if (action === "answer" && !text) return false;
+    const saved = pendingActivity.current;
+    if (
+      saved &&
+      (saved.action !== action ||
+        (action === "review" ? saved.correctedAnswer : saved.answer) !== text ||
+        (action === "answer" && saved.channel !== channel))
+    ) {
+      setActivityError(t("lessonUi.retrySameAnswer"));
+      return false;
+    }
+    const command = saved ?? {
+      eventId: crypto.randomUUID(),
+      revision: current.revision,
+      action,
+      ...(text
+        ? action === "review"
+          ? { correctedAnswer: text }
+          : { answer: text, channel }
+        : {}),
+    };
+    const controller = abortRef.current;
+    pendingActivity.current = command;
+    activityBusyRef.current = true;
+    setActivityBusy(true);
+    setActivityError("");
+    try {
+      const response = await lessonActivityApi.act(
+        activeSession.lesson.id,
+        command,
+      );
+      if (controller !== abortRef.current || controller?.signal.aborted)
+        return false;
+      activityRef.current = response.activity;
+      setActivity(response.activity);
+      setTranslatedTurn("");
+      pendingActivity.current = null;
+      if (action === "review") return true;
+      if (text) addTurn("learner", text);
+      if (activeResponse.current)
+        connectionRef.current?.send({ type: "response.cancel" });
+      flowRef.current?.requested(command.eventId);
+      const sent = connectionRef.current?.send({
+        ...response.tutorEvent,
+        event_id: command.eventId,
+      });
+      if (!sent) setActivityError(t("lessonUi.audioReplyUnavailable"));
+      return true;
+    } catch (reason) {
+      if (controller !== abortRef.current || controller?.signal.aborted)
+        return false;
+      if (
+        reason instanceof ApiError &&
+        reason.status === 409 &&
+        reason.code === "PRIVATE_LESSON_ACTIVITY_CONFLICT"
+      ) {
+        const fresh = await lessonActivityApi
+          .get(activeSession.lesson.id)
+          .catch(() => null);
+        if (
+          fresh &&
+          controller === abortRef.current &&
+          !controller?.signal.aborted
+        ) {
+          activityRef.current = fresh.activity;
+          setActivity(fresh.activity);
+          pendingActivity.current = null;
+        }
+      }
+      setActivityError(errorMessage(reason));
+      return false;
+    } finally {
+      if (controller === abortRef.current) {
+        activityBusyRef.current = false;
+        setActivityBusy(false);
+      }
+    }
+  };
+
+  const enableLessonMicrophone = async () => {
+    const connection = connectionRef.current;
+    if (!connection || activityBusyRef.current) return;
+    if (inputMode === "voice" && !microphoneMutedRef.current) {
+      toggleMicrophone();
+      return;
+    }
+    const available = connection.enableMicrophone
+      ? await connection.enableMicrophone()
+      : microphoneReady;
+    if (!available) {
+      setInputMode("text");
+      setActivityError(t("lessonUi.microphoneTextFallback"));
+      return;
+    }
+    setInputMode("voice");
+    if (connection.setMicrophoneMuted(false)) {
+      microphoneMutedRef.current = false;
+      setMicrophoneMuted(false);
+      flowRef.current?.setPaused(false);
+    }
+  };
+  const replayGuidedTurn = async (
+    activeSession: PrivateLessonSession,
+    kind: "original" | "translation",
+    rate: number,
+  ) => {
+    if (
+      phaseRef.current !== "active" ||
+      activityBusyRef.current ||
+      flowRef.current?.busy
+    )
+      return;
+    const controller = abortRef.current;
+    setReplayError("");
+    try {
+      const reply = await lessonActivityApi.replay(
+        activeSession.lesson.id,
+        kind,
+        rate < 1 ? "slow" : "normal",
+      );
+      if (
+        controller !== abortRef.current ||
+        controller?.signal.aborted ||
+        reply.revision !== activityRef.current?.revision
+      )
+        return;
+      translationRequested.current = kind === "translation";
+      const eventId = crypto.randomUUID();
+      flowRef.current?.requested(eventId);
+      if (
+        !connectionRef.current?.send({ ...reply.tutorEvent, event_id: eventId })
+      )
+        setReplayError(t("lessonUi.audioReplyUnavailable"));
+    } catch (reason) {
+      if (controller === abortRef.current && !controller?.signal.aborted)
+        setReplayError(errorMessage(reason));
     }
   };
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
@@ -922,6 +1209,151 @@ export function PrivateLessonPage() {
     }
   };
 
+  const teacherChoices = (
+    <fieldset
+      className="teacher-choice-row plain-fieldset"
+      disabled={setupLoading || phase === "preparing"}
+    >
+      <legend>{t("ux.chooseTeacher")}</legend>
+      {(["female", "male"] as const).map((voice) => (
+        <div key={voice} className="teacher-choice-with-preview">
+          <button
+            type="button"
+            key={voice}
+            className={`teacher-choice${teacherVoice === voice ? " selected" : ""}`}
+            aria-label={t(`privateLesson.voiceOptions.${voice}`)}
+            aria-pressed={teacherVoice === voice}
+            onClick={() => {
+              setTeacherVoice(voice);
+              setShowTeacherPicker(false);
+            }}
+          >
+            <TeacherAvatar
+              variant={voice}
+              activity="idle"
+              active={false}
+              audioLevel={0}
+              label={t(`privateLesson.voiceOptions.${voice}`)}
+            />
+            <span>{t(`privateLesson.voiceOptions.${voice}`)}</span>
+          </button>
+          <TeacherVoicePreview voice={voice} />
+        </div>
+      ))}
+    </fieldset>
+  );
+  const warmup = () => {
+    saveLessonDraft(user, lessonTargetLanguage, courseId, {
+      topic,
+      grammarFocus,
+      level,
+      courseTeachingLanguage,
+      preferences: {
+        supportLanguageCode: lessonSupportLanguage || null,
+        lessonMode,
+        teachingLanguage: lessonTeachingLanguage,
+        requestedDurationMinutes:
+          plannedMinutes as PrivateLessonDurationMinutes,
+        teacherVoice,
+        speechRate,
+        focusAreas,
+        customFocus: customFocus || null,
+        correctionMode,
+        vocabularyMode,
+      },
+    });
+    const back = new URLSearchParams({
+      language: lessonTargetLanguage,
+      prep: "warmup",
+    });
+    if (courseId) back.set("course", courseId);
+    else if (packId) back.set("pack", packId);
+    else back.set("practice", "free");
+    const returnTo = encodeURIComponent("/private-lesson?" + back);
+    if (courseId && courseData?.nextLesson) {
+      navigate(
+        `/courses/${courseId}/units/${encodeURIComponent(courseData.nextLesson.unitKey)}/words?return=${returnTo}`,
+      );
+    } else if (packId) {
+      navigate(
+        `/english-learning?unit=${encodeURIComponent(packId)}&tab=words&return=${returnTo}`,
+      );
+    } else {
+      navigate(
+        `/learn?language=${encodeURIComponent(lessonTargetLanguage)}&return=${returnTo}`,
+      );
+    }
+  };
+
+  const lessonReturn = learningReturn(
+    searchParams.get("return"),
+    courseId
+      ? "/courses/" + courseId
+      : packId
+        ? "/english-learning?unit=" + packId
+        : "/dashboard",
+  );
+  if (phase === "ended" && reportRequested && completedLesson?.report)
+    return (
+      <LessonSummary lesson={completedLesson} returnTo={lessonReturn}>
+        <LessonReportView
+          lesson={completedLesson}
+          savedSuggestions={savedSuggestions}
+          savingSuggestions={savingSuggestions}
+          saveError={suggestionSaveError}
+          onReview={() => reviewLesson(completedLesson)}
+          onSaveSuggestion={(suggestion) =>
+            void saveSuggestion(completedLesson, suggestion)
+          }
+          hideHomework
+          t={t}
+        />
+      </LessonSummary>
+    );
+  if (phase === "ended" && reportRequested)
+    return (
+      <section className="lesson-summary-workspace">
+        <header>
+          <Logo />
+        </header>
+        <main
+          className="canonical-page lesson-summary"
+          data-figma-desktop="43:7515"
+        >
+          <h1>
+            {t(
+              reportLoading
+                ? "privateLesson.report.preparing"
+                : "privateLesson.report.failed",
+            )}
+          </h1>
+          <section
+            className="ux-card mint"
+            role={reportLoading ? "status" : "alert"}
+          >
+            {reportLoading ? (
+              <LoaderCircle className="spin" size={44} />
+            ) : (
+              <>
+                <p>{reportError}</p>
+                {session && (
+                  <button
+                    className="button primary"
+                    onClick={() => void finalizeLesson(session)}
+                  >
+                    {t("privateLesson.report.retry")}
+                  </button>
+                )}
+              </>
+            )}
+          </section>
+          <Link className="button secondary" to={lessonReturn}>
+            {t("common.back")}
+          </Link>
+        </main>
+      </section>
+    );
+
   return (
     <div
       className={`private-lesson-page live-page page-enter${sessionFullscreen ? " session-fullscreen" : ""}`}
@@ -929,8 +1361,23 @@ export function PrivateLessonPage() {
       <section className="page-heading-row private-lesson-heading">
         <div>
           <p className="eyebrow">{t("privateLesson.eyebrow")}</p>
-          <h1>{t("privateLesson.title")}</h1>
-          <p>{t("privateLesson.description")}</p>
+          <h1>
+            {courseId && courseData?.nextLesson
+              ? courseData.nextLesson.title
+              : t("ux.readyForLesson")}
+          </h1>
+          <p>
+            {courseId ? (
+              <>
+                {t("courses.yourCourse")} ·{" "}
+                {languageOptions.find(
+                  ([code]) => code === lessonTargetLanguage,
+                )?.[1] ?? lessonTargetLanguage}
+              </>
+            ) : (
+              t("privateLesson.description")
+            )}
+          </p>
         </div>
         <span className="private-lesson-heading-icon" aria-hidden="true">
           <Mic2 size={34} />
@@ -939,10 +1386,209 @@ export function PrivateLessonPage() {
 
       {phase === "setup" || phase === "preparing" ? (
         <>
-          {courseId ? (
-            <section className="course-hero">
-              {childCourse && (
-                <div className="course-teacher">
+          {packId ? (
+            <div
+              className="unit-lesson-prep canonical-page"
+              data-figma-desktop="43:6205"
+              data-figma-mobile="44:8465"
+            >
+              <section className="ux-card mint">
+                <h2 dir="auto">{unit?.title}</h2>
+                <p>
+                  {t("privateLesson.durationMinutes", {
+                    count: plannedMinutes,
+                  })}
+                </p>
+                <p
+                  className="unit-lesson-word-preview"
+                  lang={unit?.targetLanguageCode}
+                  dir="auto"
+                >
+                  {unit?.words
+                    .slice(0, 5)
+                    .map((word) => word.sourceText)
+                    .join(" · ")}
+                </p>
+                {unitError && (
+                  <p role="alert" className="form-error">
+                    {unitError}
+                  </p>
+                )}
+                {!unit && !unitError && (
+                  <p role="status">{t("common.loading")}</p>
+                )}
+                {selectedUnitStation && !selectedUnitStation.available && (
+                  <p role="status">
+                    {t("pathUi.remaining", {
+                      count: Math.max(
+                        0,
+                        selectedUnitStation.requiredWords -
+                          (unit?.introduced ?? 0),
+                      ),
+                    })}
+                  </p>
+                )}
+                <form onSubmit={(event) => void startLesson(event)}>
+                  <button
+                    className="button primary"
+                    type="submit"
+                    disabled={
+                      !unit ||
+                      !selectedUnitStation?.available ||
+                      phase === "preparing" ||
+                      setupLoading
+                    }
+                  >
+                    {phase === "preparing" && (
+                      <LoaderCircle size={18} className="spin" />
+                    )}
+                    {t("privateLesson.start")}
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() =>
+                    navigate(
+                      "/learn?pack=" +
+                        packId +
+                        "&language=" +
+                        encodeURIComponent(
+                          unit?.targetLanguageCode ?? targetLanguage,
+                        ) +
+                        "&return=" +
+                        encodeURIComponent("/private-lesson?" + searchParams),
+                    )
+                  }
+                >
+                  {t("ux.warmup")}
+                </button>
+              </section>
+              <section className="ux-card unit-lesson-preferences">
+                <label className="field">
+                  <span>{t("ux.chooseTeacher")}</span>
+                  <button
+                    className="button secondary"
+                    type="button"
+                    onClick={() => setShowTeacherPicker(true)}
+                  >
+                    {t("privateLesson.voiceOptions." + teacherVoice)}
+                  </button>
+                </label>
+                <label className="field">
+                  <span>{t("privateLesson.supportLanguage")}</span>
+                  <span className="unit-help-language">
+                    {languageOptions.find(
+                      ([code]) => code === unit?.supportLanguageCode,
+                    )?.[1] ?? unit?.supportLanguageCode}
+                  </span>
+                </label>
+                <label className="field">
+                  <span>{t("lessonUi.answerMode")}</span>
+                  <select
+                    value={inputMode}
+                    onChange={(event) =>
+                      setInputMode(event.target.value as "voice" | "text")
+                    }
+                  >
+                    <option value="voice">{t("lessonUi.voiceOrText")}</option>
+                    <option
+                      value="text"
+                      disabled={
+                        !lessonSetup?.interactionCapabilities?.textAnswers
+                      }
+                    >
+                      {t("lessonUi.textWithoutMicrophone")}
+                    </option>
+                  </select>
+                </label>
+                <details>
+                  <summary>{t("accountUi.morePreferences")}</summary>
+                  <p>
+                    {t("privateLesson.durationMinutes", {
+                      count: plannedMinutes,
+                    })}
+                  </p>
+                  <details className="unit-lesson-words">
+                    <summary>{t("ux.unitWords")}</summary>
+                    {unit?.words.map((word) => (
+                      <p key={word.sourceText} dir="auto">
+                        <strong>{word.sourceText}</strong> ·{" "}
+                        {word.translationText}
+                      </p>
+                    ))}
+                  </details>
+                </details>
+                <p>{t("privateLesson.privacy")}</p>
+              </section>
+              <button
+                className="button ghost"
+                onClick={() => navigate("/english-learning?unit=" + packId)}
+              >
+                {t("courses.backToCourse")}
+              </button>
+              {error && (
+                <p role="alert" className="form-error">
+                  {error}
+                </p>
+              )}
+            </div>
+          ) : courseId ? (
+            <form
+              className="unit-lesson-prep canonical-page"
+              data-figma-desktop="43:7991"
+              data-figma-mobile="44:10351"
+              onSubmit={(event) => void startLesson(event)}
+            >
+              <section className="ux-card mint">
+                <h2 dir="auto">{courseData?.nextLesson?.objective}</h2>
+                <p>
+                  {t("privateLesson.durationMinutes", {
+                    count: lessonDurationMinutes,
+                  })}
+                </p>
+                <p dir="auto" lang={lessonTargetLanguage}>
+                  {courseData?.versions
+                    .find(
+                      (version) => version.version === courseData.activeVersion,
+                    )
+                    ?.plan.units.find(
+                      (unit) => unit.key === courseData.nextLesson?.unitKey,
+                    )
+                    ?.vocabulary.slice(0, 5)
+                    .join(" · ")}
+                </p>
+                {courseError && (
+                  <div className="course-error" role="alert">
+                    <p>{courseError}</p>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={() => setCourseRetry((value) => value + 1)}
+                    >
+                      {t("courses.tryAgain")}
+                    </button>
+                  </div>
+                )}
+                <button
+                  className="button primary"
+                  disabled={
+                    !courseData?.nextLesson ||
+                    setupLoading ||
+                    phase === "preparing" ||
+                    (lessonTeachingLanguage === "support" &&
+                      !supportExplanationAvailable)
+                  }
+                  type="submit"
+                >
+                  {phase === "preparing" && (
+                    <LoaderCircle className="spin" size={18} />
+                  )}
+                  {t("privateLesson.start")}
+                </button>
+              </section>
+              <section className="ux-card unit-lesson-preferences">
+                {childCourse && (
                   <TeacherAvatar
                     variant="female"
                     activity="idle"
@@ -950,30 +1596,45 @@ export function PrivateLessonPage() {
                     active={false}
                     label={t("privateLesson.voiceOptions.female")}
                   />
-                </div>
-              )}
-              <p className="course-kicker">
-                {courseData?.nextLesson?.unitTitle ??
-                  (courseData
-                    ? t("courses.courseComplete")
-                    : courseError
-                      ? t("courses.yourCourse")
-                      : t("courses.loading"))}
-              </p>
-              <h2 dir="auto">{courseData?.nextLesson?.title}</h2>
-              <p dir="auto">{courseData?.nextLesson?.objective}</p>
-              {courseError && (
-                <div className="course-error" role="alert">
-                  <p>{courseError}</p>
+                )}
+                <label className="field">
+                  <span>{t("ux.chooseTeacher")}</span>
                   <button
                     className="button secondary"
-                    onClick={() => setCourseRetry((value) => value + 1)}
+                    type="button"
+                    disabled={childCourse}
+                    onClick={() => setShowTeacherPicker(true)}
                   >
-                    {t("courses.tryAgain")}
+                    {t(
+                      "privateLesson.voiceOptions." +
+                        (childCourse ? "female" : teacherVoice),
+                    )}
                   </button>
-                </div>
-              )}
-              <form onSubmit={(event) => void startLesson(event)}>
+                </label>
+                <label className="field">
+                  <span>{t("privateLesson.supportLanguage")}</span>
+                  <span className="unit-help-language">
+                    {languageOptions.find(
+                      ([code]) => code === lessonSupportLanguage,
+                    )?.[1] ?? lessonSupportLanguage}
+                  </span>
+                </label>
+                {lessonSetup?.interactionCapabilities?.textAnswers && (
+                  <label className="field lesson-answer-mode">
+                    <span>{t("lessonUi.answerMode")}</span>
+                    <select
+                      value={inputMode}
+                      onChange={(event) =>
+                        setInputMode(event.target.value as "voice" | "text")
+                      }
+                    >
+                      <option value="voice">{t("lessonUi.voiceOrText")}</option>
+                      <option value="text">
+                        {t("lessonUi.textWithoutMicrophone")}
+                      </option>
+                    </select>
+                  </label>
+                )}
                 {coursePreferences && !coursePreferences.absoluteBeginner && (
                   <label className="field private-lesson-explanation-language">
                     <span>{t("privateLesson.mode.teachingLanguage")}</span>
@@ -1010,27 +1671,25 @@ export function PrivateLessonPage() {
                     </select>
                   </label>
                 )}
-                <button
-                  className="button primary"
-                  disabled={
-                    !courseData?.nextLesson ||
-                    phase === "preparing" ||
-                    (lessonTeachingLanguage === "support" &&
-                      !supportExplanationAvailable)
-                  }
-                  type="submit"
-                >
-                  {phase === "preparing" ? (
-                    <LoaderCircle className="spin" size={18} />
-                  ) : (
-                    <Mic2 size={18} />
-                  )}
-                  {t("privateLesson.start")}
-                </button>
-              </form>
+                <Link className="button ghost" to="/settings#private-lessons">
+                  {t("accountUi.morePreferences")}
+                </Link>
+              </section>
               <button
-                className="course-text-link"
-                onClick={() => navigate(`/courses/${courseId}`)}
+                type="button"
+                className="button secondary"
+                disabled={setupLoading || !courseData?.nextLesson}
+                onClick={warmup}
+              >
+                {t("ux.warmup")}
+              </button>
+              <p className="unit-lesson-privacy">
+                {t("privateLesson.privacy")}
+              </p>
+              <button
+                type="button"
+                className="button ghost"
+                onClick={() => navigate("/courses/" + courseId)}
               >
                 {t("courses.backToCourse")}
               </button>
@@ -1039,7 +1698,7 @@ export function PrivateLessonPage() {
                   {error}
                 </p>
               )}
-            </section>
+            </form>
           ) : (
             <section className="private-lesson-setup live-panel">
               <div className="private-lesson-intro">
@@ -1051,181 +1710,228 @@ export function PrivateLessonPage() {
                 </div>
               </div>
               <div className="private-lesson-clean-content">
-                <fieldset className="private-lesson-mode-field">
-                  <legend>{t("privateLesson.mode.title")}</legend>
-                  <div className="private-lesson-mode-options">
-                    {(["standard", "absolute_beginner"] as const).map(
-                      (mode) => (
-                        <label
-                          key={mode}
-                          className={lessonMode === mode ? "selected" : ""}
-                        >
-                          <input
-                            type="radio"
-                            name="lesson-mode"
-                            value={mode}
-                            checked={lessonMode === mode}
-                            onChange={() => chooseLessonMode(mode)}
-                          />
+                <section className="lesson-ready-card">
+                  {setupLoading ? (
+                    <div className="private-lesson-roadmap-loading">
+                      <LoaderCircle className="spin" size={20} />
+                      {t("privateLesson.preparingRecommendation", {
+                        defaultValue: "Preparing a lesson for you…",
+                      })}
+                    </div>
+                  ) : (
+                    <article className="private-lesson-recommendation">
+                      <div
+                        className="private-lesson-recommendation-icon"
+                        aria-hidden="true"
+                      >
+                        <Sparkles size={24} />
+                      </div>
+                      <div className="private-lesson-recommendation-copy">
+                        <small>
+                          {t("privateLesson.recommendedForYou", {
+                            defaultValue: "Recommended for you",
+                          })}
+                        </small>
+                        <h3 dir="auto">{lessonTitle}</h3>
+                        <p dir="auto">
+                          {currentMilestone?.communicationObjective ||
+                            latestAssessmentLesson?.report?.nextLessonPlan ||
+                            t("privateLesson.recommendedFallbackDescription", {
+                              defaultValue:
+                                "A focused conversation matched to your current level.",
+                            })}
+                        </p>
+                        <div className="private-lesson-summary-chips">
                           <span>
-                            <strong>
-                              {t(`privateLesson.mode.options.${mode}.title`)}
-                            </strong>
-                            <small>
-                              {t(
-                                `privateLesson.mode.options.${mode}.description`,
-                              )}
-                            </small>
+                            <Languages size={15} /> {targetLanguageLabel}
                           </span>
-                        </label>
-                      ),
-                    )}
-                  </div>
-                </fieldset>
-                {lessonMode === "standard" && (
-                  <label className="field private-lesson-explanation-language">
-                    <span>{t("privateLesson.mode.teachingLanguage")}</span>
-                    <select
-                      value={teachingLanguage}
-                      dir="auto"
-                      onChange={(event) =>
-                        setTeachingLanguage(
-                          event.target.value as PrivateLessonTeachingLanguage,
-                        )
+                          <span>
+                            {t(
+                              `privateLesson.mode.options.${lessonMode}.title`,
+                            )}
+                          </span>
+                          <span>
+                            <Clock3 size={15} />{" "}
+                            {t(
+                              `privateLesson.durationOptions.${lessonDurationMinutes}`,
+                            )}
+                          </span>
+                          {focusAreas.slice(0, 2).map((area) => (
+                            <span key={area}>
+                              {t(`privateLesson.focus.options.${area}`)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </article>
+                  )}
+
+                  <form onSubmit={(event) => void startLesson(event)}>
+                    <button
+                      className="button primary private-lesson-start"
+                      type="submit"
+                      disabled={
+                        !targetLanguage.trim() ||
+                        (lessonTeachingLanguage === "support" &&
+                          !supportExplanationAvailable) ||
+                        phase === "preparing" ||
+                        setupLoading
                       }
                     >
-                      <option value="target">
-                        {t("privateLesson.mode.explainInTarget", {
-                          language: targetLanguageLabel,
-                        })}
-                      </option>
-                      <option value="support">
-                        {t("privateLesson.mode.explainInSupport", {
-                          language: supportLanguage
-                            ? (languageOptions.find(([code]) =>
-                                sameBaseLanguage(code, supportLanguage),
-                              )?.[1] ?? supportLanguage)
-                            : t("privateLesson.mode.chooseTeachingLanguage"),
-                        })}
-                      </option>
-                    </select>
-                  </label>
-                )}
-                {(lessonMode === "absolute_beginner" ||
-                  teachingLanguage === "support") && (
-                  <div className="private-lesson-beginner-language">
-                    <label className="field">
-                      <span>
-                        {t("privateLesson.mode.chooseTeachingLanguage")}
-                      </span>
-                      <LanguageCombobox
-                        value={supportLanguage}
-                        onChange={setSupportLanguage}
-                        options={languageOptions.filter(
-                          ([code]) => !sameBaseLanguage(code, targetLanguage),
-                        )}
-                        emptyLabel={t(
-                          "privateLesson.mode.chooseTeachingLanguage",
-                        )}
-                        required
-                      />
-                    </label>
-                    <p>
-                      {t(
-                        lessonMode === "absolute_beginner"
-                          ? "privateLesson.mode.beginnerHint"
-                          : "privateLesson.mode.supportHint",
+                      {phase === "preparing" ? (
+                        <LoaderCircle className="spin" size={19} />
+                      ) : (
+                        <Sparkles size={19} />
                       )}
-                    </p>
-                  </div>
-                )}
-                {setupLoading ? (
-                  <div className="private-lesson-roadmap-loading">
-                    <LoaderCircle className="spin" size={20} />
-                    {t("privateLesson.preparingRecommendation", {
-                      defaultValue: "Preparing a lesson for you…",
-                    })}
-                  </div>
-                ) : (
-                  <article className="private-lesson-recommendation">
-                    <div
-                      className="private-lesson-recommendation-icon"
-                      aria-hidden="true"
-                    >
-                      <Sparkles size={24} />
-                    </div>
-                    <div className="private-lesson-recommendation-copy">
-                      <small>
-                        {t("privateLesson.recommendedForYou", {
-                          defaultValue: "Recommended for you",
-                        })}
-                      </small>
-                      <h3 dir="auto">{lessonTitle}</h3>
-                      <p dir="auto">
-                        {currentMilestone?.communicationObjective ||
-                          latestAssessmentLesson?.report?.nextLessonPlan ||
-                          t("privateLesson.recommendedFallbackDescription", {
-                            defaultValue:
-                              "A focused conversation matched to your current level.",
-                          })}
-                      </p>
-                      <div className="private-lesson-summary-chips">
-                        <span>
-                          <Languages size={15} /> {targetLanguageLabel}
-                        </span>
-                        <span>
-                          {t(`privateLesson.mode.options.${lessonMode}.title`)}
-                        </span>
-                        <span>
-                          <Clock3 size={15} />{" "}
-                          {t(
-                            `privateLesson.durationOptions.${lessonDurationMinutes}`,
-                          )}
-                        </span>
-                        {focusAreas.slice(0, 2).map((area) => (
-                          <span key={area}>
-                            {t(`privateLesson.focus.options.${area}`)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </article>
-                )}
+                      {phase === "preparing"
+                        ? t("privateLesson.preparing")
+                        : t("privateLesson.start")}
+                    </button>
+                  </form>
 
-                <form onSubmit={(event) => void startLesson(event)}>
                   <button
-                    className="button primary private-lesson-start"
-                    type="submit"
-                    disabled={
-                      !targetLanguage.trim() ||
-                      (lessonTeachingLanguage === "support" &&
-                        !supportExplanationAvailable) ||
-                      phase === "preparing" ||
-                      setupLoading
-                    }
+                    type="button"
+                    className="button secondary"
+                    disabled={setupLoading}
+                    onClick={warmup}
                   >
-                    {phase === "preparing" ? (
-                      <LoaderCircle className="spin" size={19} />
-                    ) : (
-                      <Sparkles size={19} />
-                    )}
-                    {phase === "preparing"
-                      ? t("privateLesson.preparing")
-                      : t("privateLesson.start")}
+                    {t("ux.warmup")}
                   </button>
-                </form>
-
-                <button
-                  type="button"
-                  className="button ghost private-lesson-customize"
-                  onClick={() => setShowLessonOptions(true)}
-                >
-                  <Settings2 size={17} />
-                  {t("privateLesson.chooseAnotherFocus", {
-                    defaultValue: "Choose another topic or focus",
-                  })}
-                </button>
-
+                </section>
+                <section className="lesson-preferences-card">
+                  <div className="lesson-teacher-field">
+                    <span>{t("ux.chooseTeacher")}</span>
+                    <button
+                      type="button"
+                      aria-label={t("ux.chooseTeacher")}
+                      className="button secondary lesson-teacher-picker"
+                      disabled={setupLoading || phase === "preparing"}
+                      onClick={() => setShowTeacherPicker(true)}
+                    >
+                      <TeacherAvatar
+                        variant={teacherVoice}
+                        activity="idle"
+                        active={false}
+                        audioLevel={0}
+                        label={t(`privateLesson.voiceOptions.${teacherVoice}`)}
+                      />
+                      {t(`privateLesson.voiceOptions.${teacherVoice}`)}
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                  {lessonMode === "standard" && (
+                    <label className="field private-lesson-explanation-language">
+                      <span>{t("privateLesson.mode.teachingLanguage")}</span>
+                      <select
+                        value={teachingLanguage}
+                        dir="auto"
+                        onChange={(event) =>
+                          setTeachingLanguage(
+                            event.target.value as PrivateLessonTeachingLanguage,
+                          )
+                        }
+                      >
+                        <option value="target">
+                          {t("privateLesson.mode.explainInTarget", {
+                            language: targetLanguageLabel,
+                          })}
+                        </option>
+                        <option value="support">
+                          {t("privateLesson.mode.explainInSupport", {
+                            language: supportLanguage
+                              ? (languageOptions.find(([code]) =>
+                                  sameBaseLanguage(code, supportLanguage),
+                                )?.[1] ?? supportLanguage)
+                              : t("privateLesson.mode.chooseTeachingLanguage"),
+                          })}
+                        </option>
+                      </select>
+                    </label>
+                  )}
+                  {(lessonMode === "absolute_beginner" ||
+                    teachingLanguage === "support") && (
+                    <div className="private-lesson-beginner-language">
+                      <label className="field">
+                        <span>
+                          {t("privateLesson.mode.chooseTeachingLanguage")}
+                        </span>
+                        <LanguageCombobox
+                          value={supportLanguage}
+                          onChange={setSupportLanguage}
+                          options={languageOptions.filter(
+                            ([code]) => !sameBaseLanguage(code, targetLanguage),
+                          )}
+                          emptyLabel={t(
+                            "privateLesson.mode.chooseTeachingLanguage",
+                          )}
+                          required
+                        />
+                      </label>
+                      <p>
+                        {t(
+                          lessonMode === "absolute_beginner"
+                            ? "privateLesson.mode.beginnerHint"
+                            : "privateLesson.mode.supportHint",
+                        )}
+                      </p>
+                    </div>
+                  )}
+                  {lessonSetup?.interactionCapabilities?.textAnswers ? (
+                    <label className="field lesson-answer-mode">
+                      <span>{t("lessonUi.answerMode")}</span>
+                      <select
+                        value={inputMode}
+                        onChange={(event) =>
+                          setInputMode(event.target.value as "voice" | "text")
+                        }
+                      >
+                        <option value="voice">
+                          {t("lessonUi.voiceOrText")}
+                        </option>
+                        <option value="text">
+                          {t("lessonUi.textWithoutMicrophone")}
+                        </option>
+                      </select>
+                    </label>
+                  ) : (
+                    <button
+                      type="button"
+                      className="button secondary lesson-text-choice"
+                      onClick={() => setShowTextAlternative(true)}
+                    >
+                      {t("ux.textAlternative")}
+                    </button>
+                  )}
+                  <Modal
+                    open={showTextAlternative}
+                    onClose={() => setShowTextAlternative(false)}
+                    title={t("ux.textAlternative")}
+                  >
+                    <div className="modal-body">
+                      <p>{t("ux.textUnavailable")}</p>
+                      <button
+                        className="button primary"
+                        onClick={() =>
+                          navigate(
+                            `/learn?language=${encodeURIComponent(targetLanguage)}&return=%2Fprivate-lesson`,
+                          )
+                        }
+                      >
+                        {t("ux.writtenPractice")}
+                      </button>
+                    </div>
+                  </Modal>
+                  <button
+                    type="button"
+                    className="button ghost private-lesson-customize"
+                    onClick={() => setShowLessonOptions(true)}
+                  >
+                    <Settings2 size={17} />
+                    {t("privateLesson.chooseAnotherFocus", {
+                      defaultValue: "Choose another topic or focus",
+                    })}
+                  </button>
+                </section>
                 <div className="private-lesson-quick-links">
                   <button
                     type="button"
@@ -1400,7 +2106,9 @@ export function PrivateLessonPage() {
                               </option>
                             ))}
                           </select>
-                          <small>{t("privateLesson.minutesChargePolicy")}</small>
+                          <small>
+                            {t("privateLesson.minutesChargePolicy")}
+                          </small>
                         </label>
                       </div>
                       <details className="private-lesson-advanced">
@@ -1936,11 +2644,24 @@ export function PrivateLessonPage() {
               </div>
             </form>
           </Modal>
+          <Modal
+            open={showTeacherPicker}
+            onClose={() => setShowTeacherPicker(false)}
+            title={t("ux.chooseTeacher")}
+          >
+            <div className="modal-body">{teacherChoices}</div>
+          </Modal>
           <section className="private-lesson-history live-panel">
             <div className="private-lesson-history-heading">
               <div>
                 <p className="eyebrow">{t("privateLesson.history.eyebrow")}</p>
-                <h2>{t(courseId ? "courses.courseHistory" : "privateLesson.history.title")}</h2>
+                <h2>
+                  {t(
+                    courseId
+                      ? "courses.courseHistory"
+                      : "privateLesson.history.title",
+                  )}
+                </h2>
               </div>
               <BookOpen size={24} aria-hidden="true" />
             </div>
@@ -2007,7 +2728,13 @@ export function PrivateLessonPage() {
                 ))}
               </div>
             ) : (
-              <p>{t(courseId ? "courses.noCourseHistory" : "privateLesson.history.empty")}</p>
+              <p>
+                {t(
+                  courseId
+                    ? "courses.noCourseHistory"
+                    : "privateLesson.history.empty",
+                )}
+              </p>
             )}
           </section>
           <Modal
@@ -2044,276 +2771,411 @@ export function PrivateLessonPage() {
         </>
       ) : (
         createPortal(
-          <section
-            className={`private-lesson-session live-panel${reportRequested ? " has-report" : ""}`}
-            role="dialog"
-            aria-label={t("privateLesson.title")}
-          >
-            <header className="private-lesson-session-header">
-              <div>
-                <p className="eyebrow">{t("privateLesson.active")}</p>
-                <h2 dir="auto">{session?.lesson.topic}</h2>
-                <span className={`private-lesson-status ${phase}`}>
-                  <i aria-hidden="true" /> {status}
-                </span>
-              </div>
-              <div className="private-lesson-header-controls">
-                <button
-                  className="icon-button private-lesson-sidebar-button"
-                  type="button"
-                  aria-label={t("shell.openMenu")}
-                  onClick={() =>
-                    window.dispatchEvent(new Event("gotit:open-sidebar"))
-                  }
-                >
-                  <Menu size={20} />
-                </button>
-                <button
-                  className={`private-lesson-mute${microphoneMuted ? " muted" : ""}`}
-                  type="button"
-                  aria-label={
-                    microphoneMuted
-                      ? t("privateLesson.unmuteMicrophone")
-                      : t("privateLesson.muteMicrophone")
-                  }
-                  aria-pressed={microphoneMuted}
-                  disabled={!microphoneReady || phase === "wrapping"}
-                  onClick={toggleMicrophone}
-                >
-                  {microphoneMuted ? <MicOff size={19} /> : <Mic2 size={19} />}
-                  <span>
-                    {microphoneMuted
-                      ? t("privateLesson.unmuteMicrophone")
-                      : t("privateLesson.muteMicrophone")}
+          activity && session && phase !== "ended" ? (
+            <LessonWorkspace
+              lesson={session.lesson}
+              activity={activity}
+              remaining={remaining}
+              status={status}
+              audioLevel={tutorAudioLevel}
+              busy={activityBusy || responding || phase === "wrapping"}
+              ready={phase === "active"}
+              microphoneMuted={microphoneMuted}
+              inputMode={inputMode}
+              error={activityError || replayError}
+              translatedTurn={translatedTurn}
+              onAnswer={(answer) => submitActivity(session, "answer", answer)}
+              onReview={(answer) => submitActivity(session, "review", answer)}
+              onAction={(action) => void submitActivity(session, action)}
+              onMicrophone={() => void enableLessonMicrophone()}
+              onReplay={(rate) =>
+                void replayGuidedTurn(session, "original", rate)
+              }
+              onTranslate={() =>
+                void replayGuidedTurn(session, "translation", 1)
+              }
+              onPause={(paused) => {
+                connectionRef.current?.setMicrophoneMuted(true);
+                microphoneMutedRef.current = true;
+                setMicrophoneMuted(true);
+                flowRef.current?.setPaused(paused);
+                if (paused) {
+                  audioRef.current?.pause();
+                  window.speechSynthesis?.cancel();
+                } else void audioRef.current?.play().catch(() => undefined);
+              }}
+              onFinish={() => {
+                setReportRequested(true);
+                requestWrapUp(session, "stopped");
+              }}
+            />
+          ) : (
+            <section
+              className={`private-lesson-session live-panel${reportRequested ? " has-report" : ""}`}
+              role="dialog"
+              aria-label={t("privateLesson.title")}
+            >
+              <header className="private-lesson-session-header">
+                <Logo />
+                <div>
+                  <p className="eyebrow">{t("privateLesson.active")}</p>
+                  <h2 dir="auto">{session?.lesson.topic}</h2>
+                  <span className={`private-lesson-status ${phase}`}>
+                    <i aria-hidden="true" /> {status}
                   </span>
-                </button>
-                <div
-                  className="private-lesson-timer"
-                  aria-label={t("privateLesson.timerLabel")}
-                  aria-live="polite"
-                >
-                  {minutes}:{seconds}
                 </div>
-              </div>
-            </header>
-
-            <div className="private-lesson-meta">
-              <span>
-                <Languages size={16} /> {session?.lesson.targetLanguageCode}
-              </span>
-              <span>{session?.lesson.level}</span>
-              <span>
-                <UserRound size={16} />
-                {session &&
-                  t(
-                    `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
+                <div className="private-lesson-header-controls">
+                  {phase !== "ended" && (
+                    <button
+                      className="button secondary lesson-end"
+                      type="button"
+                      disabled={phase === "wrapping"}
+                      onClick={() =>
+                        session && requestWrapUp(session, "stopped")
+                      }
+                    >
+                      {phase === "wrapping" ? (
+                        <LoaderCircle className="spin" size={17} />
+                      ) : (
+                        <Square size={16} />
+                      )}
+                      {phase === "wrapping"
+                        ? t("privateLesson.finishing")
+                        : t("privateLesson.finish")}
+                    </button>
                   )}
-              </span>
-              <span>
-                <Gauge size={16} />
-                {session &&
-                  t(`privateLesson.speedOptions.${session.lesson.speechRate}`)}
-              </span>
-              <span>
-                <MessageCircleMore size={16} />
-                {session &&
-                  t(
-                    `privateLesson.correctionMode.options.${session.lesson.correctionMode}.title`,
-                  )}
-              </span>
-              <span>
-                <BookOpen size={16} />
-                {session &&
-                  t(
-                    `privateLesson.vocabularyMode.options.${session.lesson.vocabularyMode}.title`,
-                  )}
-              </span>
-              {session?.lesson.grammarFocus && (
-                <span dir="auto">{session.lesson.grammarFocus}</span>
-              )}
-            </div>
-
-            {phase === "ended" && reportRequested ? (
-              <div className="private-lesson-report-shell">
-                {reportLoading ? (
-                  <div className="private-lesson-report-loading" role="status">
-                    <LoaderCircle className="spin" size={28} />
-                    <p>{t("privateLesson.report.preparing")}</p>
-                  </div>
-                ) : completedLesson?.report ? (
-                  <LessonReportView
-                    lesson={completedLesson}
-                    savedSuggestions={savedSuggestions}
-                    savingSuggestions={savingSuggestions}
-                    saveError={suggestionSaveError}
-                    onReview={() => reviewLesson(completedLesson)}
-                    onSaveSuggestion={(suggestion) =>
-                      void saveSuggestion(completedLesson, suggestion)
+                  <button
+                    className="icon-button private-lesson-sidebar-button"
+                    type="button"
+                    aria-label={t("shell.openMenu")}
+                    onClick={() =>
+                      window.dispatchEvent(new Event("gotit:open-sidebar"))
                     }
-                    t={t}
-                  />
-                ) : (
-                  <div className="private-lesson-report-loading">
-                    <p role="alert">
-                      {reportError || t("privateLesson.report.failed")}
-                    </p>
-                    {session && (
-                      <button
-                        className="button secondary"
-                        type="button"
-                        onClick={() => void finalizeLesson(session)}
-                      >
-                        {t("privateLesson.report.retry")}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <div className="private-lesson-tutor-stage">
-                  <TeacherAvatar
-                    activity={
-                      phase === "connecting" ||
-                      phase === "wrapping" ||
-                      responding
-                        ? "thinking"
-                        : phase === "active"
-                          ? "listening"
-                          : "idle"
-                    }
-                    audioLevel={tutorAudioLevel}
-                    active={phase === "active" || phase === "wrapping"}
-                    label={status}
-                    variant={session?.lesson.teacherVoice ?? teacherVoice}
-                  />
+                  >
+                    <Menu size={20} />
+                  </button>
                   <div
-                    className="private-lesson-tutor-caption"
+                    className="private-lesson-timer"
+                    aria-label={t("privateLesson.timerLabel")}
                     aria-live="polite"
                   >
-                    <strong>{t("privateLesson.roles.tutor")}</strong>
-                    <span>{status}</span>
+                    {minutes}:{seconds}
                   </div>
                 </div>
+              </header>
 
-                <div className="private-lesson-words">
-                  <strong>{t("privateLesson.wordsTitle")}</strong>
-                  <div>
-                    {session?.lesson.targetWords.length ? (
-                      session.lesson.targetWords.map((word) => (
-                        <span key={word.learningItemId} dir="auto">
-                          {word.sourceText} · {word.translationText}
-                        </span>
-                      ))
-                    ) : (
-                      <span>{t("privateLesson.noWords")}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div
-                  className="private-lesson-transcript"
-                  aria-live="polite"
-                  ref={transcriptRef}
-                >
-                  <div className="private-lesson-transcript-title">
-                    <MessageCircleMore size={18} />
-                    <strong>{t("privateLesson.transcriptTitle")}</strong>
-                  </div>
-                  {turns.length ? (
-                    turns.map((turn) => (
-                      <div
-                        className={`private-lesson-turn ${turn.role}`}
-                        key={turn.id}
-                      >
-                        <small>{t(`privateLesson.roles.${turn.role}`)}</small>
-                        <p dir="auto">{turn.text}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="private-lesson-listening">
-                      {phase === "connecting" ? (
-                        <LoaderCircle className="spin" size={24} />
-                      ) : (
-                        <span
-                          className="private-lesson-wave"
-                          aria-hidden="true"
-                        >
-                          <i /> <i /> <i /> <i /> <i />
-                        </span>
+              <details className="private-lesson-settings-details">
+                <summary>{t("ux.learningDetails")}</summary>
+                <div className="private-lesson-meta">
+                  <span>
+                    <Languages size={16} /> {session?.lesson.targetLanguageCode}
+                  </span>
+                  <span>{session?.lesson.level}</span>
+                  <span>
+                    <UserRound size={16} />
+                    {session &&
+                      t(
+                        `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
                       )}
-                      <p>{status}</p>
+                  </span>
+                  <span>
+                    <Gauge size={16} />
+                    {session &&
+                      t(
+                        `privateLesson.speedOptions.${session.lesson.speechRate}`,
+                      )}
+                  </span>
+                  <span>
+                    <MessageCircleMore size={16} />
+                    {session &&
+                      t(
+                        `privateLesson.correctionMode.options.${session.lesson.correctionMode}.title`,
+                      )}
+                  </span>
+                  <span>
+                    <BookOpen size={16} />
+                    {session &&
+                      t(
+                        `privateLesson.vocabularyMode.options.${session.lesson.vocabularyMode}.title`,
+                      )}
+                  </span>
+                  {session?.lesson.grammarFocus && (
+                    <span dir="auto">{session.lesson.grammarFocus}</span>
+                  )}
+                </div>
+              </details>
+
+              {phase === "ended" && reportRequested ? (
+                <div className="private-lesson-report-shell">
+                  {reportLoading ? (
+                    <div
+                      className="private-lesson-report-loading"
+                      role="status"
+                    >
+                      <LoaderCircle className="spin" size={28} />
+                      <p>{t("privateLesson.report.preparing")}</p>
+                    </div>
+                  ) : completedLesson?.report ? (
+                    <LessonReportView
+                      lesson={completedLesson}
+                      savedSuggestions={savedSuggestions}
+                      savingSuggestions={savingSuggestions}
+                      saveError={suggestionSaveError}
+                      onReview={() => reviewLesson(completedLesson)}
+                      onSaveSuggestion={(suggestion) =>
+                        void saveSuggestion(completedLesson, suggestion)
+                      }
+                      t={t}
+                    />
+                  ) : (
+                    <div className="private-lesson-report-loading">
+                      <p role="alert">
+                        {reportError || t("privateLesson.report.failed")}
+                      </p>
+                      {session && (
+                        <button
+                          className="button secondary"
+                          type="button"
+                          onClick={() => void finalizeLesson(session)}
+                        >
+                          {t("privateLesson.report.retry")}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
-              </>
-            )}
+              ) : (
+                <>
+                  <div className="lesson-dialogue">
+                    <div className="private-lesson-tutor-stage">
+                      <TeacherAvatar
+                        activity={
+                          phase === "connecting" ||
+                          phase === "wrapping" ||
+                          responding
+                            ? "thinking"
+                            : phase === "active"
+                              ? "listening"
+                              : "idle"
+                        }
+                        audioLevel={tutorAudioLevel}
+                        active={phase === "active" || phase === "wrapping"}
+                        label={status}
+                        variant={session?.lesson.teacherVoice ?? teacherVoice}
+                      />
+                      <div
+                        className="private-lesson-tutor-caption"
+                        aria-live="polite"
+                      >
+                        <strong>
+                          {t(
+                            `privateLesson.voiceOptions.${session?.lesson.teacherVoice ?? teacherVoice}`,
+                          )}
+                        </strong>
+                        <span>{status}</span>
+                      </div>
+                    </div>
 
-            {phase === "ended" ? (
-              <div className="private-lesson-actions private-lesson-report-actions">
-                {!reportRequested && session && (
-                  <button
-                    className="button primary"
-                    type="button"
-                    onClick={() => {
-                      setReportRequested(true);
-                      void finalizeLesson(session);
-                    }}
+                    {phase !== "ended" &&
+                      turns.some((turn) => turn.role === "tutor") && (
+                        <div
+                          className="lesson-current-message"
+                          aria-live="polite"
+                        >
+                          <p dir="auto">
+                            {
+                              turns
+                                .filter((turn) => turn.role === "tutor")
+                                .at(-1)?.text
+                            }
+                          </p>
+                          <div className="lesson-replay-controls">
+                            {[1, 0.65].map((rate) => (
+                              <button
+                                type="button"
+                                className="button secondary"
+                                key={rate}
+                                disabled={responding || phase !== "active"}
+                                onClick={() => {
+                                  const text = turns
+                                    .filter((turn) => turn.role === "tutor")
+                                    .at(-1)?.text;
+                                  const replayLanguage =
+                                    session?.lesson.teachingLanguage ===
+                                    "support"
+                                      ? supportLanguage
+                                      : targetLanguage;
+                                  setReplayError(
+                                    text && speak(text, replayLanguage, rate)
+                                      ? ""
+                                      : t("ux.audioUnavailable"),
+                                  );
+                                }}
+                              >
+                                <Headphones size={17} />
+                                {t(rate === 1 ? "ux.replay" : "ux.replaySlow")}
+                              </button>
+                            ))}
+                          </div>
+                          {replayError && <p role="alert">{replayError}</p>}
+                        </div>
+                      )}
+                    {phase !== "ended" &&
+                      !turns.some((turn) => turn.role === "tutor") && (
+                        <div
+                          className="lesson-current-message lesson-waiting"
+                          role="status"
+                        >
+                          <p>{status}</p>
+                        </div>
+                      )}
+                  </div>
+                  <div className="private-lesson-words">
+                    <strong>{t("privateLesson.wordsTitle")}</strong>
+                    <div>
+                      {session?.lesson.targetWords.length ? (
+                        session.lesson.targetWords.map((word) => (
+                          <span key={word.learningItemId} dir="auto">
+                            {word.sourceText} · {word.translationText}
+                          </span>
+                        ))
+                      ) : (
+                        <span>{t("privateLesson.noWords")}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <details
+                    className="lesson-transcript-details"
+                    open={phase === "ended" || undefined}
                   >
-                    <BookOpen size={18} /> {t("privateLesson.report.generate")}
-                  </button>
-                )}
-                <button
-                  className="button secondary"
-                  type="button"
-                  onClick={reset}
-                >
-                  <RotateCcw size={18} /> {t("privateLesson.restart")}
-                </button>
-              </div>
-            ) : (
-              <div className="private-lesson-actions">
-                {needsContinue &&
-                  session?.realtime.continuationEvent &&
-                  phase === "active" && (
-                    <button
-                      className="button secondary private-lesson-continue"
-                      type="button"
-                      disabled={responding || microphoneMuted}
-                      onClick={() => continueLesson(session, true)}
+                    <summary>{t("ux.fullConversation")}</summary>
+                    <div
+                      className="private-lesson-transcript"
+                      aria-live="polite"
+                      ref={transcriptRef}
                     >
-                      <MessageCircleMore size={17} />{" "}
-                      {t("privateLesson.continueLesson")}
+                      <div className="private-lesson-transcript-title">
+                        <MessageCircleMore size={18} />
+                        <strong>{t("privateLesson.transcriptTitle")}</strong>
+                      </div>
+                      {turns.length ? (
+                        turns
+                          .filter(
+                            (turn) =>
+                              phase === "ended" ||
+                              turn.id !==
+                                turns
+                                  .filter((item) => item.role === "tutor")
+                                  .at(-1)?.id,
+                          )
+                          .map((turn) => (
+                            <div
+                              className={`private-lesson-turn ${turn.role}`}
+                              key={turn.id}
+                            >
+                              <small>
+                                {t(`privateLesson.roles.${turn.role}`)}
+                              </small>
+                              <p dir="auto">{turn.text}</p>
+                            </div>
+                          ))
+                      ) : (
+                        <div className="private-lesson-listening">
+                          {phase === "connecting" ? (
+                            <LoaderCircle className="spin" size={24} />
+                          ) : (
+                            <span
+                              className="private-lesson-wave"
+                              aria-hidden="true"
+                            >
+                              <i /> <i /> <i /> <i /> <i />
+                            </span>
+                          )}
+                          <p>{status}</p>
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                </>
+              )}
+
+              {phase === "ended" ? (
+                <div className="private-lesson-actions private-lesson-report-actions">
+                  {!reportRequested && session && (
+                    <button
+                      className="button primary"
+                      type="button"
+                      onClick={() => {
+                        setReportRequested(true);
+                        void finalizeLesson(session);
+                      }}
+                    >
+                      <BookOpen size={18} />{" "}
+                      {t("privateLesson.report.generate")}
                     </button>
                   )}
-                {session?.realtime.translationEvent && (
                   <button
                     className="button secondary"
                     type="button"
-                    disabled={responding || phase === "wrapping"}
-                    onClick={() => requestTranslation(session)}
+                    onClick={reset}
                   >
-                    <Languages size={17} /> {t("privateLesson.translateLast")}
+                    <RotateCcw size={18} /> {t("privateLesson.restart")}
                   </button>
-                )}
-                <button
-                  className="button secondary"
-                  type="button"
-                  disabled={phase === "wrapping"}
-                  onClick={() => session && requestWrapUp(session, "stopped")}
-                >
-                  {phase === "wrapping" ? (
-                    <LoaderCircle className="spin" size={17} />
-                  ) : (
-                    <Square size={16} />
+                </div>
+              ) : (
+                <div className="private-lesson-actions">
+                  <button
+                    className={`private-lesson-mute${microphoneMuted ? " muted" : phase === "active" && microphoneReady ? " ux-recording" : ""}`}
+                    type="button"
+                    aria-label={
+                      microphoneMuted
+                        ? t("privateLesson.unmuteMicrophone")
+                        : t("privateLesson.muteMicrophone")
+                    }
+                    aria-pressed={microphoneMuted}
+                    disabled={!microphoneReady || phase === "wrapping"}
+                    onClick={toggleMicrophone}
+                  >
+                    {microphoneMuted ? (
+                      <MicOff size={19} />
+                    ) : (
+                      <Mic2 size={19} />
+                    )}
+                    <span>
+                      {microphoneMuted
+                        ? t("privateLesson.unmuteMicrophone")
+                        : t("privateLesson.muteMicrophone")}
+                    </span>
+                  </button>
+
+                  {needsContinue &&
+                    session?.realtime.continuationEvent &&
+                    phase === "active" && (
+                      <button
+                        className="button secondary private-lesson-continue"
+                        type="button"
+                        disabled={responding || microphoneMuted}
+                        onClick={() => continueLesson(session, true)}
+                      >
+                        <MessageCircleMore size={17} />{" "}
+                        {t("privateLesson.continueLesson")}
+                      </button>
+                    )}
+                  {session?.realtime.translationEvent && (
+                    <button
+                      className="button secondary lesson-translate"
+                      type="button"
+                      disabled={responding || phase === "wrapping"}
+                      onClick={() => requestTranslation(session)}
+                    >
+                      <Languages size={17} /> {t("privateLesson.translateLast")}
+                    </button>
                   )}
-                  {phase === "wrapping"
-                    ? t("privateLesson.finishing")
-                    : t("privateLesson.finish")}
-                </button>
-              </div>
-            )}
-          </section>,
+                </div>
+              )}
+            </section>
+          ),
           document.body,
         )
       )}
@@ -2532,6 +3394,7 @@ function RoadmapPanel({
 }
 
 function LessonReportView({
+  hideHomework = false,
   lesson,
   savedSuggestions,
   savingSuggestions,
@@ -2540,6 +3403,7 @@ function LessonReportView({
   onSaveSuggestion,
   t,
 }: {
+  hideHomework?: boolean;
   lesson: SavedPrivateLesson;
   savedSuggestions: Set<string>;
   savingSuggestions: Set<string>;
@@ -2583,7 +3447,7 @@ function LessonReportView({
           </span>
         </p>
       </section>
-      <LessonHomeworkCard lessonId={lesson.id} />
+      {!hideHomework && <LessonHomeworkCard lessonId={lesson.id} />}
       <details className="lesson-report-details">
         <summary>{t("courses.reportDetails")}</summary>
         <p dir="auto" lang={reportLanguageCode}>

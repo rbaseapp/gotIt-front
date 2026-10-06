@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { BookOpenText, Sparkles } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -30,12 +30,23 @@ import {
 export function LiveReadingPage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
+  const [params] = useSearchParams();
+  const selectedIds = params.get("items")?.split(",").filter(Boolean);
+  const selection = z
+    .array(uuid)
+    .min(1)
+    .max(20)
+    .refine((items) => new Set(items).size === items.length)
+    .safeParse(selectedIds);
   const { hasEntitlement } = useSubscription();
   const canGenerate = hasEntitlement("reading.ai");
   const { confirm, toast } = useFeedback();
   const [topic, setTopic] = useState(profile.interests[0] || "");
   const [language, setLanguage] = useState(
-    profile.languages[0]?.languageCode || "en",
+    params.get("language") ||
+      profile.languages[0]?.languageCode ||
+      profile.defaultSourceLanguage ||
+      "en",
   );
   const [level, setLevel] = useState("");
   const [length, setLength] = useState("short");
@@ -72,6 +83,20 @@ export function LiveReadingPage() {
     ),
   );
   const generate = async () => {
+    if (
+      selection.success &&
+      (chosenWords.loading ||
+        chosenWords.error ||
+        !chosenWords.data?.length ||
+        chosenWords.data.some((word) => word.sourceLanguageCode !== language))
+    ) {
+      setError(t("game.languageMismatch"));
+      return;
+    }
+    if (params.has("items") && !selection.success) {
+      setError(t("lessonUi.articleSelectionLimit"));
+      return;
+    }
     if (!canGenerate) {
       setError(t("reading.proRequired"));
       return;
@@ -84,6 +109,7 @@ export function LiveReadingPage() {
     try {
       const result = await product(readingPreview, "reading/preview", "POST", {
         targetLanguageCode: language,
+        ...(selection.success ? { learningItemIds: selection.data } : {}),
         ...(topic.trim() ? { topic } : {}),
         ...(level ? { requestedLevel: level } : {}),
         contentType,
@@ -97,30 +123,36 @@ export function LiveReadingPage() {
       setBusy(false);
     }
   };
-  const open = async () => {
-    if (!preview || busy) return;
-    setBusy(true);
-    setError("");
+  const publish = async (
+    result: z.infer<typeof readingPreview>,
+    previous?: Intent,
+  ) => {
     const submission =
-      pending || intent({ publicationToken: preview.publicationToken });
+      previous || intent({ publicationToken: result.publicationToken });
     setPending(submission);
     try {
-      const result = await product(
+      const published = await product(
         z.object({ reading: readingSchema }),
         "reading",
         "POST",
         submission.body,
         submission.eventId,
       );
-      setReading(result.reading);
+      setReading(published.reading);
       setPreview(undefined);
       setPending(undefined);
       await history.reload();
     } catch (reason) {
+      // Retain both readable text and the same publication intent for retry.
       setError(errorMessage(reason));
-    } finally {
-      setBusy(false);
     }
+  };
+  const open = async () => {
+    if (!preview || busy) return;
+    setBusy(true);
+    setError("");
+    await publish(preview, pending);
+    setBusy(false);
   };
   const view = async (id: string) => {
     setBusy(true);
@@ -160,6 +192,27 @@ export function LiveReadingPage() {
       setBusy(false);
     }
   };
+  const displayed = reading || preview?.reading;
+  const selectionKey = selection.success ? selection.data.join(",") : "";
+  const chosenWords = useResource(
+    useCallback(async () => {
+      if (!selectionKey) return [];
+      const results = await Promise.all(
+        selectionKey.split(",").map((id) =>
+          product(
+            z.object({
+              learningItem: z.object({
+                sourceText: z.string(),
+                sourceLanguageCode: z.string(),
+              }),
+            }),
+            `learning-items/${id}`,
+          ),
+        ),
+      );
+      return results.map((result) => result.learningItem);
+    }, [selectionKey]),
+  );
   return (
     <div className="reading-page live-page page-enter">
       <section className="page-heading-row">
@@ -170,186 +223,203 @@ export function LiveReadingPage() {
         </div>
         <BookOpenText size={36} />
       </section>
-      <div className="live-two-columns">
-        <section className="live-panel form-stack">
-          <h2>{t("reading.promptTitle")}</h2>
-          <fieldset
-            disabled={
-              busy ||
-              !!pending ||
-              !canGenerate ||
-              quota.data?.quota?.remaining === 0
-            }
-            className="plain-fieldset form-stack"
-          >
-            <label className="field">
-              <span>{t("reading.topic")}</span>
-              <input
-                maxLength={500}
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder={t("reading.topicPlaceholder")}
-              />
-            </label>
-            <label className="field">
-              <span>{t("reading.language")}</span>
-              <LanguageCombobox
-                value={language}
-                onChange={setLanguage}
-              />
-            </label>
-            <div className="live-form-grid">
-              <label className="field">
-                <span>{t("reading.level")}</span>
-                <select
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
-                >
-                  <option value="">{t("reading.effectiveLevel")}</option>
-                  {["A1", "A2", "B1", "B2", "C1", "C2"].map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="field">
-                <span>{t("reading.length")}</span>
-                <select
-                  value={length}
-                  onChange={(e) => setLength(e.target.value)}
-                >
-                  <option value="short">{t("reading.short")}</option>
-                  <option value="medium">{t("reading.medium")}</option>
-                  <option value="long">{t("reading.long")}</option>
-                </select>
-              </label>
-            </div>
-            <label className="field">
-              <span>{t("reading.contentType")}</span>
-              <select
-                value={contentType}
-                onChange={(e) => setContentType(e.target.value)}
-              >
-                {["article", "story", "essay", "news_style", "other"].map((k) => (
-                  <option key={k} value={k}>
-                    {t(`reading.types.${k}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              className="button primary"
-              disabled={!language.trim()}
-              onClick={() => void generate()}
-            >
-              <Sparkles size={17} />
-              {busy ? t("reading.preparing") : t("reading.createPreview")}
-            </button>
-          </fieldset>
-          <p className="muted-note">
-            {canGenerate && quota.data?.quota
-              ? t(
-                  quota.data.quota.period === "trial"
-                    ? "reading.trialQuota"
-                    : "reading.quota",
-                  {
-                    remaining: quota.data.quota.remaining,
-                    limit: quota.data.quota.limit,
-                  },
-                )
-              : !canGenerate
-                ? t("reading.lockedQuota")
-                : t("reading.loadingQuota")}
-          </p>
-          <p className="muted-note">{t("reading.providerNote")}</p>
-        </section>
-        <section className="live-panel">
-          <h2>{t("reading.history")}</h2>
+      {!displayed && selection.success && (
+        <section className="ux-card mint reading-selected-words">
+          <h2>{t("lessonUi.selectedArticleWords")}</h2>
           <RemoteState
-            loading={history.loading}
-            error={history.error}
-            retry={() => void history.reload()}
+            loading={chosenWords.loading}
+            error={chosenWords.error}
+            retry={() => void chosenWords.reload()}
           />
-          {history.data?.items.map((r) => (
-            <div className="live-toolbar" key={r.id}>
+          <p dir="auto">
+            {chosenWords.data?.map((word) => word.sourceText).join(" · ")}
+          </p>
+          <Link className="button ghost" to="/vocabulary">
+            {t("ux.changeWords")}
+          </Link>
+        </section>
+      )}
+      {params.has("items") && !selection.success && (
+        <p className="form-error" role="alert">
+          {t("lessonUi.articleSelectionLimit")}
+        </p>
+      )}
+      <details
+        className="ux-card reading-options"
+        open={!displayed || undefined}
+      >
+        <summary>{t("ux.readingOptions")}</summary>
+        <div className="live-two-columns">
+          <section className="live-panel form-stack">
+            <h2>{t("reading.promptTitle")}</h2>
+            <fieldset
+              disabled={
+                busy ||
+                !!pending ||
+                !canGenerate ||
+                quota.data?.quota?.remaining === 0
+              }
+              className="plain-fieldset form-stack"
+            >
+              <label className="field">
+                <span>{t("reading.topic")}</span>
+                <input
+                  maxLength={500}
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder={t("reading.topicPlaceholder")}
+                />
+              </label>
+              <label className="field">
+                <span>{t("reading.language")}</span>
+                <LanguageCombobox value={language} onChange={setLanguage} />
+              </label>
+              <div className="live-form-grid">
+                <label className="field">
+                  <span>{t("reading.level")}</span>
+                  <select
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                  >
+                    <option value="">{t("reading.effectiveLevel")}</option>
+                    {["A1", "A2", "B1", "B2", "C1", "C2"].map((l) => (
+                      <option key={l}>{l}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>{t("reading.length")}</span>
+                  <select
+                    value={length}
+                    onChange={(e) => setLength(e.target.value)}
+                  >
+                    <option value="short">{t("reading.short")}</option>
+                    <option value="medium">{t("reading.medium")}</option>
+                    <option value="long">{t("reading.long")}</option>
+                  </select>
+                </label>
+              </div>
+              <label className="field">
+                <span>{t("reading.contentType")}</span>
+                <select
+                  value={contentType}
+                  onChange={(e) => setContentType(e.target.value)}
+                >
+                  {["article", "story", "essay", "news_style", "other"].map(
+                    (k) => (
+                      <option key={k} value={k}>
+                        {t(`reading.types.${k}`)}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+              <button
+                className="button primary"
+                disabled={
+                  !language.trim() ||
+                  (selection.success &&
+                    (chosenWords.loading ||
+                      Boolean(chosenWords.error) ||
+                      !chosenWords.data?.length ||
+                      chosenWords.data.some(
+                        (word) => word.sourceLanguageCode !== language,
+                      )))
+                }
+                onClick={() => void generate()}
+              >
+                <Sparkles size={17} />
+                {busy ? t("reading.preparing") : t("reading.createPreview")}
+              </button>
+            </fieldset>
+            <p className="muted-note">
+              {canGenerate && quota.data?.quota
+                ? t(
+                    quota.data.quota.period === "trial"
+                      ? "reading.trialQuota"
+                      : "reading.quota",
+                    {
+                      remaining: quota.data.quota.remaining,
+                      limit: quota.data.quota.limit,
+                    },
+                  )
+                : !canGenerate
+                  ? t("reading.lockedQuota")
+                  : t("reading.loadingQuota")}
+            </p>
+            <p className="muted-note">{t("reading.providerNote")}</p>
+          </section>
+          <details className="live-panel reading-history">
+            <summary>{t("reading.history")}</summary>
+            <h2>{t("reading.history")}</h2>
+            <RemoteState
+              loading={history.loading}
+              error={history.error}
+              retry={() => void history.reload()}
+            />
+            {history.data?.items.map((r) => (
+              <div className="live-toolbar" key={r.id}>
+                <button
+                  className="button ghost"
+                  disabled={busy}
+                  onClick={() => void view(r.id)}
+                >
+                  {r.title}
+                </button>
+                <small>
+                  {r.targetLanguageCode} ·{" "}
+                  {new Date(r.openedAt).toLocaleDateString(
+                    i18n.resolvedLanguage,
+                  )}
+                </small>
+                <button
+                  className="button ghost danger-text"
+                  disabled={busy}
+                  onClick={() => void remove(r.id)}
+                >
+                  {t("reading.remove")}
+                </button>
+              </div>
+            ))}
+            {history.data && !history.data.items.length && (
+              <p>{t("reading.emptyHistory")}</p>
+            )}
+            {history.data?.nextCursor && (
               <button
                 className="button ghost"
-                disabled={busy}
-                onClick={() => void view(r.id)}
+                onClick={() => setCursor(history.data!.nextCursor!)}
               >
-                {r.title}
+                {t("reading.more")}
               </button>
-              <small>
-                {r.targetLanguageCode} ·{" "}
-                {new Date(r.openedAt).toLocaleDateString(i18n.resolvedLanguage)}
-              </small>
-              <button
-                className="button ghost danger-text"
-                disabled={busy}
-                onClick={() => void remove(r.id)}
-              >
-                {t("reading.remove")}
-              </button>
-            </div>
-          ))}
-          {history.data && !history.data.items.length && (
-            <p>{t("reading.emptyHistory")}</p>
-          )}
-          {history.data?.nextCursor && (
-            <button
-              className="button ghost"
-              onClick={() => setCursor(history.data!.nextCursor!)}
-            >
-              {t("reading.more")}
-            </button>
-          )}
-        </section>
-      </div>
+            )}
+          </details>
+        </div>
+      </details>
       {error && (
         <p className="form-error" role="alert">
           {error}
         </p>
       )}
-      {preview && (
-        <section className="live-panel">
-          <p className="eyebrow">{t("reading.ready")}</p>
-          <h2>{preview.reading.title}</h2>
-          <p>
-            {t("reading.previewWords", { count: preview.reading.targets.length })} ·{" "}
-            {preview.reading.effectiveLevel || t("reading.noLevelSet")} ·{" "}
-            {preview.provider.name}
-          </p>
-          <small>
-            {t("reading.validUntil", { time: new Date(preview.expiresAt).toLocaleTimeString(i18n.resolvedLanguage) })}
-          </small>
-          <p>{t("reading.openNote")}</p>
-          <button
-            className="button primary"
-            disabled={busy}
-            onClick={() => void open()}
-          >
-            {pending ? t("reading.retryOpen") : t("reading.open")}
-          </button>
-        </section>
-      )}
-      {reading && (
+      {displayed && (
         <article className="live-panel live-reading">
           <p className="eyebrow">
-            {reading.targetLanguageCode} · {reading.effectiveLevel || t("reading.noLevel")}
+            {displayed.targetLanguageCode} ·{" "}
+            {displayed.effectiveLevel || t("reading.noLevel")}
           </p>
-          <h2 dir="auto">{reading.title}</h2>
+          <h2 dir="auto">{displayed.title}</h2>
           <div
             className="live-reading-body"
             dir="auto"
-            lang={reading.targetLanguageCode}
+            lang={displayed.targetLanguageCode}
           >
-            {textSegments(reading).map((segment, index) =>
+            {textSegments(displayed).map((segment, index) =>
               segment.itemId ? (
                 <button
                   type="button"
                   className="reading-word"
                   key={index}
                   onClick={() => {
-                    const target = reading.targets.find(
+                    const target = displayed.targets.find(
                       (candidate) => candidate.id === segment.itemId,
                     );
                     setSelectedWord({
@@ -367,13 +437,27 @@ export function LiveReadingPage() {
             )}
           </div>
           <p>{t("reading.noXp")}</p>
-          <Link
-            className="button primary"
-            to={`/learn/session/article_quiz?reading=${reading.id}`}
-          >
-            {t("reading.practiceWords")}
-          </Link>
+          {reading && (
+            <Link
+              className="button primary"
+              to={`/learn/session/article_quiz?reading=${reading.id}&return=%2Freading`}
+            >
+              {t("reading.practiceWords")}
+            </Link>
+          )}
         </article>
+      )}
+      {preview && (
+        <section className="live-panel">
+          <p>{t("ux.readingPublicationPending")}</p>
+          <button
+            className="button primary"
+            disabled={busy}
+            onClick={() => void open()}
+          >
+            {pending ? t("reading.retryOpen") : t("lessonUi.saveArticle")}
+          </button>
+        </section>
       )}
       <WordPreviewModal
         word={selectedWord}

@@ -97,7 +97,13 @@ export interface AuthTokens {
 export type ProfilePatch = Omit<UserProfile, "name" | "email">;
 
 export interface UserProfile {
-  learningPreferences?: { enabledSkills: SkillKey[] };
+  learningPreferences?: {
+    enabledSkills: SkillKey[];
+    uiLocale?: "ar" | "de" | "en" | "es" | "fr" | "he" | "ru" | "zh";
+    textScale?: "normal" | "large";
+    reducedMotion?: boolean;
+    sounds?: boolean;
+  };
   name: string;
   email: string;
   /** Null delegates source-language detection to the translation provider. */
@@ -121,7 +127,8 @@ export interface UserProfile {
     assessmentEvidenceCount?: number;
     calibrationTarget?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | null;
     skillEstimates?: Array<{
-      skill: "speaking" | "vocabulary" | "grammar" | "fluency" | "comprehension";
+      skill:
+        "speaking" | "vocabulary" | "grammar" | "fluency" | "comprehension";
       score: number;
       level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
       confidence: number;

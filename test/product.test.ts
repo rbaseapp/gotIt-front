@@ -1,8 +1,10 @@
+import he from "../src/locales/he/translation.json";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { api, clearTokens, setTokens } from "../src/lib/api";
+import { api, ApiError, clearTokens, setTokens } from "../src/lib/api";
 import {
   detailSchema,
+  errorMessage,
   intent,
   itemSchema,
   masteryRequirementText,
@@ -25,6 +27,17 @@ const capture = {
   senseDecision: { mode: "auto" },
 };
 describe("production boundaries", () => {
+  it("localizes a server-rejected unit teacher meeting", () => {
+    expect(
+      errorMessage(
+        new ApiError(
+          409,
+          "UNIT_WORDS_REQUIRED",
+          "Study the unit words before this teacher meeting",
+        ),
+      ),
+    ).toBe(he.productErrors.UNIT_WORDS_REQUIRED);
+  });
   it("rejects malformed server projections instead of injecting demo defaults", () => {
     expect(itemSchema.safeParse({ id, sourceText: "remember" }).success).toBe(
       false,

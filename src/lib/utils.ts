@@ -59,12 +59,12 @@ export function shuffle<T>(values: T[]) {
   return copy;
 }
 
-export function speak(text: string, lang = "en-US") {
+export function speak(text: string, lang = "en-US", rate = 0.82) {
   if (!("speechSynthesis" in window)) return false;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
-  utterance.rate = 0.82;
+  utterance.rate = rate;
   window.speechSynthesis.speak(utterance);
   return true;
 }

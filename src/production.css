@@ -1340,7 +1340,7 @@ body.private-lesson-session-open .private-lesson-tutor-stage {
     ),
     #eaf4ef;
 }
-body.private-lesson-session-open .teacher-avatar {
+body.private-lesson-session-open .private-lesson-session .teacher-avatar {
   width: min(360px, 30vw, 48vh);
   max-height: 100%;
   align-self: center;

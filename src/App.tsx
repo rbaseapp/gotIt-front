@@ -42,6 +42,14 @@ const LiveDashboardPage = lazy(() =>
 const LiveLearnPage = lazy(() =>
   import("./pages/LiveLearnPage").then((m) => ({ default: m.LiveLearnPage })),
 );
+const AccountPage = lazy(() =>
+  import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })),
+);
+const SmartPracticeReadyPage = lazy(() =>
+  import("./pages/SmartPracticeReadyPage").then((m) => ({
+    default: m.SmartPracticeReadyPage,
+  })),
+);
 const LiveVocabularyPage = lazy(() =>
   import("./pages/LiveVocabularyPage").then((m) => ({
     default: m.LiveVocabularyPage,
@@ -68,6 +76,9 @@ const EnglishLearningPathPage = lazy(() =>
     default: m.EnglishLearningPathPage,
   })),
 );
+const MinutesPage = lazy(() =>
+  import("./pages/MinutesPage").then((m) => ({ default: m.MinutesPage })),
+);
 const BillingPage = lazy(() =>
   import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
 );
@@ -81,11 +92,27 @@ const PrivateLessonPage = lazy(() =>
     default: m.PrivateLessonPage,
   })),
 );
+const CourseUnitWordsPage = lazy(() =>
+  import("./pages/CourseUnitWordsPage").then((m) => ({
+    default: m.CourseUnitWordsPage,
+  })),
+);
 const CoursePage = lazy(() =>
   import("./pages/CoursePage").then((m) => ({ default: m.CoursePage })),
 );
 const HomeworkPage = lazy(() =>
   import("./pages/HomeworkPage").then((m) => ({ default: m.HomeworkPage })),
+);
+const ProgramsPage = lazy(() =>
+  import("./pages/ProgramsPage").then((m) => ({ default: m.ProgramsPage })),
+);
+const AchievementsPage = lazy(() =>
+  import("./pages/AchievementsPage").then((m) => ({
+    default: m.AchievementsPage,
+  })),
+);
+const HistoryPage = lazy(() =>
+  import("./pages/HistoryPage").then((m) => ({ default: m.HistoryPage })),
 );
 
 export default function App() {
@@ -162,6 +189,12 @@ export default function App() {
               <AppShell onLogout={() => void logout()}>
                 <Routes>
                   <Route
+                    path="/courses/:id/units/:unitKey/words"
+                    element={<CourseUnitWordsPage />}
+                  />
+                  <Route path="/account" element={<AccountPage />} />
+                  <Route path="/billing/minutes" element={<MinutesPage />} />
+                  <Route
                     path="/dashboard"
                     element={
                       mode === "live" ? (
@@ -189,6 +222,30 @@ export default function App() {
                   />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route
+                    path="/learn/smart"
+                    element={
+                      mode === "live" ? (
+                        <SmartPracticeReadyPage />
+                      ) : (
+                        <LearnPage />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/achievements"
+                    element={
+                      mode === "live" ? <AchievementsPage /> : <DashboardPage />
+                    }
+                  />
+                  <Route
+                    path="/history"
+                    element={mode === "live" ? <HistoryPage /> : <LearnPage />}
+                  />
+                  <Route
+                    path="/programs"
+                    element={<Navigate to="/courses" replace />}
+                  />
+                  <Route
                     path="/reading"
                     element={
                       mode === "live" ? <LiveReadingPage /> : <ReadingPage />
@@ -202,6 +259,7 @@ export default function App() {
                         <PrivateLessonEntry
                           preferLesson={
                             location.search.includes("course=") ||
+                            location.search.includes("pack=") ||
                             location.search.includes("practice=free") ||
                             location.search.includes("view=")
                           }
@@ -216,7 +274,11 @@ export default function App() {
                     element={
                       mode === "live" ? (
                         <LiveGameAccess>
-                          <CoursePage />
+                          {location.search.includes("new=1") ? (
+                            <CoursePage />
+                          ) : (
+                            <ProgramsPage />
+                          )}
                         </LiveGameAccess>
                       ) : (
                         <Navigate to="/learn" replace />

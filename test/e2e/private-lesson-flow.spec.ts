@@ -50,6 +50,9 @@ for (const language of ["he", "en"])
     test(`${language} ${viewport.width} lesson resumes quietly without overflowing`, async ({
       page,
     }) => {
+      // This case advances 76 seconds of provider/idle timers and captures
+      // three screenshots. Allow that work under the two-worker CI load.
+      test.setTimeout(60_000);
       const errors: string[] = [];
       page.on("pageerror", (error) => errors.push(error.message));
       await page.setViewportSize(viewport);
@@ -204,6 +207,18 @@ for (const language of ["he", "en"])
         );
       });
       await page.goto("/private-lesson?practice=free");
+      await expect(page.locator(".sidebar")).not.toBeVisible();
+      const ready = await page.locator(".lesson-ready-card").boundingBox();
+      const preferencesBox = await page
+        .locator(".lesson-preferences-card")
+        .boundingBox();
+      expect((ready?.y ?? 0) + (ready?.height ?? 0)).toBeLessThan(
+        preferencesBox?.y ?? 0,
+      );
+      await page.screenshot({
+        path: `test-results/lesson-prep-${language}-${viewport.width}.png`,
+        animations: "disabled",
+      });
       await page
         .getByRole("button", {
           name: language === "he" ? "התחלת השיעור" : "Start lesson",
@@ -233,15 +248,19 @@ for (const language of ["he", "en"])
       });
       await expect(resume).toBeVisible();
       await expect(resume).toBeInViewport();
+      await page.locator(".lesson-current-message").scrollIntoViewIfNeeded();
+      await expect(page.locator(".lesson-current-message > p")).toBeInViewport({
+        ratio: 1,
+      });
       await expect(
-        page.locator(".private-lesson-turn").last().locator("p"),
-      ).toBeInViewport({ ratio: 1 });
+        page.locator(".lesson-transcript-details"),
+      ).not.toHaveAttribute("open");
       const layout = await page.evaluate(() => {
         const boxes = [
           ".private-lesson-session-header",
           ".private-lesson-words",
           ".private-lesson-tutor-stage",
-          ".private-lesson-transcript",
+          ".lesson-current-message",
           ".private-lesson-actions",
         ].map((selector) =>
           document.querySelector(selector)!.getBoundingClientRect(),
@@ -249,25 +268,45 @@ for (const language of ["he", "en"])
         return {
           contained: boxes.every(
             (box) =>
-              box.left >= -1 &&
-              box.top >= -1 &&
-              box.right <= innerWidth + 1 &&
-              box.bottom <= innerHeight + 1,
+              box.left >= -1 && box.right <= innerWidth + 1 && box.width > 0,
           ),
-          overlapping: boxes.some((box, index) =>
-            boxes
-              .slice(index + 1)
-              .some(
-                (other) =>
-                  box.left < other.right - 1 &&
-                  box.right > other.left + 1 &&
-                  box.top < other.bottom - 1 &&
-                  box.bottom > other.top + 1,
-              ),
-          ),
+          scrollable:
+            getComputedStyle(document.querySelector(".private-lesson-session")!)
+              .overflowY === "auto",
         };
       });
-      expect(layout).toEqual({ contained: true, overlapping: false });
+      expect(layout).toEqual({ contained: true, scrollable: true });
+      if (viewport.width === 1440) {
+        const sessionBox = await page
+          .locator(".private-lesson-session")
+          .boundingBox();
+        expect(sessionBox?.width).toBe(
+          await page.evaluate(() => document.documentElement.clientWidth),
+        );
+        const portrait = await page
+          .locator(".private-lesson-tutor-stage .teacher-avatar")
+          .boundingBox();
+        expect(portrait?.width).toBe(204);
+        await expect(
+          page.locator(".private-lesson-tutor-stage .teacher-avatar-level"),
+        ).not.toBeVisible();
+        await expect(page.locator(".lesson-current-message")).toHaveCSS(
+          "background-color",
+          "rgb(255, 255, 255)",
+        );
+        const bubble = await page
+          .locator(".lesson-current-message")
+          .boundingBox();
+        expect(Math.abs((bubble?.y ?? 0) - (portrait?.y ?? 0))).toBeLessThan(
+          60,
+        );
+        const mic = await page
+          .locator(".private-lesson-actions .private-lesson-mute")
+          .boundingBox();
+        expect(
+          Math.abs((mic?.x ?? 0) + (mic?.width ?? 0) / 2 - viewport.width / 2),
+        ).toBeLessThan(2);
+      }
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth + 1,

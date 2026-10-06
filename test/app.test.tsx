@@ -357,7 +357,11 @@ describe("complete frontend flows", () => {
     expect(JSON.parse(patch[1]!.body as string)).not.toHaveProperty("name");
     expect(localStorage.getItem("gotit.refresh")).toBe("refresh-test");
     expect(localStorage.getItem("gotit.auth")).toBeNull();
-    await user.click(screen.getByRole("link", { name: "אוצר מילים" }));
+    await user.click(
+      within(document.querySelector(".sidebar-nav")!).getByRole("link", {
+        name: "המילים שלי",
+      }),
+    );
     expect(
       await screen.findByRole("heading", { name: "אוצר המילים שלי" }),
     ).toBeInTheDocument();

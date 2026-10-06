@@ -259,6 +259,8 @@ function TypedExercise({
           value={value}
           length={Array.from(item.source).length}
           wordLengths={wordLengths}
+          showLetters
+          language={item.sourceLanguage}
           revealedValue={Array.from(sourceWords.join(""))
             .slice(0, hints)
             .join("")}
@@ -290,6 +292,8 @@ function TypedExercise({
             value={correction}
             length={Array.from(item.source).length}
             wordLengths={wordLengths}
+            showLetters
+            language={item.sourceLanguage}
             onChange={setCorrection}
           />
         </div>

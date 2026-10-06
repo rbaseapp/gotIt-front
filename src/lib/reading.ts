@@ -1,6 +1,6 @@
 import type { Reading } from "./product";
 export function textSegments(
-  reading: Reading,
+  reading: Pick<Reading, "bodyText" | "targets">,
 ): { text: string; itemId?: string }[] {
   const characters = Array.from(reading.bodyText);
   const ranges = reading.targets

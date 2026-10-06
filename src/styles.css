@@ -2848,7 +2848,7 @@ select:focus-visible {
 }
 .modal-backdrop {
   position: fixed;
-  z-index: 100;
+  z-index: 5000;
   inset: 0;
   padding: max(20px, env(safe-area-inset-top))
     max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom))

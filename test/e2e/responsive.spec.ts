@@ -57,6 +57,30 @@ test.describe("responsive application shell", () => {
         }) => {
           await openDemoRoute(page, route);
 
+          // Full-viewport games must stay contained during entry as well as
+          // after it. Fast local loads previously sampled before the game
+          // mounted, while slower CI loads sampled the horizontal transition.
+          if (route.startsWith("/learn/session/")) {
+            await expect(page.locator(".session-page")).toBeVisible();
+            for (const time of [0, 140, 280]) {
+              const entering = await page.evaluate((currentTime) => {
+                const game = document.querySelector(".session-page")!;
+                for (const animation of game.getAnimations()) {
+                  animation.pause();
+                  animation.currentTime = currentTime;
+                }
+                return {
+                  viewportWidth: window.innerWidth,
+                  documentWidth: document.documentElement.scrollWidth,
+                };
+              }, time);
+              expect(
+                entering.documentWidth,
+                `${route} at entry ${time}ms overflowed its viewport`,
+              ).toBeLessThanOrEqual(entering.viewportWidth + 1);
+            }
+          }
+
           const dimensions = await page.evaluate(() => ({
             viewportWidth: window.innerWidth,
             documentWidth: document.documentElement.scrollWidth,
@@ -276,7 +300,9 @@ test("English unit preview keeps aligned controls and footer at short heights", 
           );
         }),
         footerButtonMinWidth: Math.min(
-          ...footerButtons.map((button) => button.getBoundingClientRect().width),
+          ...footerButtons.map(
+            (button) => button.getBoundingClientRect().width,
+          ),
         ),
         listScrolls: list.scrollHeight > list.clientHeight,
       };
