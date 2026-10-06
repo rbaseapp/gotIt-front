@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { courseWithPlan } from "../course-fixtures";
+import { seedProfile } from "../../src/data/seed";
 
 for (const viewport of [
   { width: 390, height: 844 },
@@ -34,72 +35,64 @@ for (const viewport of [
             }
           : path.endsWith("/profile")
             ? {
-                profile: {
-                  name: "אורי",
-                  defaultSourceLanguage: "en",
-                  defaultTranslationLanguage: "he",
-                  timezone: "Asia/Jerusalem",
-                  dailyGoal: { type: "items", value: 5 },
-                  languages: [],
-                  interests: [],
-                },
+                profile: seedProfile,
               }
             : path.endsWith("/dashboard/languages")
               ? { languages: [{ code: "en", count: 20 }] }
               : path.endsWith("/dashboard")
-              ? {
-                  counts: {
-                    total: 20,
-                    new: 3,
-                    learning: 7,
-                    reviewing: 5,
-                    mastered: 5,
-                    due: 4,
-                    difficult: 1,
-                    highPriority: 1,
-                    awaitingRecall: 2,
-                  },
-                  skills: [],
-                  modes: [],
-                  recentActivity: [],
-                  recentActivityPagination: {
-                    page: 1,
-                    pageCount: 1,
-                    totalCount: 0,
-                    pageSize: 6,
-                  },
-                  dailyGoal: {
-                    type: "items",
-                    value: 5,
-                    current: 2,
-                    completed: false,
-                    date: "2026-09-30",
-                  },
-                  gamification: {
-                    totalXp: 100,
-                    level: 1,
-                    nextLevelXp: 500,
-                    todayXp: 10,
-                    dailyXpCap: 100,
-                    dailyXpRemaining: 90,
-                    dailyXpCapReached: false,
-                    postDailyCapPercent: 20,
-                    currentStreakDays: 1,
-                    longestStreakDays: 2,
-                    lastActivityDate: "2026-09-30",
-                  },
-                  weeklyActivity: { timezone: "Asia/Jerusalem", days: [] },
-                }
-              : path.endsWith("/courses")
                 ? {
-                    courses:
-                      viewport.width > 1000 ? [courseWithPlan(true)] : [],
-                    homework: [],
-                    available: true,
+                    counts: {
+                      total: 20,
+                      new: 3,
+                      learning: 7,
+                      reviewing: 5,
+                      mastered: 5,
+                      due: 4,
+                      difficult: 1,
+                      highPriority: 1,
+                      awaitingRecall: 2,
+                    },
+                    skills: [],
+                    modes: [],
+                    recentActivity: [],
+                    recentActivityPagination: {
+                      page: 1,
+                      pageCount: 1,
+                      totalCount: 0,
+                      pageSize: 6,
+                    },
+                    dailyGoal: {
+                      type: "items",
+                      value: 5,
+                      current: 2,
+                      completed: false,
+                      date: "2026-09-30",
+                    },
+                    gamification: {
+                      totalXp: 100,
+                      level: 1,
+                      nextLevelXp: 500,
+                      todayXp: 10,
+                      dailyXpCap: 100,
+                      dailyXpRemaining: 90,
+                      dailyXpCapReached: false,
+                      postDailyCapPercent: 20,
+                      currentStreakDays: 1,
+                      longestStreakDays: 2,
+                      lastActivityDate: "2026-09-30",
+                    },
+                    weeklyActivity: { timezone: "Asia/Jerusalem", days: [] },
                   }
-                : path.endsWith("/learning-items")
-                  ? { items: [], nextCursor: null }
-                  : null;
+                : path.endsWith("/courses")
+                  ? {
+                      courses:
+                        viewport.width > 1000 ? [courseWithPlan(true)] : [],
+                      homework: [],
+                      available: true,
+                    }
+                  : path.endsWith("/learning-items")
+                    ? { items: [], nextCursor: null }
+                    : null;
       if (payload) await route.fulfill({ json: payload });
       else
         await route.fulfill({
@@ -108,20 +101,26 @@ for (const viewport of [
         });
     });
     await page.goto("/dashboard");
-    const words = page.getByRole("link", { name: "התחלת תרגול מילים" });
-    const lesson = page.getByRole("link", { name: "מעבר לשיעור פרטי" });
-    await expect(words).toHaveAttribute("href", "/learn/session/smart?language=en");
-    await expect(lesson).toHaveAttribute("href", "/private-lesson");
-    await expect(page.locator(".dashboard-today")).toBeVisible();
+    const words = page.getByRole("link", { name: "מתחילים תרגול חכם" });
+    const lesson = page
+      .locator(".ux-explore")
+      .getByRole("link", { name: "שיחה עם מורה" });
+    await expect(words).toHaveAttribute(
+      "href",
+      "/learn/smart?language=en&return=%2Fdashboard",
+    );
+    await expect(lesson).toHaveAttribute(
+      "href",
+      "/private-lesson?practice=free",
+    );
+    await expect(page.locator(".ux-home-next")).toBeVisible();
     await expect(page.locator(".dashboard-more")).not.toHaveAttribute("open");
-    if (viewport.width > 1000) {
-      await expect(page.getByText("מסלול השיעורים הפרטיים שלך")).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: /מעבר למסלול השיעורים/u }),
-      ).toHaveAttribute("href", /\/courses\//);
-    } else {
-      await expect(page.locator(".course-homework-links")).toHaveCount(0);
-    }
+    // An unselected course never takes over the user's vocabulary-first home.
+    await expect(
+      page.locator('.ux-home-next-copy a[href^="/private-lesson"]'),
+    ).toHaveCount(0);
+    if (viewport.width < 860)
+      await expect(page.locator(".mobile-tabs a")).toHaveCount(4);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth + 1,

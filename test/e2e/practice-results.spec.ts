@@ -200,22 +200,28 @@ test("completed session remains scrollable with touch and changing viewport heig
   const cdp = await page.context().newCDPSession(page);
   for (const height of [590, 900, 640]) {
     await page.setViewportSize({ width: 343, height });
-    // Native touch input exercises browser panning, not a DOM scroll assignment.
-    await cdp.send("Input.dispatchTouchEvent", {
-      type: "touchStart",
-      touchPoints: [{ x: 170, y: height - 70 }],
-    });
-    for (let step = 1; step <= 12; step++) {
+    // Larger readable type can require more than one natural swipe. Verify
+    // native panning until the footer is reached, without DOM scrolling.
+    for (let swipe = 0; swipe < 4; swipe++) {
+      // Native touch input exercises browser panning, not a DOM scroll assignment.
       await cdp.send("Input.dispatchTouchEvent", {
-        type: "touchMove",
-        touchPoints: [{ x: 170, y: height - 70 - step * 30 }],
+        type: "touchStart",
+        touchPoints: [{ x: 170, y: height - 70 }],
       });
-      await page.waitForTimeout(20);
+      for (let step = 1; step <= 12; step++) {
+        await cdp.send("Input.dispatchTouchEvent", {
+          type: "touchMove",
+          touchPoints: [{ x: 170, y: height - 70 - step * 30 }],
+        });
+        await page.waitForTimeout(20);
+      }
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        touchPoints: [],
+      });
+      const footer = await page.locator(".finish-actions").boundingBox();
+      if (footer && footer.y >= 0 && footer.y + footer.height <= height) break;
     }
-    await cdp.send("Input.dispatchTouchEvent", {
-      type: "touchEnd",
-      touchPoints: [],
-    });
     await expect(page.locator(".finish-actions")).toBeInViewport({ ratio: 1 });
     await page.screenshot({ path: testInfo.outputPath(`touch-${height}.png`) });
   }
@@ -224,7 +230,7 @@ test("completed session remains scrollable with touch and changing viewport heig
     link!.x + link!.width / 2,
     link!.y + link!.height / 2,
   );
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/learn$/);
 });
 
 test("result actions clear the bottom safe area on a notched phone", async ({

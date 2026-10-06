@@ -262,7 +262,7 @@ export function createGateway(config) {
         if (
           !apiPath.startsWith("/api/v1/") ||
           (prefix === "/core-api" &&
-            !/^\/api\/v1\/(?:auth\/(?:login|register|google|facebook|refresh|logout|me)|billing\/(?:plans|status|checkout|portal))$/.test(
+            !/^\/api\/v1\/(?:auth\/(?:login|register|verify-email|resend-verification|forgot-password|reset-password|google|facebook|refresh|logout|me)|billing\/(?:plans|status|checkout|portal))$/.test(
               apiPath,
             ))
         ) {

@@ -1,7 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
-import { BookOpen, CheckCircle2, Eye, Play } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BookOpen, CheckCircle2, Mic2, LockKeyhole } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { UnitWordBrowser } from "../components/UnitWordBrowser";
+import { UnitActivities } from "../components/UnitActivities";
+import { UnitLevels } from "../components/UnitLevels";
 import { Modal } from "../components/Modal";
 import { RemoteState } from "../components/RemoteState";
 import { useFeedback } from "../components/Feedback";
@@ -16,16 +19,29 @@ import {
   wordPacksSchema,
   type WordPack,
   type WordPackEntry,
+  page,
+  sessionSchema,
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
+import { listPrivateLessons } from "../lib/privateLesson";
+import { learningReturn } from "../lib/learningNavigation";
 
 type Preview = { pack: WordPack; entries: WordPackEntry[] };
-
 export function EnglishLearningPathPage() {
   const { t } = useTranslation();
   const { toast } = useFeedback();
   const { hasEntitlement } = useSubscription();
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const practiceReturn = learningReturn(
+    params.get("return"),
+    params.get("unit")
+      ? `/english-learning?unit=${params.get("unit")}`
+      : "/english-learning",
+  );
+  const tab = params.get("tab") || "map";
+  const showLevels = params.get("all") === "1";
+  const [bulkOpen, setBulkOpen] = useState(false);
   const resource = useResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
   );
@@ -33,6 +49,8 @@ export function EnglishLearningPathPage() {
     () => englishPathLevels(resource.data?.packs ?? []),
     [resource.data],
   );
+  const detailRequest = useRef(0);
+  const autoOpened = useRef<string | undefined>(undefined);
   const [preview, setPreview] = useState<Preview>();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -41,22 +59,74 @@ export function EnglishLearningPathPage() {
   const next = levels
     .flatMap(({ packs }) => packs)
     .find((pack) => !completedEnglishUnit(pack));
-
-  const openUnit = async (pack: WordPack) => {
-    setDetailLoading(true);
-    try {
-      const detail = await product(
-        wordPackDetailSchema,
-        `word-packs/${pack.id}`,
-      );
-      setSelectedIds([]);
-      setPreview({ pack: detail.pack, entries: detail.entries });
-    } catch (reason) {
-      toast(errorMessage(reason), { tone: "error" });
-    } finally {
-      setDetailLoading(false);
-    }
+  const current =
+    levels
+      .flatMap(({ packs }) => packs)
+      .find((pack) => pack.id === params.get("unit")) ??
+    next ??
+    levels.flatMap(({ packs }) => packs).at(-1);
+  const unitLessons = useResource(
+    useCallback(
+      () =>
+        current
+          ? listPrivateLessons(50, undefined, current.id)
+          : Promise.resolve([]),
+      [current],
+    ),
+  );
+  const unitPractice = useResource(
+    useCallback(
+      () =>
+        current
+          ? product(
+              page(sessionSchema),
+              `practice/sessions?limit=50&packId=${current.id}`,
+            )
+          : Promise.resolve({ items: [], nextCursor: null, totalCount: 0 }),
+      [current],
+    ),
+  );
+  const unitUrl = (pack: WordPack, station = "supported") =>
+    `/private-lesson?pack=${pack.id}&language=${encodeURIComponent(pack.track.sourceLanguageCode)}&station=${station}&return=${encodeURIComponent(`/english-learning?unit=${pack.id}`)}`;
+  const changeTab = (value: string) => {
+    setBulkOpen(false);
+    const query = new URLSearchParams(params);
+    query.delete("all");
+    query.set("tab", value);
+    if (current) query.set("unit", current.id);
+    setParams(query);
   };
+
+  const openUnit = useCallback(
+    async (pack: WordPack) => {
+      const request = ++detailRequest.current;
+      setPreview(undefined);
+      setDetailLoading(true);
+      try {
+        const detail = await product(
+          wordPackDetailSchema,
+          `word-packs/${pack.id}`,
+        );
+        if (request !== detailRequest.current) return;
+        setSelectedIds([]);
+        setPreview({ pack: detail.pack, entries: detail.entries });
+      } catch (reason) {
+        toast(errorMessage(reason), { tone: "error" });
+      } finally {
+        if (request === detailRequest.current) setDetailLoading(false);
+      }
+    },
+    [toast],
+  );
+  useEffect(() => {
+    if (tab !== "words" || !current) {
+      autoOpened.current = undefined;
+      return;
+    }
+    if (autoOpened.current === current.id) return;
+    autoOpened.current = current.id;
+    void openUnit(current);
+  }, [tab, current, openUnit]);
 
   const setKnown = async (
     pack: WordPack,
@@ -149,7 +219,9 @@ export function EnglishLearningPathPage() {
       );
       setPreview(undefined);
       await resource.reload();
-      navigate(`/learn/session/smart?pack=${pack.id}`);
+      navigate(
+        `/learn?pack=${pack.id}&language=${encodeURIComponent(pack.track.sourceLanguageCode)}&return=${encodeURIComponent(`/english-learning?unit=${pack.id}&tab=words`)}`,
+      );
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
     } finally {
@@ -206,215 +278,466 @@ export function EnglishLearningPathPage() {
   const selectedToMarkKnown = selectedEntries.some((entry) => !entry.known);
   const selectedToUnmarkKnown = selectedEntries.some((entry) => entry.known);
 
+  const currentUrl = current
+    ? `/english-learning?unit=${current.id}`
+    : "/english-learning";
+  const practiceUrl = current
+    ? `/learn/smart?pack=${current.id}&language=${encodeURIComponent(current.track.sourceLanguageCode)}&return=${encodeURIComponent(currentUrl)}`
+    : "/learn";
+  const selectUnit = (pack: WordPack, value = "map") => {
+    setBulkOpen(false);
+    setParams({ unit: pack.id, tab: value });
+  };
+  const stations = current?.teacherStations ?? [];
+  const completedStations = new Set(
+    unitLessons.data
+      ?.filter((lesson) => lesson.status === "completed")
+      .map((lesson) => lesson.wordPack?.station),
+  );
+  const nextStation = [...stations]
+    .reverse()
+    .find((step) => step.available && !completedStations.has(step.station));
+  const introduced = current?.progress.introduced ?? 0;
+  const showWords = () => current && selectUnit(current, "words");
+  const showAll = () => {
+    const query = new URLSearchParams(params);
+    query.set("all", "1");
+    query.set("tab", "map");
+    setParams(query);
+  };
+  const title = showLevels
+    ? t("structuredUi.allUnits")
+    : t(
+        tab === "map"
+          ? "structuredUi.mapTitle"
+          : tab === "meetings"
+            ? "pathUi.teacherInPath"
+            : `structuredUi.${tab}`,
+      );
   return (
-    <div className="english-path-page live-page page-enter">
-      <section className="page-heading-row">
-        <div>
-          <p className="eyebrow">{t("englishPath.eyebrow")}</p>
-          <h1>{t("englishPath.title")}</h1>
-          <p>{t("englishPath.description")}</p>
-        </div>
-      </section>
+    <div
+      className={`english-path-page live-page page-enter path-view-${showLevels ? "levels" : tab}`}
+    >
+      <header className="path-page-header">
+        {(showLevels || tab !== "map") && (
+          <button
+            className="button ghost path-back"
+            onClick={() => changeTab("map")}
+          >
+            {t("pathUi.backToMap")}
+          </button>
+        )}
+        <Link className="button secondary path-program" to="/courses">
+          {t("englishPath.title")}
+        </Link>
+        <h1>{title}</h1>
+        {tab !== "map" && !showLevels && <p dir="auto">{current?.title}</p>}
+        {showLevels && <p>{t("pathUi.chooseLevel")}</p>}
+        {tab === "words" && current && (
+          <button
+            className="button primary path-practice"
+            disabled={
+              busy ||
+              detailLoading ||
+              !preview ||
+              preview.entries.every((entry) => entry.known)
+            }
+            onClick={() => void startUnit()}
+          >
+            {t("unitStudy.chooseGame")}
+          </button>
+        )}
+        {tab === "words" && preview?.entries.every((entry) => entry.known) && (
+          <p role="status">{t("unitStudy.allKnown")}</p>
+        )}
+      </header>
       <RemoteState
         loading={resource.loading}
         error={resource.error}
         retry={() => void resource.reload()}
       />
       {!resource.loading && !resource.error && !available && (
-        <section className="live-panel" role="status">
+        <section className="ux-card">
           <h2>{t("englishPath.unavailableTitle")}</h2>
           <p>{t("englishPath.unavailableDescription")}</p>
         </section>
       )}
       {available && (
         <>
-          {next && (
-            <section
-              className="english-path-next live-panel"
-              aria-labelledby="english-path-next-heading"
+          {!showLevels && (
+            <nav
+              className="unit-map-tabs"
+              aria-label={t("structuredUi.sections")}
             >
-              <div>
-                <p className="eyebrow">{t("englishPath.nextLabel")}</p>
-                <h2 id="english-path-next-heading">
-                  {t(`englishPath.levels.${next.track.levelCode}`)} ·{" "}
-                  {next.title}
-                </h2>
-                <p>{t("englishPath.unitSize", { count: next.wordCount })}</p>
-              </div>
-              {next.installed ? (
-                <Link
-                  className="button primary"
-                  to={`/learn/session/smart?pack=${next.id}`}
-                >
-                  <Play size={17} /> {t("englishPath.continue")}
-                </Link>
-              ) : (
+              {["map", "words", "activities"].map((value) => (
                 <button
-                  className="button primary"
-                  type="button"
-                  disabled={detailLoading}
-                  onClick={() => void openUnit(next)}
+                  key={value}
+                  aria-current={tab === value ? "page" : undefined}
+                  className={tab === value ? "active" : ""}
+                  onClick={() => changeTab(value)}
                 >
-                  <BookOpen size={17} /> {t("englishPath.start")}
+                  <BookOpen size={22} />
+                  {t(`structuredUi.${value}`)}
                 </button>
-              )}
-            </section>
+              ))}
+            </nav>
           )}
-          {levels
-            .filter(({ packs }) => packs.length)
-            .map(({ level, packs }) => {
-              const completed = packs.reduce(
-                (total, pack) =>
-                  total + (pack.progress.completed ?? pack.progress.mastered),
-                0,
-              );
-              const count = packs.reduce(
-                (total, pack) => total + pack.wordCount,
-                0,
-              );
-              return (
+          {showLevels ? (
+            <UnitLevels
+              packs={resource.data?.packs ?? []}
+              current={current}
+              onOpen={(pack) => selectUnit(pack)}
+              onWords={(pack) => selectUnit(pack, "words")}
+            />
+          ) : (
+            <>
+              {current && tab === "map" && (
+                <>
+                  <div className="unit-map-selectors">
+                    <label className="field">
+                      <span>{t("structuredUi.currentUnit")}</span>
+                      <select
+                        value={current.id}
+                        onChange={(event) => {
+                          const pack = levels
+                            .flatMap((level) => level.packs)
+                            .find((pack) => pack.id === event.target.value);
+                          if (pack) selectUnit(pack);
+                        }}
+                      >
+                        {levels
+                          .filter((level) => level.packs.length)
+                          .map((level) => (
+                            <optgroup
+                              key={level.level}
+                              label={t(`englishPath.levels.${level.level}`)}
+                            >
+                              {level.packs.map((pack) => (
+                                <option key={pack.id} value={pack.id}>
+                                  {pack.title}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
+                      </select>
+                    </label>
+                    <button className="button secondary" onClick={showAll}>
+                      {t("structuredUi.allUnits")}
+                    </button>
+                  </div>
+                  <section
+                    className="unit-roadmap-card"
+                    data-figma-desktop="43:2557"
+                  >
+                    <h2 dir="auto">{current.title}</h2>
+                    <div className="unit-roadmap-progress">
+                      <progress
+                        max={current.wordCount || 1}
+                        value={introduced}
+                        aria-label={t("pathUi.introduced", {
+                          count: introduced,
+                          total: current.wordCount,
+                        })}
+                      />
+                      <span>
+                        {t("pathUi.introduced", {
+                          count: introduced,
+                          total: current.wordCount,
+                        })}
+                      </span>
+                    </div>
+                    <div
+                      className={`unit-teacher-station${nextStation ? "" : " unit-word-station"}`}
+                    >
+                      <span className="unit-station-icon">
+                        {nextStation ? (
+                          <Mic2 size={30} />
+                        ) : (
+                          <BookOpen size={30} />
+                        )}
+                      </span>
+                      <div>
+                        <p className="eyebrow">
+                          {nextStation
+                            ? t("pathUi.nextMinutes", {
+                                count: nextStation.durationMinutes,
+                              })
+                            : t("pathUi.nextStep")}
+                        </p>
+                        <h3>
+                          {nextStation
+                            ? t(`pathUi.${nextStation.station}`)
+                            : t("pathUi.firstWords")}
+                        </h3>
+                        <p>
+                          {nextStation
+                            ? t("structuredUi.supportedHelp")
+                            : t("pathUi.firstWordsHelp")}
+                        </p>
+                        <small>
+                          {nextStation
+                            ? t("structuredUi.answerHelp")
+                            : t("pathUi.wordPace")}
+                        </small>
+                      </div>
+                      {nextStation ? (
+                        <Link
+                          className="button primary"
+                          to={unitUrl(current, nextStation.station)}
+                        >
+                          {t("structuredUi.withTeacher")}
+                        </Link>
+                      ) : (
+                        <button className="button primary" onClick={showWords}>
+                          {t("pathUi.learnWords")}
+                        </button>
+                      )}
+                      <div className="unit-station-links">
+                        <button className="button ghost" onClick={showWords}>
+                          {t("structuredUi.words")}
+                        </button>
+                        <Link
+                          className="button ghost"
+                          to={`${currentUrl}&tab=meetings`}
+                        >
+                          {t("structuredUi.stationDetails")}
+                        </Link>
+                      </div>
+                    </div>
+                    {!!(
+                      (unitLessons.data?.length ?? 0) +
+                      (unitPractice.data?.items.length ?? 0)
+                    ) && (
+                      <button
+                        className="path-completed button secondary"
+                        onClick={() => changeTab("activities")}
+                      >
+                        <CheckCircle2 size={22} />
+                        {t("pathUi.activityCount", {
+                          count:
+                            (unitLessons.data?.length ?? 0) +
+                            (unitPractice.data?.items.length ?? 0),
+                        })}
+                      </button>
+                    )}
+                    <h3 className="unit-upcoming-heading">
+                      {t("pathUi.unitRoute")}
+                    </h3>
+                    <ol className="path-stations">
+                      {stations.map((step) => (
+                        <li
+                          key={step.station}
+                          className={step.available ? "available" : "locked"}
+                        >
+                          <div className="path-word-step">
+                            <BookOpen size={23} />
+                            <span>
+                              <strong>
+                                {t("pathUi.wordsUntil", {
+                                  count: step.requiredWords,
+                                })}
+                              </strong>
+                              <small>{t("pathUi.wordPace")}</small>
+                            </span>
+                            <button
+                              className="button ghost"
+                              onClick={showWords}
+                            >
+                              {t("englishPath.practice")}
+                            </button>
+                          </div>
+                          <div className="path-teacher-step">
+                            <span className="ux-icon lavender">
+                              {step.available ? (
+                                <Mic2 size={24} />
+                              ) : (
+                                <LockKeyhole size={24} />
+                              )}
+                            </span>
+                            <span>
+                              <strong>{t(`pathUi.${step.station}`)}</strong>
+                              <small>
+                                {t("pathUi.meetingThreshold", {
+                                  count: step.requiredWords,
+                                  minutes: step.durationMinutes,
+                                })}
+                              </small>
+                            </span>
+                            {step.available ? (
+                              <Link
+                                className="button ghost"
+                                to={unitUrl(current, step.station)}
+                              >
+                                {t(
+                                  completedStations.has(step.station)
+                                    ? "pathUi.practiceAgain"
+                                    : "structuredUi.withTeacher",
+                                )}
+                              </Link>
+                            ) : (
+                              <small>
+                                {t("pathUi.remaining", {
+                                  count: Math.max(
+                                    0,
+                                    step.requiredWords - introduced,
+                                  ),
+                                })}
+                              </small>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                    <button
+                      className="button secondary unit-future"
+                      onClick={showAll}
+                    >
+                      {t("structuredUi.nextUnits")}
+                    </button>
+                  </section>
+                </>
+              )}
+              {current && tab === "words" && (
+                <>
+                  <RemoteState
+                    loading={detailLoading}
+                    error={""}
+                    retry={() => void openUnit(current)}
+                  />
+                  {preview?.pack.id === current.id && (
+                    <>
+                      <UnitWordBrowser
+                        packId={current.id}
+                        key={current.id}
+                        entries={preview.entries}
+                        language={current.track.sourceLanguageCode}
+                        supportLanguage={current.track.translationLanguageCode}
+                        busy={busy}
+                        onKnown={(entry) =>
+                          void setKnown(current, [entry.id], !entry.known)
+                        }
+                      />
+                      <div className="path-word-tools">
+                        <button
+                          className="button ghost"
+                          onClick={() => setBulkOpen(true)}
+                        >
+                          {t("pathUi.manageWords")}
+                        </button>
+                        <button
+                          className="button ghost"
+                          disabled={busy}
+                          onClick={() => void setUnitKnown(current)}
+                        >
+                          {t(
+                            (current.progress.known ?? 0) === current.wordCount
+                              ? "englishPath.unmarkUnitKnown"
+                              : "englishPath.markUnitKnown",
+                          )}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {!detailLoading && preview?.pack.id !== current.id && (
+                    <button
+                      className="button primary"
+                      onClick={() => void openUnit(current)}
+                    >
+                      {t("common.retry")}
+                    </button>
+                  )}
+                </>
+              )}
+              {current && tab === "activities" && (
+                <>
+                  <RemoteState
+                    loading={unitLessons.loading || unitPractice.loading}
+                    error={unitLessons.error || unitPractice.error}
+                    retry={() => {
+                      void unitLessons.reload();
+                      void unitPractice.reload();
+                    }}
+                  />
+                  {!unitLessons.loading &&
+                    !unitPractice.loading &&
+                    !unitLessons.error &&
+                    !unitPractice.error && (
+                      <UnitActivities
+                        language={current.track.sourceLanguageCode}
+                        key={current.id}
+                        lessons={unitLessons.data ?? []}
+                        sessions={unitPractice.data?.items ?? []}
+                        unitId={current.id}
+                        practiceUrl={practiceUrl}
+                      />
+                    )}
+                  <Link
+                    className="button ghost"
+                    to={`/history?pack=${current.id}`}
+                  >
+                    {t("ux.history")}
+                  </Link>
+                </>
+              )}
+              {current && tab === "meetings" && (
                 <section
-                  className="english-path-level"
-                  key={level}
-                  aria-labelledby={`english-path-${level}`}
+                  className="path-meeting-details"
+                  data-figma-desktop="43:3801"
                 >
-                  <div className="english-path-level-heading">
-                    <div>
-                      <p className="eyebrow">
-                        {t("englishPath.levelNumber", {
-                          number:
-                            levels.findIndex((item) => item.level === level) +
-                            1,
+                  <h2>{t("pathUi.teacherInPath")}</h2>
+                  <p>{t("pathUi.meetingsHelp")}</p>
+                  {stations.map((step) => (
+                    <article className="ux-card" key={step.station}>
+                      <h3>
+                        {t(`pathUi.${step.station}`)} ·{" "}
+                        {t("privateLesson.durationMinutes", {
+                          count: step.durationMinutes,
+                        })}
+                      </h3>
+                      <p>
+                        {t("pathUi.meetingThreshold", {
+                          count: step.requiredWords,
+                          minutes: step.durationMinutes,
                         })}
                       </p>
-                      <h2 id={`english-path-${level}`}>
-                        {t(`englishPath.levels.${level}`)}
-                      </h2>
-                      <p>{t(`englishPath.levelDescriptions.${level}`)}</p>
-                    </div>
-                    <span>
-                      {t("englishPath.levelProgress", {
-                        mastered: completed,
-                        total: count,
-                      })}
-                    </span>
-                  </div>
-                  <progress
-                    max={count || 1}
-                    value={completed}
-                    aria-label={t("englishPath.levelProgress", {
-                      mastered: completed,
-                      total: count,
-                    })}
-                  />
-                  <div className="english-path-unit-grid">
-                    {packs.map((pack) => {
-                      const completed = completedEnglishUnit(pack);
-                      return (
-                        <article
-                          className={`english-path-unit${completed ? " completed" : ""}`}
-                          key={pack.id}
+                      <p>{t("structuredUi.supportedHelp")}</p>
+                      {step.available && (
+                        <Link
+                          className="button primary"
+                          to={unitUrl(current, step.station)}
                         >
-                          <div className="english-path-unit-top">
-                            <span>
-                              {t("englishPath.unit", {
-                                number: pack.moduleNumber,
-                              })}
-                            </span>
-                            {completed && (
-                              <CheckCircle2
-                                size={20}
-                                aria-label={t("englishPath.completed")}
-                              />
-                            )}
-                          </div>
-                          <span className="english-path-unit-level">
-                            {t(`englishPath.levels.${level}`)}
-                          </span>
-                          <h3 className="english-path-unit-name">
-                            {pack.title.replace(/^יחידה\s+\d+:\s*/u, "")}
-                          </h3>
-                          <strong>
-                            {t("englishPath.unitSize", {
-                              count: pack.wordCount,
-                            })}
-                          </strong>
-                          <span>
-                            {t("englishPath.unitProgress", {
-                              mastered:
-                                pack.progress.completed ??
-                                pack.progress.mastered,
-                              total: pack.wordCount,
-                            })}
-                          </span>
-                          <progress
-                            max={pack.wordCount || 1}
-                            value={
-                              pack.progress.completed ?? pack.progress.mastered
-                            }
-                            aria-label={t("englishPath.unitProgress", {
-                              mastered:
-                                pack.progress.completed ??
-                                pack.progress.mastered,
-                              total: pack.wordCount,
-                            })}
-                          />
-                          {(pack.progress.known ?? 0) > 0 && (
-                            <span>
-                              {t("englishPath.knownCount", {
-                                count: pack.progress.known,
-                              })}
-                            </span>
-                          )}
-                          <div className="english-path-unit-actions">
-                            <button
-                              type="button"
-                              className="button secondary"
-                              disabled={busy || detailLoading}
-                              onClick={() => void setUnitKnown(pack)}
-                            >
-                              {t(
-                                (pack.progress.known ?? 0) === pack.wordCount
-                                  ? "englishPath.unmarkUnitKnown"
-                                  : "englishPath.markUnitKnown",
-                              )}
-                            </button>
-                            <button
-                              type="button"
-                              className="button ghost"
-                              disabled={detailLoading}
-                              onClick={() => void openUnit(pack)}
-                            >
-                              <Eye size={16} /> {t("englishPath.preview")}
-                            </button>
-                            {pack.installed && (
-                              <Link
-                                className="button secondary"
-                                to={`/learn/session/smart?pack=${pack.id}`}
-                              >
-                                <Play size={16} /> {t("englishPath.practice")}
-                              </Link>
-                            )}
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
+                          {t("structuredUi.withTeacher")}
+                        </Link>
+                      )}
+                    </article>
+                  ))}
+                  <button
+                    className="button primary"
+                    onClick={() => changeTab("map")}
+                  >
+                    {t("pathUi.backToMap")}
+                  </button>
                 </section>
-              );
-            })}
+              )}
+            </>
+          )}
         </>
       )}
       <Modal
-        open={Boolean(preview)}
         className="english-path-word-modal"
-        onClose={() => !busy && setPreview(undefined)}
+        size="lg"
+        open={
+          bulkOpen &&
+          tab === "words" &&
+          Boolean(preview) &&
+          preview?.pack.id === current?.id
+        }
+        onClose={() => !busy && setBulkOpen(false)}
         title={
           preview
             ? `${t(`englishPath.levels.${preview.pack.track.levelCode}`)} · ${preview.pack.title}`
             : t("englishPath.title")
         }
-        size="lg"
       >
         {preview && (
           <>
@@ -526,7 +849,7 @@ export function EnglishLearningPathPage() {
               <button
                 type="button"
                 className="button ghost"
-                onClick={() => setPreview(undefined)}
+                onClick={() => setBulkOpen(false)}
               >
                 {t("common.close")}
               </button>
@@ -556,7 +879,7 @@ export function EnglishLearningPathPage() {
                 ) && (
                   <Link
                     className="button primary"
-                    to={`/learn/session/smart?pack=${preview.pack.id}`}
+                    to={`/learn/smart?pack=${preview.pack.id}&language=${encodeURIComponent(preview.pack.track.sourceLanguageCode)}&return=${encodeURIComponent(practiceReturn)}`}
                   >
                     {t("englishPath.practice")}
                   </Link>

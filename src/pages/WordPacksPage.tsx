@@ -508,7 +508,7 @@ export function WordPacksPage() {
                       </button>
                       <Link
                         className="button primary"
-                        to={`/learn/session/smart?pack=${pack.id}`}
+                        to={`/learn/smart?pack=${pack.id}&language=${encodeURIComponent(pack.track.sourceLanguageCode)}`}
                       >
                         <Play size={17} /> {t("packs.learnAll")}
                       </Link>

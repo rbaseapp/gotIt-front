@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
@@ -16,8 +21,9 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { TeacherAvatar } from "../components/TeacherAvatar";
-import { CourseComposer } from "../components/CourseComposer";
+import { CourseComposer, ReadAloud } from "../components/CourseComposer";
 import { CourseLiveInterview } from "../components/CourseLiveInterview";
+import { CourseJourney } from "../components/CourseJourney";
 import { Modal } from "../components/Modal";
 import {
   courseApi,
@@ -36,6 +42,8 @@ export function CoursePage() {
   const { t, i18n } = useTranslation();
   const { profile } = useApp();
   const { courseId } = useParams();
+  const [searchParams] = useSearchParams();
+  const newCourse = searchParams.get("new") === "1";
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]),
     [homework, setHomework] = useState<HomeworkSummary[]>([]);
@@ -49,14 +57,25 @@ export function CoursePage() {
     [resumeConversation, setResumeConversation] = useState(false),
     [editingPlan, setEditingPlan] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
+  const [showIntakeHistory, setShowIntakeHistory] = useState(false);
+  const [fullPlan, setFullPlan] = useState(false);
+  const [unitWords, setUnitWords] = useState<{
+    title: string;
+    words: string[];
+    key: string;
+  } | null>(null);
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [message, setMessage] = useState("");
   const [editAnswerIndex, setEditAnswerIndex] = useState<number | null>(null);
   const [target, setTarget] = useState(
-    profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en",
+    searchParams.get("language") ||
+      profile.languages[0]?.languageCode ||
+      profile.defaultSourceLanguage ||
+      "en",
   );
   const [support, setSupport] = useState(() => {
-    const uiLanguage = i18n.resolvedLanguage?.split("-")[0];
+    const uiLanguage =
+      searchParams.get("support") || i18n.resolvedLanguage?.split("-")[0];
     return getBilingualLanguageOptions().some(([code]) => code === uiLanguage)
       ? uiLanguage!
       : profile.defaultTranslationLanguage || "en";
@@ -95,7 +114,7 @@ export function CoursePage() {
           setHomework(list.homework);
           setAvailable(list.available);
           setCourse(selected?.course ?? null);
-          setCreating(false);
+          setCreating(newCourse);
         }
       })
       .catch((err) => {
@@ -107,7 +126,7 @@ export function CoursePage() {
     return () => {
       live = false;
     };
-  }, [courseId]);
+  }, [courseId, newCourse]);
   async function run(action: () => Promise<void>) {
     if (lock.current) return;
     lock.current = true;
@@ -241,16 +260,25 @@ export function CoursePage() {
       </div>
     );
   return (
-    <div className="course-page" aria-busy={busy}>
+    <div
+      className={`course-page${intake ? " course-intake" : active && !reviewing ? " personal-map" : " canonical-page"}`}
+      aria-busy={busy}
+      data-figma-desktop={intake ? "43:2286" : active ? "43:2417" : undefined}
+      data-figma-mobile={active ? "44:5113" : undefined}
+    >
       <header className="course-page-heading">
         <div>
-          <p className="eyebrow">{t("courses.eyebrow")}</p>
           <h1>
             {course && displayed ? displayed.plan.title : t("courses.title")}
           </h1>
           {course && (
             <p className="course-heading-language">
               {languageName(course.preferences.targetLanguageCode)}
+            </p>
+          )}
+          {active && course && (
+            <p className="course-heading-goal" dir="auto">
+              {course.preferences.goal}
             </p>
           )}
         </div>
@@ -271,7 +299,10 @@ export function CoursePage() {
                   {t("courses.newCourse")}
                 </button>
               )}
-              <Link className="course-text-link" to="/private-lesson?practice=free">
+              <Link
+                className="course-text-link"
+                to="/private-lesson?practice=free"
+              >
                 {t("courses.freePractice")}
               </Link>
             </>
@@ -441,6 +472,17 @@ export function CoursePage() {
           )}
           {intake && (
             <section className="course-chat-card">
+              {course.intakeProgress && (
+                <p className="course-question-step">
+                  {t("accountUi.questionStep", {
+                    current: Math.min(
+                      course.intakeProgress.current,
+                      course.intakeProgress.total,
+                    ),
+                    total: course.intakeProgress.total,
+                  })}
+                </p>
+              )}
               <div className="course-teacher-heading">
                 <span>{t("courses.teacher")}</span>
                 <small>{t("courses.saved")}</small>
@@ -457,58 +499,69 @@ export function CoursePage() {
                   }}
                 />
               )}
+              <button
+                type="button"
+                className="button ghost"
+                aria-expanded={showIntakeHistory}
+                onClick={() => setShowIntakeHistory((value) => !value)}
+              >
+                {t("ux.fullConversation")}
+              </button>
               <div
                 className="course-intake-thread"
                 role="log"
                 aria-live="polite"
                 ref={intakeThread}
               >
-                {course.messages.map((turn, index) => (
-                  <div
-                    className={`course-message ${turn.role}`}
-                    key={index}
-                    dir="auto"
-                  >
-                    <strong>
-                      {t(
-                        turn.role === "tutor"
-                          ? "courses.teacher"
-                          : "courses.you",
-                      )}
-                    </strong>
-                    <span>{turn.text}</span>
-                    {turn.role === "learner" &&
-                      course.intakeAnswers &&
-                      course.messages
-                        .slice(0, index)
-                        .filter((item) => item.role === "learner").length <
-                        course.intakeAnswers.length && (
-                        <button
-                          type="button"
-                          className="course-text-link"
-                          disabled={busy || voiceActive}
-                          onClick={() => {
-                            setEditAnswerIndex(
-                              course.messages
-                                .slice(0, index)
-                                .filter((item) => item.role === "learner")
-                                .length,
-                            );
-                            setMessage(turn.text);
-                          }}
-                        >
-                          <Pencil size={14} />
-                          {t("courses.correctAnswer")}
-                        </button>
-                      )}
-                  </div>
-                ))}
+                {course.messages.map(
+                  (turn, index) =>
+                    (showIntakeHistory ||
+                      resumeConversation ||
+                      editAnswerIndex !== null ||
+                      index === course.messages.length - 1) && (
+                      <div
+                        className={`course-message ${turn.role}`}
+                        key={index}
+                        dir="auto"
+                      >
+                        <strong>
+                          {t(
+                            turn.role === "tutor"
+                              ? "courses.teacher"
+                              : "courses.you",
+                          )}
+                        </strong>
+                        <span>{turn.text}</span>
+                        {turn.role === "learner" &&
+                          course.intakeAnswers &&
+                          course.messages
+                            .slice(0, index)
+                            .filter((item) => item.role === "learner").length <
+                            course.intakeAnswers.length && (
+                            <button
+                              type="button"
+                              className="course-text-link"
+                              disabled={busy || voiceActive}
+                              onClick={() => {
+                                setEditAnswerIndex(
+                                  course.messages
+                                    .slice(0, index)
+                                    .filter((item) => item.role === "learner")
+                                    .length,
+                                );
+                                setMessage(turn.text);
+                              }}
+                            >
+                              <Pencil size={14} />
+                              {t("courses.correctAnswer")}
+                            </button>
+                          )}
+                      </div>
+                    ),
+                )}
               </div>
               {!voiceActive && (
-                <details
-                  className="course-text-fallback"
-                  open={editAnswerIndex !== null ? true : undefined}
-                >
+                <details className="course-text-fallback" open>
                   <summary>{t("courses.typeInstead")}</summary>
                   <div className="course-suggestions">
                     {course.suggestions.map((suggestion) => (
@@ -658,6 +711,21 @@ export function CoursePage() {
           {displayed && !reviewing && (
             <>
               <section className="course-hero course-plan-overview">
+                {!draft && (
+                  <div
+                    className="personal-map-word-preview"
+                    lang={course.preferences.targetLanguageCode}
+                    dir="auto"
+                  >
+                    <strong>
+                      {displayed.plan.units
+                        .find((unit) => unit.key === course.nextLesson?.unitKey)
+                        ?.vocabulary.slice(0, 3)
+                        .join(" · ") || displayed.plan.outcome}
+                    </strong>
+                    <small>{t("ux.unitWords")}</small>
+                  </div>
+                )}
                 <span className="course-kicker">
                   {t(
                     draft
@@ -700,6 +768,15 @@ export function CoursePage() {
                       <ArrowRight size={18} className="directional-arrow" />
                     </Link>
                   )
+                )}
+                {!draft && course.nextLesson && (
+                  <ReadAloud
+                    text={course.nextLesson.objective}
+                    language={course.preferences.targetLanguageCode}
+                    label={t("courses.readAloud")}
+                    className="button secondary personal-map-listen"
+                    showLabel
+                  />
                 )}
                 <button
                   className="course-text-link"
@@ -767,164 +844,238 @@ export function CoursePage() {
                 </section>
               )}
               {!draft && <HomeworkLinks items={openHomework} />}
-              <div className="course-syllabus-heading">
-                <h2>{t("courses.syllabus")}</h2>
-                <span>
-                  {t("courses.unitCount", {
-                    count: displayed.plan.units.length,
-                  })}
-                </span>
-              </div>
-              <p className="course-note" dir="auto">
-                {displayed.plan.scope}
-              </p>
-              <div className="course-units">
-                {displayed.plan.units.map((unit, index) => {
-                  const independent = new Set(
-                    course.evidence
-                      .filter((e) => e.unitKey === unit.key && e.independent)
-                      .map((e) => e.lessonIndex),
-                  ).size;
-                  const isCurrent =
-                    !draft && course.nextLesson?.unitKey === unit.key;
-                  const done = !draft && independent === unit.lessons.length;
-                  return (
-                    <details
-                      className={`course-unit${isCurrent ? " current" : ""}`}
-                      key={`${displayed.version}:${unit.key}`}
-                      open={isCurrent || undefined}
-                    >
-                      <summary>
-                        <span
-                          className={`course-unit-number${done ? " completed" : ""}`}
-                        >
-                          {done ? (
-                            <Check size={18} />
-                          ) : (
-                            String(index + 1).padStart(2, "0")
-                          )}
-                        </span>
-                        <span className="course-unit-name">
-                          <strong dir="auto">{unit.title}</strong>
-                          <small>
-                            {isCurrent ? `${t("courses.youAreHere")} · ` : ""}
-                            {t("courses.lessonCount", {
-                              count: unit.lessons.length,
-                            })}
-                          </small>
-                        </span>
-                        <ChevronDown size={18} />
-                      </summary>
-                      <div className="course-unit-body">
-                        <p className="course-unit-outcome" dir="auto">
-                          {unit.outcome}
-                        </p>
-                        <ol className="course-lesson-list">
-                          {unit.lessons.map((lesson, lessonIndex) => {
-                            const records = draft
-                              ? []
-                              : course.evidence.filter(
-                                  (e) =>
-                                    e.unitKey === unit.key &&
-                                    e.lessonIndex === lessonIndex &&
-                                    e.covered,
-                                );
-                            const isNext =
-                              !draft &&
-                              course.nextLesson?.unitKey === unit.key &&
-                              course.nextLesson.lessonIndex === lessonIndex;
-                            const state = records.length
-                              ? isNext
-                                ? "repeatLesson"
-                                : "lessonDone"
-                              : isNext
-                                ? "nextInPlan"
-                                : "upcomingLesson";
-                            const last = records.at(-1);
-                            return (
-                              <li
-                                key={`${unit.key}:${lessonIndex}`}
-                                className={`course-lesson-${state}`}
-                              >
-                                <span className="course-lesson-number">
-                                  {records.length ? (
-                                    <Check size={15} />
-                                  ) : (
-                                    lessonIndex + 1
-                                  )}
-                                </span>
-                                <div>
-                                  <strong dir="auto">{lesson.title}</strong>
-                                  <p dir="auto">{lesson.objective}</p>
-                                  {!draft && (
-                                    <small className="course-lesson-status">
-                                      {t(`courses.${state}`)}
-                                      {last &&
-                                        ` · ${new Date(last.recordedAt).toLocaleDateString(i18n.language)}`}
-                                    </small>
-                                  )}
-                                </div>
-                              </li>
-                            );
-                          })}
-                        </ol>
-                        <div className="course-unit-topics">
-                          {unit.grammar.length > 0 && (
-                            <div>
-                              <h3>{t("courses.grammar")}</h3>
-                              <ul>
-                                {unit.grammar.map((topic) => (
-                                  <li dir="auto" key={topic}>
-                                    {topic}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          {unit.vocabulary.length > 0 && (
-                            <div>
-                              <h3>{t("courses.vocabulary")}</h3>
-                              <p dir="auto">{unit.vocabulary.join(" · ")}</p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="course-unit-task">
-                          <h3>{t("courses.unitSuccess")}</h3>
-                          <p dir="auto">{unit.successTask}</p>
-                          <h3>{t("courses.homeworkExample")}</h3>
-                          <p dir="auto">{unit.homeworkExample}</p>
-                        </div>
-                        <p className="course-unit-meta">
-                          <Clock3 size={15} />
-                          {t("courses.estimatedMinutes", {
-                            count: unit.estimatedMinutes,
-                          })}
-                        </p>
-                        {unit.prerequisites.length > 0 && (
-                          <p className="course-note">
-                            {t("courses.prerequisites")}:{" "}
-                            {unit.prerequisites
-                              .map(
-                                (key) =>
-                                  displayed.plan.units.find(
-                                    (item) => item.key === key,
-                                  )?.title ?? key,
-                              )
-                              .join(" · ")}
+              {!draft && (
+                <CourseJourney
+                  course={course}
+                  units={displayed.plan.units}
+                  onWords={(unit) =>
+                    navigate(`/courses/${course.id}/units/${unit.key}/words`)
+                  }
+                />
+              )}
+              {!draft && (
+                <button
+                  className="button ghost course-full-plan"
+                  type="button"
+                  aria-expanded={fullPlan}
+                  onClick={() => setFullPlan((value) => !value)}
+                >
+                  {t("accountUi.fullPlan")}
+                </button>
+              )}
+              <div
+                className="course-full-syllabus"
+                hidden={!draft && !fullPlan}
+              >
+                <div className="course-syllabus-heading">
+                  <h2>{t("courses.syllabus")}</h2>
+                  <span>
+                    {t("courses.unitCount", {
+                      count: displayed.plan.units.length,
+                    })}
+                  </span>
+                </div>
+                <p className="course-note" dir="auto">
+                  {displayed.plan.scope}
+                </p>
+                <div className="course-units">
+                  {displayed.plan.units.map((unit, index) => {
+                    const independent = new Set(
+                      course.evidence
+                        .filter(
+                          (e) =>
+                            e.version === displayed.version &&
+                            e.unitKey === unit.key &&
+                            e.independent,
+                        )
+                        .map((e) => e.lessonIndex),
+                    ).size;
+                    const isCurrent =
+                      !draft && course.nextLesson?.unitKey === unit.key;
+                    const done = !draft && independent === unit.lessons.length;
+                    return (
+                      <details
+                        className={`course-unit${isCurrent ? " current" : ""}`}
+                        key={`${displayed.version}:${unit.key}`}
+                        open={isCurrent || undefined}
+                      >
+                        <summary>
+                          <span
+                            className={`course-unit-number${done ? " completed" : ""}`}
+                          >
+                            {done ? (
+                              <Check size={18} />
+                            ) : (
+                              String(index + 1).padStart(2, "0")
+                            )}
+                          </span>
+                          <span className="course-unit-name">
+                            <strong dir="auto">{unit.title}</strong>
+                            <small>
+                              {isCurrent ? `${t("courses.youAreHere")} · ` : ""}
+                              {t("courses.lessonCount", {
+                                count: unit.lessons.length,
+                              })}
+                            </small>
+                          </span>
+                          <ChevronDown size={18} />
+                        </summary>
+                        <div className="course-unit-body">
+                          <p className="course-unit-outcome" dir="auto">
+                            {unit.outcome}
                           </p>
-                        )}
-                        <HomeworkLinks
-                          items={homework.filter(
-                            (item) =>
-                              item.courseId === course.id &&
-                              item.unitKey === unit.key,
+                          <ol className="course-lesson-list">
+                            {unit.lessons.map((lesson, lessonIndex) => {
+                              const records = draft
+                                ? []
+                                : course.evidence.filter(
+                                    (e) =>
+                                      e.version === displayed.version &&
+                                      e.unitKey === unit.key &&
+                                      e.lessonIndex === lessonIndex &&
+                                      e.covered,
+                                  );
+                              const isNext =
+                                !draft &&
+                                course.nextLesson?.unitKey === unit.key &&
+                                course.nextLesson.lessonIndex === lessonIndex;
+                              const state = records.length
+                                ? isNext
+                                  ? "repeatLesson"
+                                  : "lessonDone"
+                                : isNext
+                                  ? "nextInPlan"
+                                  : "upcomingLesson";
+                              const last = records.at(-1);
+                              return (
+                                <li
+                                  key={`${unit.key}:${lessonIndex}`}
+                                  className={`course-lesson-${state}`}
+                                >
+                                  <span className="course-lesson-number">
+                                    {records.length ? (
+                                      <Check size={15} />
+                                    ) : (
+                                      lessonIndex + 1
+                                    )}
+                                  </span>
+                                  <div>
+                                    <strong dir="auto">{lesson.title}</strong>
+                                    <p dir="auto">{lesson.objective}</p>
+                                    {!draft && (
+                                      <small className="course-lesson-status">
+                                        {t(`courses.${state}`)}
+                                        {last &&
+                                          ` · ${new Date(last.recordedAt).toLocaleDateString(i18n.language)}`}
+                                      </small>
+                                    )}
+                                  </div>
+                                </li>
+                              );
+                            })}
+                          </ol>
+                          <div className="course-unit-topics">
+                            {unit.grammar.length > 0 && (
+                              <div>
+                                <h3>{t("courses.grammar")}</h3>
+                                <ul>
+                                  {unit.grammar.map((topic) => (
+                                    <li dir="auto" key={topic}>
+                                      {topic}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {unit.vocabulary.length > 0 && (
+                              <div>
+                                <h3>{t("courses.vocabulary")}</h3>
+                                <button
+                                  type="button"
+                                  className="button secondary"
+                                  onClick={() =>
+                                    setUnitWords({
+                                      key: unit.key,
+                                      title: unit.title,
+                                      words: unit.vocabulary,
+                                    })
+                                  }
+                                >
+                                  {t("ux.unitWords")}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <div className="course-unit-task">
+                            <h3>{t("courses.unitSuccess")}</h3>
+                            <p dir="auto">{unit.successTask}</p>
+                            <h3>{t("courses.homeworkExample")}</h3>
+                            <p dir="auto">{unit.homeworkExample}</p>
+                          </div>
+                          <p className="course-unit-meta">
+                            <Clock3 size={15} />
+                            {t("courses.estimatedMinutes", {
+                              count: unit.estimatedMinutes,
+                            })}
+                          </p>
+                          {unit.prerequisites.length > 0 && (
+                            <p className="course-note">
+                              {t("courses.prerequisites")}:{" "}
+                              {unit.prerequisites
+                                .map(
+                                  (key) =>
+                                    displayed.plan.units.find(
+                                      (item) => item.key === key,
+                                    )?.title ?? key,
+                                )
+                                .join(" · ")}
+                            </p>
                           )}
-                        />
-                      </div>
-                    </details>
-                  );
-                })}
+                          <HomeworkLinks
+                            items={homework.filter(
+                              (item) =>
+                                item.courseId === course.id &&
+                                item.unitKey === unit.key,
+                            )}
+                          />
+                        </div>
+                      </details>
+                    );
+                  })}
+                </div>
               </div>
+              <Modal
+                open={Boolean(unitWords)}
+                onClose={() => setUnitWords(null)}
+                title={unitWords?.title || t("ux.unitWords")}
+              >
+                <div className="modal-body">
+                  <h2>{t("ux.unitWords")}</h2>
+                  {unitWords && !draft && (
+                    <Link
+                      className="button primary"
+                      to={`/courses/${course.id}/units/${unitWords.key}/words`}
+                    >
+                      {t("dashboard.smartPractice")}
+                    </Link>
+                  )}
+                  <ul
+                    className="ux-unit-words"
+                    lang={course.preferences.targetLanguageCode}
+                    dir="auto"
+                  >
+                    {unitWords?.words.map((word) => (
+                      <li key={word}>{word}</li>
+                    ))}
+                  </ul>
+                </div>
+              </Modal>
+              <Link
+                className="button ghost"
+                to={`/history?course=${course.id}`}
+              >
+                {t("ux.history")}
+              </Link>
               <details className="course-adjust">
                 <summary>{t("courses.savedPreferences")}</summary>
                 <PreferenceReview

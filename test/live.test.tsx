@@ -519,7 +519,10 @@ describe("live server-backed flows", () => {
       "/learn",
       async (url) => {
         if (url.endsWith("/capabilities"))
-          return json({ configured: { speech: true }, learningLanguages: [] });
+          return json({
+            configured: { speech: true, practice: true },
+            learningLanguages: [],
+          });
         if (url.includes("/learning/queue"))
           return json({ items: [], algorithmVersion: "server-v1" });
         if (url.includes("/practice/sessions"))
@@ -541,14 +544,10 @@ describe("live server-backed flows", () => {
       ).toBe(true),
     );
     expect(
-      fetchMock.mock.calls.some(
-        ([url]) =>
-          url.includes("/practice/sessions?") &&
-          url.includes("sourceLanguageCode=fr"),
-      ),
-    ).toBe(true);
-    expect(
       document.querySelector('a[href="/learn/session/smart?language=fr"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      await screen.findByText(i18n.t("learn.emptyQueue")),
     ).toBeInTheDocument();
     await act(async () => {
       languages.push({ code: "de", count: 1 });
@@ -559,6 +558,21 @@ describe("live server-backed flows", () => {
         screen.getByRole("combobox").querySelector('option[value="de"]'),
       ).toBeInTheDocument(),
     );
+    await user.click(
+      within(document.querySelector(".ux-game-hub")!).getByRole("link", {
+        name: i18n.t("ux.history"),
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url]) =>
+            url.includes("/practice/sessions?") &&
+            url.includes("sourceLanguageCode=fr"),
+        ),
+      ).toBe(true),
+    );
+    expect(screen.getByRole("combobox")).toHaveValue("fr");
   });
   it("does not hydrate a persisted demo when production demo mode is disabled", async () => {
     localStorage.setItem("gotit.mode", JSON.stringify("demo"));
@@ -1537,7 +1551,7 @@ describe("live server-backed flows", () => {
       }),
     );
   });
-  it("records a reading only on explicit opening and offers a server quiz afterward", async () => {
+  it("previews the generated reading before explicit saving and offers a server quiz after publication", async () => {
     const reading = {
       id: itemId,
       title: "A memory",
@@ -1574,14 +1588,27 @@ describe("live server-backed flows", () => {
       await screen.findByRole("button", { name: "יצירת תצוגה מקדימה" }),
     );
     await screen.findByRole("heading", { name: "A memory" });
-    expect(screen.queryByText(reading.bodyText)).not.toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.filter(
+        ([url, init]) => url.endsWith("/reading") && init?.method === "POST",
+      ),
+    ).toHaveLength(0);
+    await user.click(
+      screen.getByRole("button", { name: i18n.t("lessonUi.saveArticle") }),
+    );
+    await screen.findByRole("link", { name: i18n.t("reading.practiceWords") });
+    expect(document.querySelector(".live-reading-body")).toHaveTextContent(
+      reading.bodyText,
+    );
     expect(
       fetchMock.mock.calls.filter(([url]) => url.endsWith("/reading")),
-    ).toHaveLength(0);
-    await user.click(screen.getByRole("button", { name: "פתיחת הקטע" }));
+    ).toHaveLength(1);
     expect(
       await screen.findByRole("link", { name: "תרגול המילים מתוך הקטע" }),
-    ).toHaveAttribute("href", `/learn/session/article_quiz?reading=${itemId}`);
+    ).toHaveAttribute(
+      "href",
+      `/learn/session/article_quiz?reading=${itemId}&return=%2Freading`,
+    );
     await user.click(screen.getByRole("button", { name: "remember" }));
     expect(screen.getByRole("dialog")).toHaveTextContent("remember");
     expect(screen.getByRole("dialog")).toHaveTextContent("לזכור");
@@ -1654,13 +1681,15 @@ describe("live server-backed flows", () => {
     });
     const user = userEvent.setup();
     expect(
-      await screen.findByRole("link", { name: "התחלת תרגול מילים" }),
-    ).toHaveAttribute("href", "/learn/session/smart?language=en");
+      await screen.findByRole("link", { name: "מתחילים תרגול חכם" }),
+    ).toHaveAttribute("href", "/learn/smart?language=en&return=%2Fdashboard");
     expect(
-      screen.getByRole("link", { name: "מעבר לשיעור פרטי" }),
-    ).toHaveAttribute("href", "/private-lesson");
+      within(document.querySelector(".ux-explore")!).getByRole("link", {
+        name: "שיחה עם מורה",
+      }),
+    ).toHaveAttribute("href", "/private-lesson?practice=free");
     expect(
-      screen.getAllByRole("link", { name: "התחלת תרגול מילים" }),
+      screen.getAllByRole("link", { name: "מתחילים תרגול חכם" }),
     ).toHaveLength(1);
     const moreSummary = await screen.findByText("נתוני התקדמות נוספים במילים");
     const more = moreSummary.closest("details");
@@ -1673,7 +1702,7 @@ describe("live server-backed flows", () => {
     await user.click(wordButton);
     expect(screen.getByRole("dialog")).toHaveTextContent("subscription");
     expect(screen.getByRole("dialog")).toHaveTextContent("מנוי");
-    expect(screen.getByRole("heading", { name: /שלום/u })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /היי/u })).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some(([url]) => url.endsWith("/word-packs")),
     ).toBe(false);
@@ -1729,11 +1758,13 @@ describe("live server-backed flows", () => {
       throw new Error("Unexpected route");
     });
     expect(
-      await screen.findByRole("link", { name: "הוספת מילים לתרגול" }),
+      await screen.findByRole("link", { name: "מילה חדשה" }),
     ).toHaveAttribute("href", "/vocabulary");
     expect(
-      screen.getByRole("link", { name: "מעבר לשיעור פרטי" }),
-    ).toHaveAttribute("href", "/private-lesson");
+      within(document.querySelector(".ux-explore")!).getByRole("link", {
+        name: "שיחה עם מורה",
+      }),
+    ).toHaveAttribute("href", "/private-lesson?practice=free");
     expect(
       screen.queryByText("מסלול השיעורים הפרטיים שלך"),
     ).not.toBeInTheDocument();
@@ -2105,7 +2136,7 @@ describe("live server-backed flows", () => {
       learningItemId: null,
       excludedAt: null,
     }));
-    const fetchMock = mount("/english-learning", async (url, init) => {
+    const fetchMock = mount("/english-learning?all=1", async (url, init) => {
       if (
         url.endsWith("/word-packs") &&
         (!init?.method || init.method === "GET")
@@ -2128,27 +2159,22 @@ describe("live server-backed flows", () => {
       return json({}, 500);
     });
     expect(
-      await screen.findByRole("heading", { name: "לימוד שפה מאפס" }),
+      await screen.findByRole("heading", {
+        name: i18n.t("structuredUi.allUnits"),
+      }),
     ).toBeInTheDocument();
-    expect(
-      await screen.findByRole("heading", { name: "אנגלית בסיסית" }),
-    ).toBeInTheDocument();
-    const basicCard = screen
-      .getByText("יחידה 1", { exact: true })
-      .closest("article");
-    const advancedCard = screen
-      .getByText("יחידה 5", { exact: true })
-      .closest("article");
-    expect(basicCard).not.toBeNull();
-    expect(advancedCard).not.toBeNull();
-    expect(within(basicCard!).getByText("אנגלית בסיסית")).toBeInTheDocument();
-    expect(
-      within(advancedCard!).getByText("אנגלית מתקדמת"),
-    ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "התחלת היחידה" }));
-    expect(await screen.findByText("good morning")).toBeInTheDocument();
     await userEvent.click(
-      screen.getByRole("button", { name: "הוספה ותחילת תרגול" }),
+      await screen.findByRole("button", {
+        name: i18n.t("structuredUi.words"),
+        exact: true,
+      }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "good morning" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: i18n.t("unitStudy.chooseGame") }),
     );
     await waitFor(() => {
       const call = fetchMock.mock.calls.find(
@@ -2220,7 +2246,7 @@ describe("live server-backed flows", () => {
       }));
     const requests: string[][] = [];
     const knownRequests: { entryIds: string[]; known: boolean }[] = [];
-    const fetchMock = mount("/english-learning", async (url, init) => {
+    const fetchMock = mount("/english-learning?all=1", async (url, init) => {
       if (url.endsWith("/word-packs")) return json({ packs: [currentPack()] });
       if (url.endsWith(`/word-packs/${pack.id}`))
         return json({ pack: currentPack(), entries: entries() });
@@ -2270,11 +2296,14 @@ describe("live server-backed flows", () => {
       }
       return json({}, 500);
     });
-    const card = (
-      await screen.findByRole("heading", { name: "Unit 1" })
-    ).closest("article")!;
     await userEvent.click(
-      within(card).getByRole("button", { name: /Preview unit/ }),
+      await screen.findByRole("button", {
+        name: i18n.t("structuredUi.words"),
+        exact: true,
+      }),
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: i18n.t("pathUi.manageWords") }),
     );
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Select word 2" }),
@@ -2420,7 +2449,7 @@ describe("live server-backed flows", () => {
         excludedAt: null,
         known: known.has(id),
       }));
-    const fetchMock = mount("/english-learning", async (url, init) => {
+    const fetchMock = mount("/english-learning?all=1", async (url, init) => {
       if (
         url.endsWith("/word-packs") &&
         (!init?.method || init.method === "GET")
@@ -2455,22 +2484,30 @@ describe("live server-backed flows", () => {
         );
       return json({}, 500);
     });
-    const card = (
-      await screen.findByText("Building Your First Sentences")
-    ).closest("article")!;
     await userEvent.click(
-      within(card).getByRole("button", { name: /כבר יודע.*היחידה/ }),
+      await screen.findByRole("button", {
+        name: i18n.t("structuredUi.words"),
+        exact: true,
+      }),
+    );
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: i18n.t("englishPath.markUnitKnown"),
+      }),
     );
     await waitFor(() => expect(known.size).toBe(50));
-    expect(within(card).getByRole("progressbar")).toHaveValue(50);
     await userEvent.click(
-      within(card).getByRole("button", { name: /ביטול סימון היחידה/ }),
+      await screen.findByRole("button", {
+        name: i18n.t("englishPath.unmarkUnitKnown"),
+      }),
     );
     await waitFor(() => expect(known.size).toBe(0));
     await userEvent.click(
-      within(card).getByRole("button", { name: /הצגת היחידה/ }),
+      await screen.findByRole("button", { name: i18n.t("pathUi.manageWords") }),
     );
-    const row = (await screen.findByText("I")).closest(".pack-word-row")!;
+    const row = within(screen.getByRole("dialog"))
+      .getByText("I")
+      .closest(".pack-word-row")!;
     expect(row).toHaveClass("english-path-word-row");
     expect(screen.getByRole("dialog")).toHaveClass("english-path-word-modal");
     await userEvent.click(

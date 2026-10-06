@@ -293,7 +293,18 @@ export const wordPackSchema = z.object({
     sourceLanguageCode: z.string(),
     translationLanguageCode: z.string(),
   }),
+  teacherStations: z
+    .array(
+      z.object({
+        station: z.enum(["supported", "midpoint", "review"]),
+        requiredWords: count,
+        durationMinutes: count,
+        available: z.boolean(),
+      }),
+    )
+    .optional(),
   progress: z.object({
+    introduced: count.optional(),
     linked: count,
     new: count,
     learning: count,
@@ -369,6 +380,10 @@ export const studyImageSchema = z.object({
     .nullable(),
 });
 export type StudyImage = z.infer<typeof studyImageSchema>["image"];
+export const wordExampleSchema = z.object({
+  exampleText: z.string().max(300).nullable(),
+  generated: z.boolean(),
+});
 export const exerciseSchema = z.object({
   id: uuid,
   learningItemId: uuid,
@@ -604,6 +619,7 @@ export function errorMessage(reason: unknown): string {
     "IDEMPOTENCY_CONFLICT",
     "CONCURRENT_MODIFICATION",
     "WORD_PACK_NOT_ADDED",
+    "UNIT_WORDS_REQUIRED",
   ]);
   return reason instanceof ApiError && localizedCodes.has(reason.code)
     ? i18n.t(`productErrors.${reason.code}`)

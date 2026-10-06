@@ -347,7 +347,7 @@ describe("private voice lesson", () => {
     );
   });
 
-  it("shows the existing Rachel portrait for a child course and leaves adult setup unchanged", async () => {
+  it("keeps the child course portrait and offers teacher choices for adult courses", async () => {
     mocks.course.mockReset();
     const child = courseWithPlan(true);
     child.preferences.ageGroup = "child";
@@ -363,9 +363,13 @@ describe("private voice lesson", () => {
     mocks.course.mockResolvedValueOnce({ course: adult });
     renderPage(`/private-lesson?course=${adult.id}`);
     await screen.findByText(adult.nextLesson!.title);
+    expect(document.querySelector(".course-teacher")).not.toBeInTheDocument();
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "בחירת המורה" }));
     expect(
-      screen.queryByRole("img", { name: /רייצ/u }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("group", { name: "בחירת המורה" }),
+    ).toBeInTheDocument();
   });
 
   it("lets a grammar course use its approved support language for explanations", async () => {
@@ -411,11 +415,16 @@ describe("private voice lesson", () => {
   it("starts a zero-background lesson with a teaching language and A1 level", async () => {
     const user = userEvent.setup();
     renderPage();
+    await user.click(document.querySelector(".private-lesson-customize")!);
 
     await user.click(
       await screen.findByRole("radio", { name: /מתחילים מאפס/u }),
     );
-    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "התחלת השיעור",
+      }),
+    );
 
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith(
@@ -427,6 +436,23 @@ describe("private voice lesson", () => {
           requestedLevel: "A1",
           speechRate: "slow",
         }),
+      ),
+    );
+  });
+  it("keeps teacher selection available in the compact preference picker", async () => {
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(
+      await screen.findByRole("button", { name: "בחירת המורה" }),
+    );
+    const picker = screen.getByRole("dialog", { name: "בחירת המורה" });
+    await user.click(within(picker).getByRole("button", { name: /מייק/u }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({ teacherVoice: "male" }),
       ),
     );
   });
@@ -545,6 +571,7 @@ describe("private voice lesson", () => {
     }
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith({
+        interactionMode: "guided",
         targetLanguageCode: "en",
         supportLanguageCode: "he",
         lessonMode: "standard",
@@ -960,7 +987,7 @@ describe("private voice lesson", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("Other English course")).not.toBeInTheDocument();
     expect(screen.queryByText("Free English lesson")).not.toBeInTheDocument();
-    expect(mocks.list).toHaveBeenCalledWith(50, course.id);
+    expect(mocks.list).toHaveBeenCalledWith(50, course.id, undefined);
   });
 
   it("saves a suggested word from the lesson report", async () => {
@@ -1045,6 +1072,15 @@ describe("private voice lesson", () => {
     await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
     await screen.findByRole("button", { name: "סיום השיעור" });
+    const settings = document.querySelector(
+      ".private-lesson-settings-details",
+    )!;
+    expect(settings).not.toHaveAttribute("open");
+    await user.click(settings.querySelector("summary")!);
+    expect(settings).toHaveAttribute("open");
+    expect(settings.querySelector(".private-lesson-meta")).toHaveTextContent(
+      session.lesson.targetLanguageCode,
+    );
     act(() =>
       onEvent?.({
         type: "response.output_audio_transcript.done",

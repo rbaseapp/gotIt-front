@@ -144,6 +144,35 @@ after(async () => {
   await rm(directory, { recursive: true, force: true });
 });
 describe("production frontend gateway", () => {
+  it("forwards only the named email verification and recovery routes", async () => {
+    for (const path of [
+      "verify-email",
+      "resend-verification",
+      "forgot-password",
+      "reset-password",
+    ]) {
+      const response = await fetch(
+        `${gatewayOrigin}/core-api/api/v1/auth/${path}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "test@example.com" }),
+        },
+      );
+      assert.equal(response.status, 200);
+      const body = await response.json();
+      assert.equal(body.path, `/api/v1/auth/${path}`);
+      assert.equal(body.applicationKey, "gotit");
+    }
+    assert.equal(
+      (
+        await fetch(
+          `${gatewayOrigin}/core-api/api/v1/auth/reset-password/admin`,
+        )
+      ).status,
+      404,
+    );
+  });
   it("serves the SPA and assets with security and cache headers", async () => {
     const page = await fetch(`${gatewayOrigin}/vocabulary`);
     assert.equal(page.status, 200);

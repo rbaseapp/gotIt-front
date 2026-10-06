@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BarChart3,
   BookOpen,
@@ -11,11 +11,15 @@ import {
   HelpCircle,
   LogOut,
   Menu,
-  Mic2,
   Plus,
   Settings,
   X,
   Zap,
+  House,
+  Bookmark,
+  MessageCircle,
+  History,
+  UserRound,
 } from "lucide-react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
@@ -48,32 +52,22 @@ function sameBaseLanguage(first: string, second: string) {
 }
 
 const navItems = [
-  { to: "/dashboard", labelKey: "nav.dashboard", icon: BarChart3 },
-  { to: "/learn", labelKey: "nav.learn", icon: Gamepad2 },
+  { to: "/dashboard", labelKey: "ux.today", icon: House },
+  { to: "/courses", labelKey: "ux.programs", icon: BookOpen, liveOnly: true },
+  { to: "/vocabulary", labelKey: "ux.words", icon: Bookmark },
+  { to: "/learn", labelKey: "ux.practice", icon: Gamepad2 },
   {
-    to: "/english-learning",
-    labelKey: "nav.englishLearning",
-    icon: BookOpenText,
+    to: "/private-lesson?practice=free",
+    labelKey: "ux.freeChat",
+    icon: MessageCircle,
     liveOnly: true,
   },
-  {
-    to: "/private-lesson",
-    labelKey: "nav.privateLesson",
-    icon: Mic2,
-    liveOnly: true,
-  },
-  { to: "/vocabulary", labelKey: "nav.vocabulary", icon: BookOpen },
-  {
-    to: "/word-packs",
-    labelKey: "nav.wordPacks",
-    icon: LibraryBig,
-    liveOnly: true,
-  },
-  { to: "/reading", labelKey: "nav.reading", icon: BookOpenText },
-  { to: "/transfer", labelKey: "nav.transfer", icon: BookOpen },
+  { to: "/reading", labelKey: "ux.reading", icon: BookOpenText },
+  { to: "/history", labelKey: "ux.history", icon: History, liveOnly: true },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
-  { to: "/billing", labelKey: "nav.billing", icon: CreditCard, liveOnly: true },
 ];
+
+const rootNavItems = navItems.slice(0, 4);
 
 export function AppShell({
   children,
@@ -87,8 +81,11 @@ export function AppShell({
     useApp();
   const location = useLocation();
   const focusedLearning =
-    /^\/(courses|homework)(\/|$)/.test(location.pathname) ||
+    /^\/(courses\/[^/]+|homework\/[^/]+)(\/|$)/.test(location.pathname) ||
     location.pathname === "/private-lesson";
+  const focusShell =
+    location.pathname === "/private-lesson" ||
+    location.pathname === "/achievements";
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
   const canWriteVocabulary = hasEntitlement("vocabulary.write");
@@ -97,6 +94,80 @@ export function AppShell({
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [narrow, setNarrow] = useState(
+    () => window.matchMedia?.("(max-width: 860px)").matches ?? false,
+  );
+  const sidebarRef = useRef<HTMLElement>(null);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const media = window.matchMedia?.("(max-width: 860px)");
+    if (!media) return;
+    const changed = () => setNarrow(media.matches);
+    media.addEventListener("change", changed);
+    return () => media.removeEventListener("change", changed);
+  }, []);
+  useEffect(() => {
+    if ((!narrow && !focusShell) || !mobileOpen) return;
+    const previous = document.body.style.overflow;
+    const trigger = menuRef.current;
+    document.body.style.overflow = "hidden";
+    sidebarRef.current
+      ?.querySelector<HTMLButtonElement>(".mobile-close")
+      ?.focus();
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileOpen(false);
+      }
+      if (event.key !== "Tab") return;
+      const controls = Array.from(
+        sidebarRef.current?.querySelectorAll<HTMLElement>(
+          "a[href],button:not(:disabled)",
+        ) ?? [],
+      ).filter((el) => el.getClientRects().length);
+      const first = controls[0],
+        last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", keyboard);
+      trigger?.focus();
+    };
+  }, [narrow, focusShell, mobileOpen]);
+  useEffect(() => {
+    if (!userOpen) return;
+    accountRef.current
+      ?.querySelector<HTMLAnchorElement>(".user-popover a")
+      ?.focus();
+    const dismiss = (event: PointerEvent) => {
+      if (!accountRef.current?.contains(event.target as Node))
+        setUserOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setUserOpen(false);
+        accountRef.current
+          ?.querySelector<HTMLButtonElement>(".user-button")
+          ?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [userOpen]);
   const [latestLessonAssessment, setLatestLessonAssessment] =
     useState<SavedPrivateLesson>();
   const [assessmentLanguage, setAssessmentLanguage] = useState(() =>
@@ -154,7 +225,9 @@ export function AppShell({
   }, [defaultLessonLanguage, mode]);
   const pageTitle = focusedLearning
     ? "nav.privateLesson"
-    : navItems.find((item) => location.pathname.startsWith(item.to))?.labelKey;
+    : navItems.find((item) =>
+        location.pathname.startsWith(item.to.split("?")[0]),
+      )?.labelKey;
   const latestAssessment = latestLessonAssessment?.report?.assessment;
   const latestLevelLabel = latestAssessment?.overallLevel
     ? latestAssessment.overallLevel
@@ -169,8 +242,16 @@ export function AppShell({
     )?.[1] ?? assessmentLanguage;
 
   return (
-    <div className="app-layout">
-      <aside className={`sidebar ${mobileOpen ? "mobile-open" : ""}`}>
+    <div className={`app-layout${focusShell ? " focus-shell" : ""}`}>
+      <aside
+        ref={sidebarRef}
+        className={`sidebar ${mobileOpen ? "mobile-open" : ""}`}
+        inert={((narrow || focusShell) && !mobileOpen) || undefined}
+        aria-hidden={((narrow || focusShell) && !mobileOpen) || undefined}
+        role={(narrow || focusShell) && mobileOpen ? "dialog" : undefined}
+        aria-modal={((narrow || focusShell) && mobileOpen) || undefined}
+        aria-label={t("shell.mainNavigation")}
+      >
         <div className="sidebar-top">
           <Logo onClick={() => setMobileOpen(false)} />
           <button
@@ -201,7 +282,9 @@ export function AppShell({
                 to={to}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  isActive || (to === "/private-lesson" && focusedLearning)
+                  isActive ||
+                  (to === "/courses" &&
+                    location.pathname === "/english-learning")
                     ? "nav-link active"
                     : "nav-link"
                 }
@@ -216,7 +299,7 @@ export function AppShell({
               </NavLink>
             ))}
         </nav>
-        <div className="sidebar-tip">
+        <div className="sidebar-tip" hidden>
           <span className="tip-icon">
             <Zap size={18} />
           </span>
@@ -233,6 +316,17 @@ export function AppShell({
           <HelpCircle size={19} />
           {t("shell.helpCenter")}
         </NavLink>
+        <button
+          className="button ghost sidebar-account"
+          type="button"
+          onClick={() => {
+            setMobileOpen(false);
+            navigate("/account");
+          }}
+        >
+          <UserRound size={20} />
+          {t("ux.account")}
+        </button>
         <nav
           className="sidebar-legal-links"
           aria-label={t("shell.legalNavigation")}
@@ -253,7 +347,11 @@ export function AppShell({
       <main className="main-column">
         <header className="topbar">
           <div className="topbar-title">
+            <span className="mobile-brand">
+              <Logo />
+            </span>
             <button
+              ref={menuRef}
               className="mobile-menu icon-button"
               aria-label={t("shell.openMenu")}
               aria-expanded={mobileOpen}
@@ -264,6 +362,18 @@ export function AppShell({
             <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
           </div>
           <div className="topbar-actions">
+            {focusShell && (
+              <Link
+                className="button ghost focus-back"
+                to={
+                  location.pathname === "/achievements"
+                    ? "/account"
+                    : "/courses"
+                }
+              >
+                {t("ux.backHome")}
+              </Link>
+            )}
             {latestLessonAssessment?.report && (
               <Link
                 to="/private-lesson?view=level"
@@ -289,7 +399,7 @@ export function AppShell({
                 </div>
               </>
             )}
-            <div className="user-menu-wrap">
+            <div className="user-menu-wrap" ref={accountRef}>
               <button
                 className="user-button"
                 aria-expanded={userOpen}
@@ -315,6 +425,42 @@ export function AppShell({
               </button>
               {userOpen && (
                 <div className="user-popover">
+                  {status && (
+                    <p className="account-plan">
+                      {t(
+                        status.tier === "paid"
+                          ? "subscription.proUser"
+                          : status.tier === "trial"
+                            ? "subscription.trialDays"
+                            : "subscription.trialEnded",
+                        { count: status.trial?.daysRemaining ?? 0 },
+                      )}
+                    </p>
+                  )}
+                  <Link to="/settings" onClick={() => setUserOpen(false)}>
+                    <Settings size={18} />
+                    {t("nav.settings")}
+                  </Link>
+                  <Link to="/history" onClick={() => setUserOpen(false)}>
+                    <History size={18} />
+                    {t("ux.history")}
+                  </Link>
+                  <Link to="/billing" onClick={() => setUserOpen(false)}>
+                    <CreditCard size={18} />
+                    {t("nav.billing")}
+                  </Link>
+                  <Link to="/transfer" onClick={() => setUserOpen(false)}>
+                    <BookOpen size={18} />
+                    {t("nav.transfer")}
+                  </Link>
+                  <Link to="/word-packs" onClick={() => setUserOpen(false)}>
+                    <LibraryBig size={18} />
+                    {t("nav.wordPacks")}
+                  </Link>
+                  <Link to="/help" onClick={() => setUserOpen(false)}>
+                    <HelpCircle size={18} />
+                    {t("shell.helpCenter")}
+                  </Link>
                   <button onClick={onLogout}>
                     <LogOut size={17} />
                     {t("shell.logout")}
@@ -327,7 +473,7 @@ export function AppShell({
         <div className="page-content">
           {mode === "live" &&
             user?.role !== "admin" &&
-            (!focusedLearning || status?.tier !== "paid") && (
+            /^\/(?:transfer)(?:\/|$)/u.test(location.pathname) && (
               <SubscriptionBanner />
             )}
           {(!focusedLearning || mode === "demo") &&
@@ -357,6 +503,22 @@ export function AppShell({
           {children}
         </div>
       </main>
+      <nav className="mobile-tabs" aria-label={t("ux.rootNavigation")}>
+        {rootNavItems
+          .filter((item) => !item.liveOnly || mode === "live")
+          .map(({ to, labelKey, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `mobile-tab${isActive || (to === "/courses" && location.pathname === "/english-learning") ? " active" : ""}`
+              }
+            >
+              <Icon size={24} aria-hidden="true" />
+              <span>{t(labelKey)}</span>
+            </NavLink>
+          ))}
+      </nav>
       {mode === "live" ? (
         <LiveCaptureModal
           open={addOpen && canWriteVocabulary}

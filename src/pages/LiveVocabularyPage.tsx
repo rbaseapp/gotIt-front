@@ -43,6 +43,7 @@ import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
+import { libraryReturn, readLibraryContext } from "../lib/libraryContext";
 
 const actions = [
   "pause",
@@ -77,23 +78,32 @@ export function LiveVocabularyPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const language = useLearningLanguage();
   const itemId = searchParams.get("item");
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({
-    userStatus: "all",
-    sort: "alphabetical",
-  });
-  const [pageNumber, setPageNumber] = useState(1);
+  const [restored] = useState(() => readLibraryContext(searchParams));
+  const [search, setSearch] = useState(restored.filters.search || "");
+  const [filters, setFilters] = useState<Record<string, string>>(
+    restored.filters,
+  );
+  const [pageNumber, setPageNumber] = useState(restored.page);
   const [tagCursor, setTagCursor] = useState<string>();
   const [tagHistory, setTagHistory] = useState<Array<string | undefined>>([]);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(restored.selected);
+  const restoredLanguage = useRef(false);
+  useEffect(() => {
+    if (restoredLanguage.current || language.loading) return;
+    restoredLanguage.current = true;
+    if (
+      restored.language &&
+      language.languages.some((entry) => entry.code === restored.language)
+    )
+      language.setCode(restored.language);
+  }, [language, restored.language]);
+  const returnTo = encodeURIComponent(
+    libraryReturn(filters, pageNumber, selected, language.code),
+  );
   const [action, setAction] = useState("pause");
   const [add, setAdd] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(() =>
-    typeof window === "undefined" || typeof window.matchMedia !== "function"
-      ? true
-      : window.matchMedia("(min-width: 860px)").matches,
-  );
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const url = `learning-items${query({
@@ -279,7 +289,37 @@ export function LiveVocabularyPage() {
         languages={language.languages}
         onChange={chooseLanguage}
       />
-      <section className="live-panel">
+      <section className="ux-card mint ux-library-practice">
+        <h2>{t("lessonUi.libraryPractice")}</h2>
+        <p>{t("lessonUi.libraryPracticeHelp")}</p>
+        <Link
+          className="button primary"
+          to={`/learn/smart?language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+        >
+          {t("ux.startSmart")}
+        </Link>
+        <Link
+          className="button ghost"
+          to={`/learn?language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+        >
+          {t("ux.chooseWordsAndGame")}
+        </Link>
+      </section>
+      <details
+        className="live-panel library-filters"
+        open={filtersOpen}
+        onToggle={(event) => {
+          if (event.target === event.currentTarget)
+            setFiltersOpen(event.currentTarget.open);
+        }}
+      >
+        <summary>
+          <span>{t("lessonUi.searchAndFilter")}</span>
+          <strong>
+            {t("lessonUi.allSourcesStatuses")}
+            {activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+          </strong>
+        </summary>
         <form
           className="live-search"
           onSubmit={(e: FormEvent) => {
@@ -353,11 +393,7 @@ export function LiveVocabularyPage() {
             </p>
           )}
         </div>
-        <details
-          className="vocabulary-advanced-filters"
-          open={filtersOpen}
-          onToggle={(event) => setFiltersOpen(event.currentTarget.open)}
-        >
+        <details className="vocabulary-advanced-filters">
           <summary>
             <span>
               <Filter size={18} aria-hidden="true" />
@@ -508,7 +544,7 @@ export function LiveVocabularyPage() {
             )}
           </div>
         </details>
-      </section>
+      </details>
       <RemoteState
         loading={resource.loading}
         error={resource.error}
@@ -526,71 +562,95 @@ export function LiveVocabularyPage() {
       )}
       {resource.data && !resource.loading && (
         <>
-          <div className="live-toolbar">
-            <label className="live-checkbox">
-              <input
-                type="checkbox"
-                checked={
-                  !!resource.data.items.length &&
-                  selected.length === resource.data.items.length
-                }
-                onChange={(e) =>
-                  setSelected(
-                    e.target.checked
-                      ? resource.data!.items.map((i) => i.id)
-                      : [],
-                  )
-                }
-              />
-              {t("vocabulary.selectPage", {
-                count: resource.data.items.length,
-              })}
-            </label>
-            <select
-              aria-label={t("vocabulary.bulkAction")}
-              value={action}
-              onChange={(e) => setAction(e.target.value)}
-            >
-              {actions
-                .filter((a) =>
-                  filters.userStatus === "deleted"
-                    ? a === "restore"
-                    : a !== "restore",
-                )
-                .map((k) => (
-                  <option key={k} value={k}>
-                    {t(`vocabulary.actions.${k}`)}
-                  </option>
-                ))}
-            </select>
-            <button
-              className="button secondary"
-              disabled={!canWrite || !selected.length || busy}
-              onClick={() => void apply()}
-            >
-              {t("vocabulary.applySelected", { count: selected.length })}
-            </button>
-            {Boolean(filters.packIds) && resource.data.items.length > 0 && (
-              <button
-                className="button secondary"
-                onClick={() =>
-                  setSelected(resource.data!.items.map((item) => item.id))
-                }
-              >
-                {t("vocabulary.selectAllPackWords", {
+          <details
+            className="library-management"
+            open={selected.length > 0 || undefined}
+          >
+            <summary>{t("lessonUi.manageWords")}</summary>
+            <div className="live-toolbar">
+              <label className="live-checkbox">
+                <input
+                  type="checkbox"
+                  checked={
+                    !!resource.data.items.length &&
+                    selected.length === resource.data.items.length
+                  }
+                  onChange={(e) =>
+                    setSelected(
+                      e.target.checked
+                        ? resource.data!.items.map((i) => i.id)
+                        : [],
+                    )
+                  }
+                />
+                {t("vocabulary.selectPage", {
                   count: resource.data.items.length,
                 })}
-              </button>
-            )}
-            {selected.length > 0 && filters.userStatus !== "deleted" && (
-              <Link
-                className="button primary"
-                to={`/learn/session/smart?items=${selected.join(",")}`}
+              </label>
+              <select
+                aria-label={t("vocabulary.bulkAction")}
+                value={action}
+                onChange={(e) => setAction(e.target.value)}
               >
-                {t("vocabulary.practiceSelected")}
-              </Link>
-            )}
-          </div>
+                {actions
+                  .filter((a) =>
+                    filters.userStatus === "deleted"
+                      ? a === "restore"
+                      : a !== "restore",
+                  )
+                  .map((k) => (
+                    <option key={k} value={k}>
+                      {t(`vocabulary.actions.${k}`)}
+                    </option>
+                  ))}
+              </select>
+              <button
+                className="button secondary"
+                disabled={!canWrite || !selected.length || busy}
+                onClick={() => void apply()}
+              >
+                {t("vocabulary.applySelected", { count: selected.length })}
+              </button>
+              {Boolean(filters.packIds) && resource.data.items.length > 0 && (
+                <button
+                  className="button secondary"
+                  onClick={() =>
+                    setSelected(resource.data!.items.map((item) => item.id))
+                  }
+                >
+                  {t("vocabulary.selectAllPackWords", {
+                    count: resource.data.items.length,
+                  })}
+                </button>
+              )}
+              {selected.length > 0 && filters.userStatus !== "deleted" && (
+                <Link
+                  className="button primary"
+                  to={`/learn/smart?items=${selected.join(",")}&language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+                >
+                  {t("vocabulary.practiceSelected")}
+                </Link>
+              )}
+              {selected.length > 0 && filters.userStatus !== "deleted" && (
+                <Link
+                  className="button secondary"
+                  to={`/learn?items=${encodeURIComponent(selected.join(","))}&language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+                >
+                  {t("ux.chooseGame")}
+                </Link>
+              )}
+              {selected.length > 0 &&
+                selected.length <= 20 &&
+                filters.userStatus !== "deleted" && (
+                  <Link
+                    className="button secondary"
+                    to={`/reading?items=${encodeURIComponent(selected.join(","))}&language=${encodeURIComponent(language.code)}&return=${returnTo}`}
+                  >
+                    {t("ux.reading")}
+                  </Link>
+                )}
+            </div>
+          </details>
           <div className="live-word-list">
             {resource.data.items.map((item) => (
               <article className="live-word-row" key={item.id}>
@@ -634,14 +694,26 @@ export function LiveVocabularyPage() {
                   </small>
                 </button>
                 <div className="live-word-statuses">
-                  <span className="pill">
-                    {filters.userStatus === "deleted"
-                      ? t("labels.deleted")
-                      : labels[item.userStatus]}
+                  {item.userStatus !== "active" && (
+                    <span className="pill">
+                      {filters.userStatus === "deleted"
+                        ? t("labels.deleted")
+                        : labels[item.userStatus]}
+                    </span>
+                  )}
+                  <span className={`pill word-state-${item.learningStatus}`}>
+                    {labels[item.learningStatus]}
                   </span>
-                  <span className="pill">{labels[item.learningStatus]}</span>
                 </div>
-                <div className="live-word-progress">
+                <button
+                  className="button secondary library-word-details"
+                  disabled={filters.userStatus === "deleted"}
+                  onClick={() => setSearchParams({ item: item.id })}
+                >
+                  {t("lessonUi.wordDetails")}
+                </button>
+                <details className="live-word-progress">
+                  <summary>{t("ux.learningDetails")}</summary>
                   <b>{Math.round(item.overallMasteryScore)}%</b>
                   <progress
                     value={item.overallMasteryScore}
@@ -664,7 +736,7 @@ export function LiveVocabularyPage() {
                       {masteryRequirementText(item.masteryRequirements)}
                     </small>
                   )}
-                </div>
+                </details>
                 {filters.userStatus === "deleted" && (
                   <button
                     className="button ghost"
@@ -973,7 +1045,7 @@ function DetailForm({
       </p>
       <Link
         className="button primary"
-        to={`/learn/session/smart?items=${item.id}`}
+        to={`/learn/smart?items=${item.id}&language=${encodeURIComponent(item.sourceLanguageCode)}`}
       >
         {t("vocabulary.practiceWord")}
       </Link>

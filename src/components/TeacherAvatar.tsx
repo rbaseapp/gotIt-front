@@ -19,6 +19,7 @@ type TeacherAvatarProps = {
   active: boolean;
   label: string;
   variant: "female" | "male";
+  referencePortrait?: string;
 };
 
 export function TeacherAvatar({
@@ -27,6 +28,7 @@ export function TeacherAvatar({
   active,
   label,
   variant,
+  referencePortrait,
 }: TeacherAvatarProps) {
   const level =
     active && Number.isFinite(audioLevel)
@@ -65,7 +67,7 @@ export function TeacherAvatar({
     >
       <span className="teacher-avatar-ring" aria-hidden="true" />
       <span className="teacher-avatar-portrait" aria-hidden="true">
-        <img src={listeningImage} alt="" />
+        <img src={referencePortrait || listeningImage} alt="" />
         <img
           className="teacher-avatar-thinking-frame"
           src={thinkingImage}

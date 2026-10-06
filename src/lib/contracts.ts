@@ -55,6 +55,22 @@ export function canonicalLanguage(value: string): string {
 }
 export function validateProfile(profile: ProfilePatch): string | null {
   try {
+    const preferences = profile.learningPreferences;
+    if (
+      preferences &&
+      ((preferences.uiLocale !== undefined &&
+        !["ar", "de", "en", "es", "fr", "he", "ru", "zh"].includes(
+          preferences.uiLocale,
+        )) ||
+        (preferences.textScale !== undefined &&
+          !["normal", "large"].includes(preferences.textScale)) ||
+        ["reducedMotion", "sounds"].some(
+          (key) =>
+            key in preferences &&
+            typeof preferences[key as "sounds"] !== "boolean",
+        ))
+    )
+      return i18n.t("validation.skills");
     if (
       profile.learningPreferences &&
       (!profile.learningPreferences.enabledSkills.length ||
@@ -284,6 +300,7 @@ export function profilePayload(profile: ProfilePatch): ProfilePatch {
     ...(profile.learningPreferences
       ? {
           learningPreferences: {
+            ...profile.learningPreferences,
             enabledSkills: [...profile.learningPreferences.enabledSkills],
           },
         }
@@ -302,4 +319,15 @@ export function profilePayload(profile: ProfilePatch): ProfilePatch {
       value.normalize("NFKC").replace(/\s+/gu, " ").trim(),
     ),
   };
+}
+
+export function parseEmailAccepted(payload: unknown) {
+  const value = object(payload);
+  if (
+    value.status !== "accepted" ||
+    value.expiresIn !== 600 ||
+    value.retryAfter !== 60
+  )
+    throw new Error("Invalid API response");
+  return { expiresIn: 600, retryAfter: 60 };
 }

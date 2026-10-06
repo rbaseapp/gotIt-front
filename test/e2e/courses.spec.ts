@@ -86,25 +86,36 @@ async function signedIn(
     screen === "homework"
       ? `/homework/${fixtureHomework.id}`
       : screen === "welcome"
-        ? "/courses"
+        ? "/courses?new=1"
         : `/courses/${fixtureCourse.id}`,
   );
   await expect(page.locator(".course-page")).toBeVisible();
   await expect(page.locator(".course-loading")).toHaveCount(0);
 }
 
-test("language combobox searches native names and fits RTL mobile layout", async ({ page }) => {
+test("language combobox searches native names and fits RTL mobile layout", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await signedIn(page, "welcome", "he");
-  const choice = page.locator(".course-language-pair").getByRole("combobox").first();
+  const choice = page
+    .locator(".course-language-pair")
+    .getByRole("combobox")
+    .first();
   await choice.fill("עברית");
   await expect(page.getByRole("listbox").getByRole("option")).toHaveCount(1);
   await choice.press("Enter");
   await expect(choice).toHaveValue("Hebrew — עברית");
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
 });
 
-test("multiple courses in two languages stay grouped on a narrow screen", async ({ page }) => {
+test("multiple courses in two languages stay grouped on a narrow screen", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await signedIn(page, "active", "he");
   const first = courseWithPlan(true);
@@ -115,20 +126,49 @@ test("multiple courses in two languages stay grouped on a narrow screen", async 
   spanish.id = "10000000-0000-4000-8000-000000000003";
   spanish.preferences.targetLanguageCode = "es";
   spanish.versions[0]!.plan.title = "Spanish for work";
-  await page.route("**/api/v1/courses", (route) => route.fulfill({
-    json: { courses: [first, second, spanish], homework: [], available: true },
-  }));
+  await page.route("**/api/v1/courses", (route) =>
+    route.fulfill({
+      json: {
+        courses: [first, second, spanish],
+        homework: [],
+        available: true,
+      },
+    }),
+  );
   await page.goto("/courses");
-  await expect(page.getByRole("region", { name: /English/ }).getByRole("link")).toHaveCount(2);
-  await expect(page.getByRole("region", { name: /Spanish/ }).getByRole("link")).toHaveCount(1);
-  const createButton = page.getByRole("button", { name: "יצירת קורס נוסף" });
-  await expect(page.locator(".course-page-heading").getByRole("button", { name: "יצירת קורס נוסף" })).toHaveCount(1);
+  await expect(
+    page
+      .getByRole("region", { name: "אנגלית", exact: true })
+      .getByRole("button", { name: "פתיחת התוכנית" }),
+  ).toHaveCount(2);
+  await expect(
+    page
+      .getByRole("region", { name: "ספרדית", exact: true })
+      .getByRole("button", { name: "פתיחת התוכנית" }),
+  ).toHaveCount(1);
+  const createButton = page.getByRole("button", { name: "תוכנית חדשה" });
+  await expect(
+    page
+      .locator(".page-heading-row")
+      .getByRole("button", { name: "תוכנית חדשה" }),
+  ).toHaveCount(1);
   await expect(createButton).toBeInViewport();
-  await expect(createButton).toHaveCSS("background-color", "rgb(44, 122, 98)");
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(createButton).toHaveCSS(
+    "background-color",
+    "rgb(255, 255, 255)",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
   await page.setViewportSize({ width: 1440, height: 900 });
   await expect(createButton).toBeInViewport();
   await createButton.click();
+  await page
+    .locator(".new-program-page")
+    .getByRole("link", { name: /תוכנית אישית/ })
+    .click();
   await expect(page.locator(".course-welcome")).toBeVisible();
 });
 
@@ -225,7 +265,9 @@ test("a learner who needs oral support can hear each choice before selecting it"
   ).toBe(true);
 });
 
-test("homework voice answer records only during a held press", async ({ page }) => {
+test("homework voice answer records only during a held press", async ({
+  page,
+}) => {
   const homework = structuredClone(fixtureHomework);
   homework.tasks[0]!.done = true;
   homework.completedCount = 1;
@@ -280,22 +322,44 @@ test("homework voice answer records only during a held press", async ({ page }) 
   const talk = page.locator(".course-hold-to-talk");
   await expect(talk).toBeVisible();
   await expect(talk).toHaveText("לחצו והחזיקו כדי לדבר");
+  const initialBounds = await talk.boundingBox();
   await talk.hover();
   await page.mouse.down();
   await expect(talk).toHaveAttribute("aria-pressed", "true");
-  await expect.poll(() => page.evaluate(() => (window as Window & { __recordStarts: number }).__recordStarts)).toBe(1);
+  expect((await talk.boundingBox())!.width).toBeCloseTo(
+    initialBounds!.width,
+    0,
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as Window & { __recordStarts: number }).__recordStarts,
+      ),
+    )
+    .toBe(1);
   await page.mouse.up();
   await expect(talk).toHaveAttribute("aria-pressed", "false");
-  await expect.poll(() => page.evaluate(() => (window as Window & { __trackStops: number }).__trackStops)).toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as Window & { __trackStops: number }).__trackStops,
+      ),
+    )
+    .toBeGreaterThan(0);
 
+  // The first fake recording is empty: wait for its async rejection to settle
+  // before aiming the next pointer press at a potentially reflowed composer.
+  await expect(page.locator(".course-composer .form-error")).toBeVisible();
   await talk.hover();
   await page.mouse.down();
   await expect(talk).toHaveAttribute("aria-pressed", "true");
   await page.evaluate(() => {
     const id = (window as Window & { __talkPointerId: number }).__talkPointerId;
-    document.querySelector(".course-hold-to-talk")?.dispatchEvent(
-      new PointerEvent("pointercancel", { bubbles: true, pointerId: id }),
-    );
+    document
+      .querySelector(".course-hold-to-talk")
+      ?.dispatchEvent(
+        new PointerEvent("pointercancel", { bubbles: true, pointerId: id }),
+      );
   });
   await page.mouse.up();
   await expect(talk).toHaveAttribute("aria-pressed", "false");

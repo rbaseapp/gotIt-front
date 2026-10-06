@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffectEvent,
   useEffect,
   useRef,
   useState,
@@ -59,6 +60,7 @@ import { LiveMatchingBoard } from "../components/LiveMatchingBoard";
 import { LiveDragDropBoard } from "../components/LiveDragDropBoard";
 import { useGameViewport } from "../hooks/useGameViewport";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { learningReturn } from "../lib/learningNavigation";
 
 const modes: Record<string, string> = {
   smart: "smart_review",
@@ -122,6 +124,10 @@ export function LiveGameSessionPage() {
   const { t, i18n } = useTranslation();
   const { type = "" } = useParams();
   const [params] = useSearchParams();
+  const returnTo = learningReturn(
+    params.get("return"),
+    params.has("pack") ? "/word-packs" : "/learn",
+  );
   const language = useLearningLanguage();
   const needsLanguage =
     !params.get("language") &&
@@ -136,6 +142,9 @@ export function LiveGameSessionPage() {
   const { confirm, toast } = useFeedback();
   const [session, setSession] = useState<Session>();
   const [studyCards, setStudyCards] = useState<StudyCard[]>([]);
+  const [answerLanguages, setAnswerLanguages] = useState<
+    Record<string, { source: string; translation: string }>
+  >({});
   const [studyIndex, setStudyIndex] = useState(0);
   const [studyImage, setStudyImage] = useState<StudyImage | undefined>();
   const [studyImageFailed, setStudyImageFailed] = useState(false);
@@ -157,6 +166,8 @@ export function LiveGameSessionPage() {
   }>();
   const [cardLeaving, setCardLeaving] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(() => {
+    if (profile.learningPreferences?.sounds !== undefined)
+      return profile.learningPreferences.sounds;
     try {
       return localStorage.getItem("gotit.practiceEffects.v1") !== "off";
     } catch {
@@ -171,6 +182,7 @@ export function LiveGameSessionPage() {
   const [error, setError] = useState("");
   const [recording, setRecording] = useState(false);
   const creation = useRef<Intent | undefined>(undefined);
+  const automaticStart = useRef(false);
   const lock = useRef(false);
   const mounted = useRef(true);
   const recordingController = useRef<AbortController | undefined>(undefined);
@@ -326,6 +338,31 @@ export function LiveGameSessionPage() {
             }),
       },
     );
+    // Ordinary writing games skip the study phase. Resolve their language pair
+    // separately: prompt.languageCode identifies the prompt, not the answer.
+    // Only language metadata is retained; no expected answer is rendered.
+    if (result.exercises.some((item) => item.kind === "typed")) {
+      try {
+        const metadata = await product(
+          studyCardsSchema,
+          `practice/sessions/${value.id}/study`,
+        );
+        if (mounted.current)
+          setAnswerLanguages(
+            Object.fromEntries(
+              metadata.cards.map((card) => [
+                card.learningItemId,
+                {
+                  source: card.sourceLanguageCode,
+                  translation: card.translationLanguageCode,
+                },
+              ]),
+            ),
+          );
+      } catch {
+        // Native typing remains available when optional alphabet metadata fails.
+      }
+    }
     if (mounted.current) {
       setExercises(result.exercises);
       setSmartDragDropActive(smartDragDropRound);
@@ -417,7 +454,11 @@ export function LiveGameSessionPage() {
             (!ids && !readingId && !packId && language.code)
               ? { sourceLanguageCode: params.get("language") || language.code }
               : {}),
-            count: packId ? 100 : count,
+            count:
+              packId && !params.has("count") && type !== "smart" ? 100 : count,
+            ...(type === "smart"
+              ? { includeNewItems: params.get("includeNew") !== "0" }
+              : {}),
             ...(ids ? { learningItemIds: ids } : {}),
             ...(readingId && type === "article_quiz" ? { readingId } : {}),
             ...(packId ? { scope: { type: "pack", id: packId } } : {}),
@@ -636,7 +677,7 @@ export function LiveGameSessionPage() {
         toast(t("game.stoppedToast"), {
           tone: "info",
         });
-        navigate("/learn");
+        navigate(returnTo);
       }
     } catch (reason) {
       if (mounted.current) setError(errorMessage(reason));
@@ -750,7 +791,7 @@ export function LiveGameSessionPage() {
   };
   const requestExit = async () => {
     if (!session || session.status !== "active") {
-      navigate("/learn");
+      navigate(returnTo);
       return;
     }
     const approved = await confirm({
@@ -852,6 +893,18 @@ export function LiveGameSessionPage() {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [busy, exercise, flipped, pending, receipt]);
+  const startAutomatically = useEffectEvent(() => void start());
+  useEffect(() => {
+    if (
+      params.get("ready") !== "1" ||
+      automaticStart.current ||
+      languagePending ||
+      !modes[type]
+    )
+      return;
+    automaticStart.current = true;
+    startAutomatically();
+  }, [params, languagePending, type]);
   if (!modes[type])
     return (
       <div className="empty-session">
@@ -861,7 +914,7 @@ export function LiveGameSessionPage() {
     );
   return (
     <div
-      className={`session-page live-session${moment ? ` moment-${moment}` : ""}`}
+      className={`session-page live-session${effectsEnabled ? "" : " ux-effects-off"}${moment ? ` moment-${moment}` : ""}`}
     >
       <header className="session-topbar">
         <button
@@ -880,40 +933,6 @@ export function LiveGameSessionPage() {
               : t(`labels.${modes[type]}`)}
           </span>
         </div>
-        <div className="session-hud" aria-live="polite">
-          <span className={`hud-chip combo${combo >= 3 ? " active" : ""}`}>
-            <Flame size={17} />
-            <b>{combo}</b>
-            {t("game.combo")}
-          </span>
-          <span className="hud-chip xp">
-            <Zap size={17} />
-            <b>{sessionXp}</b>
-            XP
-          </span>
-          <button
-            type="button"
-            className="hud-sound"
-            aria-label={
-              effectsEnabled ? t("game.effectsOff") : t("game.effectsOn")
-            }
-            aria-pressed={effectsEnabled}
-            onClick={() => {
-              const next = !effectsEnabled;
-              setEffectsEnabled(next);
-              try {
-                localStorage.setItem(
-                  "gotit.practiceEffects.v1",
-                  next ? "on" : "off",
-                );
-              } catch {
-                // The setting remains active for this tab when storage is blocked.
-              }
-            }}
-          >
-            {effectsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
-          </button>
-        </div>
       </header>
       {celebration && (
         <StreakCelebration
@@ -924,6 +943,19 @@ export function LiveGameSessionPage() {
       <main
         className={`live-session-main${activeCard ? " session-active" : ""}${activeCard && exercise?.kind === "provider" ? " provider-active" : ""}`}
       >
+        {activeCard && !sessionCompleted && (
+          <h1 className="session-screen-title">
+            {t(
+              studyCard
+                ? "gameUi.studyTitle"
+                : exercise?.kind === "typed"
+                  ? "gameUi.recallTitle"
+                  : type === "matching"
+                    ? "gameUi.matchTitle"
+                    : "labels." + modes[type],
+            )}
+          </h1>
+        )}
         {error && (
           <div role="alert" className="form-error">
             {error}
@@ -1074,13 +1106,19 @@ export function LiveGameSessionPage() {
                 </div>
               </div>
             )}
+            <Link
+              className="button ghost"
+              to={`/achievements?return=${encodeURIComponent(returnTo)}`}
+            >
+              {t("ux.achievements")}
+            </Link>
             <div className="finish-actions">
               <button className="button primary" onClick={restart}>
                 <RotateCcw size={17} />
                 {t("game.anotherRound")}
               </button>
-              <Link className="button secondary" to="/dashboard">
-                {t("game.myProgress")}
+              <Link className="button secondary" to={returnTo}>
+                {t("common.back")}
               </Link>
             </div>
           </section>
@@ -1094,14 +1132,6 @@ export function LiveGameSessionPage() {
                 })}
               </span>
               <span>{t("game.familiarize")}</span>
-              <button
-                className="button primary study-skip"
-                disabled={busy}
-                onClick={() => void beginReview()}
-              >
-                {t("game.skipToReview")}
-                <ArrowLeft size={17} />
-              </button>
             </div>
             <progress
               className="live-session-progress"
@@ -1193,6 +1223,15 @@ export function LiveGameSessionPage() {
                 </button>
               </div>
             </section>
+            <button
+              className="button ghost study-skip"
+              disabled={busy}
+              onClick={() => void beginReview()}
+            >
+              {t("game.skipToReview")}
+              <ArrowLeft size={17} />
+            </button>
+            <p className="study-evidence-note">{t("gameUi.studyNote")}</p>
           </>
         ) : (
           exercise && (
@@ -1445,13 +1484,21 @@ export function LiveGameSessionPage() {
                             <span>{t("game.yourAnswer")}</span>
                             {exercise.prompt.letterCount ? (
                               <LetterBoxesInput
-                                autoFocus
+                                autoFocus={params.get("input") !== "letters"}
                                 label={t("game.yourAnswer")}
                                 value={answer}
                                 length={exercise.prompt.letterCount}
                                 wordLengths={exercise.prompt.wordLengths}
                                 disabled={busy || !!pending}
                                 onChange={setAnswer}
+                                showLetters
+                                language={
+                                  exercise.direction === "translation_to_source"
+                                    ? answerLanguages[exercise.learningItemId]
+                                        ?.source
+                                    : answerLanguages[exercise.learningItemId]
+                                        ?.translation
+                                }
                               />
                             ) : (
                               <input
@@ -1607,6 +1654,43 @@ export function LiveGameSessionPage() {
             </>
           )
         )}
+        <details className="session-extra">
+          <summary>{t("ux.details")}</summary>{" "}
+          <div className="session-hud" aria-live="polite">
+            <span className={`hud-chip combo${combo >= 3 ? " active" : ""}`}>
+              <Flame size={17} />
+              <b>{combo}</b>
+              {t("game.combo")}
+            </span>
+            <span className="hud-chip xp">
+              <Zap size={17} />
+              <b>{sessionXp}</b>
+              XP
+            </span>
+            <button
+              type="button"
+              className="hud-sound"
+              aria-label={
+                effectsEnabled ? t("game.effectsOff") : t("game.effectsOn")
+              }
+              aria-pressed={effectsEnabled}
+              onClick={() => {
+                const next = !effectsEnabled;
+                setEffectsEnabled(next);
+                try {
+                  localStorage.setItem(
+                    "gotit.practiceEffects.v1",
+                    next ? "on" : "off",
+                  );
+                } catch {
+                  // The setting remains active for this tab when storage is blocked.
+                }
+              }}
+            >
+              {effectsEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
+            </button>
+          </div>
+        </details>
       </main>
     </div>
   );

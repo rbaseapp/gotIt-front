@@ -27,7 +27,7 @@ import type {
   PracticeSession,
   UserProfile,
 } from "../types";
-import i18n from "../i18n";
+import i18n, { setUiLocale } from "../i18n";
 
 const defaultProfile: UserProfile = {
   name: "",
@@ -195,6 +195,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const profile = mode === "demo" ? demo.profile : liveProfile;
+  useEffect(() => {
+    const preferences = profile.learningPreferences;
+    document.documentElement.dataset.textScale =
+      preferences?.textScale ?? "normal";
+    document.documentElement.style.setProperty(
+      "--text-scale",
+      preferences?.textScale === "large" ? "1.2" : "1",
+    );
+    document.documentElement.dataset.reduceMotion = preferences?.reducedMotion
+      ? "true"
+      : "false";
+    document.documentElement.dataset.feedbackSounds = preferences?.sounds
+      ? "true"
+      : "false";
+    if (preferences?.uiLocale) void setUiLocale(preferences.uiLocale);
+  }, [profile.learningPreferences]);
   const dateOf = (value: string) =>
     new Intl.DateTimeFormat("en-CA", { timeZone: profile.timezone }).format(
       new Date(value),

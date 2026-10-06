@@ -8,6 +8,9 @@ import { FeedbackProvider } from "./components/Feedback";
 import "./i18n";
 import "./styles.css";
 import "./production.css";
+import "./ux.css";
+import "./figma-review.css";
+import "./path-review.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

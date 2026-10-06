@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:responsive": "playwright test",
     "start": "node server/gateway.mjs",
-    "test:gateway": "node --test test/gateway.test.mjs",
+    "test:gateway": "node --test test/gateway.test.mjs test/source-map-security.test.mjs",
     "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run test:gateway"
   },
   "dependencies": {

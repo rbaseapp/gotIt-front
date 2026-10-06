@@ -1,4 +1,5 @@
 import {
+  parseEmailAccepted,
   parseProfile,
   parseTokens,
   parseUser,
@@ -28,6 +29,10 @@ export class ApiError extends Error {
 }
 
 const messageCodes = new Set([
+  "EMAIL_VERIFICATION_REQUIRED",
+  "EMAIL_CODE_INVALID",
+  "EMAIL_RATE_LIMITED",
+  "EMAIL_DELIVERY_UNAVAILABLE",
   "SUBSCRIPTION_REQUIRED",
   "PRIVATE_LESSON_MINUTES_REQUIRED",
   "AI_MONTHLY_LIMIT_REACHED",
@@ -87,7 +92,8 @@ async function request(
       ? 95000
       : path === "pronunciation/assessments"
         ? 60000
-        : path.includes("/study/") && path.endsWith("/image")
+        : (path.includes("/study/") || path.includes("/entries/")) &&
+            path.endsWith("/image")
           ? 120000
           : path === "private-lessons/realtime-sessions"
             ? 90000
@@ -216,6 +222,42 @@ export function clearTokens() {
 }
 
 export const api = {
+  async registerEmail(email: string, password: string) {
+    return checked(
+      parseEmailAccepted,
+      await request(coreUrl, "auth/register", "POST", {
+        email: email.trim(),
+        password,
+      }),
+    );
+  },
+  async requestEmailCode(email: string, purpose: "verify" | "reset") {
+    return checked(
+      parseEmailAccepted,
+      await request(
+        coreUrl,
+        purpose === "verify"
+          ? "auth/resend-verification"
+          : "auth/forgot-password",
+        "POST",
+        { email: email.trim() },
+      ),
+    );
+  },
+  async completeEmailCode(
+    email: string,
+    code: string,
+    password: string,
+    purpose: "verify" | "reset",
+  ) {
+    await request(
+      coreUrl,
+      purpose === "verify" ? "auth/verify-email" : "auth/reset-password",
+      "POST",
+      { email: email.trim(), code, password },
+    );
+    clearTokens();
+  },
   async google(idToken: string): Promise<AuthUser> {
     if (!idToken || idToken.length > 16384)
       throw new ApiError(
