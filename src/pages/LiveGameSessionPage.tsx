@@ -434,6 +434,11 @@ export function LiveGameSessionPage() {
               `practice/sessions/${resume}`,
             )
           ).session;
+          if (
+            unitId &&
+            (value.scope?.type !== "pack" || value.scope.id !== unitId)
+          )
+            throw new Error(t("game.invalidPack"));
           if (value.status === "active") {
             resumedCards = (
               await product(
@@ -486,6 +491,11 @@ export function LiveGameSessionPage() {
               creation.current.eventId,
             )
           ).session;
+          if (
+            unitId &&
+            (value.scope?.type !== "pack" || value.scope.id !== unitId)
+          )
+            throw new Error(t("game.invalidPack"));
         }
         if (mounted.current) setSession(value);
       }

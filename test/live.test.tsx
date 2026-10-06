@@ -413,6 +413,32 @@ describe("live server-backed flows", () => {
       fetchMock.mock.calls.some(([url]) => url.endsWith("/practice/attempts")),
     ).toBe(false);
   });
+  it.each([null, { type: "pack", id: secondItemId, title: "Other unit" }])(
+    "rejects a resumed session outside the requested unit (%j)",
+    async (scope) => {
+      const fetchMock = mount(
+        `/learn/session/smart?resume=${sessionId}&pack=${itemId}&language=en`,
+        async (url) => {
+          if (url.endsWith(`/practice/sessions/${sessionId}`))
+            return json({
+              session: { ...session, sessionType: "smart_review", scope },
+            });
+          throw new Error(
+            "Must not load practice content from outside the unit",
+          );
+        },
+      );
+      await userEvent
+        .setup()
+        .click(await screen.findByRole("button", { name: "מתחילים" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        i18n.t("game.invalidPack"),
+      );
+      expect(
+        fetchMock.mock.calls.some(([url]) => /\/study$|\/exercises$/.test(url)),
+      ).toBe(false);
+    },
+  );
   it.each([0, 2])(
     "rejects an Arabic resumed session with %i attempts while English is selected",
     async (attemptCount) => {
