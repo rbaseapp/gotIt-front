@@ -587,8 +587,8 @@
         "description": "Reliez un mot à sa définition parmi plusieurs options"
       },
       "drag_drop": {
-        "name": "Glisser-déposer",
-        "description": "Glissez trois définitions dans les cases de leurs mots"
+        "name": "Reconnaître le sens · Associer les mots",
+        "description": "Entraînez-vous à reconnaître le sens en associant mots et traductions en plusieurs manches."
       },
       "listening": {
         "name": "Écoute et orthographe",
@@ -989,10 +989,10 @@
     "matchTitle": "Reliez les paires",
     "matchHelp": "Choisissez une carte de chaque côté. Le serveur vérifie chaque association.",
     "matchProgress": "{{current}} sur {{total}} paires",
-    "dragDropLaunch": "Trois mots, trois définitions et un petit défi interactif.",
-    "dragDropTitle": "Associez chaque définition",
+    "dragDropLaunch": "Entraînez-vous à reconnaître le sens en associant mots et traductions en plusieurs manches.",
+    "dragDropTitle": "Reconnaître le sens · Associer les mots",
     "dragDropHelp": "Glissez chaque définition dans la case vide près de son mot. Vous pouvez aussi choisir une définition puis une case.",
-    "dragDropDraftHelp": "Placez les trois définitions, déplacez-les autant que nécessaire, puis choisissez Terminé pour vérifier.",
+    "dragDropDraftHelp": "Glissez un sens vers son mot, ou touchez un sens puis une case. Vous pouvez modifier avant de vérifier.",
     "dragDropProgress": "{{current}} sur {{total}} placées",
     "dragDropScore": "{{correct}} sur {{total}} correctes",
     "placedMeaning": "Définition placée : {{meaning}}",
@@ -1008,7 +1008,7 @@
     "correctMeaning": "Réponse correcte : {{meaning}}",
     "boardChecked": "Le plateau a été vérifié",
     "readyToCheck": "Tout est placé. Vous pouvez encore réorganiser.",
-    "arrangeBeforeCheck": "Placez les trois définitions pour activer la vérification.",
+    "arrangeBeforeCheck": "Placez tous les sens pour vérifier.",
     "checkingBoard": "Vérification…",
     "finishedArranging": "Terminé",
     "continueToSummary": "Continuer vers le résumé",

@@ -633,8 +633,8 @@
         "description": "Connect a word to its meaning from several options"
       },
       "drag_drop": {
-        "name": "Drag & Drop",
-        "description": "Drag three meanings into the slots beside their words"
+        "name": "Meaning recognition · Word matching",
+        "description": "Practice recognizing meanings by matching words and translations over several rounds."
       },
       "listening": {
         "name": "Listening and spelling",
@@ -1035,10 +1035,10 @@
     "matchTitle": "Connect the pairs",
     "matchHelp": "Choose a word and its matching translation.",
     "matchProgress": "{{current}} of {{total}} pairs",
-    "dragDropLaunch": "Three words, three meanings and one quick hands-on challenge.",
-    "dragDropTitle": "Match every meaning",
+    "dragDropLaunch": "Practice recognizing meanings by matching words and translations over several rounds.",
+    "dragDropTitle": "Meaning recognition · Word matching",
     "dragDropHelp": "Drag each meaning into the empty slot beside its word. You can also select a meaning and then select a slot.",
-    "dragDropDraftHelp": "Arrange all three meanings, move them as often as you like, then select Finished to check the board.",
+    "dragDropDraftHelp": "Drag a meaning to its word, or tap a meaning and then a slot. You can rearrange before checking.",
     "dragDropProgress": "{{current}} of {{total}} placed",
     "dragDropScore": "{{correct}} of {{total}} correct",
     "placedMeaning": "Placed meaning: {{meaning}}",
@@ -1054,7 +1054,7 @@
     "correctMeaning": "Correct: {{meaning}}",
     "boardChecked": "The board has been checked",
     "readyToCheck": "Everything is placed. You can still rearrange the cards.",
-    "arrangeBeforeCheck": "Place all three meanings to enable checking.",
+    "arrangeBeforeCheck": "Place all meanings to check the board.",
     "checkingBoard": "Checking…",
     "finishedArranging": "Finished",
     "continueToSummary": "Continue to summary",

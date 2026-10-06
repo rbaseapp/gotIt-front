@@ -106,7 +106,7 @@ describe("complete frontend flows", () => {
     mount("/learn/session/drag_drop");
     const user = userEvent.setup();
     await screen.findByRole("heading", {
-      name: "התאימו כל פירוש למילה",
+      name: "זיהוי משמעות · התאמת מילים",
     });
     expect(document.querySelectorAll(".drag-drop-row")).toHaveLength(3);
     expect(document.querySelectorAll(".meaning-card")).toHaveLength(3);
@@ -155,7 +155,7 @@ describe("complete frontend flows", () => {
   it("includes drag and drop in the smart learning flow", async () => {
     mount("/learn/session/smart");
     await screen.findByRole("heading", {
-      name: "התאימו כל פירוש למילה",
+      name: "זיהוי משמעות · התאמת מילים",
     });
     expect(document.querySelectorAll(".drag-drop-row")).toHaveLength(3);
     expect(
