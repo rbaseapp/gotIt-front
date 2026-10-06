@@ -67,6 +67,12 @@ for (const locale of ["en", "he"] as const) {
     }, locale);
     await page.route("**/api/v1/**", async (route) => {
       const path = new URL(route.request().url()).pathname;
+      if (path.endsWith("/dashboard/languages")) {
+        await route.fulfill({
+          json: { languages: [{ code: "en", count: 1 }] },
+        });
+        return;
+      }
       const response = path.endsWith("/auth/refresh")
         ? {
             accessToken: "browser-fixture-access",

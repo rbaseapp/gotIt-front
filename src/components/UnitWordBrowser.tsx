@@ -2,8 +2,14 @@ import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import { ReadAloud } from "./CourseComposer";
-import { product, studyImageSchema, type WordPackEntry } from "../lib/product";
+import {
+  product,
+  studyImageSchema,
+  wordExampleSchema,
+  type WordPackEntry,
+} from "../lib/product";
 import { useResource } from "../lib/useResource";
+import { RemoteState } from "./RemoteState";
 
 export function UnitWordBrowser({
   entries,
@@ -26,18 +32,38 @@ export function UnitWordBrowser({
   const selected =
     entries.find((entry) => entry.id === selectedId) ?? entries[0];
   const entryId = selected?.id;
+  const exampleText = selected?.exampleText;
   const picture = useResource(
+    useCallback(async () => {
+      if (!entryId) return { image: null, entryId };
+      const path = `word-packs/${packId}/entries/${entryId}/image`;
+      const cached = await product(studyImageSchema, path);
+      const value = cached.image
+        ? cached
+        : await product(studyImageSchema, path, "POST", {});
+      return { ...value, entryId };
+    }, [packId, entryId]),
+  );
+  const example = useResource(
     useCallback(
-      () =>
-        entryId
-          ? product(
-              studyImageSchema,
-              `word-packs/${packId}/entries/${entryId}/image`,
-            )
-          : Promise.resolve({ image: null }),
-      [packId, entryId],
+      async () => ({
+        ...(exampleText || !entryId
+          ? { exampleText: exampleText ?? null, generated: false }
+          : await product(
+              wordExampleSchema,
+              `word-packs/${packId}/entries/${entryId}/example`,
+              "POST",
+              {},
+            )),
+        entryId,
+      }),
+      [packId, entryId, exampleText],
     ),
   );
+  const image = picture.data?.entryId === entryId ? picture.data.image : null;
+  const sentence =
+    exampleText ||
+    (example.data?.entryId === entryId ? example.data.exampleText : null);
   return (
     <div className="unit-browser" data-figma-desktop="43:2725">
       <section
@@ -103,20 +129,21 @@ export function UnitWordBrowser({
           <p className="unit-word-meaning" dir="auto" lang={supportLanguage}>
             {selected.translationText}
           </p>
-          {picture.data?.image && (
+          <RemoteState
+            loading={picture.loading}
+            error={picture.error}
+            retry={() => void picture.reload()}
+          />
+          {!picture.loading && !picture.error && !image && (
+            <p role="status">{t("unitStudy.noImage")}</p>
+          )}
+          {image && (
             <figure className="unit-word-picture">
-              <img
-                src={picture.data.image.url}
-                alt={picture.data.image.alt || selected.sourceText}
-              />
-              {picture.data.image.sourceUrl && (
+              <img src={image.url} alt={image.alt || selected.sourceText} />
+              {image.sourceUrl && (
                 <figcaption>
-                  <a
-                    href={picture.data.image.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {picture.data.image.creator || picture.data.image.provider}
+                  <a href={image.sourceUrl} target="_blank" rel="noreferrer">
+                    {image.creator || image.provider}
                   </a>
                 </figcaption>
               )}
@@ -124,12 +151,26 @@ export function UnitWordBrowser({
           )}
           <div className="unit-word-example">
             <p>{t("pathUi.inSentence")}</p>
-            {selected.exampleText ? (
+            <RemoteState
+              loading={example.loading}
+              error={example.error}
+              retry={() => void example.reload()}
+            />
+            {sentence ? (
               <blockquote dir="auto" lang={language}>
-                {selected.exampleText}
+                {sentence}
               </blockquote>
-            ) : (
+            ) : !example.loading && !example.error ? (
               <p>{t("pathUi.noExample")}</p>
+            ) : null}
+            {sentence && (
+              <ReadAloud
+                text={sentence}
+                language={language}
+                label={t("unitStudy.listenExample")}
+                className="button ghost"
+                showLabel
+              />
             )}
           </div>
           <label className="unit-known-toggle">
@@ -137,10 +178,14 @@ export function UnitWordBrowser({
               type="checkbox"
               disabled={busy}
               checked={!!selected.known}
+              aria-describedby="unit-known-help"
               onChange={() => onKnown(selected)}
             />
-            {t("pathUi.alreadyKnown")}
+            {t("unitStudy.knownLabel")}
           </label>
+          <p id="unit-known-help" className="unit-known-help">
+            {t("unitStudy.knownHelp")}
+          </p>
         </aside>
       )}
     </div>
