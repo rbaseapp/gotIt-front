@@ -609,6 +609,7 @@ export const labels: Record<string, string> = new Proxy(
 export function errorMessage(reason: unknown): string {
   const localizedCodes = new Set([
     "NO_ELIGIBLE_ITEMS",
+    "UNIT_DAILY_NEW_LIMIT",
     "SPEECH_NOT_CONFIGURED",
     "READING_NOT_CONFIGURED",
     "INSUFFICIENT_DISTRACTORS",

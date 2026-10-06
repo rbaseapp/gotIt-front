@@ -37,6 +37,11 @@ describe("production boundaries", () => {
         ),
       ),
     ).toBe(he.productErrors.UNIT_WORDS_REQUIRED);
+    expect(
+      errorMessage(
+        new ApiError(409, "UNIT_DAILY_NEW_LIMIT", "Daily allowance used"),
+      ),
+    ).toBe(he.productErrors.UNIT_DAILY_NEW_LIMIT);
   });
   it("rejects malformed server projections instead of injecting demo defaults", () => {
     expect(itemSchema.safeParse({ id, sourceText: "remember" }).success).toBe(

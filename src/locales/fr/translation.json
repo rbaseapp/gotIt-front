@@ -1630,6 +1630,7 @@
   },
   "productErrors": {
     "NO_ELIGIBLE_ITEMS": "Aucun mot admissible n'a été trouvé pour cette pratique.",
+    "UNIT_DAILY_NEW_LIMIT": "Le quota de nouveaux mots du jour est atteint. Pour continuer dans l'ordre de l'unité, revenez demain ou augmentez le nombre de nouveaux mots par jour dans les paramètres.",
     "SPEECH_NOT_CONFIGURED": "L'écoute et la prononciation ne sont pas disponibles pour la langue de ce mot.",
     "READING_NOT_CONFIGURED": "Le service de lecture IA n'est pas encore configuré.",
     "INSUFFICIENT_DISTRACTORS": "Il n'y a pas assez de mots appropriés pour un exercice à choix multiples.",

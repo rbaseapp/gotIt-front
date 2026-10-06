@@ -1676,6 +1676,7 @@
   },
   "productErrors": {
     "NO_ELIGIBLE_ITEMS": "No eligible words were found for this practice.",
+    "UNIT_DAILY_NEW_LIMIT": "Today's new-word allowance has been used. To continue in unit order, return tomorrow or increase new words per day in Settings.",
     "SPEECH_NOT_CONFIGURED": "Listening and pronunciation are unavailable for this word's language.",
     "READING_NOT_CONFIGURED": "Reading generation is currently unavailable. Try again later.",
     "INSUFFICIENT_DISTRACTORS": "There are not enough suitable words for a multiple-choice exercise.",
