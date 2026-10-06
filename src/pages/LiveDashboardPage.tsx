@@ -10,13 +10,21 @@ import { DashboardDetails } from "../components/DashboardDetails";
 import { useResource } from "../lib/useResource";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { getLanguageOptions } from "../lib/languages";
-import { product, dashboardSchema, page, sessionSchema } from "../lib/product";
+import {
+  product,
+  dashboardSchema,
+  page,
+  sessionSchema,
+  wordPacksSchema,
+} from "../lib/product";
 import { courseApi, lessonLink } from "../lib/courses";
 import {
   selectedProgram,
   homeLanguage,
   chooseHomeLanguage,
+  smartSessionLink,
 } from "../lib/learningNavigation";
+import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
 import hero from "../assets/ux/learning-hero.png";
 import wordCards from "../assets/ux/word-cards.png";
 import personalProgram from "../assets/ux/personal-program.png";
@@ -43,6 +51,78 @@ export function LiveDashboardPage() {
     ),
   );
   const programs = useResource(useCallback(() => courseApi.list(), []));
+  const latestSelected = selectedProgram(user);
+  const latestCourse = programs.data?.courses.find(
+    (item) => item.id === latestSelected && item.activeVersion !== null,
+  );
+  const latestUnitKey =
+    latestCourse?.nextLesson?.unitKey ??
+    latestCourse?.versions
+      .find((version) => version.version === latestCourse.activeVersion)
+      ?.plan.units.at(-1)?.key;
+  const programWords = useResource(
+    useCallback(async () => {
+      const course = programs.data?.courses.find(
+        (item) => item.id === latestSelected && item.activeVersion !== null,
+      );
+      const unitKey =
+        course?.nextLesson?.unitKey ??
+        course?.versions
+          .find((version) => version.version === course.activeVersion)
+          ?.plan.units.at(-1)?.key;
+      return course && unitKey
+        ? courseApi.unitWords(course.id, unitKey)
+        : undefined;
+    }, [programs.data, latestSelected]),
+  );
+  const programPacks = useResource(
+    useCallback(
+      () =>
+        latestSelected === "english-path"
+          ? product(wordPacksSchema, "word-packs")
+          : Promise.resolve({ packs: [] }),
+      [latestSelected],
+    ),
+  );
+  const preparedPath = englishPathLevels(
+    programPacks.data?.packs ?? [],
+  ).flatMap((level) => level.packs);
+  const latestPack =
+    preparedPath.find((pack) => !completedEnglishUnit(pack)) ??
+    preparedPath.at(-1);
+  const programIds = [
+    ...new Set(
+      programWords.data?.words.flatMap((word) =>
+        word.choices.map((choice) => choice.id),
+      ) ?? [],
+    ),
+  ].slice(0, 100);
+  const programPractice =
+    latestSelected === "english-path" && latestPack
+      ? latestPack.installed
+        ? smartSessionLink(
+            new URLSearchParams({
+              pack: latestPack.id,
+              language: latestPack.track.sourceLanguageCode,
+              return: "/dashboard",
+            }),
+          )
+        : `/english-learning?${new URLSearchParams({ unit: latestPack.id, tab: "words", practice: "smart" })}`
+      : latestCourse &&
+          programIds.length &&
+          programWords.data?.unitKey === latestUnitKey &&
+          programWords.data?.targetLanguageCode ===
+            latestCourse.preferences.targetLanguageCode &&
+          !programWords.loading &&
+          !programWords.error
+        ? smartSessionLink(
+            new URLSearchParams({
+              items: programIds.join(","),
+              language: latestCourse.preferences.targetLanguageCode,
+              return: "/dashboard",
+            }),
+          )
+        : undefined;
   const sessions = useResource(
     useCallback(
       async () => ({
@@ -73,7 +153,9 @@ export function LiveDashboardPage() {
   );
   const resumable =
     sessions.data?.languageCode === code
-      ? sessions.data.items.find((item) => item.status === "active")
+      ? sessions.data.items.find(
+          (item) => item.status === "active" && !item.scope,
+        )
       : undefined;
   const resumableType =
     resumable?.sessionType === "smart_review"
@@ -270,20 +352,22 @@ export function LiveDashboardPage() {
                 <img className="ux-word-illustration" src={wordCards} alt="" />
               </div>
               <div className="ux-inline-actions">
-                <Link
-                  className="button secondary"
-                  to={
-                    isProgram && d.counts.total > 0
-                      ? smart + returnSuffix
-                      : "/vocabulary"
-                  }
-                >
-                  {t(
-                    isProgram && d.counts.total > 0
-                      ? "ux.shortReview"
-                      : "ux.wordCollection",
-                  )}
+                <Link className="button secondary" to={smart + returnSuffix}>
+                  {t("ux.vocabularyReview")}
                 </Link>
+                {latestSelected && (
+                  <Link
+                    className={`button primary${programPractice ? "" : " disabled"}`}
+                    to={programPractice ?? "/courses"}
+                    aria-disabled={!programPractice}
+                    tabIndex={programPractice ? undefined : -1}
+                    onClick={(event) => {
+                      if (!programPractice) event.preventDefault();
+                    }}
+                  >
+                    {t("ux.programSmartReview")}
+                  </Link>
+                )}
                 <Link
                   className="button ghost"
                   to={
@@ -295,6 +379,28 @@ export function LiveDashboardPage() {
                   {t(isProgram ? "ux.chooseGame" : "nav.wordPacks")}
                 </Link>
               </div>
+              {latestCourse &&
+                !programWords.loading &&
+                !programWords.error &&
+                !programIds.length && (
+                  <Link
+                    className="button ghost"
+                    to={`/courses/${latestCourse.id}/units/${latestUnitKey}/words`}
+                  >
+                    {t("ux.unitWords")}
+                  </Link>
+                )}
+              <RemoteState
+                loading={
+                  Boolean(latestSelected) &&
+                  (programWords.loading || programPacks.loading)
+                }
+                error={programWords.error || programPacks.error}
+                retry={() => {
+                  void programWords.reload();
+                  void programPacks.reload();
+                }}
+              />
             </section>
             {isProgram && (
               <section className="ux-card ux-home-other-program">

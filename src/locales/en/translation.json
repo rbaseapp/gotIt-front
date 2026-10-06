@@ -1985,6 +1985,8 @@
     "dueWords": "{{count}} words ready for review",
     "collectionWords": "{{count}} words in your collection",
     "shortReview": "Short review",
+    "vocabularyReview": "Review my vocabulary",
+    "programSmartReview": "Smart practice in my latest program",
     "wordCollection": "Open my words",
     "allPrograms": "All my programs",
     "gameHubTitle": "What would you like to play?",

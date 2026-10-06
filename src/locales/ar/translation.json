@@ -2031,6 +2031,8 @@
     "dueWords": "{{count}} words ready for review",
     "collectionWords": "{{count}} words in your collection",
     "shortReview": "Short review",
+    "vocabularyReview": "مراجعة مفرداتي",
+    "programSmartReview": "تدريب ذكي في آخر برنامج لي",
     "wordCollection": "Open my words",
     "allPrograms": "All my programs",
     "gameHubTitle": "What would you like to play?",

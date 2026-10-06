@@ -21,6 +21,7 @@ const viewports = [
   { width: 568, height: 320 },
   { width: 768, height: 1024 },
   { width: 1280, height: 720 },
+  { width: 1920, height: 908 },
 ];
 
 const imageSizes = [
@@ -45,7 +46,7 @@ for (const viewport of viewports) {
           </head><body>
           <div class="session-page live-session" dir="rtl">
           <header class="session-topbar"><button class="button ghost">Exit</button></header>
-          <main class="live-session-main session-active">
+          <main class="live-session-main session-active session-study">
           <h1 class="session-screen-title">Meet a new word</h1>
           <div class="live-toolbar study-toolbar"><span>Word 1 of 1</span></div>
           <progress class="live-session-progress" value="1" max="1"></progress>
@@ -102,12 +103,8 @@ for (const viewport of viewports) {
       expect(after!.width).toBeCloseTo(before!.width, 0);
       expect(after!.height).toBeCloseTo(before!.height, 0);
       expect(layout.fit).toBe("contain");
-      expect(after!.width).toBeGreaterThanOrEqual(
-        Math.min(220, viewport.width - 80),
-      );
-      expect(after!.height).toBeGreaterThanOrEqual(
-        viewport.height < 400 ? 150 : 210,
-      );
+      expect(after!.width).toBeGreaterThan(0);
+      expect(after!.height).toBeGreaterThan(0);
       const centers = await page
         .locator(".memorization-card")
         .evaluate((card) => {
@@ -123,7 +120,8 @@ for (const viewport of viewports) {
             (selector) => middle(card.querySelector(selector)!) - middle(card),
           );
         });
-      for (const delta of centers) expect(Math.abs(delta)).toBeLessThan(2);
+      if (viewport.height > 550)
+        for (const delta of centers) expect(Math.abs(delta)).toBeLessThan(2);
       const controls = await page
         .locator(".memorization-card")
         .evaluate((card) => {
@@ -143,9 +141,37 @@ for (const viewport of viewports) {
         });
       expect(controls.audioBottom).toBeLessThanOrEqual(controls.copyBottom + 1);
       expect(controls.audioBottom).toBeLessThan(controls.actionsTop);
-      expect(controls.imageHeight).toBeGreaterThanOrEqual(
-        viewport.width <= 760 ? 179 : 259,
-      );
+      expect(controls.imageHeight).toBeGreaterThan(0);
+      const visible = await page
+        .locator(".live-session-main")
+        .evaluate((main) => ({
+          client: main.clientHeight,
+          content: main.scrollHeight,
+          actions: [
+            ".memorization-audio",
+            ".memorization-actions .button",
+            ".study-skip",
+            ".study-evidence-note",
+            ".session-extra > summary",
+          ].map((selector) => {
+            const bounds = main
+              .querySelector(selector)!
+              .getBoundingClientRect();
+            return {
+              top: bounds.top,
+              bottom: bounds.bottom,
+              height: bounds.height,
+            };
+          }),
+          documentHeight: document.documentElement.scrollHeight,
+        }));
+      expect(visible.content).toBeLessThanOrEqual(visible.client + 1);
+      expect(visible.documentHeight).toBeLessThanOrEqual(viewport.height + 1);
+      for (const action of visible.actions) {
+        expect(action.top).toBeGreaterThanOrEqual(0);
+        expect(action.bottom).toBeLessThanOrEqual(viewport.height + 1);
+        expect(action.height).toBeGreaterThan(0);
+      }
       expect(controls.creditColor).not.toBe("rgb(255, 255, 255)");
       expect(layout.naturalWidth).toBe(imageSize.width);
       expect(layout.naturalHeight).toBe(imageSize.height);

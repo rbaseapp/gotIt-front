@@ -16,15 +16,24 @@ export function UnitLevels({
   current,
   onOpen,
   onWords,
+  compact = false,
 }: {
   packs: WordPack[];
   current?: WordPack;
   onOpen: (pack: WordPack) => void;
   onWords: (pack: WordPack) => void;
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
   const levels = englishPathLevels(packs);
-  const [level, setLevel] = useState(current?.track.levelCode ?? "beginner");
+  const [chosenLevel, setChosenLevel] = useState<{
+    unitId?: string;
+    value: string;
+  }>();
+  const level =
+    chosenLevel && chosenLevel.unitId === current?.id
+      ? chosenLevel.value
+      : (current?.track.levelCode ?? "beginner");
   const [query, setQuery] = useState("");
   const visible = levels.find((item) => item.level === level)?.packs ?? [];
   const featured =
@@ -32,7 +41,10 @@ export function UnitLevels({
     visible.find((pack) => !completedEnglishUnit(pack)) ??
     visible[0];
   return (
-    <div className="path-levels" data-figma-desktop="43:3083">
+    <div
+      className={`path-levels${compact ? " path-levels-compact" : ""}`}
+      data-figma-desktop="43:3083"
+    >
       <div
         className="path-level-tabs"
         role="group"
@@ -43,7 +55,7 @@ export function UnitLevels({
             key={value}
             className={value === level ? "active" : ""}
             aria-pressed={value === level}
-            onClick={() => setLevel(value)}
+            onClick={() => setChosenLevel({ unitId: current?.id, value })}
           >
             <span
               className={`ux-icon ${value === level ? "mint" : "lavender"}`}
@@ -90,13 +102,14 @@ export function UnitLevels({
               .map((pack) => (
                 <button
                   key={pack.id}
-                  className={`path-unit-row${pack.id === featured?.id ? " current" : ""}`}
+                  className={`path-unit-row${pack.id === current?.id ? " current" : ""}`}
+                  aria-current={pack.id === current?.id ? "step" : undefined}
                   onClick={() => onOpen(pack)}
                 >
                   <span className="ux-icon mint">
                     {completedEnglishUnit(pack) ? (
                       <Check />
-                    ) : pack.id === featured?.id ? (
+                    ) : pack.id === current?.id ? (
                       <BookOpen />
                     ) : (
                       <ChevronLeft />
@@ -118,7 +131,7 @@ export function UnitLevels({
                     {t(
                       completedEnglishUnit(pack)
                         ? "englishPath.completed"
-                        : pack.id === featured?.id
+                        : pack.id === current?.id
                           ? "courses.youAreHere"
                           : "pathUi.canBrowse",
                     )}
@@ -127,9 +140,15 @@ export function UnitLevels({
               ))}
           </div>
         </section>
-        {featured && (
+        {featured && !compact && (
           <aside className="ux-card path-level-featured">
-            <span className="pill mint">{t("courses.youAreHere")}</span>
+            <span className="pill mint">
+              {t(
+                featured.id === current?.id
+                  ? "courses.youAreHere"
+                  : "pathUi.canBrowse",
+              )}
+            </span>
             <p>{t("englishPath.unit", { number: featured.moduleNumber })}</p>
             <h2 dir="auto">{featured.title}</h2>
             <p>

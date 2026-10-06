@@ -85,6 +85,12 @@
 .unit-map-selectors {
   margin-bottom: 24px;
 }
+.path-levels-compact {
+  margin-bottom: 24px;
+}
+.path-levels-compact .path-level-layout {
+  grid-template-columns: 1fr;
+}
 .unit-teacher-station > .button {
   font-size: 23px;
 }
@@ -780,5 +786,189 @@
   }
   .new-program-page .ux-card {
     padding: 18px;
+  }
+}
+
+/* Reserve the footer before sizing the study image, including short viewports. */
+.session-page.live-session:has(.memorization-card) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: var(--game-viewport-height, 100dvh);
+  min-height: 0;
+}
+.live-session:has(.memorization-card) .session-topbar {
+  height: clamp(48px, 8dvh, 80px);
+  min-height: 0;
+  padding: 6px 20px;
+}
+.live-session:has(.memorization-card) .session-topbar .brand-logo {
+  width: clamp(90px, 16dvh, 150px);
+}
+.live-session .live-session-main.session-study {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto 6px minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "heading heading"
+    "toolbar toolbar"
+    "progress progress"
+    "card card"
+    "skip details"
+    "note note";
+  height: 100%;
+  min-height: 0;
+  margin-block: 0;
+  padding: 8px 16px max(8px, env(safe-area-inset-bottom));
+  gap: clamp(4px, 1dvh, 12px);
+  overflow: hidden;
+}
+.session-study > .session-screen-title {
+  grid-area: heading;
+  font-size: calc(clamp(22px, 4.3dvh, 40px) * var(--text-scale, 1));
+  line-height: 1.15;
+}
+.session-study > .study-toolbar {
+  grid-area: toolbar;
+  min-height: 0;
+  font-size: calc(clamp(13px, 2.3dvh, 20px) * var(--text-scale, 1));
+  line-height: 1.2;
+}
+.session-study > .live-session-progress {
+  grid-area: progress;
+  width: 100%;
+  height: 6px;
+  margin: 0;
+}
+.live-session .session-study .memorization-card {
+  grid-area: card;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-areas: "visual" "copy" "actions";
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  padding: clamp(8px, 2dvh, 20px);
+  gap: clamp(4px, 1dvh, 10px);
+  overflow: hidden;
+}
+.live-session .session-study .memorization-visual {
+  grid-area: visual;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: min(100%, 380px);
+  height: 100%;
+  min-height: 0;
+  max-height: 300px;
+  align-self: center;
+}
+.live-session .session-study .memorization-visual > img,
+.live-session .session-study .memorization-image-loading {
+  grid-row: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  object-fit: contain;
+}
+.live-session .session-study .memorization-visual .image-credit {
+  grid-row: 2;
+  min-height: 0;
+  padding: 2px;
+  font-size: clamp(9px, 1.4dvh, 12px);
+  line-height: 1.2;
+}
+.live-session .session-study .memorization-copy {
+  grid-area: copy;
+  min-height: 0;
+  gap: clamp(3px, 0.8dvh, 8px);
+}
+.live-session .session-study .memorization-copy h1 {
+  font-size: calc(clamp(22px, 5dvh, 44px) * var(--text-scale, 1));
+  line-height: 1.1;
+}
+.live-session .session-study .memorization-translation {
+  font-size: calc(clamp(16px, 3dvh, 26px) * var(--text-scale, 1));
+  line-height: 1.2;
+}
+.live-session .session-study .memorization-audio,
+.live-session .session-study .memorization-actions .button {
+  min-height: 40px;
+  padding: 7px 14px;
+  margin: 0;
+  font-size: calc(clamp(14px, 2.5dvh, 20px) * var(--text-scale, 1));
+  line-height: 1.2;
+}
+.live-session .session-study .memorization-actions {
+  grid-area: actions;
+}
+.live-session
+  .session-study
+  .memorization-card:not(:has(.memorization-visual)) {
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "copy" "actions";
+}
+.live-session .session-study > .study-skip {
+  grid-area: skip;
+  justify-self: start;
+  min-height: 40px;
+  padding: 4px 8px;
+  font-size: calc(clamp(13px, 2.2dvh, 18px) * var(--text-scale, 1));
+}
+.live-session .session-study > .study-evidence-note {
+  grid-area: note;
+  font-size: calc(clamp(11px, 1.7dvh, 16px) * var(--text-scale, 1));
+  line-height: 1.25;
+}
+.session-study > .session-extra {
+  grid-area: details;
+  position: relative;
+  align-self: center;
+}
+.session-study > .session-extra > summary {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding-inline: 8px;
+}
+.session-study > .session-extra[open] {
+  grid-area: auto;
+  position: absolute;
+  inset-inline: 16px;
+  bottom: 8px;
+  max-height: calc(100% - 16px);
+  overflow: auto;
+  z-index: 5;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 8px 28px #152d2426;
+}
+.session-study > .session-extra blockquote {
+  margin: 8px 0;
+}
+@media (max-height: 550px) and (min-width: 480px) {
+  .live-session .live-session-main.session-study {
+    grid-template-rows: auto 5px minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "heading toolbar"
+      "progress progress"
+      "card card"
+      "skip details"
+      "note note";
+  }
+  .live-session .session-study .memorization-card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "visual copy" "visual actions";
+  }
+  .live-session .session-study .memorization-audio,
+  .live-session .session-study .memorization-actions .button,
+  .live-session .session-study > .study-skip,
+  .session-study > .session-extra > summary {
+    min-height: 32px;
+    padding-block: 4px;
   }
 }

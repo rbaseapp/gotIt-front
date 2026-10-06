@@ -170,6 +170,18 @@ export type CourseUnit = z.infer<typeof courseUnitSchema>;
 export type Homework = z.infer<typeof homeworkSchema>;
 export type HomeworkSummary = z.infer<typeof homeworkSummarySchema>;
 const courseResponse = z.object({ course: courseSchema });
+export const courseWordsSchema = z.object({
+  title: z.string(),
+  unitKey: z.string(),
+  targetLanguageCode: z.string(),
+  supportLanguageCode: z.string(),
+  words: z.array(
+    z.object({
+      sourceText: z.string(),
+      choices: z.array(z.object({ id: uuid, translationText: z.string() })),
+    }),
+  ),
+});
 const homeworkResponse = z.object({ homework: homeworkSchema });
 const realtimeResponse = z.object({
   realtime: z.object({
@@ -197,6 +209,11 @@ export const courseApi = {
       "courses",
     ),
   get: (id: string) => product(courseResponse, `courses/${id}`),
+  unitWords: (id: string, unitKey: string) =>
+    product(
+      courseWordsSchema,
+      `courses/${id}/units/${encodeURIComponent(unitKey)}/words`,
+    ),
   delete: (id: string) => product(z.undefined(), `courses/${id}`, "DELETE"),
   realtimeSession: (id: string) =>
     product(realtimeResponse, `courses/${id}/realtime-session`, "POST"),

@@ -1985,6 +1985,8 @@
     "dueWords": "{{count}} מילים מוכנות לחזרה",
     "collectionWords": "{{count}} מילים באוסף שלכם",
     "shortReview": "חזרה קצרה",
+    "vocabularyReview": "חזרה על אוצר המילים שלי",
+    "programSmartReview": "תרגול חכם בתוכנית האחרונה",
     "wordCollection": "למילים שלי",
     "allPrograms": "כל התוכניות שלי",
     "gameHubTitle": "במה תרצו לשחק?",

@@ -130,8 +130,49 @@ async function fixture(page: Page, allKnown = false) {
           generated: true,
         },
       });
-    if (path.endsWith("/practice/sessions") && method === "POST")
+    if (path.endsWith("/practice/sessions") && method === "POST") {
       created.push(route.request().postDataJSON());
+      return route.fulfill({
+        json: {
+          session: {
+            id: "22222222-2222-4222-8222-222222222222",
+            sessionType: "smart_review",
+            status: "active",
+            startedAt: "2026-10-07T00:00:00.000Z",
+            endedAt: null,
+            durationSeconds: null,
+            itemCount: entries.filter((entry) => !entry.known).length,
+            attemptCount: 0,
+            correctCount: 0,
+            xpEarned: 0,
+            algorithmVersion: "fixture",
+            scope: { type: "pack", id: packId, title: pack.title },
+          },
+        },
+      });
+    }
+    if (path.endsWith("/study"))
+      return route.fulfill({
+        json: {
+          cards: entries
+            .filter((entry) => !entry.known)
+            .map((entry) => ({
+              learningItemId: entry.id,
+              sourceText: entry.sourceText,
+              translationText: entry.translationText,
+              sourceLanguageCode: "en",
+              translationLanguageCode: "he",
+              context: null,
+              audioUrl: null,
+            })),
+        },
+      });
+    if (path.includes("/study/") && path.endsWith("/image"))
+      return route.fulfill({
+        json: {
+          image: { url: png, alt: "you", generated: true, provider: "fixture" },
+        },
+      });
     return route.fallback();
   });
   return { created, added };
@@ -179,29 +220,21 @@ for (const width of [320, 1487])
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(width + 1);
-    await page.getByRole("button", { name: he.unitStudy.chooseGame }).click();
-    await expect(page).toHaveURL(new RegExp(`/learn\\?pack=${packId}`));
-    await expect(page.getByText(he.unitStudy.scopeHelp)).toBeVisible();
-    expect(added).toEqual([[second]]);
-    const links = await page
-      .locator('a[href*="/learn/session/"]')
-      .evaluateAll((elements) =>
-        elements.map((e) => (e as HTMLAnchorElement).href),
-      );
-    expect(links.length).toBeGreaterThanOrEqual(4);
-    for (const link of links) {
-      const params = new URL(link).searchParams;
-      expect(params.get("pack")).toBe(packId);
-      expect(params.get("language")).toBe("en");
-      expect(params.get("return")).toContain(`unit=${packId}&tab=words`);
-    }
-    await page.locator('a[href*="/learn/session/recall"]').first().click();
     await page
-      .getByRole("button", { name: he.game.start, exact: true })
+      .getByRole("button", { name: he.dashboard.smartPractice })
       .click();
+    await expect(page).toHaveURL(
+      new RegExp(`/learn/session/smart\\?pack=${packId}.*ready=1`),
+    );
+    expect(added).toEqual([[second]]);
+    expect(new URL(page.url()).searchParams.get("return")).toContain(
+      `unit=${packId}&tab=words`,
+    );
+    await expect(page.locator(".memorization-copy h1")).toHaveText("you");
+    await expect(page.locator(".session-launch")).toHaveCount(0);
     await expect.poll(() => created.length).toBe(1);
     expect(created[0]).toMatchObject({
-      sessionType: "recall",
+      sessionType: "smart_review",
       sourceLanguageCode: "en",
       scope: { type: "pack", id: packId },
     });
@@ -211,7 +244,7 @@ test("all-known units do not launch general practice", async ({ page }) => {
   const { created, added } = await fixture(page, true);
   await page.goto(`/english-learning?unit=${packId}&tab=words`);
   await expect(
-    page.getByRole("button", { name: he.unitStudy.chooseGame }),
+    page.getByRole("button", { name: he.dashboard.smartPractice }),
   ).toBeDisabled();
   await expect(page.getByText(he.unitStudy.allKnown)).toBeVisible();
   expect(created).toHaveLength(0);

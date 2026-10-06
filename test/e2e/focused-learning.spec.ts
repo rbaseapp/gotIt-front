@@ -25,6 +25,35 @@ for (const width of [320, 390, 1487])
       fullPage: true,
       animations: "disabled",
     });
+    const studyLayout = await page
+      .locator(".session-study")
+      .evaluate((main) => ({
+        content: main.scrollHeight,
+        height: main.clientHeight,
+        controls: [
+          ".study-skip",
+          ".study-evidence-note",
+          ".session-extra > summary",
+        ].map((selector) => {
+          const box = main.querySelector(selector)!.getBoundingClientRect();
+          return { top: box.top, bottom: box.bottom };
+        }),
+      }));
+    expect(studyLayout.content).toBeLessThanOrEqual(studyLayout.height + 1);
+    for (const box of studyLayout.controls) {
+      expect(box.top).toBeGreaterThanOrEqual(0);
+      expect(box.bottom).toBeLessThanOrEqual(width > 760 ? 1058 : 844);
+    }
+    await page.locator(".session-extra > summary").click();
+    await expect(
+      page.locator(".session-extra[open] .session-hud"),
+    ).toBeVisible();
+    const detailsBox = await page.locator(".session-extra[open]").boundingBox();
+    expect(detailsBox!.y).toBeGreaterThanOrEqual(0);
+    expect(detailsBox!.y + detailsBox!.height).toBeLessThanOrEqual(
+      width > 760 ? 1058 : 844,
+    );
+    await page.locator(".session-extra > summary").click();
     await page.goto(`/learn/session/recall?items=${id}&language=he`);
     await page.locator(".session-launch > .button.primary").click();
     await expect(page.locator(".session-screen-title")).toHaveText(

@@ -36,11 +36,12 @@ import { getBilingualLanguageOptions } from "../lib/languages";
 import { LanguageCombobox } from "../components/LanguageCombobox";
 import { errorMessage } from "../lib/product";
 import { ApiError } from "../lib/api";
+import { chooseProgram } from "../lib/learningNavigation";
 import "../courses.css";
 
 export function CoursePage() {
   const { t, i18n } = useTranslation();
-  const { profile } = useApp();
+  const { profile, user } = useApp();
   const { courseId } = useParams();
   const [searchParams] = useSearchParams();
   const newCourse = searchParams.get("new") === "1";
@@ -83,6 +84,10 @@ export function CoursePage() {
   const lock = useRef(false),
     pending = useRef<{ key: string; eventId: string } | null>(null),
     intakeThread = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (course && course.activeVersion !== null)
+      chooseProgram(course.id, user, course.preferences.targetLanguageCode);
+  }, [course, user]);
   useEffect(() => {
     if (intakeThread.current)
       intakeThread.current.scrollTop = intakeThread.current.scrollHeight;

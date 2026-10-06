@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { BookOpen, CheckCircle2, Mic2, LockKeyhole } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -9,6 +16,7 @@ import { Modal } from "../components/Modal";
 import { RemoteState } from "../components/RemoteState";
 import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useApp } from "../context/AppContext";
 import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
 import {
   errorMessage,
@@ -24,13 +32,18 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { listPrivateLessons } from "../lib/privateLesson";
-import { learningReturn } from "../lib/learningNavigation";
+import {
+  chooseProgram,
+  learningReturn,
+  smartSessionLink,
+} from "../lib/learningNavigation";
 
 type Preview = { pack: WordPack; entries: WordPackEntry[] };
 export function EnglishLearningPathPage() {
   const { t } = useTranslation();
+  const { user } = useApp();
   const { toast } = useFeedback();
-  const { hasEntitlement } = useSubscription();
+  const { hasEntitlement, loading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const practiceReturn = learningReturn(
@@ -51,11 +64,15 @@ export function EnglishLearningPathPage() {
   );
   const detailRequest = useRef(0);
   const autoOpened = useRef<string | undefined>(undefined);
+  const autoPractice = useRef<string | undefined>(undefined);
   const [preview, setPreview] = useState<Preview>();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const available = levels.some(({ packs }) => packs.length);
+  useEffect(() => {
+    if (available) chooseProgram("english-path", user, "en");
+  }, [available, user]);
   const next = levels
     .flatMap(({ packs }) => packs)
     .find((pack) => !completedEnglishUnit(pack));
@@ -220,7 +237,13 @@ export function EnglishLearningPathPage() {
       setPreview(undefined);
       await resource.reload();
       navigate(
-        `/learn?pack=${pack.id}&language=${encodeURIComponent(pack.track.sourceLanguageCode)}&return=${encodeURIComponent(`/english-learning?unit=${pack.id}&tab=words`)}`,
+        smartSessionLink(
+          new URLSearchParams({
+            pack: pack.id,
+            language: pack.track.sourceLanguageCode,
+            return: `/english-learning?unit=${pack.id}&tab=words`,
+          }),
+        ),
       );
     } catch (reason) {
       toast(errorMessage(reason), { tone: "error" });
@@ -269,6 +292,23 @@ export function EnglishLearningPathPage() {
       setBusy(false);
     }
   };
+
+  const startAutomatically = useEffectEvent(() => void startUnit());
+  useEffect(() => {
+    if (
+      params.get("practice") !== "smart" ||
+      !current ||
+      preview?.pack.id !== current.id ||
+      busy ||
+      detailLoading ||
+      subscriptionLoading ||
+      preview.entries.every((entry) => entry.known) ||
+      autoPractice.current === current.id
+    )
+      return;
+    autoPractice.current = current.id;
+    startAutomatically();
+  }, [params, current, preview, busy, detailLoading, subscriptionLoading]);
 
   const selectedEntries =
     preview?.entries.filter((entry) => selectedIds.includes(entry.id)) ?? [];
@@ -344,7 +384,7 @@ export function EnglishLearningPathPage() {
             }
             onClick={() => void startUnit()}
           >
-            {t("unitStudy.chooseGame")}
+            {t("dashboard.smartPractice")}
           </button>
         )}
         {tab === "words" && preview?.entries.every((entry) => entry.known) && (
@@ -393,38 +433,13 @@ export function EnglishLearningPathPage() {
             <>
               {current && tab === "map" && (
                 <>
-                  <div className="unit-map-selectors">
-                    <label className="field">
-                      <span>{t("structuredUi.currentUnit")}</span>
-                      <select
-                        value={current.id}
-                        onChange={(event) => {
-                          const pack = levels
-                            .flatMap((level) => level.packs)
-                            .find((pack) => pack.id === event.target.value);
-                          if (pack) selectUnit(pack);
-                        }}
-                      >
-                        {levels
-                          .filter((level) => level.packs.length)
-                          .map((level) => (
-                            <optgroup
-                              key={level.level}
-                              label={t(`englishPath.levels.${level.level}`)}
-                            >
-                              {level.packs.map((pack) => (
-                                <option key={pack.id} value={pack.id}>
-                                  {pack.title}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                      </select>
-                    </label>
-                    <button className="button secondary" onClick={showAll}>
-                      {t("structuredUi.allUnits")}
-                    </button>
-                  </div>
+                  <UnitLevels
+                    packs={resource.data?.packs ?? []}
+                    current={current}
+                    onOpen={(pack) => selectUnit(pack)}
+                    onWords={(pack) => selectUnit(pack, "words")}
+                    compact
+                  />
                   <section
                     className="unit-roadmap-card"
                     data-figma-desktop="43:2557"

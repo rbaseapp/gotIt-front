@@ -54,7 +54,9 @@ export function SmartPracticeReadyPage() {
         ids.some((id) => !uuid.safeParse(id).success)));
   const scopeTitle =
     pack?.title ||
-    (ids ? t("ux.selectedWords", { count: ids.length }) : t("ux.allWords"));
+    (ids
+      ? t("ux.selectedWords", { count: ids.length })
+      : t("ux.vocabularyReview"));
   const launchParams = new URLSearchParams();
   for (const key of ["items", "pack", "language", "return"]) {
     const value = params.get(key);

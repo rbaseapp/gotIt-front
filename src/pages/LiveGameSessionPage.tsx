@@ -176,7 +176,12 @@ export function LiveGameSessionPage() {
   });
   const [direction, setDirection] = useState("translation_to_source");
   const [kind, setKind] = useState("typed");
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(() => {
+    const requested = Number(params.get("count") ?? 10);
+    return Number.isInteger(requested) && requested >= 1 && requested <= 100
+      ? requested
+      : 10;
+  });
   const [pending, setPending] = useState<Submission>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -941,7 +946,7 @@ export function LiveGameSessionPage() {
         />
       )}
       <main
-        className={`live-session-main${activeCard ? " session-active" : ""}${activeCard && exercise?.kind === "provider" ? " provider-active" : ""}`}
+        className={`live-session-main${activeCard ? " session-active" : ""}${activeCard && studyCard ? " session-study" : ""}${activeCard && exercise?.kind === "provider" ? " provider-active" : ""}`}
       >
         {activeCard && !sessionCompleted && (
           <h1 className="session-screen-title">
@@ -1204,9 +1209,6 @@ export function LiveGameSessionPage() {
                   <Volume2 size={19} />
                   {t("game.playAgain")}
                 </button>
-                {studyCard.context && (
-                  <blockquote dir="auto">{studyCard.context}</blockquote>
-                )}
               </div>
               <div className="memorization-actions">
                 <button
@@ -1656,6 +1658,9 @@ export function LiveGameSessionPage() {
         )}
         <details className="session-extra">
           <summary>{t("ux.details")}</summary>{" "}
+          {studyCard?.context && (
+            <blockquote dir="auto">{studyCard.context}</blockquote>
+          )}
           <div className="session-hud" aria-live="polite">
             <span className={`hud-chip combo${combo >= 3 ? " active" : ""}`}>
               <Flame size={17} />

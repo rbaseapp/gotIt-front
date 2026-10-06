@@ -95,6 +95,7 @@ async function pathFixture(page: Page, introduced = 0) {
       });
     return route.fallback();
   });
+  return pack;
 }
 for (const width of [320, 390, 768, 1487])
   test(`program map, full-page words, levels and activity at ${width}px`, async ({
@@ -107,6 +108,13 @@ for (const width of [320, 390, 768, 1487])
       .getByRole("button", { name: he.ux.openMap, exact: true })
       .click();
     await expect(page.locator(".unit-roadmap-card")).toBeVisible();
+    await expect(page.locator(".path-level-tabs > button")).toHaveCount(3);
+    await expect(
+      page.locator(".path-level-tabs > button").first(),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator(".path-unit-row[aria-current=step]")).toHaveCount(
+      1,
+    );
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator(".unit-word-station")).toContainText(
       he.pathUi.firstWords,
@@ -143,9 +151,7 @@ for (const width of [320, 390, 768, 1487])
       .click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator(".unit-browser-list")).toHaveCount(0);
-    await page
-      .getByRole("button", { name: he.structuredUi.allUnits, exact: true })
-      .click();
+    await page.locator(".unit-future").click();
     await expect(page.locator(".path-level-tabs")).toBeVisible();
     await page.getByPlaceholder(he.pathUi.searchUnits).fill("אין יחידה");
     await expect(page.locator(".path-unit-row")).toHaveCount(0);
@@ -169,6 +175,49 @@ for (const width of [320, 390, 768, 1487])
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(width + 1);
   });
+test("the current level and unit open automatically after completing the beginner level", async ({
+  page,
+}) => {
+  const base = await pathFixture(page);
+  const beginner = {
+    ...base,
+    progress: { ...base.progress, completed: base.wordCount },
+  };
+  const intermediate = {
+    ...base,
+    id: "d3000000-0000-4000-8000-000000000002",
+    title: "Current intermediate unit",
+    track: { ...base.track, levelCode: "intermediate" },
+  };
+  const advanced = {
+    ...base,
+    id: "d3000000-0000-4000-8000-000000000003",
+    title: "Future advanced unit",
+    track: { ...base.track, levelCode: "advanced" },
+  };
+  await page.route("**/api/v1/word-packs", (route) =>
+    route.fulfill({ json: { packs: [beginner, intermediate, advanced] } }),
+  );
+  await page.goto("/english-learning");
+  const levels = page.locator(".path-level-tabs > button");
+  await expect(levels).toHaveCount(3);
+  await expect(levels.nth(1)).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".path-unit-row[aria-current=step]")).toContainText(
+    "Current intermediate unit",
+  );
+  await expect(page.locator(".unit-roadmap-card > h2")).toHaveText(
+    "Current intermediate unit",
+  );
+  await expect(page.locator(".unit-map-selectors select")).toHaveCount(0);
+  await levels.nth(2).click();
+  await expect(page.locator(".path-unit-row")).toContainText(
+    "Future advanced unit",
+  );
+  await expect(page.locator(".path-unit-row[aria-current=step]")).toHaveCount(
+    0,
+  );
+});
+
 test("server midpoint availability selects the correct five-minute station", async ({
   page,
 }) => {

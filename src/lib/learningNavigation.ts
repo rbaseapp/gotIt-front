@@ -33,6 +33,12 @@ export function practiceLink(
   return `${game === "smart" ? "/learn/smart" : `/learn/session/${game === "spelling" ? "recall" : game}`}${params.size ? `?${params}` : ""}`;
 }
 
+export function smartSessionLink(scope: URLSearchParams) {
+  const params = new URLSearchParams(scope);
+  params.set("ready", "1");
+  return `/learn/session/smart?${params}`;
+}
+
 export function selectedProgramKey(
   user?: Pick<AuthUser, "applicationId" | "id"> | null,
 ) {

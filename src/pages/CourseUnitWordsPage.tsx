@@ -1,36 +1,21 @@
 import { useCallback, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 import { ReadAloud } from "../components/CourseComposer";
 import { RemoteState } from "../components/RemoteState";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
-import { product, uuid } from "../lib/product";
+import { courseApi } from "../lib/courses";
 import { useResource } from "../lib/useResource";
-import { learningReturn } from "../lib/learningNavigation";
-const courseWordsSchema = z.object({
-  title: z.string(),
-  unitKey: z.string(),
-  targetLanguageCode: z.string(),
-  supportLanguageCode: z.string(),
-  words: z.array(
-    z.object({
-      sourceText: z.string(),
-      choices: z.array(z.object({ id: uuid, translationText: z.string() })),
-    }),
-  ),
-});
+import { learningReturn, smartSessionLink } from "../lib/learningNavigation";
 export function CourseUnitWordsPage() {
   const { id, unitKey } = useParams();
   const [params] = useSearchParams();
   const { t } = useTranslation();
   const words = useResource(
-    useCallback(
-      () => product(courseWordsSchema, `courses/${id}/units/${unitKey}/words`),
-      [id, unitKey],
-    ),
+    useCallback(() => courseApi.unitWords(id!, unitKey!), [id, unitKey]),
   );
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selection, setSelection] = useState<{ unit: string; ids: string[] }>();
+  const unitScopeKey = `${id}.${unitKey}`;
   const [capture, setCapture] = useState<string>();
   const data = words.data;
   const [wordText, setWordText] = useState<string>();
@@ -40,7 +25,9 @@ export function CourseUnitWordsPage() {
     data?.words.flatMap((word) => word.choices.map((choice) => choice.id)) ??
       [],
   );
-  const ids = selected.filter((item) => activeIds.has(item));
+  const ids = (
+    selection?.unit === unitScopeKey ? selection.ids : [...activeIds]
+  ).filter((item) => activeIds.has(item));
   const destination = learningReturn(params.get("return"), `/courses/${id}`);
   const scope = new URLSearchParams({
     items: ids.join(","),
@@ -109,11 +96,12 @@ export function CourseUnitWordsPage() {
                     type="checkbox"
                     checked={ids.includes(choice.id)}
                     onChange={(event) =>
-                      setSelected((previous) =>
-                        event.target.checked
-                          ? [...new Set([...previous, choice.id])]
-                          : previous.filter((value) => value !== choice.id),
-                      )
+                      setSelection({
+                        unit: unitScopeKey,
+                        ids: event.target.checked
+                          ? [...new Set([...ids, choice.id])]
+                          : ids.filter((value) => value !== choice.id),
+                      })
                     }
                   />
                   <span dir="auto" lang={data.supportLanguageCode}>
@@ -135,7 +123,7 @@ export function CourseUnitWordsPage() {
       </div>
       {ids.length > 0 && (
         <>
-          <Link className="button primary" to={`/learn/smart?${scope}`}>
+          <Link className="button primary" to={smartSessionLink(scope)}>
             {t("dashboard.smartPractice")}
           </Link>
           <Link className="button secondary" to={`/learn?${scope}`}>
