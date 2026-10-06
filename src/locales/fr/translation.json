@@ -2020,6 +2020,12 @@
     "unitWords": "Words in this unit",
     "unitDetails": "More about this unit",
     "knownHelp": "“I know this” is your preference, not a mastery assessment. You can undo it anytime.",
-    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment."
+    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment.",
+    "readyForLesson": "On commence bientôt",
+    "oneMoreThing": "Encore une petite chose ?",
+    "backHome": "Retour à ma journée",
+    "wordsGreeting": "Bonjour {{name}}, une petite partie aujourd’hui ?",
+    "languageWithHelp": "{{language}} · Aide en {{support}}",
+    "fromZeroLanguage": "{{language}} depuis le début"
   }
 }

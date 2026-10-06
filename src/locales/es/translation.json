@@ -2020,6 +2020,12 @@
     "unitWords": "Words in this unit",
     "unitDetails": "More about this unit",
     "knownHelp": "“I know this” is your preference, not a mastery assessment. You can undo it anytime.",
-    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment."
+    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment.",
+    "readyForLesson": "Ya casi empezamos",
+    "oneMoreThing": "¿Algo más?",
+    "backHome": "Volver a mi día",
+    "wordsGreeting": "Hola {{name}}, ¿un juego corto hoy?",
+    "languageWithHelp": "{{language}} · Ayuda en {{support}}",
+    "fromZeroLanguage": "{{language}} desde cero"
   }
 }

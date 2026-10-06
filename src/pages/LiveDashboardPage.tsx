@@ -9,6 +9,7 @@ import { ExploreActions } from "../components/ExploreActions";
 import { DashboardDetails } from "../components/DashboardDetails";
 import { useResource } from "../lib/useResource";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { getLanguageOptions } from "../lib/languages";
 import { product, dashboardSchema, page, sessionSchema } from "../lib/product";
 import { courseApi, lessonLink } from "../lib/courses";
 import {
@@ -21,7 +22,7 @@ import wordCards from "../assets/ux/word-cards.png";
 import personalProgram from "../assets/ux/personal-program.png";
 
 export function LiveDashboardPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { profile, user } = useApp();
   const language = useLearningLanguage();
   const [chosenLanguage, setChosenLanguage] = useState(() =>
@@ -95,6 +96,9 @@ export function LiveDashboardPage() {
     !resumable &&
     (Boolean(course?.nextLesson) ||
       (selected === "english-path" && code === "en"));
+  const languageNames = new Map(
+    getLanguageOptions(i18n.resolvedLanguage || "en"),
+  );
   if (language.loading || language.error)
     return (
       <RemoteState
@@ -109,9 +113,25 @@ export function LiveDashboardPage() {
     >
       <header className="ux-home-heading">
         <div>
-          <h1>{t("ux.greeting", { name: profile.name })}</h1>
+          <h1>
+            {t(isProgram ? "ux.greeting" : "ux.wordsGreeting", {
+              name: profile.name,
+            })}
+          </h1>
+          {!isProgram && (
+            <p className="ux-home-language-pair">
+              {profile.defaultTranslationLanguage
+                ? t("ux.languageWithHelp", {
+                    language: languageNames.get(code) || code,
+                    support:
+                      languageNames.get(profile.defaultTranslationLanguage) ||
+                      profile.defaultTranslationLanguage,
+                  })
+                : languageNames.get(code) || code}
+            </p>
+          )}
           {d && (
-            <p>
+            <p className="ux-home-daily-label">
               {t("ux.todayProgress", {
                 current: d.dailyGoal.current,
                 value: d.dailyGoal.value,
@@ -158,6 +178,13 @@ export function LiveDashboardPage() {
               </div>
             )}
             <div className="ux-home-next-copy">
+              {!isProgram && (
+                <img
+                  className="ux-primary-word-illustration"
+                  src={wordCards}
+                  alt=""
+                />
+              )}
               <div className="ux-card-heading">
                 <span className={`ux-icon ${isProgram ? "lavender" : "mint"}`}>
                   {isProgram ? <Mic size={28} /> : <Brain size={28} />}
@@ -217,6 +244,12 @@ export function LiveDashboardPage() {
               </Link>
             </div>
           </section>
+          {isProgram && (
+            <div className="ux-home-section-heading">
+              <h2>{t("ux.oneMoreThing")}</h2>
+              <Link to="/courses">{t("ux.allPrograms")}</Link>
+            </div>
+          )}
           <div className="ux-home-options">
             <section className="ux-card ux-home-words">
               <div className="ux-card-heading">

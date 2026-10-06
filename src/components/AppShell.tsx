@@ -83,6 +83,7 @@ export function AppShell({
   const focusedLearning =
     /^\/(courses\/[^/]+|homework\/[^/]+)(\/|$)/.test(location.pathname) ||
     location.pathname === "/private-lesson";
+  const focusShell = location.pathname === "/private-lesson";
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
   const canWriteVocabulary = hasEntitlement("vocabulary.write");
@@ -105,7 +106,7 @@ export function AppShell({
     return () => media.removeEventListener("change", changed);
   }, []);
   useEffect(() => {
-    if (!narrow || !mobileOpen) return;
+    if ((!narrow && !focusShell) || !mobileOpen) return;
     const previous = document.body.style.overflow;
     const trigger = menuRef.current;
     document.body.style.overflow = "hidden";
@@ -140,7 +141,7 @@ export function AppShell({
       document.removeEventListener("keydown", keyboard);
       trigger?.focus();
     };
-  }, [narrow, mobileOpen]);
+  }, [narrow, focusShell, mobileOpen]);
   useEffect(() => {
     if (!userOpen) return;
     accountRef.current
@@ -239,14 +240,14 @@ export function AppShell({
     )?.[1] ?? assessmentLanguage;
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout${focusShell ? " focus-shell" : ""}`}>
       <aside
         ref={sidebarRef}
         className={`sidebar ${mobileOpen ? "mobile-open" : ""}`}
-        inert={(narrow && !mobileOpen) || undefined}
-        aria-hidden={(narrow && !mobileOpen) || undefined}
-        role={narrow && mobileOpen ? "dialog" : undefined}
-        aria-modal={(narrow && mobileOpen) || undefined}
+        inert={((narrow || focusShell) && !mobileOpen) || undefined}
+        aria-hidden={((narrow || focusShell) && !mobileOpen) || undefined}
+        role={(narrow || focusShell) && mobileOpen ? "dialog" : undefined}
+        aria-modal={((narrow || focusShell) && mobileOpen) || undefined}
         aria-label={t("shell.mainNavigation")}
       >
         <div className="sidebar-top">
@@ -359,6 +360,11 @@ export function AppShell({
             <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
           </div>
           <div className="topbar-actions">
+            {focusShell && (
+              <Link className="button ghost focus-back" to="/dashboard">
+                {t("ux.backHome")}
+              </Link>
+            )}
             {latestLessonAssessment?.report && (
               <Link
                 to="/private-lesson?view=level"

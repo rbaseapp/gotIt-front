@@ -246,38 +246,73 @@ async function withinViewport(page: Page) {
     ),
   ).toBe(true);
 }
-test("an explicitly chosen program appears even before words exist in its language", async ({
+test("Figma words dashboard keeps its illustration and desktop hierarchy", async ({
   page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+}, testInfo) => {
+  await page.setViewportSize({ width: 1487, height: 1058 });
   await fixtures(page, "he");
-  await page.addInitScript(
-    ({ ownerKey, courseId }) => {
-      if (!localStorage.getItem(ownerKey)) {
-        localStorage.setItem(ownerKey, courseId);
-        localStorage.setItem(ownerKey + ".en", courseId);
-        localStorage.setItem(ownerKey + ".language", "en");
-      }
-    },
-    {
-      ownerKey: `gotit.selectedProgram.v1.${sessionId}.${itemId}`,
-      courseId: courseWithPlan(true).id,
-    },
-  );
   await page.goto("/dashboard");
-  await expect(page.locator(".ux-home")).toHaveClass(/with-program/);
   await expect(page.locator(".ux-home-next h2")).toHaveText(
-    he.ux.teacherMeeting,
+    he.ux.wordsYourPace,
   );
-  const languages = page.locator(".ux-home-heading select");
-  await expect(languages).toHaveValue("en");
-  await languages.selectOption("fr");
-  await expect(page.locator(".ux-home")).toHaveClass(/words-home/);
-  await expect(languages).toHaveValue("fr");
-  await page.reload();
-  await expect(languages).toHaveValue("fr");
-  await expect(page.locator(".ux-home")).toHaveClass(/words-home/);
+  await expect(
+    page.locator(".ux-home-next .ux-primary-word-illustration"),
+  ).toBeVisible();
+  await expect(page.locator(".ux-home-next h2")).toHaveCSS("font-size", "32px");
+  await withinViewport(page);
+  await page.screenshot({
+    path: testInfo.outputPath("figma-words-desktop.png"),
+    fullPage: true,
+    animations: "disabled",
+  });
 });
+for (const width of [390, 1487])
+  test(`an explicitly chosen program appears even before words exist in its language at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: width > 860 ? 1058 : 844 });
+    await fixtures(page, "he");
+    await page.addInitScript(
+      ({ ownerKey, courseId }) => {
+        if (!localStorage.getItem(ownerKey)) {
+          localStorage.setItem(ownerKey, courseId);
+          localStorage.setItem(ownerKey + ".en", courseId);
+          localStorage.setItem(ownerKey + ".language", "en");
+        }
+      },
+      {
+        ownerKey: `gotit.selectedProgram.v1.${sessionId}.${itemId}`,
+        courseId: courseWithPlan(true).id,
+      },
+    );
+    await page.goto("/dashboard");
+    await expect(page.locator(".ux-home")).toHaveClass(/with-program/);
+    await expect(page.locator(".ux-home-next h2")).toHaveText(
+      he.ux.teacherMeeting,
+    );
+    if (width > 860) {
+      const art = await page.locator(".ux-home-illustration").boundingBox();
+      const copy = await page.locator(".ux-home-next-copy").boundingBox();
+      expect((art?.x ?? 0) + (art?.width ?? 0)).toBeLessThanOrEqual(
+        copy?.x ?? 0,
+      );
+      await expect(page.locator(".ux-home-illustration img")).toBeVisible();
+    }
+    await withinViewport(page);
+    await page.screenshot({
+      path: testInfo.outputPath(`figma-program-home-${width}.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
+    const languages = page.locator(".ux-home-heading select");
+    await expect(languages).toHaveValue("en");
+    await languages.selectOption("fr");
+    await expect(page.locator(".ux-home")).toHaveClass(/words-home/);
+    await expect(languages).toHaveValue("fr");
+    await page.reload();
+    await expect(languages).toHaveValue("fr");
+    await expect(page.locator(".ux-home")).toHaveClass(/words-home/);
+  });
 for (const [locale, text] of [
   ["he", he],
   ["en", en],
@@ -352,6 +387,15 @@ for (const [locale, text] of [
       await expect(page).toHaveURL(/\/dashboard$/);
       await page.goto("/courses");
       await expect(page.locator(".program-card")).toHaveCount(1);
+      if (width === 1440) {
+        await expect(page.locator(".program-card h3")).toHaveCSS(
+          "font-size",
+          "40px",
+        );
+        expect(
+          (await page.locator(".program-card").boundingBox())?.height,
+        ).toBeGreaterThanOrEqual(428);
+      }
       await page.getByRole("button", { name: text.ux.newProgram }).click();
       await expect(
         page

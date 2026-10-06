@@ -1109,7 +1109,7 @@ html body.private-lesson-session-open .private-lesson-session .button {
 @keyframes ux-enter {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateX(-14px);
   }
   to {
     opacity: 1;
@@ -1136,10 +1136,10 @@ html body.private-lesson-session-open .private-lesson-session .button {
 }
 @keyframes ux-letter-pop {
   0% {
-    transform: scale(0.88);
+    transform: scale(0.6);
   }
   70% {
-    transform: scale(1.04);
+    transform: scale(1.12);
   }
   100% {
     transform: scale(1);

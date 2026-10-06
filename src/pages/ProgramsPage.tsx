@@ -10,11 +10,11 @@ import { courseApi, type Course } from "../lib/courses";
 import { useResource } from "../lib/useResource";
 import { product, wordPacksSchema, errorMessage } from "../lib/product";
 import { englishPathLevels, completedEnglishUnit } from "../lib/englishPath";
-import { getBilingualLanguageOptions } from "../lib/languages";
+import { getLanguageOptions } from "../lib/languages";
 import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
 
 export function ProgramsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useApp();
   const navigate = useNavigate();
   const { confirm, toast } = useFeedback();
@@ -43,7 +43,9 @@ export function ProgramsPage() {
   )
     groups.set("en", []);
   const languageName = (code: string) =>
-    getBilingualLanguageOptions().find(([id]) => id === code)?.[1] ?? code;
+    getLanguageOptions(i18n.resolvedLanguage || "en").find(
+      ([id]) => id === code,
+    )?.[1] ?? code;
   const open = (destination: string, key: string, language: string) => {
     chooseProgram(key, user, language);
     navigate(destination);
@@ -90,7 +92,7 @@ export function ProgramsPage() {
         error={packs.error}
         retry={() => void packs.reload()}
       />
-      {[...groups].map(([code, items]) => (
+      {[...groups].map(([code, items], index) => (
         <section
           className="program-language"
           key={code}
@@ -100,17 +102,28 @@ export function ProgramsPage() {
             <Globe size={22} aria-hidden="true" />
             {languageName(code)}
           </h2>
-          <div className="program-grid">
+          <div
+            className={`program-grid${index > 0 && items.length === 1 ? " program-grid-compact" : ""}`}
+          >
             {code === "en" &&
               path.length > 0 &&
               (completedOpen ? !next : Boolean(next)) && (
                 <article className="program-card structured">
+                  {selectedProgram(user) === "english-path" && (
+                    <span className="program-selected pill">
+                      {t("ux.selectedProgram")}
+                    </span>
+                  )}
                   <span className="ux-icon mint">
                     <BookOpen size={28} />
                   </span>
                   <div>
-                    <h3>{t("englishPath.title")}</h3>
-                    <p>{next?.title ?? t("ux.allCompleted")}</p>
+                    <h3>
+                      {t("ux.fromZeroLanguage", {
+                        language: languageName(code),
+                      })}
+                    </h3>
+                    <p>{t("ux.structuredHelp")}</p>
                     {next && (
                       <small>
                         {t("englishPath.unitProgress", {
@@ -120,8 +133,10 @@ export function ProgramsPage() {
                         })}
                       </small>
                     )}
-                    {selectedProgram(user) === "english-path" && (
-                      <span className="pill">{t("ux.selectedProgram")}</span>
+                    {next && (
+                      <p className="program-next-step" dir="auto">
+                        {next.title}
+                      </p>
                     )}
                   </div>
                   <button
@@ -147,6 +162,11 @@ export function ProgramsPage() {
                 ) ?? 0;
               return (
                 <article className="program-card personal" key={course.id}>
+                  {selectedProgram(user) === course.id && (
+                    <span className="program-selected pill">
+                      {t("ux.selectedProgram")}
+                    </span>
+                  )}
                   <span className="ux-icon lavender">
                     <MessageCircle size={28} />
                   </span>
@@ -171,9 +191,6 @@ export function ProgramsPage() {
                           total,
                         })}
                       </small>
-                    )}
-                    {selectedProgram(user) === course.id && (
-                      <span className="pill">{t("ux.selectedProgram")}</span>
                     )}
                   </div>
                   <button

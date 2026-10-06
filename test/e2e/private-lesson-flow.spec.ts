@@ -204,6 +204,18 @@ for (const language of ["he", "en"])
         );
       });
       await page.goto("/private-lesson?practice=free");
+      await expect(page.locator(".sidebar")).not.toBeVisible();
+      const ready = await page.locator(".lesson-ready-card").boundingBox();
+      const preferencesBox = await page
+        .locator(".lesson-preferences-card")
+        .boundingBox();
+      expect((ready?.y ?? 0) + (ready?.height ?? 0)).toBeLessThan(
+        preferencesBox?.y ?? 0,
+      );
+      await page.screenshot({
+        path: `test-results/lesson-prep-${language}-${viewport.width}.png`,
+        animations: "disabled",
+      });
       await page
         .getByRole("button", {
           name: language === "he" ? "התחלת השיעור" : "Start lesson",
@@ -261,6 +273,37 @@ for (const language of ["he", "en"])
         };
       });
       expect(layout).toEqual({ contained: true, scrollable: true });
+      if (viewport.width === 1440) {
+        const sessionBox = await page
+          .locator(".private-lesson-session")
+          .boundingBox();
+        expect(sessionBox?.width).toBe(
+          await page.evaluate(() => document.documentElement.clientWidth),
+        );
+        const portrait = await page
+          .locator(".private-lesson-tutor-stage .teacher-avatar")
+          .boundingBox();
+        expect(portrait?.width).toBe(204);
+        await expect(
+          page.locator(".private-lesson-tutor-stage .teacher-avatar-level"),
+        ).not.toBeVisible();
+        await expect(page.locator(".lesson-current-message")).toHaveCSS(
+          "background-color",
+          "rgb(255, 255, 255)",
+        );
+        const bubble = await page
+          .locator(".lesson-current-message")
+          .boundingBox();
+        expect(Math.abs((bubble?.y ?? 0) - (portrait?.y ?? 0))).toBeLessThan(
+          60,
+        );
+        const mic = await page
+          .locator(".private-lesson-actions .private-lesson-mute")
+          .boundingBox();
+        expect(
+          Math.abs((mic?.x ?? 0) + (mic?.width ?? 0) / 2 - viewport.width / 2),
+        ).toBeLessThan(2);
+      }
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth + 1,

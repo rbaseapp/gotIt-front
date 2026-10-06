@@ -412,11 +412,16 @@ describe("private voice lesson", () => {
   it("starts a zero-background lesson with a teaching language and A1 level", async () => {
     const user = userEvent.setup();
     renderPage();
+    await user.click(document.querySelector(".private-lesson-customize")!);
 
     await user.click(
       await screen.findByRole("radio", { name: /מתחילים מאפס/u }),
     );
-    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "התחלת השיעור",
+      }),
+    );
 
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith(
@@ -428,6 +433,23 @@ describe("private voice lesson", () => {
           requestedLevel: "A1",
           speechRate: "slow",
         }),
+      ),
+    );
+  });
+  it("keeps teacher selection available in the compact preference picker", async () => {
+    mocks.create.mockRejectedValueOnce(new Error("stop after request"));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(
+      await screen.findByRole("button", { name: "בחירת המורה" }),
+    );
+    const picker = screen.getByRole("dialog", { name: "בחירת המורה" });
+    await user.click(within(picker).getByRole("button", { name: /מייק/u }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({ teacherVoice: "male" }),
       ),
     );
   });

@@ -1941,8 +1941,8 @@
     "letterKeyboardHelp": "Tap letters or use your keyboard",
     "deleteLetter": "Delete letter",
     "clearAnswer": "Clear answer",
-    "programsTitle": "My programs",
-    "programsSubtitle": "Choose what you want to learn next",
+    "programsTitle": "What shall we learn next?",
+    "programsSubtitle": "Every program continues where you left off",
     "newProgram": "New program",
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
@@ -2019,6 +2019,12 @@
     "unitWords": "Words in this unit",
     "unitDetails": "More about this unit",
     "knownHelp": "“I know this” is your preference, not a mastery assessment. You can undo it anytime.",
-    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment."
+    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment.",
+    "readyForLesson": "Almost ready to begin",
+    "oneMoreThing": "One more thing?",
+    "backHome": "Back to today",
+    "wordsGreeting": "Hi {{name}}, a quick game today?",
+    "languageWithHelp": "{{language}} · Help in {{support}}",
+    "fromZeroLanguage": "{{language}} from zero"
   }
 }

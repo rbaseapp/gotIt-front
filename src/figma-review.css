@@ -1,0 +1,1231 @@
+/* Approved UX 2.1 frames: 8:2, 24:7265, 15:647, 15:2010, 15:2100.
+   These four layouts own their geometry here while older feature styles migrate.
+   Content, lesson state and progress remain backed by the existing contracts. */
+@media (min-width: 861px) {
+  .app-layout:not(.focus-shell) > .main-column > .topbar {
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+  }
+  .app-layout:not(.focus-shell) .topbar-title,
+  .app-layout:not(.focus-shell) .topbar-level-assessment,
+  .app-layout:not(.focus-shell) .compact-stat,
+  .app-layout:not(.focus-shell) .user-button {
+    display: none;
+  }
+  .app-layout:not(.focus-shell) .topbar-actions {
+    position: fixed;
+    inset-inline-start: 24px;
+    bottom: 140px;
+    z-index: 110;
+  }
+  .app-layout:not(.focus-shell) .user-popover {
+    top: auto;
+    bottom: 0;
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+  }
+  .app-layout > .main-column > .page-content {
+    max-width: 1253px;
+    padding: 32px 46px 40px;
+  }
+}
+.app-layout.focus-shell > .sidebar:not(.mobile-open) {
+  display: none;
+}
+.app-layout.focus-shell > .main-column {
+  width: 100%;
+  margin-inline-start: 0;
+}
+.app-layout.focus-shell > .main-column > .topbar {
+  height: 96px;
+  padding: 12px 36px;
+  border-bottom: 0;
+  background: white;
+}
+.focus-shell .topbar-title > span:last-child,
+.focus-shell .topbar-level-assessment,
+.focus-shell .user-menu-wrap {
+  display: none;
+}
+.focus-shell .mobile-brand {
+  display: block;
+}
+.focus-shell .mobile-brand .brand-logo {
+  width: 170px;
+}
+.focus-shell .focus-back {
+  font-size: 24px;
+}
+.focus-shell .mobile-tabs {
+  display: none;
+}
+.focus-shell .sidebar.mobile-open {
+  display: flex;
+  z-index: 4200;
+}
+.focus-shell .sidebar.mobile-open .mobile-close {
+  display: flex;
+}
+.focus-shell .sidebar-scrim {
+  display: block;
+  z-index: 4100;
+}
+
+/* Home has two genuine variants: a program or personal vocabulary practice. */
+.ux-home {
+  gap: 20px;
+}
+.ux-home-heading {
+  margin-bottom: 24px;
+  align-items: flex-start;
+}
+.ux-home-heading h1 {
+  font-size: 44px;
+  line-height: 1.25;
+}
+.ux-home-heading p {
+  font-size: 24px;
+  line-height: 1.45;
+}
+.ux-home .ux-home-next {
+  border-radius: 24px;
+  overflow: hidden;
+}
+.ux-home.with-program .ux-home-next {
+  min-height: 471px;
+  padding: 0;
+}
+.ux-home.with-program .ux-home-illustration {
+  width: 48%;
+}
+.ux-home.with-program .ux-home-illustration img {
+  width: 100%;
+  height: 467px;
+  object-fit: contain;
+}
+.ux-home.with-program .ux-home-next-copy {
+  flex: 1;
+  padding: 32px 30px;
+  gap: 18px;
+}
+.ux-home.with-program .ux-home-next h2 {
+  font-size: clamp(36px, 3.6vw, 56px);
+  line-height: 1.18;
+}
+.ux-home.with-program .ux-home-next-copy > p {
+  font-size: 26px;
+  line-height: 1.45;
+}
+.ux-home.with-program .ux-home-next .button.primary {
+  min-height: 73px;
+  font-size: 30px;
+}
+.ux-home.with-program .ux-home-next .button.ghost {
+  font-size: 24px;
+}
+.ux-home-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block: 24px 20px;
+}
+.ux-home-section-heading h2 {
+  font-size: 32px;
+  margin: 0;
+}
+.ux-home-section-heading a {
+  color: var(--green);
+  font-size: 20px;
+}
+.ux-home .ux-home-options {
+  gap: 26px;
+}
+.ux-home .ux-home-options .ux-card {
+  padding: 28px;
+  min-height: 252px;
+  border-radius: 24px;
+}
+.ux-home.with-program .ux-home-words {
+  background: #f2faf6;
+}
+.ux-home.with-program .ux-home-words .ux-icon {
+  display: none;
+}
+.ux-home.with-program .ux-home-words .ux-card-heading {
+  flex-direction: row-reverse;
+  justify-content: end;
+}
+.ux-home.with-program .ux-home-words .ux-word-illustration {
+  width: 151px;
+  height: 122px;
+  margin: 0;
+  order: 1;
+}
+.ux-home .ux-home-options h2 {
+  font-size: 32px;
+  line-height: 1.25;
+}
+.ux-home .ux-home-options p {
+  font-size: 24px;
+  line-height: 1.45;
+}
+.ux-home .ux-home-options .button {
+  font-size: 24px;
+  min-height: 60px;
+}
+.ux-home .ux-home-other-program {
+  background: #fdf8f2;
+  position: relative;
+}
+.ux-home .ux-home-other-program > img {
+  position: static;
+  float: inline-end;
+  width: 210px;
+  height: 138px;
+  object-fit: contain;
+}
+.ux-home .ux-home-other-program h2 {
+  font-size: 30px;
+}
+.ux-home .ux-home-other-program p {
+  font-size: 20px;
+}
+.ux-home .ux-home-other-program .button {
+  clear: both;
+  width: 100%;
+}
+.ux-home.words-home {
+  max-width: 1080px;
+  margin-inline: auto;
+}
+.ux-home.words-home .ux-home-heading .ux-home-daily-label {
+  font-size: 18px;
+  margin-top: 20px;
+}
+.ux-home.words-home .ux-home-heading .ux-home-language-pair {
+  margin-top: 20px;
+}
+.ux-home.words-home .ux-home-next {
+  padding: 24px;
+  background: #e7f4ef;
+  border-radius: 20px;
+}
+.ux-home.words-home .ux-home-next-copy {
+  padding: 0;
+  gap: 16px;
+}
+.ux-primary-word-illustration {
+  width: 128px;
+  height: 104px;
+  object-fit: contain;
+  align-self: flex-start;
+}
+.ux-home.words-home .ux-home-next .ux-icon {
+  display: none;
+}
+.ux-home.words-home .ux-home-next h2 {
+  font-size: 32px;
+  line-height: 1.45;
+}
+.ux-home.words-home .ux-home-next-copy > p {
+  font-size: 24px;
+  line-height: 1.45;
+}
+.ux-home.words-home .ux-home-next .button {
+  font-size: 24px;
+  min-height: 60px;
+}
+.ux-home.words-home .ux-home-options .ux-card {
+  min-height: 0;
+  padding: 24px;
+}
+.ux-home.words-home .ux-home-words .ux-icon,
+.ux-home.words-home .ux-home-words .ux-word-illustration {
+  display: none;
+}
+.ux-home.words-home .ux-inline-actions {
+  flex-direction: column;
+}
+.ux-home.words-home .ux-inline-actions .button {
+  width: 100%;
+}
+.ux-home .ux-explore .button {
+  font-size: 24px;
+  min-height: 60px;
+}
+
+/* Program cards keep the same hierarchy with one or many server-backed plans. */
+.programs-page .page-heading-row h1 {
+  color: var(--ink);
+}
+.programs-page .page-heading-row p {
+  font-size: 26px;
+  line-height: 1.45;
+}
+.programs-page .page-heading-row > .button {
+  font-size: 24px;
+  min-height: 57px;
+}
+.programs-page .program-language {
+  margin-block: 36px;
+}
+.programs-page .program-language > h2 {
+  font-size: 34px;
+  margin-bottom: 20px;
+  gap: 14px;
+}
+.programs-page .program-grid {
+  gap: 26px;
+}
+.programs-page .program-card {
+  position: relative;
+  padding: 28px;
+  min-height: 428px;
+  gap: 20px;
+  border-radius: 24px;
+  text-align: center;
+  align-items: center;
+}
+.programs-page .program-card .ux-icon {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+}
+.programs-page .program-card .ux-icon svg {
+  width: 42px;
+  height: 42px;
+}
+.programs-page .program-card > div {
+  width: 100%;
+}
+.programs-page .program-card h3 {
+  font-size: 40px;
+  line-height: 1.25;
+  margin: 0 0 12px;
+}
+.programs-page .program-card p {
+  font-size: 26px;
+  line-height: 1.45;
+  margin: 0 0 12px;
+}
+.programs-page .program-card small {
+  font-size: 22px;
+  line-height: 1.4;
+}
+.programs-page .program-card .button {
+  font-size: 24px;
+  width: 100%;
+  min-height: 60px;
+  margin-top: auto;
+}
+.programs-page .program-card .program-selected {
+  position: absolute;
+  top: 24px;
+  inset-inline-start: 24px;
+  font-size: 16px;
+  color: var(--green);
+  background: #d8f0e6;
+  padding: 8px 12px;
+}
+.programs-page .program-card .program-next-step {
+  font-size: 20px;
+  padding: 12px 16px;
+  background: #e7f4ef;
+  border-radius: 12px;
+  margin-top: 16px;
+}
+.programs-page .program-delete {
+  top: 16px;
+  inset-inline-end: 16px;
+}
+.programs-page .program-grid-compact {
+  grid-template-columns: 1fr;
+}
+.programs-page .program-grid-compact .program-card {
+  min-height: 128px;
+  flex-direction: row;
+  align-items: center;
+  text-align: start;
+}
+.programs-page .program-grid-compact .program-card > div {
+  flex: 1;
+}
+.programs-page .program-grid-compact .program-card h3 {
+  font-size: 32px;
+}
+.programs-page .program-grid-compact .program-card p {
+  font-size: 24px;
+}
+.programs-page .program-grid-compact .program-card .button {
+  width: auto;
+  margin: 0;
+}
+.programs-page .personal:has(.program-selected) .program-delete {
+  top: 66px;
+}
+
+/* Preparation: lesson first, preferences second. Focus header replaces sidebar. */
+.focus-shell > .main-column > .page-content:has(.private-lesson-page) {
+  max-width: 1092px;
+  padding-top: 24px;
+}
+.private-lesson-page .private-lesson-heading-icon {
+  display: none;
+}
+.private-lesson-page .private-lesson-heading {
+  margin-bottom: 20px;
+}
+.private-lesson-page .private-lesson-heading > div > p:last-child {
+  font-size: 24px;
+}
+.private-lesson-page .private-lesson-setup.live-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.private-lesson-page .private-lesson-intro {
+  display: none;
+}
+.private-lesson-page .private-lesson-clean-content {
+  padding: 0;
+  gap: 20px;
+  max-width: none;
+}
+.private-lesson-page .lesson-ready-card,
+.private-lesson-page .lesson-preferences-card {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.private-lesson-page .lesson-ready-card {
+  background: #e7f4ef;
+}
+.private-lesson-page .lesson-preferences-card {
+  background: white;
+}
+.private-lesson-page .lesson-teacher-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 18px;
+  color: var(--muted);
+}
+.private-lesson-page .lesson-teacher-picker {
+  width: 100%;
+  font-size: 24px;
+  min-height: 60px;
+}
+.private-lesson-page .lesson-teacher-picker .teacher-avatar {
+  width: 48px;
+  height: 48px;
+}
+.private-lesson-page .private-lesson-recommendation {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.private-lesson-page .private-lesson-recommendation-icon {
+  display: none;
+}
+.private-lesson-page .private-lesson-recommendation-copy {
+  width: 100%;
+}
+.private-lesson-page .private-lesson-recommendation h3 {
+  font-size: 32px;
+  line-height: 1.45;
+}
+.private-lesson-page .private-lesson-recommendation p {
+  font-size: 24px;
+  line-height: 1.45;
+}
+.private-lesson-page .private-lesson-summary-chips {
+  justify-content: flex-start;
+}
+.private-lesson-page .private-lesson-summary-chips span {
+  font-size: 18px;
+  background: transparent;
+  padding: 4px 0;
+}
+.private-lesson-page .lesson-ready-card .button {
+  width: 100%;
+  min-height: 60px;
+  font-size: 24px;
+}
+.private-lesson-page .lesson-ready-card > form {
+  width: 100%;
+}
+.private-lesson-page .lesson-preferences-card .teacher-choice-row {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.private-lesson-page .teacher-choice {
+  min-height: 60px;
+  justify-content: flex-start;
+  padding: 8px 16px;
+  font-size: 24px;
+  font-weight: 500;
+}
+.private-lesson-page .teacher-avatar-level {
+  display: none;
+}
+.private-lesson-page .teacher-choice .teacher-avatar {
+  width: 52px;
+  height: 52px;
+}
+.private-lesson-page .lesson-preferences-card .field select {
+  min-height: 60px;
+  font-size: 24px;
+}
+.private-lesson-page .teacher-choice-label,
+.private-lesson-page .lesson-preferences-card .field > span,
+.private-lesson-page .private-lesson-mode-field legend {
+  font-size: 18px;
+}
+.private-lesson-page .private-lesson-mode-options label {
+  min-height: 60px;
+  padding: 12px 16px;
+}
+.private-lesson-page .private-lesson-mode-options strong {
+  font-size: 20px;
+}
+.private-lesson-page .private-lesson-mode-options small {
+  font-size: 16px;
+  line-height: 1.4;
+}
+.private-lesson-page .lesson-preferences-card .private-lesson-customize {
+  font-size: 20px;
+  margin: 0;
+}
+.private-lesson-page .private-lesson-quick-links button {
+  min-height: 64px;
+  font-size: 18px;
+}
+.private-lesson-page .private-lesson-privacy {
+  font-size: 16px;
+}
+
+/* Live lesson is a conversation, not a stretched empty arena. Strong selectors
+   deliberately supersede the legacy fixed lesson rules in production.css. */
+html:has(body.private-lesson-session-open) {
+  scrollbar-gutter: auto;
+}
+html body.private-lesson-session-open .private-lesson-session.live-panel {
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: var(--private-lesson-viewport-height, 100dvh);
+  padding: 0 0 32px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #f7f8f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-session
+  > :not(.private-lesson-session-header) {
+  width: min(1160px, calc(100% - 64px));
+  flex-shrink: 0;
+}
+html body.private-lesson-session-open .private-lesson-session-header {
+  width: 100%;
+  padding: 12px 36px;
+  min-height: 96px;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  background: white;
+  border: 0;
+}
+html body.private-lesson-session-open .private-lesson-session-header > .logo {
+  flex-shrink: 0;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-session-header
+  .brand-logo {
+  width: 170px;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-session-header
+  > div:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+html body.private-lesson-session-open .private-lesson-session-header h2 {
+  font-size: 22px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+html body.private-lesson-session-open .private-lesson-session-header .eyebrow {
+  display: none;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-session-header
+  .private-lesson-status {
+  font-size: 16px;
+}
+html body.private-lesson-session-open .private-lesson-header-controls {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+html body.private-lesson-session-open .private-lesson-timer {
+  font-size: 24px;
+  padding: 8px;
+  min-width: 80px;
+  border: 0;
+  background: transparent;
+}
+html body.private-lesson-session-open .lesson-end {
+  min-height: 48px;
+  font-size: 18px;
+}
+html body.private-lesson-session-open .lesson-dialogue {
+  display: grid;
+  direction: ltr;
+  grid-template-columns: 204px minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+  margin-top: 32px;
+}
+html body.private-lesson-session-open .private-lesson-tutor-stage {
+  width: 204px;
+  height: auto;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  grid-area: auto;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-tutor-stage
+  .teacher-avatar {
+  width: 204px;
+  height: 204px;
+  max-height: none;
+  flex-shrink: 0;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-tutor-stage
+  .teacher-avatar-level {
+  display: none;
+}
+html body.private-lesson-session-open .private-lesson-tutor-caption {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+  text-align: center;
+  direction: inherit;
+}
+html body.private-lesson-session-open .private-lesson-tutor-caption span {
+  display: none;
+}
+html body.private-lesson-session-open .lesson-current-message {
+  min-height: 222px;
+  height: auto;
+  padding: 32px 40px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 48px;
+  direction: inherit;
+  text-align: start;
+  font-size: 32px;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+html body.private-lesson-session-open .lesson-current-message > p {
+  overflow-wrap: anywhere;
+}
+html body.private-lesson-session-open .lesson-replay-controls {
+  margin: 0;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+html body.private-lesson-session-open .lesson-replay-controls .button {
+  flex: 0 1 auto;
+  min-height: 44px;
+  font-size: 16px;
+  border: 0;
+  background: transparent;
+}
+html body.private-lesson-session-open .private-lesson-words {
+  grid-area: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  min-height: 0;
+}
+html body.private-lesson-session-open .private-lesson-words > strong {
+  font-size: 16px;
+}
+html body.private-lesson-session-open .private-lesson-words span {
+  font-size: 16px;
+}
+html body.private-lesson-session-open .lesson-transcript-details {
+  margin: 0;
+  padding: 12px 24px;
+  background: #e7f4ef;
+  border-radius: 20px;
+}
+html body.private-lesson-session-open .lesson-transcript-details > summary {
+  font-size: 18px;
+  text-align: start;
+}
+html body.private-lesson-session-open .private-lesson-transcript {
+  height: auto;
+  padding: 16px;
+  max-height: 50vh;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-session
+  .private-lesson-actions {
+  margin: 16px 0 0;
+  padding: 16px;
+  background: transparent;
+  border: 0;
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-session
+  .private-lesson-actions:not(.private-lesson-report-actions) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px minmax(0, 1fr);
+  max-width: 620px;
+  min-height: 196px;
+  justify-items: center;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-actions
+  > .private-lesson-mute {
+  grid-column: 2;
+  grid-row: 1;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-actions
+  > .private-lesson-continue {
+  grid-column: 1;
+  grid-row: 1;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-actions
+  > .lesson-translate {
+  grid-column: 3;
+  grid-row: 1;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-actions
+  > .lesson-translate,
+html
+  body.private-lesson-session-open
+  .private-lesson-actions
+  > .private-lesson-continue {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  flex-direction: column;
+  font-size: 16px;
+}
+html body.private-lesson-session-open .private-lesson-actions > .button {
+  flex: 0 1 auto;
+  width: auto;
+  font-size: 18px;
+  min-height: 60px;
+  border-radius: 30px;
+}
+html
+  body.private-lesson-session-open
+  .private-lesson-actions
+  > .private-lesson-mute {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 6px solid white;
+  box-shadow: 0 0 0 12px #e7f4ef;
+  background: var(--green);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+html body.private-lesson-session-open .private-lesson-mute svg {
+  width: 40px;
+  height: 40px;
+}
+html body.private-lesson-session-open .private-lesson-mute span {
+  display: block;
+  white-space: normal;
+}
+
+@media (max-width: 1100px) and (min-width: 861px) {
+  .app-layout > .main-column > .page-content {
+    padding-inline: 28px;
+  }
+  .ux-home.with-program .ux-home-next-copy {
+    padding: 24px;
+  }
+  .ux-home.with-program .ux-home-next h2 {
+    font-size: 34px;
+  }
+  .ux-home .ux-home-options p,
+  .programs-page .program-card p {
+    font-size: 20px;
+  }
+  .programs-page .program-card h3 {
+    font-size: 30px;
+  }
+}
+@media (max-width: 860px) {
+  .private-lesson-page .lesson-teacher-field {
+    font-size: 14px;
+  }
+  .private-lesson-page .lesson-teacher-picker {
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .programs-page .program-grid-compact .program-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .programs-page .program-grid-compact .program-card h3 {
+    font-size: 20px;
+  }
+  .programs-page .program-grid-compact .program-card p {
+    font-size: 16px;
+  }
+  .programs-page .program-grid-compact .program-card .button {
+    width: 100%;
+  }
+  .app-layout.focus-shell > .main-column > .topbar {
+    height: 72px;
+    padding: 12px 16px;
+  }
+  .focus-shell .mobile-brand .brand-logo {
+    width: 138px;
+  }
+  .focus-shell .focus-back {
+    font-size: 14px;
+    min-height: 44px;
+    padding-inline: 4px;
+  }
+  .focus-shell > .main-column > .page-content:has(.private-lesson-page) {
+    padding: 20px 16px 32px;
+  }
+  .ux-home-heading {
+    margin-bottom: 16px;
+  }
+  .ux-home-heading h1 {
+    font-size: 24px;
+    line-height: 30px;
+  }
+  .ux-home-heading p {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .ux-home .ux-home-next {
+    border-radius: 20px;
+  }
+  .ux-home.with-program .ux-home-next {
+    min-height: 0;
+  }
+  .ux-home.with-program .ux-home-illustration {
+    display: none;
+  }
+  .ux-home.with-program .ux-home-next-copy {
+    padding: 20px;
+    gap: 12px;
+  }
+  .ux-home.with-program .ux-home-next h2 {
+    font-size: 20px;
+    line-height: 26px;
+  }
+  .ux-home.with-program .ux-home-next-copy > p {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .ux-home.with-program .ux-home-next .button.primary {
+    min-height: 48px;
+    font-size: 16px;
+  }
+  .ux-home.with-program .ux-home-next .button.ghost {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .ux-home-section-heading {
+    margin-block: 20px 12px;
+  }
+  .ux-home-section-heading h2 {
+    font-size: 20px;
+  }
+  .ux-home-section-heading a {
+    font-size: 14px;
+  }
+  .ux-home .ux-home-options {
+    gap: 16px;
+  }
+  .ux-home .ux-home-options .ux-card {
+    padding: 16px;
+    min-height: 0;
+    border-radius: 20px;
+  }
+  .ux-home .ux-home-options h2,
+  .ux-home .ux-home-other-program h2 {
+    font-size: 20px;
+    line-height: 26px;
+  }
+  .ux-home .ux-home-options p,
+  .ux-home .ux-home-other-program p {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .ux-home .ux-home-options .button {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .ux-home.with-program .ux-home-words .ux-icon {
+    display: flex;
+  }
+  .ux-home.with-program .ux-home-words .ux-card-heading {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  .ux-home.with-program .ux-home-words .ux-word-illustration {
+    display: none;
+  }
+  .ux-home .ux-home-other-program > img {
+    display: none;
+  }
+  .ux-home.words-home .ux-home-next {
+    padding: 20px;
+  }
+  .ux-home.words-home .ux-home-next-copy {
+    gap: 12px;
+  }
+  .ux-primary-word-illustration {
+    width: 80px;
+    height: 65px;
+  }
+  .ux-home.words-home .ux-home-next h2 {
+    font-size: 20px;
+    line-height: 26px;
+  }
+  .ux-home.words-home .ux-home-next-copy > p {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .ux-home.words-home .ux-home-next .button {
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .ux-home.words-home .ux-home-options .ux-card {
+    padding: 16px;
+  }
+  .ux-home .ux-explore .button {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .programs-page .page-heading-row p {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .programs-page .page-heading-row > .button {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .programs-page .program-language {
+    margin-block: 24px;
+  }
+  .programs-page .program-language > h2 {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .programs-page .program-grid {
+    gap: 16px;
+  }
+  .programs-page .program-card {
+    min-height: 0;
+    padding: 20px;
+    gap: 16px;
+    border-radius: 20px;
+  }
+  .programs-page .program-card .ux-icon {
+    width: 56px;
+    height: 56px;
+  }
+  .programs-page .program-card .ux-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .programs-page .program-card h3 {
+    font-size: 20px;
+    line-height: 26px;
+    margin-bottom: 8px;
+  }
+  .programs-page .program-card p {
+    font-size: 16px;
+    line-height: 22px;
+    margin-bottom: 8px;
+  }
+  .programs-page .program-card small {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .programs-page .program-card .button {
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .programs-page .program-card .program-selected {
+    top: 20px;
+    inset-inline-start: 20px;
+    font-size: 13px;
+    padding: 6px 8px;
+    max-width: calc(100% - 108px);
+  }
+  .programs-page .program-card .program-next-step {
+    font-size: 16px;
+    padding: 12px;
+  }
+  .private-lesson-page .private-lesson-heading > div > p:last-child {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .private-lesson-page .lesson-ready-card,
+  .private-lesson-page .lesson-preferences-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  .private-lesson-page .private-lesson-recommendation h3 {
+    font-size: 20px;
+    line-height: 26px;
+  }
+  .private-lesson-page .private-lesson-recommendation p {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .private-lesson-page .private-lesson-summary-chips span {
+    font-size: 14px;
+  }
+  .private-lesson-page .lesson-ready-card .button {
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .private-lesson-page .teacher-choice {
+    font-size: 16px;
+    min-width: 100px;
+    padding: 8px;
+  }
+  .private-lesson-page .teacher-choice-label,
+  .private-lesson-page .lesson-preferences-card .field > span,
+  .private-lesson-page .private-lesson-mode-field legend {
+    font-size: 14px;
+  }
+  .private-lesson-page .lesson-preferences-card .field select {
+    min-height: 48px;
+    font-size: 16px;
+  }
+  .private-lesson-page .private-lesson-mode-options strong {
+    font-size: 16px;
+  }
+  .private-lesson-page .private-lesson-mode-options small {
+    font-size: 14px;
+  }
+  .private-lesson-page .lesson-preferences-card .private-lesson-customize {
+    font-size: 16px;
+  }
+  .private-lesson-page .private-lesson-quick-links button {
+    font-size: 16px;
+  }
+  .private-lesson-page .private-lesson-privacy {
+    font-size: 14px;
+  }
+  html body.private-lesson-session-open .private-lesson-session.live-panel {
+    padding-bottom: 24px;
+    gap: 16px;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-session
+    > :not(.private-lesson-session-header) {
+    width: calc(100% - 32px);
+  }
+  html body.private-lesson-session-open .private-lesson-session-header {
+    padding: 12px 16px;
+    min-height: 72px;
+    gap: 12px;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-session-header
+    .brand-logo {
+    width: 120px;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-session-header
+    > div:first-of-type {
+    order: 3;
+    flex-basis: 100%;
+  }
+  html body.private-lesson-session-open .private-lesson-session-header h2 {
+    font-size: 18px;
+  }
+  html body.private-lesson-session-open .private-lesson-header-controls {
+    margin-inline-start: auto;
+    gap: 8px;
+  }
+  html body.private-lesson-session-open .private-lesson-sidebar-button {
+    display: none;
+  }
+  html body.private-lesson-session-open .lesson-end {
+    font-size: 14px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  html body.private-lesson-session-open .private-lesson-timer {
+    font-size: 18px;
+    min-width: 52px;
+    padding: 0;
+  }
+  html body.private-lesson-session-open .lesson-dialogue {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 0;
+  }
+  html body.private-lesson-session-open .private-lesson-tutor-stage {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-tutor-stage
+    .teacher-avatar {
+    width: 96px;
+    height: 96px;
+  }
+  html body.private-lesson-session-open .private-lesson-tutor-caption {
+    font-size: 14px;
+  }
+  html body.private-lesson-session-open .lesson-current-message {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 24px;
+    font-size: 20px;
+    line-height: 1.4;
+  }
+  html body.private-lesson-session-open .lesson-replay-controls .button {
+    font-size: 14px;
+    padding: 8px;
+  }
+  html body.private-lesson-session-open .private-lesson-words {
+    justify-content: flex-start;
+  }
+  html body.private-lesson-session-open .private-lesson-words > strong,
+  html body.private-lesson-session-open .private-lesson-words span {
+    font-size: 14px;
+  }
+  html body.private-lesson-session-open .lesson-transcript-details {
+    padding: 8px 12px;
+  }
+  html body.private-lesson-session-open .lesson-transcript-details > summary {
+    font-size: 16px;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-session
+    .private-lesson-actions {
+    position: sticky;
+    bottom: 0;
+    background: #f7f8f5;
+    padding: 12px;
+    gap: 20px;
+    margin: 0;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-actions
+    > .private-lesson-mute {
+    width: 112px;
+    height: 112px;
+    box-shadow: 0 0 0 6px #e7f4ef;
+    font-size: 13px;
+    padding: 8px;
+    gap: 4px;
+  }
+  html body.private-lesson-session-open .private-lesson-mute svg {
+    width: 28px;
+    height: 28px;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-session
+    .private-lesson-actions:not(.private-lesson-report-actions) {
+    grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr);
+    min-height: 140px;
+    gap: 12px;
+    padding-inline: 0;
+  }
+  html
+    body.private-lesson-session-open
+    .private-lesson-actions
+    > .lesson-translate,
+  html
+    body.private-lesson-session-open
+    .private-lesson-actions
+    > .private-lesson-continue {
+    font-size: 13px;
+    padding: 8px 4px;
+  }
+  html body.private-lesson-session-open .private-lesson-actions > .button {
+    font-size: 14px;
+    min-height: 48px;
+  }
+}

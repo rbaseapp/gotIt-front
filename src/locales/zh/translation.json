@@ -2020,6 +2020,12 @@
     "unitWords": "Words in this unit",
     "unitDetails": "More about this unit",
     "knownHelp": "“I know this” is your preference, not a mastery assessment. You can undo it anytime.",
-    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment."
+    "lessonAvailability": "Teacher lessons are available separately. Your word review progress is not a speaking assessment.",
+    "readyForLesson": "准备开始",
+    "oneMoreThing": "再学一点？",
+    "backHome": "返回我的今天",
+    "wordsGreeting": "你好，{{name}}，今天玩个小游戏？",
+    "languageWithHelp": "{{language}} · {{support}}辅助",
+    "fromZeroLanguage": "从零开始学{{language}}"
   }
 }

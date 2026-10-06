@@ -138,12 +138,12 @@ test("multiple courses in two languages stay grouped on a narrow screen", async 
   await page.goto("/courses");
   await expect(
     page
-      .getByRole("region", { name: /English/ })
+      .getByRole("region", { name: "אנגלית", exact: true })
       .getByRole("button", { name: "פתיחת התוכנית" }),
   ).toHaveCount(2);
   await expect(
     page
-      .getByRole("region", { name: /Spanish/ })
+      .getByRole("region", { name: "ספרדית", exact: true })
       .getByRole("button", { name: "פתיחת התוכנית" }),
   ).toHaveCount(1);
   const createButton = page.getByRole("button", { name: "תוכנית חדשה" });

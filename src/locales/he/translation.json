@@ -1941,8 +1941,8 @@
     "letterKeyboardHelp": "לחצו על אותיות או הקלידו במקלדת",
     "deleteLetter": "מחיקת אות",
     "clearAnswer": "ניקוי התשובה",
-    "programsTitle": "התוכניות שלי",
-    "programsSubtitle": "בחרו במה ללמוד עכשיו",
+    "programsTitle": "מה נלמד עכשיו?",
+    "programsSubtitle": "כל תוכנית ממשיכה מהמקום שבו עצרתם",
     "newProgram": "תוכנית חדשה",
     "allCompleted": "סיימתם את החזרות להיום",
     "selectedProgram": "התוכנית שבחרתם",
@@ -2019,6 +2019,12 @@
     "unitWords": "המילים ביחידה",
     "unitDetails": "פרטים נוספים על היחידה",
     "knownHelp": "״אני מכיר״ היא בחירה שלכם, ולא הערכת שליטה. אפשר לבטל אותה בכל שלב.",
-    "lessonAvailability": "אפשר לתרגל גם בשיחה עם מורה. התקדמות בתרגול מילים אינה הערכה של יכולת הדיבור."
+    "lessonAvailability": "אפשר לתרגל גם בשיחה עם מורה. התקדמות בתרגול מילים אינה הערכה של יכולת הדיבור.",
+    "readyForLesson": "עוד רגע מתחילים",
+    "oneMoreThing": "עוד משהו קטן?",
+    "backHome": "חזרה להיום שלי",
+    "wordsGreeting": "היי {{name}}, משחק קצר היום?",
+    "languageWithHelp": "{{language}} · עזרה ב{{support}}",
+    "fromZeroLanguage": "{{language}} מאפס"
   }
 }
