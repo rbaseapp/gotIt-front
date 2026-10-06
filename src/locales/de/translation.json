@@ -587,8 +587,8 @@
         "description": "Verbinde ein Wort mit seiner Bedeutung aus mehreren Optionen"
       },
       "drag_drop": {
-        "name": "Drag & Drop",
-        "description": "Ziehe drei Bedeutungen in die Felder neben den Wörtern"
+        "name": "Bedeutungen erkennen · Wörter zuordnen",
+        "description": "Übe in mehreren Runden, Wörter ihren Bedeutungen zuzuordnen."
       },
       "listening": {
         "name": "Hören und Schreiben",
@@ -989,10 +989,10 @@
     "matchTitle": "Paare verbinden",
     "matchHelp": "Wähle auf jeder Seite eine Karte. Der Server prüft jede Verbindung.",
     "matchProgress": "{{current}} von {{total}} Paaren",
-    "dragDropLaunch": "Drei Wörter, drei Bedeutungen und eine kurze interaktive Herausforderung.",
-    "dragDropTitle": "Ordne jede Bedeutung zu",
+    "dragDropLaunch": "Übe in mehreren Runden, Wörter ihren Bedeutungen zuzuordnen.",
+    "dragDropTitle": "Bedeutungen erkennen · Wörter zuordnen",
     "dragDropHelp": "Ziehe jede Bedeutung in das leere Feld neben ihrem Wort. Du kannst auch eine Bedeutung und danach ein Feld auswählen.",
-    "dragDropDraftHelp": "Ordne alle drei Bedeutungen an, verschiebe sie beliebig oft und wähle dann Fertig, um zu prüfen.",
+    "dragDropDraftHelp": "Ziehe eine Bedeutung zum Wort oder tippe zuerst die Bedeutung und dann ein Feld an. Vor der Prüfung kannst du umordnen.",
     "dragDropProgress": "{{current}} von {{total}} platziert",
     "dragDropScore": "{{correct}} von {{total}} richtig",
     "placedMeaning": "Platzierte Bedeutung: {{meaning}}",
@@ -1008,7 +1008,7 @@
     "correctMeaning": "Richtig: {{meaning}}",
     "boardChecked": "Das Feld wurde geprüft",
     "readyToCheck": "Alles ist platziert. Du kannst noch umordnen.",
-    "arrangeBeforeCheck": "Platziere alle drei Bedeutungen, um die Prüfung zu aktivieren.",
+    "arrangeBeforeCheck": "Ordne alle Bedeutungen zu, um zu prüfen.",
     "checkingBoard": "Wird geprüft…",
     "finishedArranging": "Fertig",
     "continueToSummary": "Weiter zur Zusammenfassung",

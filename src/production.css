@@ -2924,14 +2924,7 @@ progress::-webkit-progress-value {
   max-width: 960px;
   padding: 30px;
   overflow: visible;
-  background:
-    radial-gradient(circle at 8% 5%, rgba(117, 94, 214, 0.09), transparent 27%),
-    radial-gradient(
-      circle at 94% 92%,
-      rgba(39, 123, 85, 0.08),
-      transparent 25%
-    ),
-    #fff;
+  background: var(--surface);
 }
 .live-drag-drop {
   display: grid;
@@ -2953,14 +2946,14 @@ progress::-webkit-progress-value {
 }
 .drag-drop-intro p {
   margin-top: 4px;
-  color: #6c6c7f;
+  color: var(--muted);
   font-size: 13px;
 }
 .drag-drop-intro strong {
   padding: 7px 12px;
   border-radius: 999px;
-  color: #5947a5;
-  background: #f0edff;
+  color: var(--green-dark);
+  background: var(--green-soft);
   font-size: 13px;
 }
 .drag-drop-symbol {
@@ -2969,9 +2962,9 @@ progress::-webkit-progress-value {
   border-radius: 16px;
   display: grid;
   place-items: center;
-  color: #6651bd;
-  background: linear-gradient(145deg, #eeeaff, #f7f4ff);
-  box-shadow: 0 8px 20px rgba(87, 65, 164, 0.12);
+  color: var(--green);
+  background: var(--green-soft);
+  box-shadow: 0 8px 20px rgba(44, 122, 98, 0.12);
 }
 .drag-drop-layout {
   display: grid;
@@ -2986,14 +2979,14 @@ progress::-webkit-progress-value {
 .drag-drop-row {
   min-height: 76px;
   padding: 10px 11px 10px 14px;
-  border: 1px solid #e1dfeb;
+  border: 1px solid var(--line);
   border-radius: 17px;
   display: grid;
   grid-template-columns: 30px minmax(100px, 0.72fr) minmax(150px, 1fr);
   align-items: center;
   gap: 12px;
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 7px 22px rgba(41, 35, 72, 0.055);
+  box-shadow: 0 7px 22px rgba(44, 122, 98, 0.055);
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
@@ -3005,8 +2998,8 @@ progress::-webkit-progress-value {
   animation: drag-row-success 430ms ease-out;
 }
 .drag-drop-row.is-filled {
-  border-color: #c9bee9;
-  background: #fdfcff;
+  border-color: #b3d6c6;
+  background: #f6fbf8;
 }
 .drag-drop-row.incorrect {
   border-color: #e4a48a;
@@ -3018,8 +3011,8 @@ progress::-webkit-progress-value {
   border-radius: 9px;
   display: grid;
   place-items: center;
-  color: #7766b4;
-  background: #f1eefb;
+  color: var(--green);
+  background: var(--green-soft);
   font-size: 12px;
   font-weight: 850;
 }
@@ -3037,16 +3030,19 @@ progress::-webkit-progress-value {
   overflow-wrap: anywhere;
 }
 .drag-drop-slot {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  flex-wrap: wrap;
   min-height: 54px;
   padding: 9px 13px;
-  border: 1.5px dashed #c9c3df;
+  border: 1.5px dashed #b5cfc2;
   border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 9px;
-  color: #786e91;
-  background: #f8f6fd;
+  color: var(--muted);
+  background: #f6faf7;
   font: inherit;
   font-weight: 720;
   text-align: start;
@@ -3058,21 +3054,21 @@ progress::-webkit-progress-value {
     box-shadow 150ms ease;
 }
 .drag-drop-slot.is-ready {
-  border-color: #9d8de0;
-  background: #f4f0ff;
+  border-color: var(--green);
+  background: var(--green-soft);
 }
 .drag-drop-slot.is-over {
   border-style: solid;
-  border-color: #745bda;
-  background: #eee9ff;
-  box-shadow: 0 0 0 4px rgba(116, 91, 218, 0.13);
+  border-color: var(--green);
+  background: var(--green-soft);
+  box-shadow: 0 0 0 4px rgba(44, 122, 98, 0.13);
   transform: scale(1.025);
 }
 .drag-drop-slot.has-card:not(.correct):not(.incorrect) {
   border-style: solid;
-  border-color: #a897df;
-  color: #4e4178;
-  background: #f4f0ff;
+  border-color: #89bca5;
+  color: var(--green-dark);
+  background: var(--green-soft);
   cursor: grab;
   touch-action: none;
 }
@@ -3114,7 +3110,7 @@ progress::-webkit-progress-value {
   border-radius: 7px;
   display: grid;
   place-items: center;
-  background: #ece8f8;
+  background: var(--green-soft);
   font-size: 17px;
 }
 .drop-spinner {
@@ -3128,23 +3124,23 @@ progress::-webkit-progress-value {
 .meaning-bank {
   min-width: 0;
   padding: 14px;
-  border: 1px solid #e4e1ef;
+  border: 1px solid var(--line);
   border-radius: 17px;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 10px;
-  background: rgba(247, 245, 252, 0.82);
+  background: #f6faf7;
 }
 .meaning-bank-heading {
   display: grid;
   gap: 2px;
-  color: #493d72;
+  color: var(--ink);
   font-size: 13px;
   font-weight: 850;
   text-align: start;
 }
 .meaning-bank-heading small {
-  color: #7a718d;
+  color: var(--muted);
   font-size: 11px;
   font-weight: 550;
 }
@@ -3154,16 +3150,18 @@ progress::-webkit-progress-value {
   gap: 9px;
 }
 .meaning-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
   min-height: 55px;
   padding: 10px 12px;
-  border: 1px solid #d7d1ea;
+  border: 1px solid #cadcd2;
   border-radius: 13px;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #3d345b;
+  color: var(--ink);
   background: #fff;
-  box-shadow: 0 7px 16px rgba(56, 43, 102, 0.08);
+  box-shadow: 0 7px 16px rgba(44, 122, 98, 0.08);
   font: inherit;
   font-size: 14px;
   font-weight: 740;
@@ -3179,18 +3177,18 @@ progress::-webkit-progress-value {
 }
 .meaning-card svg {
   flex: 0 0 auto;
-  color: #9b91bb;
+  color: #779589;
 }
 .meaning-card:hover:not(:disabled),
 .meaning-card.is-selected {
-  border-color: #8f7bdb;
+  border-color: var(--green);
   transform: translateY(-2px);
-  box-shadow: 0 11px 22px rgba(77, 58, 145, 0.14);
+  box-shadow: 0 11px 22px rgba(44, 122, 98, 0.14);
 }
 .meaning-card.is-selected {
-  color: #5642a4;
-  background: #f4f0ff;
-  box-shadow: 0 0 0 3px rgba(118, 92, 218, 0.13);
+  color: var(--green-dark);
+  background: var(--green-soft);
+  box-shadow: 0 0 0 3px rgba(44, 122, 98, 0.13);
 }
 .meaning-card.is-dragging,
 .meaning-card.is-trying {
@@ -3212,23 +3210,23 @@ progress::-webkit-progress-value {
   min-width: 170px;
   max-width: min(280px, 70vw);
   padding: 12px 14px;
-  border: 1px solid #8f7bdb;
+  border: 1px solid var(--green);
   border-radius: 13px;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #49388e;
+  color: var(--green-dark);
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 18px 38px rgba(58, 42, 120, 0.25);
+  box-shadow: 0 18px 38px rgba(44, 122, 98, 0.25);
   font-weight: 760;
   pointer-events: none;
-  transform: translate(-50%, -115%) rotate(-1.5deg);
-  animation: drag-ghost-enter 140ms ease-out;
+  transform: translate(-50%, -50%);
+  overflow-wrap: anywhere;
 }
 .drag-drop-status {
   min-height: 20px;
   margin: -7px 0 0;
-  color: #6b6084;
+  color: var(--muted);
   font-size: 12px;
   font-weight: 700;
   text-align: center;
@@ -3239,7 +3237,7 @@ progress::-webkit-progress-value {
   align-items: center;
   justify-content: flex-end;
   gap: 14px;
-  color: #6b6084;
+  color: var(--muted);
   font-size: 12px;
   font-weight: 700;
   text-align: start;
@@ -5009,15 +5007,14 @@ html[dir="ltr"] .pack-search input {
     font-size: 13px;
   }
   .live-drag-drop {
-    height: 100%;
-    min-height: 0;
+    min-height: 100%;
     gap: 8px;
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
   .drag-drop-layout {
     min-height: 0;
-    grid-template-rows: auto minmax(0, 1fr);
-    overflow: hidden;
+    grid-template-rows: auto auto;
+    overflow: visible;
   }
   .meaning-bank {
     padding: 8px;
@@ -5032,7 +5029,7 @@ html[dir="ltr"] .pack-search input {
   .drag-drop-rows {
     min-height: 0;
     gap: 6px;
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: minmax(48px, 1fr);
   }
   .drag-drop-row {
     min-height: 0;

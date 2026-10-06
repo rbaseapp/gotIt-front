@@ -118,6 +118,167 @@ function mount(
 }
 afterEach(clearTokens);
 describe("live server-backed flows", () => {
+  it.each(["smart", "drag_drop"])(
+    "continues %s beyond the first board, uses fresh boards and reaches the summary",
+    async (mode) => {
+      const requests: Array<Record<string, unknown>> = [];
+      const allExercises: Array<
+        typeof exercise & {
+          prompt: typeof exercise.prompt & {
+            choices?: Array<{ id: string; text: string }>;
+          };
+        }
+      > = [];
+      let attempts = 0;
+      let closed = false;
+      const id = (n: number) =>
+        `${String(n).padStart(8, "0")}-1111-4111-8111-111111111111`;
+      mount(`/learn/session/${mode}`, async (url, init) => {
+        const value = {
+          ...session,
+          sessionType: mode === "smart" ? "smart_review" : "matching",
+          itemCount: 10,
+        };
+        if (url.endsWith("/practice/sessions")) return json({ session: value });
+        if (url.endsWith("/study"))
+          return json({
+            cards: [
+              {
+                learningItemId: itemId,
+                sourceText: "remember",
+                translationText: "לזכור",
+                sourceLanguageCode: "en",
+                translationLanguageCode: "he",
+                context: null,
+                audioUrl: null,
+              },
+            ],
+          });
+        if (url.endsWith("/image")) return json({ image: null });
+        if (url.endsWith("/exercises")) {
+          const body = JSON.parse(String(init?.body));
+          requests.push(body);
+          const board =
+            mode === "drag_drop" || body.exerciseType === "matching";
+          const choices = Array.from({ length: body.count }, (_, i) => ({
+            id: id(100 + allExercises.length + i),
+            text: `meaning-${allExercises.length + i}`,
+          }));
+          const batch = choices.map((_, i) => ({
+            ...exercise,
+            id: id(200 + allExercises.length + i),
+            learningItemId: id(300 + allExercises.length + i),
+            exerciseType: board ? "matching" : "recall",
+            kind: board ? "multiple_choice" : "typed",
+            prompt: {
+              ...exercise.prompt,
+              text: `word-${allExercises.length + i}`,
+              ...(board ? { choices } : {}),
+            },
+          }));
+          allExercises.push(...batch);
+          return json({ exercises: batch, algorithmVersion: "server-v1" });
+        }
+        if (url.endsWith("/practice/attempts")) {
+          const body = JSON.parse(String(init?.body));
+          const item = allExercises.find(
+            (item) => item.id === body.exerciseId,
+          )!;
+          attempts++;
+          return json({
+            ...receipt,
+            replayed: false,
+            attempt: {
+              ...receipt.attempt,
+              id: id(400 + attempts),
+              learningItemId: item.learningItemId,
+              result: "correct",
+              score: 100,
+              expectedAnswer:
+                item.prompt.choices?.find((c) => c.id === body.choiceId)
+                  ?.text ?? "answer",
+            },
+          });
+        }
+        if (init?.method === "PATCH") {
+          closed = true;
+          return json({
+            session: { ...value, status: "completed", attemptCount: attempts },
+          });
+        }
+        throw new Error(`Unexpected route ${url}`);
+      });
+      const user = userEvent.setup();
+      await user.click(await screen.findByRole("button", { name: /מתחילים/ }));
+      if (mode === "smart")
+        await user.click(
+          await screen.findByRole("button", {
+            name: i18n.t("game.skipToReview"),
+          }),
+        );
+      for (let round = 0; round < 3; round++) {
+        await waitFor(() => expect(requests).toHaveLength(round + 1));
+        const board = mode === "drag_drop" || round !== 1;
+        if (board) {
+          await screen.findByRole("heading", {
+            name: "זיהוי משמעות · התאמת מילים",
+          });
+          const slots = [
+            ...document.querySelectorAll<HTMLButtonElement>(".drag-drop-slot"),
+          ];
+          const cards = [
+            ...document.querySelectorAll<HTMLButtonElement>(".meaning-card"),
+          ];
+          expect(slots).toHaveLength(round === 2 ? 4 : 3);
+          expect(
+            slots.every((slot) => !slot.classList.contains("has-card")),
+          ).toBe(true);
+          for (let i = 0; i < cards.length; i++) {
+            await user.click(cards[i]);
+            await user.click(slots[i]);
+          }
+          await user.click(screen.getByRole("button", { name: "סיימתי" }));
+          await screen.findByText("הלוח נבדק", {
+            selector: ".drag-drop-actions > span",
+          });
+          if (round < 2) expect(closed).toBe(false);
+          await user.click(
+            screen.getByRole("button", {
+              name: round === 2 ? "המשך לסיכום" : "המשך",
+            }),
+          );
+        } else {
+          for (let i = 0; i < 3; i++) {
+            await screen.findByRole("heading", { name: `word-${3 + i}` });
+            const input = screen.getByRole("textbox");
+            await user.type(input, "answer");
+            await user.click(
+              screen.getByRole("button", { name: i18n.t("game.checkAnswer") }),
+            );
+            await waitFor(() =>
+              expect(
+                document.querySelector(".feedback-next-action"),
+              ).not.toBeNull(),
+            );
+            await user.click(
+              document.querySelector<HTMLButtonElement>(
+                ".feedback-next-action",
+              )!,
+            );
+          }
+        }
+      }
+      await waitFor(() => expect(closed).toBe(true));
+      expect(attempts).toBe(10);
+      expect(requests.map((body) => body.count)).toEqual([3, 3, 4]);
+      if (mode === "smart")
+        expect(requests.map((body) => body.exerciseType)).toEqual([
+          "matching",
+          undefined,
+          "matching",
+        ]);
+    },
+  );
   it.each([0, 2])(
     "rejects an Arabic resumed session with %i attempts while English is selected",
     async (attemptCount) => {
@@ -911,11 +1072,11 @@ describe("live server-backed flows", () => {
 
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: /מתחילים/ }));
-    await screen.findByRole("heading", { name: "התאימו כל פירוש למילה" });
+    await screen.findByRole("heading", { name: "זיהוי משמעות · התאמת מילים" });
     expect(document.querySelectorAll(".drag-drop-row")).toHaveLength(3);
     expect(document.querySelectorAll(".meaning-card")).toHaveLength(3);
     expect(creationBody).toEqual(
-      expect.objectContaining({ sessionType: "matching", count: 3 }),
+      expect.objectContaining({ sessionType: "matching", count: 10 }),
     );
     expect(exerciseBody).toEqual(
       expect.objectContaining({
@@ -1154,7 +1315,7 @@ describe("live server-backed flows", () => {
     await screen.findByRole("heading", { name: "remember" });
     await user.click(screen.getByRole("button", { name: "מתחילים את החזרה" }));
     await screen.findByRole("heading", {
-      name: "התאימו כל פירוש למילה",
+      name: "זיהוי משמעות · התאמת מילים",
     });
 
     for (let position = 0; position < choices.length; position++) {

@@ -587,8 +587,8 @@
         "description": "Conecta una palabra con su significado de varias opciones"
       },
       "drag_drop": {
-        "name": "Arrastrar y soltar",
-        "description": "Arrastra tres significados a las casillas junto a sus palabras"
+        "name": "Reconocer significados · Asociar palabras",
+        "description": "Practica el reconocimiento de significados asociando palabras y traducciones en varias rondas."
       },
       "listening": {
         "name": "Escucha y deletreo",
@@ -989,10 +989,10 @@
     "matchTitle": "Conecta las parejas",
     "matchHelp": "Elige una tarjeta de cada lado. El servidor comprueba cada conexión.",
     "matchProgress": "{{current}} de {{total}} parejas",
-    "dragDropLaunch": "Tres palabras, tres significados y un reto interactivo rápido.",
-    "dragDropTitle": "Empareja cada significado",
+    "dragDropLaunch": "Practica el reconocimiento de significados asociando palabras y traducciones en varias rondas.",
+    "dragDropTitle": "Reconocer significados · Asociar palabras",
     "dragDropHelp": "Arrastra cada significado a la casilla vacía junto a su palabra. También puedes elegir un significado y después una casilla.",
-    "dragDropDraftHelp": "Ordena los tres significados, muévelos cuanto quieras y pulsa Terminé para comprobar.",
+    "dragDropDraftHelp": "Arrastra un significado a su palabra, o toca un significado y luego una casilla. Puedes cambiarlo antes de comprobar.",
     "dragDropProgress": "{{current}} de {{total}} colocados",
     "dragDropScore": "{{correct}} de {{total}} correctos",
     "placedMeaning": "Significado colocado: {{meaning}}",
@@ -1008,7 +1008,7 @@
     "correctMeaning": "Correcto: {{meaning}}",
     "boardChecked": "El tablero ha sido comprobado",
     "readyToCheck": "Todo está colocado. Aún puedes cambiar el orden.",
-    "arrangeBeforeCheck": "Coloca los tres significados para activar la comprobación.",
+    "arrangeBeforeCheck": "Coloca todos los significados para comprobar.",
     "checkingBoard": "Comprobando…",
     "finishedArranging": "Terminé",
     "continueToSummary": "Continuar al resumen",
