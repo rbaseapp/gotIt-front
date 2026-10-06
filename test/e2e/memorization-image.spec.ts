@@ -43,11 +43,23 @@ for (const viewport of viewports) {
             <style>${productionStyles}</style><style>${finalStyles}</style>
             <style>.practice-card { animation: none; }</style>
           </head><body>
-          <main class="live-session" dir="rtl"><section class="memorization-card live-panel practice-card">
+          <div class="session-page live-session" dir="rtl">
+          <header class="session-topbar"><button class="button ghost">Exit</button></header>
+          <main class="live-session-main session-active">
+          <h1 class="session-screen-title">Meet a new word</h1>
+          <div class="live-toolbar study-toolbar"><span>Word 1 of 1</span></div>
+          <progress class="live-session-progress" value="1" max="1"></progress>
+          <section class="memorization-card live-panel practice-card">
             <div class="memorization-visual">
               <div class="memorization-image-loading" aria-label="Loading image"></div>
             </div>
-          <div class="memorization-copy"><h1 dir="ltr">here</h1><p class="memorization-translation" dir="rtl">כאן</p></div></section></main></body></html>`,
+          <div class="memorization-copy"><h1 dir="ltr">here</h1><p class="memorization-translation" dir="rtl">כאן</p>
+          <button class="button secondary memorization-audio">Play again</button></div>
+          <div class="memorization-actions"><button class="button primary">Start review</button></div></section>
+          <button class="button ghost study-skip">Skip to review</button>
+          <p class="study-evidence-note">Introduction is a learning step. Independent success is tested in practice.</p>
+          <details class="session-extra"><summary>Details</summary></details>
+          </main></div></body></html>`,
         }),
       );
       await page.goto("/memorization-fixture");
@@ -59,7 +71,7 @@ for (const viewport of viewports) {
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${imageSize.width}" height="${imageSize.height}"><rect width="100%" height="100%" fill="red"/></svg>`;
       await visual.evaluate(
         (element, source) => {
-          element.innerHTML = `<img alt="Study item" src="${source}"><small class="image-credit">Image credit</small>`;
+          element.innerHTML = `<img alt="Study item" src="${source}"><small class="image-credit"><a href="https://example.com/source">Image credit</a></small>`;
         },
         `data:image/svg+xml,${encodeURIComponent(svg)}`,
       );
@@ -112,6 +124,29 @@ for (const viewport of viewports) {
           );
         });
       for (const delta of centers) expect(Math.abs(delta)).toBeLessThan(2);
+      const controls = await page
+        .locator(".memorization-card")
+        .evaluate((card) => {
+          const copy = card.querySelector(".memorization-copy")!;
+          const audio = card.querySelector(".memorization-audio")!;
+          const actions = card.querySelector(".memorization-actions")!;
+          const image = card.querySelector(".memorization-visual img")!;
+          return {
+            copyBottom: copy.getBoundingClientRect().bottom,
+            audioBottom: audio.getBoundingClientRect().bottom,
+            actionsTop: actions.getBoundingClientRect().top,
+            imageHeight: image.getBoundingClientRect().height,
+            creditColor: getComputedStyle(
+              card.querySelector(".image-credit a")!,
+            ).color,
+          };
+        });
+      expect(controls.audioBottom).toBeLessThanOrEqual(controls.copyBottom + 1);
+      expect(controls.audioBottom).toBeLessThan(controls.actionsTop);
+      expect(controls.imageHeight).toBeGreaterThanOrEqual(
+        viewport.width <= 760 ? 179 : 259,
+      );
+      expect(controls.creditColor).not.toBe("rgb(255, 255, 255)");
       expect(layout.naturalWidth).toBe(imageSize.width);
       expect(layout.naturalHeight).toBe(imageSize.height);
       expect(layout.imageBox.left).toBeGreaterThanOrEqual(

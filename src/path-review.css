@@ -477,11 +477,16 @@
 }
 /* Center each independently directed text block and reserve a useful image area. */
 .live-session .memorization-card {
+  /* The session's scrollable main must not compress this study card. */
+  flex: none;
+  max-height: none;
+  overflow: visible;
   align-items: center;
   text-align: center;
   padding: 28px;
 }
 .live-session .memorization-visual {
+  flex: none;
   width: min(100%, 380px);
   height: 300px;
   align-self: center;
@@ -492,6 +497,7 @@
 }
 .live-session .memorization-visual > img,
 .live-session .memorization-image-loading {
+  flex: none;
   width: 100%;
   height: 260px;
   min-height: 0;
@@ -508,10 +514,15 @@
   text-align: center;
 }
 .live-session .memorization-copy {
+  flex: none;
+  overflow: visible;
   width: 100%;
   align-items: center;
   text-align: center;
   gap: 12px;
+}
+.live-session .memorization-visual .image-credit a {
+  color: inherit;
 }
 .live-session .memorization-copy h1 {
   font-size: 44px;
