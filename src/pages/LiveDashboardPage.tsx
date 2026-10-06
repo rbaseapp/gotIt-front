@@ -91,7 +91,7 @@ export function LiveDashboardPage() {
       ? lessonLink(course)
       : "/english-learning"
     : resumable
-      ? `/learn/session/${resumableType}?resume=${resumable.id}&language=${encodeURIComponent(code)}${returnSuffix}`
+      ? `/learn/session/${resumableType}?resume=${resumable.id}&language=${encodeURIComponent(code)}${resumable.scope?.type === "pack" ? `&pack=${resumable.scope.id}` : ""}${returnSuffix}`
       : course?.nextLesson
         ? lessonLink(course)
         : selected === "english-path" && code === "en"

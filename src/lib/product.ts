@@ -262,6 +262,7 @@ export const sessionSchema = z.object({
   correctCount: count,
   xpEarned: count,
   algorithmVersion: z.string(),
+  curriculumOrder: z.boolean().optional(),
   scope: z
     .object({
       type: z.enum(["pack", "track", "topic"]),
@@ -610,6 +611,7 @@ export function errorMessage(reason: unknown): string {
   const localizedCodes = new Set([
     "NO_ELIGIBLE_ITEMS",
     "UNIT_DAILY_NEW_LIMIT",
+    "UNIT_SESSION_ORDER_CHANGED",
     "SPEECH_NOT_CONFIGURED",
     "READING_NOT_CONFIGURED",
     "INSUFFICIENT_DISTRACTORS",

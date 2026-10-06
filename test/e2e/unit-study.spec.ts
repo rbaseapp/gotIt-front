@@ -292,6 +292,29 @@ for (const width of [320, 1487])
     await expect(page.getByTestId("unit-session-context")).toBeVisible();
   });
 
+for (const width of [320, 1487])
+  test(`legacy smart unit link requests ordered games without a batch marker at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 1058 });
+    const { created } = await fixture(page);
+    await page.goto(
+      `/learn/session/smart?pack=${packId}&language=en&count=10&includeNew=1&ready=1`,
+    );
+    await expect.poll(() => created.length).toBe(1);
+    expect(created[0]).toMatchObject({
+      curriculumOrder: true,
+      scope: { type: "pack", id: packId },
+    });
+    await expect(page.getByTestId("unit-session-context")).toContainText(
+      "Building Your First Sentences",
+    );
+    await expect(
+      page.getByRole("button", { name: he.game.start, exact: true }),
+    ).toHaveCount(0);
+    await expect(page.getByText("you", { exact: true })).toBeVisible();
+  });
+
 test("all-known units do not launch general practice", async ({ page }) => {
   const { created, added } = await fixture(page, true);
   await page.goto(`/english-learning?unit=${packId}&tab=words`);

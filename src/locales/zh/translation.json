@@ -1620,6 +1620,7 @@
   },
   "productErrors": {
     "NO_ELIGIBLE_ITEMS": "没有找到适合这种做法的词语。",
+    "UNIT_SESSION_ORDER_CHANGED": "此轮练习创建于词语顺序更新之前。请返回单元并开始新练习，以便按顺序继续。",
     "UNIT_DAILY_NEW_LIMIT": "今天的新词额度已用完。要按单元顺序继续，请明天再来，或在设置中增加每日新词数量。",
     "SPEECH_NOT_CONFIGURED": "该单词的语言无法进行听力和发音。",
     "READING_NOT_CONFIGURED": "AI阅读服务尚未配置。",

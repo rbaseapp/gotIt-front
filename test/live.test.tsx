@@ -440,6 +440,73 @@ describe("live server-backed flows", () => {
       ).toBe(false);
     },
   );
+  it.each([false, undefined])(
+    "replaces an unordered resumed unit pool (%s) without issuing its old words",
+    async (curriculumOrder) => {
+      const fetchMock = mount(
+        `/learn/session/smart?resume=${sessionId}&pack=${itemId}&language=en&ready=1`,
+        async (url, init) => {
+          if (url.endsWith(`/practice/sessions/${sessionId}`))
+            return json({
+              session: {
+                ...session,
+                sessionType: "smart_review",
+                scope: { type: "pack", id: itemId, title: "Unit 1" },
+                curriculumOrder,
+              },
+            });
+          if (url.endsWith("/practice/sessions")) {
+            expect(JSON.parse(String(init?.body))).toMatchObject({
+              scope: { type: "pack", id: itemId },
+              curriculumOrder: true,
+              sourceLanguageCode: "en",
+            });
+            return json({
+              session: {
+                ...session,
+                id: secondItemId,
+                sessionType: "smart_review",
+                scope: { type: "pack", id: itemId, title: "Unit 1" },
+                curriculumOrder: true,
+              },
+            });
+          }
+          if (url.endsWith(`/practice/sessions/${secondItemId}/exercises`))
+            return json({
+              exercises: [
+                {
+                  ...exercise,
+                  kind: "multiple_choice",
+                  prompt: {
+                    ...exercise.prompt,
+                    text: "FIRST_ORDERED_UNIT_WORD",
+                    choices: [
+                      { id: itemId, text: "First meaning" },
+                      { id: secondItemId, text: "Other meaning" },
+                    ],
+                  },
+                },
+              ],
+              algorithmVersion: "server-v1",
+            });
+          return json({ error: { code: "NOT_FOUND", message: "Unused" } }, 404);
+        },
+      );
+      expect(await screen.findByText("FIRST_ORDERED_UNIT_WORD")).toBeVisible();
+      expect(
+        fetchMock.mock.calls.some(
+          ([url]) =>
+            url.endsWith(`/practice/sessions/${sessionId}/study`) ||
+            url.endsWith(`/practice/sessions/${sessionId}/exercises`),
+        ),
+      ).toBe(false);
+      expect(
+        fetchMock.mock.calls.filter(([url]) =>
+          url.endsWith("/practice/sessions"),
+        ),
+      ).toHaveLength(1);
+    },
+  );
   it.each([0, 2])(
     "rejects an Arabic resumed session with %i attempts while English is selected",
     async (attemptCount) => {

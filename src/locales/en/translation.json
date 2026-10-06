@@ -1676,6 +1676,7 @@
   },
   "productErrors": {
     "NO_ELIGIBLE_ITEMS": "No eligible words were found for this practice.",
+    "UNIT_SESSION_ORDER_CHANGED": "This round was created before word ordering was updated. Return to the unit and start new practice to continue in order.",
     "UNIT_DAILY_NEW_LIMIT": "Today's new-word allowance has been used. To continue in unit order, return tomorrow or increase new words per day in Settings.",
     "SPEECH_NOT_CONFIGURED": "Listening and pronunciation are unavailable for this word's language.",
     "READING_NOT_CONFIGURED": "Reading generation is currently unavailable. Try again later.",

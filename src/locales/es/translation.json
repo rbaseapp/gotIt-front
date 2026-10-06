@@ -1630,6 +1630,7 @@
   },
   "productErrors": {
     "NO_ELIGIBLE_ITEMS": "No se encontraron palabras elegibles para esta práctica.",
+    "UNIT_SESSION_ORDER_CHANGED": "Esta ronda se creó antes de actualizar el orden de las palabras. Vuelve a la unidad e inicia una práctica nueva para seguir el orden.",
     "UNIT_DAILY_NEW_LIMIT": "Ya usaste el cupo de palabras nuevas de hoy. Para seguir el orden de la unidad, vuelve mañana o aumenta las palabras nuevas por día en Configuración.",
     "SPEECH_NOT_CONFIGURED": "La escucha y pronunciación no están disponibles para el idioma de esta palabra.",
     "READING_NOT_CONFIGURED": "El servicio de lectura de IA aún no está configurado.",

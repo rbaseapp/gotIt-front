@@ -1630,6 +1630,7 @@
   },
   "productErrors": {
     "NO_ELIGIBLE_ITEMS": "Keine geeigneten Wörter für diese Übung gefunden.",
+    "UNIT_SESSION_ORDER_CHANGED": "Diese Runde wurde vor der Aktualisierung der Wortreihenfolge erstellt. Kehre zur Einheit zurück und starte eine neue Übung, um der Reihenfolge zu folgen.",
     "UNIT_DAILY_NEW_LIMIT": "Die Anzahl neuer Wörter für heute ist erreicht. Um in der Reihenfolge der Einheit fortzufahren, kehre morgen zurück oder erhöhe die neuen Wörter pro Tag in den Einstellungen.",
     "SPEECH_NOT_CONFIGURED": "Hören und Aussprache sind für die Sprache dieses Wortes nicht verfügbar.",
     "READING_NOT_CONFIGURED": "Der KI-Lesedienst ist noch nicht konfiguriert.",
