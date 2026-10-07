@@ -248,64 +248,37 @@ for (const language of ["he", "en"])
       });
       await expect(resume).toBeVisible();
       await expect(resume).toBeInViewport();
-      await page.locator(".lesson-current-message").scrollIntoViewIfNeeded();
-      await expect(page.locator(".lesson-current-message > p")).toBeInViewport({
-        ratio: 1,
-      });
       await expect(
-        page.locator(".lesson-transcript-details"),
-      ).not.toHaveAttribute("open");
+        page.locator(".lesson-room-turn.tutor").last(),
+      ).toBeVisible();
       const layout = await page.evaluate(() => {
         const boxes = [
-          ".private-lesson-session-header",
-          ".private-lesson-words",
-          ".private-lesson-tutor-stage",
-          ".lesson-current-message",
-          ".private-lesson-actions",
+          ".lesson-room-header",
+          ".lesson-room-conversation",
+          ".lesson-room-composer",
         ].map((selector) =>
           document.querySelector(selector)!.getBoundingClientRect(),
         );
-        return {
-          contained: boxes.every(
-            (box) =>
-              box.left >= -1 && box.right <= innerWidth + 1 && box.width > 0,
-          ),
-          scrollable:
-            getComputedStyle(document.querySelector(".private-lesson-session")!)
-              .overflowY === "auto",
-        };
+        return boxes.every(
+          (box) =>
+            box.left >= -1 &&
+            box.right <= innerWidth + 1 &&
+            box.bottom <= innerHeight + 1 &&
+            box.width > 0,
+        );
       });
-      expect(layout).toEqual({ contained: true, scrollable: true });
+      expect(layout).toBe(true);
       if (viewport.width === 1440) {
-        const sessionBox = await page
-          .locator(".private-lesson-session")
-          .boundingBox();
-        expect(sessionBox?.width).toBe(
-          await page.evaluate(() => document.documentElement.clientWidth),
+        expect((await page.locator(".lesson-room").boundingBox())?.width).toBe(
+          viewport.width,
         );
-        const portrait = await page
-          .locator(".private-lesson-tutor-stage .teacher-avatar")
-          .boundingBox();
-        expect(portrait?.width).toBe(204);
-        await expect(
-          page.locator(".private-lesson-tutor-stage .teacher-avatar-level"),
-        ).not.toBeVisible();
-        await expect(page.locator(".lesson-current-message")).toHaveCSS(
-          "background-color",
-          "rgb(255, 255, 255)",
-        );
-        const bubble = await page
-          .locator(".lesson-current-message")
-          .boundingBox();
-        expect(Math.abs((bubble?.y ?? 0) - (portrait?.y ?? 0))).toBeLessThan(
-          60,
-        );
-        const mic = await page
-          .locator(".private-lesson-actions .private-lesson-mute")
-          .boundingBox();
         expect(
-          Math.abs((mic?.x ?? 0) + (mic?.width ?? 0) / 2 - viewport.width / 2),
-        ).toBeLessThan(2);
+          (await page.locator(".lesson-room .teacher-avatar").boundingBox())
+            ?.width,
+        ).toBe(300);
+        await expect(
+          page.locator(".lesson-room .teacher-avatar-level"),
+        ).not.toBeVisible();
       }
       expect(
         await page.evaluate(

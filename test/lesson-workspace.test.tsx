@@ -1,4 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { expect, it, vi } from "vitest";
@@ -14,7 +20,8 @@ function mount(
   const onAction = vi.fn(),
     onPause = vi.fn(),
     onFinish = vi.fn(),
-    onTranslate = vi.fn();
+    onTranslate = vi.fn(),
+    onInputMode = vi.fn();
   render(
     <MemoryRouter>
       <LessonWorkspace
@@ -32,6 +39,7 @@ function mount(
         onReview={onReview}
         onAction={onAction}
         onMicrophone={() => {}}
+        onInputMode={onInputMode}
         onReplay={() => {}}
         onTranslate={onTranslate}
         onPause={onPause}
@@ -39,7 +47,7 @@ function mount(
       />
     </MemoryRouter>,
   );
-  return { onAction, onPause, onFinish, onTranslate };
+  return { onAction, onPause, onFinish, onTranslate, onInputMode };
 }
 it("keeps a typed answer after a failed submission and clears it only after server success", async () => {
   const answer = vi
@@ -62,9 +70,7 @@ it("keeps a typed answer after a failed submission and clears it only after serv
   await user.click(
     screen.getByRole("button", { name: i18n.t("lessonUi.send") }),
   );
-  await waitFor(() =>
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument(),
-  );
+  await waitFor(() => expect(textbox).toHaveValue(""));
   expect(answer.mock.calls).toEqual([["水をください。"], ["水をください。"]]);
 });
 it("offers help without advancing or finishing a lesson and keeps Japanese examples in Japanese", async () => {
@@ -75,7 +81,9 @@ it("offers help without advancing or finishing a lesson and keeps Japanese examp
     screen.getByRole("button", { name: i18n.t("lessonUi.helpWhenNeeded") }),
   );
   await user.click(
-    screen.getByRole("button", { name: i18n.t("lessonUi.hint") }),
+    within(
+      screen.getByRole("dialog", { name: i18n.t("lessonUi.help") }),
+    ).getByRole("button", { name: i18n.t("lessonUi.hint") }),
   );
   expect(actions.onAction).toHaveBeenCalledExactlyOnceWith("hint");
   expect(actions.onFinish).not.toHaveBeenCalled();
@@ -141,4 +149,71 @@ it("reviews an edited transcript without recording another learning answer, and 
   await screen.findByText(i18n.t("lessonReview.originalPreserved"));
   expect(review.mock.calls).toEqual([["Water, please."], ["Water, please."]]);
   expect(answer).not.toHaveBeenCalled();
+});
+
+it("sends Enter once, keeps Shift+Enter and composition for editing, and locks an in-flight draft", async () => {
+  let resolve!: (success: boolean) => void;
+  const answer = vi.fn(
+    () =>
+      new Promise<boolean>((done) => {
+        resolve = done;
+      }),
+  );
+  mount(answer);
+  const textbox = screen.getByRole("textbox", {
+    name: i18n.t("lessonUi.yourAnswer"),
+  });
+  fireEvent.change(textbox, { target: { value: "I want tea." } });
+  fireEvent.keyDown(textbox, { key: "Enter", shiftKey: true });
+  fireEvent.keyDown(textbox, { key: "Enter", isComposing: true });
+  expect(answer).not.toHaveBeenCalled();
+  fireEvent.keyDown(textbox, { key: "Enter" });
+  fireEvent.keyDown(textbox, { key: "Enter" });
+  expect(answer).toHaveBeenCalledExactlyOnceWith("I want tea.");
+  expect(textbox).toBeDisabled();
+  resolve(false);
+  await waitFor(() => expect(textbox).toBeEnabled());
+  expect(textbox).toHaveValue("I want tea.");
+});
+
+it("switches input modes without submitting or losing the learner's draft", async () => {
+  const answer = vi.fn(async () => true);
+  const actions = mount(answer);
+  const user = userEvent.setup();
+  const textbox = screen.getByRole("textbox", {
+    name: i18n.t("lessonUi.yourAnswer"),
+  });
+  await user.type(textbox, "An unfinished answer");
+  await user.click(
+    screen.getByRole("button", {
+      name: i18n.t("lessonRoom.voice"),
+      exact: true,
+    }),
+  );
+  expect(actions.onInputMode).toHaveBeenLastCalledWith("voice");
+  await user.click(
+    screen.getByRole("button", {
+      name: i18n.t("lessonUi.answerText"),
+      exact: true,
+    }),
+  );
+  expect(actions.onInputMode).toHaveBeenLastCalledWith("text");
+  expect(textbox).toHaveValue("An unfinished answer");
+  expect(answer).not.toHaveBeenCalled();
+});
+
+it("renders canonical conversation turns and avoids duplicating the current tutor turn", () => {
+  const activity = {
+    ...guidedSession.activity!,
+    interactionMode: "conversation" as const,
+    tutorText: "What do you enjoy doing?",
+    turns: [
+      { role: "tutor" as const, text: "Hello!" },
+      { role: "learner" as const, text: "I enjoy reading." },
+      { role: "tutor" as const, text: "What do you enjoy doing?" },
+    ],
+  };
+  mount(undefined, undefined, activity);
+  expect(screen.getAllByText("What do you enjoy doing?")).toHaveLength(1);
+  expect(screen.getByText("I enjoy reading.")).toHaveAttribute("dir", "auto");
 });
