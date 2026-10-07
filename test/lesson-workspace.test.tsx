@@ -16,6 +16,7 @@ function mount(
   onAnswer = vi.fn(async () => true),
   onReview = vi.fn(async () => true),
   activity = guidedSession.activity!,
+  answerBlocked = false,
 ) {
   const onAction = vi.fn(),
     onPause = vi.fn(),
@@ -31,6 +32,7 @@ function mount(
         status="Ready"
         audioLevel={0}
         busy={false}
+        answerBlocked={answerBlocked}
         ready
         microphoneMuted
         inputMode="text"
@@ -216,4 +218,20 @@ it("renders canonical conversation turns and avoids duplicating the current tuto
   mount(undefined, undefined, activity);
   expect(screen.getAllByText("What do you enjoy doing?")).toHaveLength(1);
   expect(screen.getByText("I enjoy reading.")).toHaveAttribute("dir", "auto");
+});
+
+it("lets the learner write during teacher playback but prevents an unanswered send", () => {
+  const answer = vi.fn(async () => true);
+  mount(answer, undefined, undefined, true);
+  const textbox = screen.getByRole("textbox", {
+    name: i18n.t("lessonUi.yourAnswer"),
+  });
+  fireEvent.change(textbox, { target: { value: "My next answer." } });
+  expect(textbox).toBeEnabled();
+  expect(
+    screen.getByRole("button", { name: i18n.t("lessonUi.send") }),
+  ).toBeDisabled();
+  fireEvent.keyDown(textbox, { key: "Enter" });
+  expect(answer).not.toHaveBeenCalled();
+  expect(textbox).toHaveValue("My next answer.");
 });
