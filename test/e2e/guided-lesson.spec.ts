@@ -172,11 +172,15 @@ async function fixture(
           grammarTopics: [],
           communicationGoals: [],
         },
-        interactionCapabilities: {
-          guidedTasks: true,
-          textAnswers: true,
-          billingPause: false,
-        },
+        ...(options.legacy
+          ? {}
+          : {
+              interactionCapabilities: {
+                guidedTasks: true,
+                textAnswers: true,
+                billingPause: false,
+              },
+            }),
       };
     else if (path.endsWith(`/private-lessons/units/${id}`))
       payload = {

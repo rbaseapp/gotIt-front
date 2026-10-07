@@ -234,7 +234,6 @@ export function PrivateLessonPage() {
   const [showLevelDetails, setShowLevelDetails] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [showLessonOptions, setShowLessonOptions] = useState(false);
-  const [showTextAlternative, setShowTextAlternative] = useState(false);
   const [showTeacherPicker, setShowTeacherPicker] = useState(false);
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
   const [replayError, setReplayError] = useState("");
@@ -1590,12 +1589,7 @@ export function PrivateLessonPage() {
                     }
                   >
                     <option value="voice">{t("lessonPrep.voiceOrText")}</option>
-                    <option
-                      value="text"
-                      disabled={
-                        !lessonSetup?.interactionCapabilities?.textAnswers
-                      }
-                    >
+                    <option value="text">
                       {t("lessonUi.textWithoutMicrophone")}
                     </option>
                   </select>
@@ -1713,22 +1707,20 @@ export function PrivateLessonPage() {
                     )?.[1] ?? lessonSupportLanguage}
                   </span>
                 </label>
-                {lessonSetup?.interactionCapabilities?.textAnswers && (
-                  <label className="field lesson-answer-mode">
-                    <span>{t("lessonUi.answerMode")}</span>
-                    <select
-                      value={inputMode}
-                      onChange={(event) =>
-                        setInputMode(event.target.value as "voice" | "text")
-                      }
-                    >
-                      <option value="voice">{t("lessonUi.voiceOrText")}</option>
-                      <option value="text">
-                        {t("lessonUi.textWithoutMicrophone")}
-                      </option>
-                    </select>
-                  </label>
-                )}
+                <label className="field lesson-answer-mode">
+                  <span>{t("lessonUi.answerMode")}</span>
+                  <select
+                    value={inputMode}
+                    onChange={(event) =>
+                      setInputMode(event.target.value as "voice" | "text")
+                    }
+                  >
+                    <option value="voice">{t("lessonUi.voiceOrText")}</option>
+                    <option value="text">
+                      {t("lessonUi.textWithoutMicrophone")}
+                    </option>
+                  </select>
+                </label>
                 {coursePreferences && !coursePreferences.absoluteBeginner && (
                   <label className="field private-lesson-explanation-language">
                     <span>{t("privateLesson.mode.teachingLanguage")}</span>
@@ -1970,51 +1962,20 @@ export function PrivateLessonPage() {
                       </p>
                     </div>
                   )}
-                  {lessonSetup?.interactionCapabilities?.textAnswers ? (
-                    <label className="field lesson-answer-mode">
-                      <span>{t("lessonUi.answerMode")}</span>
-                      <select
-                        value={inputMode}
-                        onChange={(event) =>
-                          setInputMode(event.target.value as "voice" | "text")
-                        }
-                      >
-                        <option value="voice">
-                          {t("lessonUi.voiceOrText")}
-                        </option>
-                        <option value="text">
-                          {t("lessonUi.textWithoutMicrophone")}
-                        </option>
-                      </select>
-                    </label>
-                  ) : (
-                    <button
-                      type="button"
-                      className="button secondary lesson-text-choice"
-                      onClick={() => setShowTextAlternative(true)}
+                  <label className="field lesson-answer-mode">
+                    <span>{t("lessonUi.answerMode")}</span>
+                    <select
+                      value={inputMode}
+                      onChange={(event) =>
+                        setInputMode(event.target.value as "voice" | "text")
+                      }
                     >
-                      {t("ux.textAlternative")}
-                    </button>
-                  )}
-                  <Modal
-                    open={showTextAlternative}
-                    onClose={() => setShowTextAlternative(false)}
-                    title={t("ux.textAlternative")}
-                  >
-                    <div className="modal-body">
-                      <p>{t("ux.textUnavailable")}</p>
-                      <button
-                        className="button primary"
-                        onClick={() =>
-                          navigate(
-                            `/learn?language=${encodeURIComponent(targetLanguage)}&return=%2Fprivate-lesson`,
-                          )
-                        }
-                      >
-                        {t("ux.writtenPractice")}
-                      </button>
-                    </div>
-                  </Modal>
+                      <option value="voice">{t("lessonUi.voiceOrText")}</option>
+                      <option value="text">
+                        {t("lessonUi.textWithoutMicrophone")}
+                      </option>
+                    </select>
+                  </label>
                   <button
                     type="button"
                     className="button ghost private-lesson-customize"
