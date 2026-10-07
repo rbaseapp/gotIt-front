@@ -2881,6 +2881,24 @@ html body.private-lesson-session-open .private-lesson-mute span {
 .teacher-choice-with-preview > .teacher-choice {
   width: 100%;
 }
+.lesson-teacher-modal .teacher-choice-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.lesson-teacher-modal .teacher-choice {
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 16px;
+  font-size: calc(20px * var(--text-scale, 1));
+}
+.lesson-teacher-modal .teacher-avatar {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+.lesson-teacher-modal .teacher-avatar-level {
+  display: none;
+}
 .private-lesson-page .unit-lesson-prep form {
   width: 100%;
 }

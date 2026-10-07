@@ -2708,6 +2708,7 @@ export function PrivateLessonPage() {
             open={showTeacherPicker}
             onClose={() => setShowTeacherPicker(false)}
             title={t("ux.chooseTeacher")}
+            className="lesson-teacher-modal"
           >
             <div className="modal-body">{teacherChoices}</div>
           </Modal>
