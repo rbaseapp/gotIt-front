@@ -533,6 +533,59 @@ describe("personal course experience", () => {
     await user.click(screen.getByRole("button", { name: "למשימה הבאה" }));
     expect(screen.getByText("משימה 2 מתוך 2")).toBeInTheDocument();
   });
+  it("repeats only a completed task and sends review mode without changing its original progress", async () => {
+    const homework = structuredClone(fixtureHomework);
+    homework.tasks[0]!.done = true;
+    homework.completedCount = 1;
+    mocks.homework.mockResolvedValue({ homework });
+    mocks.homeworkCommand.mockResolvedValue({
+      homework: {
+        ...homework,
+        revision: 1,
+        review: {
+          taskIndex: 0,
+          result: "correct",
+          feedback: "Correct again",
+          hint: null,
+        },
+      },
+    });
+    const user = userEvent.setup();
+    renderRoute(
+      `/homework/${homework.id}?task=0&review=1&return=%2Fenglish-learning`,
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "is", exact: true }),
+    );
+    await user.click(screen.getByRole("button", { name: "בדיקת התשובה" }));
+    expect(await screen.findByText("Correct again")).toBeInTheDocument();
+    expect(mocks.homeworkCommand).toHaveBeenCalledWith(
+      homework.id,
+      "actions",
+      expect.objectContaining({ review: true, taskIndex: 0, action: "answer" }),
+    );
+    expect(
+      screen.queryByRole("button", { name: "למשימה הבאה" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "חזרה למפה" })).toHaveAttribute(
+      "href",
+      "/english-learning",
+    );
+    expect(homework.tasks[1]!.done).toBe(false);
+  });
+  it("rejects review links to a future task and resumes the current task for a future normal link", async () => {
+    const view = renderRoute(`/homework/${fixtureHomework.id}?task=1&review=1`);
+    await screen.findByText("אפשר לחזור רק על תרגיל שכבר הושלם");
+    expect(
+      screen.queryByRole("button", { name: "בדיקת התשובה" }),
+    ).not.toBeInTheDocument();
+    expect(mocks.homeworkCommand).not.toHaveBeenCalled();
+    view.unmount();
+    renderRoute(`/homework/${fixtureHomework.id}?task=1`);
+    expect(
+      await screen.findByText(fixtureHomework.tasks[0]!.prompt),
+    ).toBeInTheDocument();
+  });
   it("records a homework voice answer only while held and cancels a lost pointer", async () => {
     const homework = structuredClone(fixtureHomework);
     homework.tasks[0]!.done = true;

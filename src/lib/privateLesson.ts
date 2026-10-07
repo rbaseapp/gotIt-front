@@ -262,6 +262,10 @@ export const lessonUnitSchema = z.object({
         requiredWords: z.number(),
         durationMinutes: z.number(),
         available: z.boolean(),
+        lockReason: z
+          .enum(["words", "previous_preparation"])
+          .nullable()
+          .optional(),
       }),
     )
     .optional(),

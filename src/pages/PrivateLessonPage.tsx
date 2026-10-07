@@ -175,7 +175,9 @@ export function PrivateLessonPage() {
   const [lessonDurationMinutes, setLessonDurationMinutes] =
     useState<PrivateLessonDurationMinutes>(5);
   const selectedUnitStation = unit?.teacherStations?.find(
-    (step) => step.station === (searchParams.get("station") || "supported"),
+    (step) =>
+      step.station ===
+      (searchParams.get("station") || unit?.station || "supported"),
   );
   const plannedMinutes = packId
     ? (selectedUnitStation?.durationMinutes ?? 5)
@@ -761,9 +763,10 @@ export function PrivateLessonPage() {
           ? {
               packId,
               station:
-                searchParams.get("station") === "review"
+                (searchParams.get("station") || unit?.station) === "review"
                   ? ("review" as const)
-                  : searchParams.get("station") === "midpoint"
+                  : (searchParams.get("station") || unit?.station) ===
+                      "midpoint"
                     ? ("midpoint" as const)
                     : ("supported" as const),
             }
@@ -1523,13 +1526,15 @@ export function PrivateLessonPage() {
                 )}
                 {selectedUnitStation && !selectedUnitStation.available && (
                   <p role="status">
-                    {t("pathUi.remaining", {
-                      count: Math.max(
-                        0,
-                        selectedUnitStation.requiredWords -
-                          (unit?.introduced ?? 0),
-                      ),
-                    })}
+                    {selectedUnitStation.lockReason === "previous_preparation"
+                      ? t("unitMap.previousPreparation")
+                      : t("pathUi.remaining", {
+                          count: Math.max(
+                            0,
+                            selectedUnitStation.requiredWords -
+                              (unit?.introduced ?? 0),
+                          ),
+                        })}
                   </p>
                 )}
                 <form onSubmit={(event) => void startLesson(event)}>

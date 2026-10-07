@@ -1,53 +1,61 @@
-# Dashboard word actions
+# My Map implementation QA
 
-Date: 2026-10-07
+**Final result: passed**
 
-final result: passed
+## Visual evidence
 
-## Scope and visual truth
+- Closed source: `C:/Users/Ori/.codex/generated_images/01a11573-9293-7aa0-8d0a-e7ad3db8f6ce/exec-b89437db-1c60-406a-9b1b-55e8701d81f9.png` (1487 × 1058).
+- Expanded reference: `C:/Users/Ori/.codex/generated_images/01a11573-9293-7aa0-8d0a-e7ad3db8f6ce/exec-4c0bfb9c-f5be-4d30-91b4-d4aedf9cb759.png` (1100 × 1429).
+- Final browser capture: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/closed-final.png` (1487 × 1058).
+- Full closed comparison: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/comparison-final.png`.
+- Expanded comparison: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/expanded-comparison.png`.
+- Focused action comparison: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/actions-comparison.png`; reviewed entry/disclosure separation, outlines, text and icons.
+- Post-meeting desktop capture: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/map-after-meeting-1487.png` (1487 × 1442 full page).
+- Post-meeting mobile capture: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/map-after-meeting-320.png` (320 × 2064 full page).
 
-- Selected reference: `C:/Users/Ori/.codex/generated_images/01a11565-1182-70a2-b5ee-7dec34cccd1c/exec-52f2884f-7a5c-485a-9e18-ceaad091c807.png` (1423 x 1105 pixels).
-- Implement only the word-card actions. The user explicitly required keeping the existing sidebar. Existing hero, navigation, illustrations, routes and surrounding card geometry remain authoritative.
-- Implementation: `http://127.0.0.1:5173/dashboard`, using local test fixtures, not a deployed environment.
-- Desktop capture: `test-results/dashboard-actions-desktop.png` (1920 x 1500 pixels, matching CSS viewport, density 1).
-- Mobile capture: `test-results/dashboard-actions-mobile.png` (390 x 1196 pixels, full content capture for a 390 x 844 CSS viewport, density 1).
-- Full-view and focused comparison: `test-results/dashboard-actions-comparison.png`. The word-card reference and implementation crops are normalized to 560 x 310 and displayed together. The reference is a main-content crop, while the implementation retains the complete shell. These are deliberately not treated as identical full-page viewports.
-- State: Hebrew RTL, selected English program, two enabled practice links, 62 words due. The fixture name and hero state differ from the original image; those existing components are outside the edit scope.
-
-## Findings
-
-No actionable P0/P1/P2 findings in the requested component scope.
-
-- Typography: existing application font retained. Compact buttons use 16px, weight 600, complete short labels, and 44px minimum height. This follows the agreed compact-button specification rather than copying the enlarged mockup's rendered text size. Full descriptions remain in accessible labels and native title tooltips.
-- Spacing: two equal-width buttons, 8px gap, centered text link below. The desktop action area reserves the old space. At widths 1920, 1440 and 1000, card height differed from baseline by only 0.016 CSS pixels (rounding). Both cards align at top and bottom; teacher/reading links retain their document position.
-- Tokens: original brand green, mint card background, white secondary button, existing border token and focus outline retained. Button radius is 14px.
-- Assets: existing hero, word-card, program illustrations and logo reused directly. No new raster assets or replacement icons were introduced.
-- Copy: short review/program labels supplied for all eight locales. The original full labels remain available for assistive technology. The game link retains the original text.
-- Responsive behavior: inspected widths 320, 390, 1000, 1440 and 1920. No horizontal page overflow. Both labels fit at 320/390; controls stack at narrow widths and remain 44px high. Existing mobile navigation and desktop sidebar are retained.
-
-## Interactions and checks
-
-- Clicked the vocabulary review link and verified the smart-practice preparation page with the existing language/return scope.
-- Clicked the game-selection link and verified the existing game-selection screen.
-- Verified the program-practice href retains pack, language, ready and return parameters; disabled-state handling remains unchanged. No practice attempt was submitted.
-- Browser console errors on the inspected local preview: none.
-- Typecheck and ESLint for the modified component: passed.
-- Production build: passed (existing bundle-size/dependency annotation warnings only).
-- Translation tests: 6 passed.
+The desktop CSS viewport is 1487 × 1058, density 1. Closed images were compared at equal pixels without scaling. The expanded concept has a different canvas width and represents illustrative copy, not the same runtime state; its comparison establishes hierarchy and disclosure/task patterns, not exact full-frame geometry. Expanded screenshots exceed viewport height because the lists are open. Responsive checks also used 390 and 768 px widths. Browser screenshots were generated by the existing Playwright/Chrome test workflow. The local preview was additionally opened and exercised in the user's Chrome through Computer Use, with no browser error logs.
 
 ## Comparison history
 
-- Initial visual comparison confirmed the requested two-button hierarchy, compact controls, preserved card alignment and unchanged sidebar.
-- A stitched full-page screenshot contained capture artifacts after viewport changes. Replaced it with a fresh 1920 x 1500 viewport screenshot and repeated the combined comparison; the final capture is clean. No code fixes were needed from that comparison.
+1. Initial comparison (`comparison-initial.png` in the same evidence directory): P2 entry-button outlines lacked the green contrast of the accepted image; P2 follow-up hero inherited the words-only green surface; P2 desktop hero occupied too much height. Result at this iteration: blocked.
+2. Applied green secondary outlines, preserved the lavender next-step surface for follow-up practice, increased mobile click targets to 44 px, and reduced the desktop hero's grid, spacing and CTA size. Moved its words link alongside the last copy row rather than allocating another grid row.
+3. Recaptured at the same viewport. `comparison-final.png` shows the closed page fits 1487 × 1058 and keeps the original map architecture. Entry buttons remain compact and separate from disclosure arrows. No actionable P0/P1/P2 differences remain.
+
+## Required fidelity surfaces
+
+- **Typography:** existing Rubik family and RTL hierarchy retained; compact row actions use 16 px text. Desktop titles and subtitles remain legible; mobile text wraps without horizontal overflow.
+- **Spacing/layout:** original navigation, title, tabs, level selector, unit/progress card, hero, completed activity entry, word activity, teacher activity and future-unit entry retained. Both details start closed. Content-dependent completed counts and unit titles differ from the illustrative source; this is expected live-data behavior.
+- **Colors/tokens:** existing brand green, lavender hero and muted text preserved. Completed/current/future tasks use green/purple/muted semantic states; state is also communicated by text and icon, not color alone.
+- **Assets:** original `PathArtwork` raster assets and existing GotIt logo retained. New standard disclosure/check/pencil/lock controls use the installed Lucide icon library. The real logo/navigation are preserved instead of copying generated-image distortions.
+- **Copy:** Hebrew and English strings and all six additional supported locales supplied. Meeting labels and durations reflect the server-selected checkpoint. After a meeting, the hero recommends its follow-up rather than another meeting. Real exercises display their own objectives.
+- **Accessibility/interaction:** native buttons/links, separate disclosure labels, `aria-expanded`/`aria-controls`, focus outline, status/error announcements, disabled meeting entry and no link on a locked exercise. Mobile entry controls have at least 44 px height. Full-page screenshots can show the fixed mobile navigation within the long capture; actual viewport interaction/overflow checks passed.
+
+## Business rules implemented
+
+1. The server selects the next available checkpoint: supported (10 words or the smaller unit size), midpoint (half the unit), review (all words). Word thresholds alone cannot skip a previous checkpoint or its required follow-up.
+2. A meeting checkpoint requires a completed saved report with evidence quality other than `insufficient`. Greetings/report failures do not advance it. Completion is distinct from mastery and from completion of its follow-up.
+3. Unit follow-up is grounded in saved lesson evidence: 3–6 tasks, 2–5 minutes. It is blocked until the meeting report is completed. Opening its disclosure prepares a pending assignment inline, with retry using the same idempotent command.
+4. Only the first unfinished task can receive a normal action. Completed tasks can be reviewed; review does not reset original attempts, completion or advancement. Locked tasks have no entry action, and API guards also reject direct attempts.
+5. The earliest genuine meeting with an assignment remains the checkpoint. Repeating a meeting does not replace earned progress. Historical meetings without an assignment remain explicit rather than being silently marked prepared.
+6. Stage word disclosure is scoped to the current checkpoint and its current batch of up to six words. The full words/practice browser remains accessible through its separate entry button. Teacher session vocabulary also uses the chosen checkpoint's introduced words.
+7. Whole-unit completion requires all words completed and all three meeting preparations completed; knowing the vocabulary alone no longer silently selects the next unit.
+
+## Verification
+
+- Backend unit suite: 220 tests passed; dedicated PostgreSQL course and unit-map persistence checks passed using disposable local Docker databases.
+- Frontend map/lesson preparation workflow: 17 Chrome E2E tests passed, including closed/expanded lists, word browser entry, completed/current/locked tasks, inline preparation/retry, direct links, error states and mobile overflow.
+- Homework review and lesson preparation regression tests passed.
+- Complete frontend unit run: 43 files, 228 tests passed. Inline preparation was rechecked after removing unnecessary manual callback memoization; the affected four browser scenarios passed again.
+- Frontend and backend production builds passed. Gateway/source-map security suite: 20 tests passed after restoring installed dependencies to the existing lockfile versions.
+- Real paid voice/provider calls were not made; generation, scoring and browser edge cases used deterministic fixtures. Production provider configuration remains a deployment-time dependency.
 
 ## Implementation checklist
 
-- [x] Compact button row and separate game link.
-- [x] Original routes and disabled program behavior retained.
-- [x] Desktop geometry and sidebar retained.
-- [x] Narrow-screen layout and translation completeness checked.
-- [x] Reference and browser-rendered output compared together.
+- [x] Preserve map architecture and word practice.
+- [x] Separate entry buttons and disclosure arrows.
+- [x] Enforce meeting/preparation/task prerequisites in the backend.
+- [x] Support safe repetition and persisted progress.
+- [x] Verify responsive rendering, routes and error states.
+- [x] Compare the rendered implementation with the accepted concept after fixes.
 
-## Follow-up polish
-
-No blocking follow-up work. Full production session execution was outside this presentation change and was not re-tested.
+final result: passed

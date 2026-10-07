@@ -1,4 +1,181 @@
 /* Canonical Figma map (43:2557) and levels (43:3083); live data stays dynamic. */
+.path-view-map .unit-map-activity + .unit-map-activity {
+  border-top: 1px solid var(--border, #d8e1eb);
+}
+.path-view-map .unit-upcoming-row .unit-activity-copy {
+  flex: 1;
+  min-width: 0;
+  text-align: start;
+}
+.path-view-map .unit-upcoming-row .unit-entry,
+.path-view-map .unit-task-entry {
+  min-height: 38px;
+  padding: 6px 14px;
+  font-size: 16px;
+  line-height: 1.35;
+  width: 146px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+.path-view-map .unit-entry.secondary {
+  color: var(--green);
+  background: white;
+  border-color: var(--green);
+}
+.path-view-map .unit-entry:disabled {
+  color: var(--muted);
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.unit-detail-toggle {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: var(--green-soft);
+  color: var(--green);
+  border-radius: 50%;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.unit-detail-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.unit-detail-toggle:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+.unit-activity-detail {
+  margin: 0 16px;
+  padding: 12px 4px 16px;
+  border-top: 1px solid var(--border, #d8e1eb);
+}
+.unit-detail-caption {
+  color: var(--muted);
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.unit-stage-words,
+.unit-follow-up-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.unit-stage-words {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 20px;
+}
+.unit-stage-words li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 8px 0;
+}
+.unit-stage-words li > * {
+  overflow-wrap: anywhere;
+}
+.unit-stage-words li > span {
+  color: var(--muted);
+}
+.unit-follow-up-list > li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border, #d8e1eb);
+}
+.unit-follow-up-list > li:last-child {
+  border-bottom: 0;
+}
+.unit-exercise-copy {
+  flex: 1;
+  min-width: 0;
+}
+.unit-exercise-copy strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+.unit-exercise-copy small {
+  display: block;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.unit-follow-up-list .is-completed > svg {
+  color: var(--green);
+}
+.unit-follow-up-list .is-available {
+  background: #f5f1ff;
+}
+.unit-follow-up-list .is-available > svg {
+  color: #6935ee;
+}
+.unit-follow-up-list .is-locked > svg,
+.unit-locked-label {
+  color: var(--muted);
+}
+.unit-locked-label {
+  width: 146px;
+  font-size: 14px;
+}
+.unit-practice-gate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.unit-path-error {
+  font-size: 16px;
+}
+@media (max-width: 600px) {
+  .path-view-map .unit-entry,
+  .path-view-map .unit-task-entry,
+  .unit-detail-toggle {
+    min-height: 44px;
+  }
+  .path-view-map .unit-upcoming-row {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    gap: 8px 10px;
+  }
+  .path-view-map .unit-upcoming-row > .path-artwork {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .path-view-map .unit-upcoming-row > .unit-activity-copy {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .path-view-map .unit-upcoming-row > .unit-detail-toggle {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .path-view-map .unit-upcoming-row > .unit-entry {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .unit-stage-words {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 12px;
+    font-size: 16px;
+  }
+  .unit-follow-up-list > li {
+    flex-wrap: wrap;
+  }
+  .unit-follow-up-list .unit-exercise-copy {
+    flex-basis: calc(100% - 40px);
+  }
+  .unit-follow-up-list .unit-task-entry,
+  .unit-follow-up-list .unit-locked-label {
+    margin-inline-start: 33px;
+  }
+}
 .path-view-levels .path-back {
   flex-direction: row-reverse;
 }
@@ -177,6 +354,24 @@
   font-size: 16px;
   white-space: nowrap;
   min-height: 32px;
+}
+@media (min-width: 901px) {
+  .path-view-map .unit-teacher-station {
+    padding: 16px;
+    row-gap: 8px;
+    min-height: 200px;
+  }
+  .path-view-map .unit-station-copy .eyebrow {
+    margin-bottom: 0;
+  }
+  .path-view-map .unit-teacher-station > .button {
+    grid-row: 2 / 4;
+    font-size: 24px;
+  }
+  .path-view-map .unit-station-links {
+    grid-row: 4;
+    align-self: center;
+  }
 }
 .path-view-map .path-completed {
   display: flex;
