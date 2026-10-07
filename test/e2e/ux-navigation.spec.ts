@@ -246,6 +246,33 @@ async function withinViewport(page: Page) {
     ),
   ).toBe(true);
 }
+async function desktopHomeFillsViewport(page: Page) {
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const hero = document
+          .querySelector(".ux-home-next")!
+          .getBoundingClientRect();
+        const options = document
+          .querySelector(".ux-home-options")!
+          .getBoundingClientRect();
+        const footer = document
+          .querySelector(".ux-home-footer")!
+          .getBoundingClientRect();
+        const padding = parseFloat(
+          getComputedStyle(document.querySelector(".page-content")!)
+            .paddingBottom,
+        );
+        return (
+          options.top >= hero.bottom &&
+          Math.abs(options.width - hero.width) < 1 &&
+          Math.abs(innerHeight - footer.bottom - padding) < 2 &&
+          document.documentElement.scrollHeight <= innerHeight + 1
+        );
+      }),
+    )
+    .toBe(true);
+}
 test("words dashboard shares the illustrated program layout", async ({
   page,
 }, testInfo) => {
@@ -310,7 +337,14 @@ test("home keeps its large artwork and columns while a selected program loads", 
   releaseCourses();
   await expect(page.locator(".ux-home")).toHaveClass(/with-program/);
   const after = await page.locator(".ux-home-illustration img").boundingBox();
-  expect(after).toEqual(before);
+  // The hero shares remaining height with the loaded secondary content.
+  // Its width and position stay stable while that available height changes.
+  expect({ x: after!.x, y: after!.y, width: after!.width }).toEqual({
+    x: before!.x,
+    y: before!.y,
+    width: before!.width,
+  });
+  await desktopHomeFillsViewport(page);
   await expect(page.locator(".ux-home-illustration img")).toBeVisible();
   await withinViewport(page);
 });
@@ -351,6 +385,7 @@ for (const { width, height } of [
         copy?.x ?? 0,
       );
       await expect(page.locator(".ux-home-illustration img")).toBeVisible();
+      await desktopHomeFillsViewport(page);
       await expect
         .poll(() =>
           page.evaluate(
@@ -402,6 +437,7 @@ for (const viewport of [
       he.ux.resumeActivity,
     );
     await expect(page.locator(".ux-home-heading select")).toBeVisible();
+    await desktopHomeFillsViewport(page);
     await expect
       .poll(() =>
         page.evaluate(
