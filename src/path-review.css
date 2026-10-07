@@ -104,7 +104,7 @@
   padding: 0;
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .path-stations li + li {
@@ -302,7 +302,7 @@
 }
 .unit-activity-row.selected {
   background: var(--purple-soft);
-  border-radius: 14px;
+  border-radius: 12px;
   border-color: transparent;
 }
 .unit-activity-row > span:not(.ux-icon) {
@@ -319,7 +319,7 @@
   display: block;
   font-size: 20px;
   color: var(--muted);
-  margin-top: 7px;
+  margin-top: 8px;
 }
 .unit-activity-detail h2 {
   font-size: 36px;
@@ -464,7 +464,7 @@
 }
 .path-level-meeting {
   background: #f1faf6;
-  border-radius: 14px;
+  border-radius: 12px;
   text-align: center;
   padding: 20px;
   margin-top: 24px;
@@ -585,7 +585,7 @@
   }
   .unit-browser > .ux-card {
     padding: 18px;
-    border-radius: 18px;
+    border-radius: 16px;
   }
   .unit-browser p,
   .unit-browser-columns {
@@ -895,7 +895,7 @@
 .live-session .session-study .memorization-audio,
 .live-session .session-study .memorization-actions .button {
   min-height: 40px;
-  padding: 7px 14px;
+  padding: 8px 14px;
   margin: 0;
   font-size: calc(clamp(14px, 2.5dvh, 20px) * var(--text-scale, 1));
   line-height: 1.2;

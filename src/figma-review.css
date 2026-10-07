@@ -215,7 +215,7 @@
   min-width: 0;
   min-height: 44px;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: 12px;
   font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
   line-height: 22px;
@@ -1484,7 +1484,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
 .lesson-session-header {
   height: 128px;
   min-height: 128px;
-  padding: 25px 42px;
+  padding: 24px 42px;
   display: grid;
   grid-template-columns: 270px 1fr 270px;
   align-items: start;
@@ -1602,7 +1602,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
   padding: 0 24px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 204px;
-  gap: 17px 51px;
+  gap: 16px 51px;
 }
 .lesson-teacher-profile {
   grid-column: 2;
@@ -1663,7 +1663,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
 .lesson-tutor-turn h1 {
   font-size: clamp(32px, 3.77vw, 56px);
   line-height: 1.2;
-  margin: 0 0 15px;
+  margin: 0 0 16px;
 }
 .lesson-tutor-turn p {
   font-size: clamp(22px, 2.62vw, 39px);
@@ -1708,7 +1708,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
   grid-column: 1/-1;
   justify-self: center;
   position: relative;
-  margin-top: 13px;
+  margin-top: 12px;
   width: min(100%, 981px);
   padding: 20px 32px 10px;
   border-radius: 24px;
@@ -1756,7 +1756,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
   justify-self: center;
   background: white;
   border-radius: 16px;
-  padding: 11px 24px;
+  padding: 12px 24px;
   font-size: calc(24px * var(--text-scale, 1));
   color: var(--muted);
   box-shadow: 0 6px 20px #50638b08;
@@ -1786,7 +1786,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
   align-items: center;
   flex-direction: column;
   margin-top: 31px;
-  gap: 11px;
+  gap: 12px;
   border: 0;
   background: transparent;
   color: var(--muted);

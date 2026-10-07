@@ -394,7 +394,7 @@
   margin: 24px 8px 12px;
 }
 .path-view-map .unit-upcoming-row {
-  padding: 11px 14px;
+  padding: 12px 14px;
   gap: 18px;
   text-decoration: none;
   min-height: 80px;
@@ -470,7 +470,7 @@
 .path-view-levels .path-level-layout .ux-card {
   border-radius: 20px;
   min-height: 530px;
-  padding: 23px;
+  padding: 24px;
 }
 .path-view-levels .path-level-scroll {
   max-height: 344px;

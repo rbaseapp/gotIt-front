@@ -716,7 +716,7 @@ progress::-moz-progress-bar {
   width: 44px;
   height: 56px;
   border: 2px dashed #b6c6c0;
-  border-radius: 14px;
+  border-radius: 12px;
   font-size: 26px;
 }
 .letter-box.filled {
@@ -747,7 +747,7 @@ progress::-moz-progress-bar {
 .letter-tile {
   height: 48px;
   min-width: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   box-shadow: 0 3px 0 #dce3eb;
   background: #fff;
