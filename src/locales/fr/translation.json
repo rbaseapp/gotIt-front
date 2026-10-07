@@ -2444,7 +2444,9 @@
           "q": "Puis-je apprendre sur mon téléphone ?",
           "a": "Oui. L’application fonctionne dans le navigateur du téléphone, vous pouvez donc vous entraîner partout. L’extension pour marquer les mots est disponible dans Chrome sur ordinateur."
         }
-      ]
+      ],
+      "askTitle": "Vous n’avez pas trouvé votre réponse ?",
+      "askBody": "Écrivez-nous, nous serons ravis de vous aider."
     },
     "cta": {
       "title": "Commencez par le prochain mot que vous croiserez",

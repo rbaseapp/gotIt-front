@@ -19,6 +19,7 @@ import {
 import logoClearUrl from "../assets/gotit-logo-clear.svg";
 import logoOnDarkUrl from "../assets/gotit-logo-on-dark.svg";
 import tutorPortrait from "../assets/private-lesson/tutor-female-speaking-wide.png";
+import tutorThinking from "../assets/private-lesson/tutor-female-thinking.png";
 import "../landing.css";
 
 const REGISTER_PATH = "/login?auth=register";
@@ -384,36 +385,90 @@ function StepVisual({
   );
 }
 
+/** "Hello" in each supported language, shown on the moving rows. */
+const GREETINGS: Record<(typeof LANGUAGE_CODES)[number], string> = {
+  en: "Hello",
+  he: "שלום",
+  ar: "مرحبا",
+  es: "Hola",
+  fr: "Bonjour",
+  de: "Hallo",
+  it: "Ciao",
+  pt: "Olá",
+  "pt-BR": "Oi",
+  ru: "Привет",
+  uk: "Привіт",
+  pl: "Cześć",
+  nl: "Hallo",
+  tr: "Merhaba",
+  el: "Γειά σου",
+  hi: "नमस्ते",
+  "zh-CN": "你好",
+  "zh-TW": "哈囉",
+  ja: "こんにちは",
+  ko: "안녕하세요",
+  vi: "Xin chào",
+  th: "สวัสดี",
+  id: "Halo",
+  sv: "Hej",
+  da: "Hej",
+  no: "Hei",
+  fi: "Hei",
+  cs: "Ahoj",
+  ro: "Bună",
+  hu: "Szia",
+};
+const GREETING_ROWS = 3;
+
 function Languages() {
   const { t } = useTranslation();
-  const names = useMemo(
-    () =>
-      LANGUAGE_CODES.map((code) => {
-        let name: string = code;
-        try {
-          name =
-            new Intl.DisplayNames([code], { type: "language" }).of(code) ??
-            code;
-        } catch {
-          // Older engines without DisplayNames show the code.
-        }
-        return { code, name };
-      }),
-    [],
-  );
+  const rows = useMemo(() => {
+    const items = LANGUAGE_CODES.map((code) => {
+      let name: string = code;
+      try {
+        name =
+          new Intl.DisplayNames([code], { type: "language" }).of(code) ?? code;
+      } catch {
+        // Older engines without DisplayNames show the code.
+      }
+      return { code, name, hello: GREETINGS[code] };
+    });
+    return Array.from({ length: GREETING_ROWS }, (_, row) =>
+      items.filter((_, index) => index % GREETING_ROWS === row),
+    );
+  }, []);
   return (
     <section className="landing-languages" id="languages">
-      <div className="landing-section-head">
-        <h2>{t("landing.languages.title")}</h2>
-        <p>{t("landing.languages.body")}</p>
+      <div className="landing-languages-head">
+        <span className="languages-count" aria-hidden="true">
+          {LANGUAGE_CODES.length}
+        </span>
+        <div className="landing-section-head">
+          <h2>{t("landing.languages.title")}</h2>
+          <p>{t("landing.languages.body")}</p>
+        </div>
       </div>
-      <ul className="language-cloud">
-        {names.map(({ code, name }) => (
-          <li key={code} lang={code}>
-            {name}
-          </li>
+      <div className="greeting-rows" dir="ltr">
+        {rows.map((row, index) => (
+          <div className="greeting-row" key={index}>
+            {/* The second copy closes the loop; only the first is announced. */}
+            {[false, true].map((copy) => (
+              <ul
+                key={String(copy)}
+                className="greeting-track"
+                aria-hidden={copy || undefined}
+              >
+                {row.map(({ code, name, hello }) => (
+                  <li key={code}>
+                    <b lang={code}>{hello}</b>
+                    <span lang={code}>{name}</span>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
         ))}
-      </ul>
+      </div>
       <p className="landing-languages-note">
         {t("landing.languages.interface")}
       </p>
@@ -615,17 +670,44 @@ function Faq() {
   const items = t("landing.faq.items", { returnObjects: true }) as FaqItem[];
   return (
     <section className="landing-faq" id="faq">
-      <div className="landing-section-head">
-        <h2>{t("landing.faq.title")}</h2>
+      <div className="faq-main">
+        <div className="landing-section-head">
+          <h2>{t("landing.faq.title")}</h2>
+        </div>
+        <div className="faq-list">
+          {items.map(({ q, a }) => (
+            <details key={q}>
+              <summary>{q}</summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </div>
       </div>
-      <div className="faq-list">
-        {items.map(({ q, a }) => (
-          <details key={q}>
-            <summary>{q}</summary>
-            <p>{a}</p>
-          </details>
-        ))}
-      </div>
+      <aside className="faq-ask">
+        <div className="faq-ask-portrait" aria-hidden="true">
+          <img src={tutorThinking} alt="" loading="lazy" draggable={false} />
+        </div>
+        <h3>{t("landing.faq.askTitle")}</h3>
+        <p>{t("landing.faq.askBody")}</p>
+        <div className="faq-ask-actions">
+          <a
+            className="landing-button"
+            href={supportWhatsappHref(t("help.whatsappMessage"))}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle size={18} aria-hidden="true" />
+            {t("help.contactWhatsapp")}
+          </a>
+          <a
+            className="landing-button outline"
+            href={supportEmailHref(t("help.emailSubject"))}
+          >
+            <Mail size={18} aria-hidden="true" />
+            {t("help.contactEmail")}
+          </a>
+        </div>
+      </aside>
     </section>
   );
 }

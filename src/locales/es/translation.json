@@ -2444,7 +2444,9 @@
           "q": "¿Puedo aprender desde el móvil?",
           "a": "Sí. La app funciona en el navegador del móvil, así que puedes practicar en cualquier lugar. La extensión para marcar palabras está disponible en Chrome en el ordenador."
         }
-      ]
+      ],
+      "askTitle": "¿No encontraste tu respuesta?",
+      "askBody": "Escríbenos y te ayudamos con gusto."
     },
     "cta": {
       "title": "Empieza con la próxima palabra que encuentres",

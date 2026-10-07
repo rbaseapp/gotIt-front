@@ -2443,7 +2443,9 @@
           "q": "Can I learn on my phone?",
           "a": "Yes. The app works in your phone's browser, so you can practice anywhere. The extension for marking words is available in Chrome on a computer."
         }
-      ]
+      ],
+      "askTitle": "Didn't find your answer?",
+      "askBody": "Write to us and we'll be happy to help."
     },
     "cta": {
       "title": "Start with the next word you meet",

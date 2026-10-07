@@ -2444,7 +2444,9 @@
           "q": "Kann ich auf dem Handy lernen?",
           "a": "Ja. Die App funktioniert im Browser deines Handys, sodass du überall üben kannst. Die Erweiterung zum Markieren gibt es für Chrome am Computer."
         }
-      ]
+      ],
+      "askTitle": "Keine Antwort gefunden?",
+      "askBody": "Schreib uns, wir helfen gern."
     },
     "cta": {
       "title": "Fang mit dem nächsten Wort an, das dir begegnet",
