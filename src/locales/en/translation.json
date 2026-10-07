@@ -2360,10 +2360,11 @@
     },
     "hero": {
       "title": "Learn words from what you already read",
-      "body": "Mark a word on any website, practice it in short games, use it in a conversation with a virtual teacher, and meet it again in an article written for you.",
+      "body": "Mark a word on any website, and GotIt turns it into short practice, conversation and reading until it sticks.",
       "createAccount": "Create account",
       "addToChrome": "Add to Chrome",
-      "haveAccount": "I already have an account"
+      "haveAccount": "I already have an account",
+      "trialNote": "14 days free with everything included. No credit card."
     },
     "demo": {
       "label": "Example: saving a word from an article",
@@ -2419,6 +2420,31 @@
       "title": "What learners say",
       "rating": "{{rating}} out of 5 stars"
     },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "How much does it cost?",
+          "a": "Signing up is free, and your first 14 days include everything, with no credit card. After that you can subscribe, or keep a free account where every word you saved stays available to view."
+        },
+        {
+          "q": "Which websites does it work on?",
+          "a": "The extension works on any website you open in Chrome: articles, blogs, social networks and more. Select a word or phrase, right-click and save it."
+        },
+        {
+          "q": "Do I need the extension?",
+          "a": "No. You can add words directly in the app, and practice, talk with the teacher and read without the extension. It just saves you the copying."
+        },
+        {
+          "q": "What is saved when I mark a word?",
+          "a": "The word, the sentence it appeared in and a link to the page, so you can go back to where you met it."
+        },
+        {
+          "q": "Can I learn on my phone?",
+          "a": "Yes. The app works in your phone's browser, so you can practice anywhere. The extension for marking words is available in Chrome on a computer."
+        }
+      ]
+    },
     "cta": {
       "title": "Start with the next word you meet",
       "button": "Create account",
@@ -2430,13 +2456,6 @@
       "legal": "Legal",
       "contact": "Contact",
       "rights": "© {{year}} GotIt"
-    },
-    "extension": {
-      "title": "Save a word with a right-click",
-      "body": "Select a word or phrase on any page, right-click and choose Save to GotIt. You can check and edit the translation before saving.",
-      "button": "Add to Chrome",
-      "menuCopy": "Copy",
-      "menuSearch": "Search Google"
     },
     "ext": {
       "saveShort": "Save",

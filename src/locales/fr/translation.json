@@ -2361,10 +2361,11 @@
     },
     "hero": {
       "title": "Apprenez des mots dans ce que vous lisez déjà",
-      "body": "Marquez un mot sur n’importe quel site, entraînez-vous avec de courts jeux, utilisez-le dans une conversation avec un professeur virtuel, puis retrouvez-le dans un article écrit pour vous.",
+      "body": "Marquez un mot sur n’importe quel site, et GotIt le transforme en courts exercices, en conversation et en lecture jusqu’à ce qu’il reste.",
       "createAccount": "Créer un compte",
       "addToChrome": "Ajouter à Chrome",
-      "haveAccount": "J’ai déjà un compte"
+      "haveAccount": "J’ai déjà un compte",
+      "trialNote": "14 jours gratuits avec tout inclus. Sans carte bancaire."
     },
     "demo": {
       "label": "Exemple : enregistrer un mot depuis un article",
@@ -2420,6 +2421,31 @@
       "title": "Ce qu’en disent nos apprenants",
       "rating": "{{rating}} sur 5 étoiles"
     },
+    "faq": {
+      "title": "Questions fréquentes",
+      "items": [
+        {
+          "q": "Combien ça coûte ?",
+          "a": "L’inscription est gratuite et les 14 premiers jours incluent tout, sans carte bancaire. Ensuite, vous pouvez vous abonner ou garder un compte gratuit où tous les mots enregistrés restent consultables."
+        },
+        {
+          "q": "Sur quels sites ça fonctionne ?",
+          "a": "L’extension fonctionne sur tous les sites ouverts dans Chrome : articles, blogs, réseaux sociaux et plus encore. Sélectionnez un mot ou une expression, faites un clic droit et enregistrez-le."
+        },
+        {
+          "q": "L’extension est-elle obligatoire ?",
+          "a": "Non. Vous pouvez ajouter des mots directement dans l’application, et vous entraîner, parler avec le professeur et lire sans l’extension. Elle vous évite simplement le copier-coller."
+        },
+        {
+          "q": "Qu’est-ce qui est enregistré quand je marque un mot ?",
+          "a": "Le mot, la phrase où il apparaissait et un lien vers la page, pour retrouver le contexte où vous l’avez rencontré."
+        },
+        {
+          "q": "Puis-je apprendre sur mon téléphone ?",
+          "a": "Oui. L’application fonctionne dans le navigateur du téléphone, vous pouvez donc vous entraîner partout. L’extension pour marquer les mots est disponible dans Chrome sur ordinateur."
+        }
+      ]
+    },
     "cta": {
       "title": "Commencez par le prochain mot que vous croiserez",
       "button": "Créer un compte",
@@ -2431,13 +2457,6 @@
       "legal": "Mentions légales",
       "contact": "Contact",
       "rights": "© {{year}} GotIt"
-    },
-    "extension": {
-      "title": "Enregistrez un mot d’un clic droit",
-      "body": "Sélectionnez un mot ou une expression sur n’importe quelle page, faites un clic droit et choisissez Save to GotIt. Vous pouvez vérifier et modifier la traduction avant d’enregistrer.",
-      "button": "Ajouter à Chrome",
-      "menuCopy": "Copier",
-      "menuSearch": "Rechercher sur Google"
     },
     "ext": {
       "saveShort": "Enregistrer",

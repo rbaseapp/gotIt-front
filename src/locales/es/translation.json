@@ -2361,10 +2361,11 @@
     },
     "hero": {
       "title": "Aprende palabras de lo que ya lees",
-      "body": "Marca una palabra en cualquier sitio web, practícala en juegos cortos, úsala en una conversación con un profesor virtual y vuelve a encontrarla en un artículo escrito para ti.",
+      "body": "Marca una palabra en cualquier sitio web y GotIt la convierte en práctica breve, conversación y lectura hasta que se te quede.",
       "createAccount": "Crear cuenta",
       "addToChrome": "Añadir a Chrome",
-      "haveAccount": "Ya tengo una cuenta"
+      "haveAccount": "Ya tengo una cuenta",
+      "trialNote": "14 días gratis con todo incluido. Sin tarjeta de crédito."
     },
     "demo": {
       "label": "Ejemplo: guardar una palabra de un artículo",
@@ -2420,6 +2421,31 @@
       "title": "Lo que dicen quienes aprenden",
       "rating": "{{rating}} de 5 estrellas"
     },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "items": [
+        {
+          "q": "¿Cuánto cuesta?",
+          "a": "Registrarte es gratis y los primeros 14 días incluyen todo, sin tarjeta de crédito. Después puedes suscribirte o quedarte con una cuenta gratuita en la que todas las palabras que guardaste siguen disponibles para consultar."
+        },
+        {
+          "q": "¿En qué sitios web funciona?",
+          "a": "La extensión funciona en cualquier sitio que abras en Chrome: artículos, blogs, redes sociales y más. Selecciona una palabra o frase, haz clic derecho y guárdala."
+        },
+        {
+          "q": "¿Necesito la extensión?",
+          "a": "No. Puedes añadir palabras directamente en la app, y practicar, hablar con el profesor y leer sin la extensión. Solo te ahorra copiar y pegar."
+        },
+        {
+          "q": "¿Qué se guarda cuando marco una palabra?",
+          "a": "La palabra, la frase en la que apareció y un enlace a la página, para que puedas volver al contexto donde la encontraste."
+        },
+        {
+          "q": "¿Puedo aprender desde el móvil?",
+          "a": "Sí. La app funciona en el navegador del móvil, así que puedes practicar en cualquier lugar. La extensión para marcar palabras está disponible en Chrome en el ordenador."
+        }
+      ]
+    },
     "cta": {
       "title": "Empieza con la próxima palabra que encuentres",
       "button": "Crear cuenta",
@@ -2431,13 +2457,6 @@
       "legal": "Legal",
       "contact": "Contacto",
       "rights": "© {{year}} GotIt"
-    },
-    "extension": {
-      "title": "Guarda una palabra con clic derecho",
-      "body": "Selecciona una palabra o expresión en cualquier página, haz clic derecho y elige Save to GotIt. Puedes revisar y editar la traducción antes de guardar.",
-      "button": "Añadir a Chrome",
-      "menuCopy": "Copiar",
-      "menuSearch": "Buscar en Google"
     },
     "ext": {
       "saveShort": "Guardar",

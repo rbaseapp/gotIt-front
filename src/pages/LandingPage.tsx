@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Check, Flame, Mail, MessageCircle, Star, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Logo } from "../components/Logo";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
 import { CHROME_EXTENSION_URL } from "../config";
 import { testimonials } from "../data/testimonials";
@@ -17,7 +16,8 @@ import {
   ReadingArticle,
   ScaledScreen,
 } from "../components/LandingReplicas";
-import iconUrl from "../assets/gotit-icon.svg";
+import logoClearUrl from "../assets/gotit-logo-clear.svg";
+import logoOnDarkUrl from "../assets/gotit-logo-on-dark.svg";
 import tutorPortrait from "../assets/private-lesson/tutor-female-speaking-wide.png";
 import "../landing.css";
 
@@ -36,7 +36,7 @@ export function LandingPage() {
     <div className="landing">
       <header className="landing-header" data-scrolled={scrolled || undefined}>
         <div className="landing-header-inner">
-          <Logo />
+          <LandingLogo src={logoClearUrl} />
           <nav className="landing-nav" aria-label={t("landing.nav.primary")}>
             <a href="#how">{t("landing.nav.howItWorks")}</a>
             <a href="#languages">{t("landing.nav.languages")}</a>
@@ -56,9 +56,9 @@ export function LandingPage() {
       <main>
         <Hero />
         <Journey />
-        <ExtensionBand />
         <Languages />
         <Testimonials />
+        <Faq />
       </main>
 
       <Closing />
@@ -86,6 +86,7 @@ function Hero() {
             {t("landing.hero.addToChrome")}
           </a>
         </div>
+        <p className="landing-hero-trial">{t("landing.hero.trialNote")}</p>
         <Link className="landing-hero-login" to="/login">
           {t("landing.hero.haveAccount")}
         </Link>
@@ -270,6 +271,16 @@ function Journey() {
                   <li key={point}>{point}</li>
                 ))}
               </ul>
+              {step === "mark" && (
+                <a
+                  className="landing-button journey-cta"
+                  href={CHROME_EXTENSION_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("landing.hero.addToChrome")}
+                </a>
+              )}
               <div className="journey-inline-visual" aria-hidden="true">
                 {step === "mark" ? (
                   <MarkDemo />
@@ -370,42 +381,6 @@ function StepVisual({
     >
       <ReadingArticle />
     </ScaledScreen>
-  );
-}
-
-function ExtensionBand() {
-  const { t } = useTranslation();
-  return (
-    <section className="landing-extension">
-      <div className="landing-extension-copy">
-        <h2>{t("landing.extension.title")}</h2>
-        <p>{t("landing.extension.body")}</p>
-        <a
-          className="landing-button"
-          href={CHROME_EXTENSION_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t("landing.extension.button")}
-        </a>
-      </div>
-      <div className="extension-mock" aria-hidden="true">
-        <p dir="ltr" lang="en">
-          Owners say the trick is simple: remember names, and keep the bread
-          warm. <span className="extension-selection">Regulars</span> notice the
-          small things.
-        </p>
-        <div className="extension-menu">
-          <span>{t("landing.extension.menuCopy")}</span>
-          <span>{t("landing.extension.menuSearch")}</span>
-          {/* The extension registers this item in English only. */}
-          <span className="extension-menu-save" dir="ltr" lang="en">
-            <img src={iconUrl} alt="" />
-            Save “Regulars” to GotIt
-          </span>
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -577,7 +552,7 @@ function Closing() {
       </div>
       <div className="landing-footer">
         <div className="landing-footer-brand">
-          <Logo />
+          <LandingLogo src={logoOnDarkUrl} />
           <p>{t("landing.footer.tagline")}</p>
         </div>
         <nav aria-label={t("landing.footer.product")}>
@@ -622,5 +597,35 @@ function Closing() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function LandingLogo({ src }: { src: string }) {
+  return (
+    <Link to="/" className="brand" aria-label="GotIt home">
+      <img className="brand-logo" src={src} alt="" draggable={false} />
+    </Link>
+  );
+}
+
+type FaqItem = { q: string; a: string };
+
+function Faq() {
+  const { t } = useTranslation();
+  const items = t("landing.faq.items", { returnObjects: true }) as FaqItem[];
+  return (
+    <section className="landing-faq" id="faq">
+      <div className="landing-section-head">
+        <h2>{t("landing.faq.title")}</h2>
+      </div>
+      <div className="faq-list">
+        {items.map(({ q, a }) => (
+          <details key={q}>
+            <summary>{q}</summary>
+            <p>{a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
   );
 }

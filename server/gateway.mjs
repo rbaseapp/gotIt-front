@@ -487,11 +487,22 @@ export function createGateway(config) {
       if (servingSpa) prewarmCore();
       if (pathname.startsWith("/assets/") && !target.endsWith(".html"))
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      let body = await readFile(target);
+      // Link-preview crawlers need an absolute og:image; the origin is validated above.
+      if (target.endsWith(`${sep}index.html`))
+        body = Buffer.from(
+          body
+            .toString("utf8")
+            .replace(
+              'content="/og-image.png"',
+              `content="${config.origin}/og-image.png"`,
+            ),
+        );
       res.writeHead(200, {
         "Content-Type": contentType,
-        "Content-Length": info.size,
+        "Content-Length": body.length,
       });
-      res.end(req.method === "HEAD" ? undefined : await readFile(target));
+      res.end(req.method === "HEAD" ? undefined : body);
     } catch {
       fail(502, "GATEWAY_UNAVAILABLE");
     }

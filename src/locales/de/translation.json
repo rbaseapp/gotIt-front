@@ -2361,10 +2361,11 @@
     },
     "hero": {
       "title": "Lerne Wörter aus dem, was du ohnehin liest",
-      "body": "Markiere ein Wort auf jeder Website, übe es in kurzen Spielen, nutze es im Gespräch mit einer virtuellen Lehrkraft und begegne ihm wieder in einem Artikel, der für dich geschrieben wurde.",
+      "body": "Markiere ein Wort auf jeder Website, und GotIt macht daraus kurze Übungen, Gespräche und Lesetexte, bis es sitzt.",
       "createAccount": "Konto erstellen",
       "addToChrome": "Zu Chrome hinzufügen",
-      "haveAccount": "Ich habe schon ein Konto"
+      "haveAccount": "Ich habe schon ein Konto",
+      "trialNote": "14 Tage kostenlos mit allen Funktionen. Ohne Kreditkarte."
     },
     "demo": {
       "label": "Beispiel: ein Wort aus einem Artikel speichern",
@@ -2420,6 +2421,31 @@
       "title": "Das sagen Lernende",
       "rating": "{{rating}} von 5 Sternen"
     },
+    "faq": {
+      "title": "Häufige Fragen",
+      "items": [
+        {
+          "q": "Was kostet das?",
+          "a": "Die Anmeldung ist kostenlos, und die ersten 14 Tage enthalten alle Funktionen, ohne Kreditkarte. Danach kannst du ein Abo abschließen oder ein kostenloses Konto behalten, in dem alle gespeicherten Wörter sichtbar bleiben."
+        },
+        {
+          "q": "Auf welchen Websites funktioniert es?",
+          "a": "Die Erweiterung funktioniert auf jeder Website, die du in Chrome öffnest: Artikel, Blogs, soziale Netzwerke und mehr. Wort oder Ausdruck markieren, rechts klicken und speichern."
+        },
+        {
+          "q": "Brauche ich die Erweiterung?",
+          "a": "Nein. Du kannst Wörter direkt in der App hinzufügen und ohne Erweiterung üben, mit der Lehrkraft sprechen und lesen. Sie erspart dir nur das Kopieren."
+        },
+        {
+          "q": "Was wird gespeichert, wenn ich ein Wort markiere?",
+          "a": "Das Wort, der Satz, in dem es stand, und ein Link zur Seite, damit du zum Zusammenhang zurückkehren kannst."
+        },
+        {
+          "q": "Kann ich auf dem Handy lernen?",
+          "a": "Ja. Die App funktioniert im Browser deines Handys, sodass du überall üben kannst. Die Erweiterung zum Markieren gibt es für Chrome am Computer."
+        }
+      ]
+    },
     "cta": {
       "title": "Fang mit dem nächsten Wort an, das dir begegnet",
       "button": "Konto erstellen",
@@ -2431,13 +2457,6 @@
       "legal": "Rechtliches",
       "contact": "Kontakt",
       "rights": "© {{year}} GotIt"
-    },
-    "extension": {
-      "title": "Ein Wort per Rechtsklick speichern",
-      "body": "Markiere ein Wort oder eine Wendung auf einer beliebigen Seite, klicke mit der rechten Maustaste und wähle Save to GotIt. Die Übersetzung kannst du vorher prüfen und bearbeiten.",
-      "button": "Zu Chrome hinzufügen",
-      "menuCopy": "Kopieren",
-      "menuSearch": "Mit Google suchen"
     },
     "ext": {
       "saveShort": "Speichern",
