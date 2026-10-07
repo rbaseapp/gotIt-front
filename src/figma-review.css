@@ -198,6 +198,62 @@
   clear: both;
   width: 100%;
 }
+.ux-home-words {
+  container: home-words / inline-size;
+}
+.ux-home-word-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+.ux-home-word-action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 8px;
+}
+.ux-home .ux-home-word-action-buttons .button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: calc(16px * var(--text-scale, 1));
+  font-weight: 600;
+  line-height: 22px;
+}
+.ux-home-word-game-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: var(--green);
+  font-size: calc(16px * var(--text-scale, 1));
+  line-height: 22px;
+}
+.ux-home-word-game-link:hover {
+  background: var(--green-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* Reserve the previous action area so compact buttons do not move the cards below. */
+@media (min-width: 861px) {
+  .ux-home.with-program .ux-home-word-actions {
+    min-height: calc(100.8px * var(--text-scale, 1) + 26px);
+  }
+  @container home-words (max-width: 489px) {
+    .ux-home.with-program .ux-home-word-actions {
+      min-height: calc(134.4px * var(--text-scale, 1) + 26px);
+    }
+  }
+  @container home-words (max-width: 350px) {
+    .ux-home.with-program .ux-home-word-actions {
+      min-height: calc(201.6px * var(--text-scale, 1) + 30.8px);
+    }
+  }
+}
 .ux-home.words-home {
   max-width: 1080px;
   margin-inline: auto;

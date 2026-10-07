@@ -351,25 +351,34 @@ export function LiveDashboardPage() {
                 </div>
                 <img className="ux-word-illustration" src={wordCards} alt="" />
               </div>
-              <div className="ux-inline-actions">
-                <Link className="button secondary" to={smart + returnSuffix}>
-                  {t("ux.vocabularyReview")}
-                </Link>
-                {latestSelected && (
+              <div className="ux-home-word-actions">
+                <div className="ux-home-word-action-buttons">
                   <Link
-                    className={`button primary${programPractice ? "" : " disabled"}`}
-                    to={programPractice ?? "/courses"}
-                    aria-disabled={!programPractice}
-                    tabIndex={programPractice ? undefined : -1}
-                    onClick={(event) => {
-                      if (!programPractice) event.preventDefault();
-                    }}
+                    className="button secondary"
+                    to={smart + returnSuffix}
+                    aria-label={t("ux.vocabularyReview")}
+                    title={t("ux.vocabularyReview")}
                   >
-                    {t("ux.programSmartReview")}
+                    {t("ux.vocabularyReviewShort")}
                   </Link>
-                )}
+                  {latestSelected && (
+                    <Link
+                      className={`button primary${programPractice ? "" : " disabled"}`}
+                      to={programPractice ?? "/courses"}
+                      aria-disabled={!programPractice}
+                      aria-label={t("ux.programSmartReview")}
+                      title={t("ux.programSmartReview")}
+                      tabIndex={programPractice ? undefined : -1}
+                      onClick={(event) => {
+                        if (!programPractice) event.preventDefault();
+                      }}
+                    >
+                      {t("ux.programSmartReviewShort")}
+                    </Link>
+                  )}
+                </div>
                 <Link
-                  className="button ghost"
+                  className="ux-home-word-game-link"
                   to={
                     isProgram
                       ? `/learn?language=${encodeURIComponent(code)}&return=%2Fdashboard`
