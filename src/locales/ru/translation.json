@@ -2344,6 +2344,12 @@
     "thinking": "{{teacher}} думает…",
     "listening": "{{teacher}} слушает вас",
     "yourTurn": "Теперь ваша очередь.",
-    "goal": "Сегодня практикуем"
+    "goal": "Сегодня практикуем",
+    "speaking_male": "{{teacher}} говорит",
+    "speaking_female": "{{teacher}} говорит",
+    "thinking_male": "{{teacher}} думает…",
+    "thinking_female": "{{teacher}} думает…",
+    "listening_male": "{{teacher}} слушает вас",
+    "listening_female": "{{teacher}} слушает вас"
   }
 }

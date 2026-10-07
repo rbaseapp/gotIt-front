@@ -2314,6 +2314,12 @@
     "thinking": "{{teacher}} 正在思考…",
     "listening": "{{teacher}} 正在聆听",
     "yourTurn": "轮到你试一试了。",
-    "goal": "今天练习"
+    "goal": "今天练习",
+    "speaking_male": "{{teacher}} 正在说话",
+    "speaking_female": "{{teacher}} 正在说话",
+    "thinking_male": "{{teacher}} 正在思考…",
+    "thinking_female": "{{teacher}} 正在思考…",
+    "listening_male": "{{teacher}} 正在聆听",
+    "listening_female": "{{teacher}} 正在聆听"
   }
 }

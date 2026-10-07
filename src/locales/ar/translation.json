@@ -2359,6 +2359,12 @@
     "thinking": "{{teacher}} يفكر…",
     "listening": "{{teacher}} يستمع إليكم",
     "yourTurn": "حان دوركم للمحاولة.",
-    "goal": "نتدرّب اليوم"
+    "goal": "نتدرّب اليوم",
+    "speaking_male": "{{teacher}} يتحدث",
+    "speaking_female": "{{teacher}} يتحدث",
+    "thinking_male": "{{teacher}} يفكر…",
+    "thinking_female": "{{teacher}} يفكر…",
+    "listening_male": "{{teacher}} يستمع إليكم",
+    "listening_female": "{{teacher}} يستمع إليكم"
   }
 }

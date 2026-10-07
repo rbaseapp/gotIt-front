@@ -2313,6 +2313,12 @@
     "thinking": "{{teacher}} is thinking…",
     "listening": "{{teacher}} is listening",
     "yourTurn": "Your turn to try.",
-    "goal": "Practising today"
+    "goal": "Practising today",
+    "speaking_male": "{{teacher}} is speaking",
+    "speaking_female": "{{teacher}} is speaking",
+    "thinking_male": "{{teacher}} is thinking…",
+    "thinking_female": "{{teacher}} is thinking…",
+    "listening_male": "{{teacher}} is listening",
+    "listening_female": "{{teacher}} is listening"
   }
 }

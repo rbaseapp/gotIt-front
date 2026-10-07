@@ -2314,6 +2314,12 @@
     "thinking": "{{teacher}} denkt nach…",
     "listening": "{{teacher}} hört euch zu",
     "yourTurn": "Jetzt seid ihr dran.",
-    "goal": "Heute üben wir"
+    "goal": "Heute üben wir",
+    "speaking_male": "{{teacher}} spricht",
+    "speaking_female": "{{teacher}} spricht",
+    "thinking_male": "{{teacher}} denkt nach…",
+    "thinking_female": "{{teacher}} denkt nach…",
+    "listening_male": "{{teacher}} hört euch zu",
+    "listening_female": "{{teacher}} hört euch zu"
   }
 }
