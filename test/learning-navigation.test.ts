@@ -4,6 +4,7 @@ import {
   selectedProgram,
   learningReturn,
   practiceLink,
+  unitPracticeLink,
 } from "../src/lib/learningNavigation";
 
 describe("learning context navigation", () => {
@@ -65,5 +66,45 @@ describe("learning context navigation", () => {
     chooseProgram("french-course", owner, "fr");
     expect(selectedProgram(owner, "en")).toBe("english-path");
     expect(selectedProgram(owner, "fr")).toBe("french-course");
+  });
+});
+
+describe("unit daily batch launch", () => {
+  it.each([5, 10, 20])("uses a saved profile batch of %s words", (count) => {
+    const owner = { id: "batch-" + count, applicationId: "gotit" };
+    const url = new URL(
+      unitPracticeLink(
+        "unit",
+        "en",
+        { defaultNewItemsPerDay: count } as never,
+        owner,
+      ),
+      "http://local.test",
+    );
+    expect(url.pathname).toBe("/learn/session/smart");
+    expect(url.searchParams.get("count")).toBe(String(count));
+    expect(url.searchParams.get("pack")).toBe("unit");
+    expect(url.searchParams.get("ready")).toBe("1");
+    expect(url.searchParams.get("batch")).toBe("1");
+  });
+  it("keeps an explicitly selected long pace local to its user and language", () => {
+    const owner = { id: "pace", applicationId: "gotit" };
+    localStorage.setItem(
+      "gotit.selectedProgram.v1.gotit.pace.practicePace.en",
+      "long",
+    );
+    const profile = { defaultNewItemsPerDay: 5 } as never;
+    expect(
+      new URL(
+        unitPracticeLink("unit", "en", profile, owner),
+        "http://local.test",
+      ).searchParams.get("count"),
+    ).toBe("20");
+    expect(
+      new URL(
+        unitPracticeLink("unit", "fr", profile, owner),
+        "http://local.test",
+      ).searchParams.get("count"),
+    ).toBe("5");
   });
 });

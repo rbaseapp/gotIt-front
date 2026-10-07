@@ -2203,6 +2203,22 @@
     "studyNote": "La découverte est une étape d’apprentissage. Le rappel autonome est vérifié pendant la pratique."
   },
   "pathUi": {
+    "programTitle": "L’anglais à partir de zéro",
+    "levelNames": {
+      "beginner": "Bases",
+      "intermediate": "Intermédiaire",
+      "advanced": "Avancé"
+    },
+    "toggleUnit": "Ouvrir ou fermer les détails de l’unité",
+    "completedWords": "{{count}}/{{total}} mots terminés",
+    "practicedWords": "{{count}}/{{total}} mots pratiqués",
+    "completedActivities": "{{count}} activités terminées · Détails",
+    "upcoming": "À venir dans cette unité",
+    "continueWords": "Continuer avec des mots et des phrases",
+    "moreWordsHelp": "Apprendre d’autres mots et construire des phrases.",
+    "allUnits": "Toutes les unités",
+    "scrollUnits": "Faites défiler pour voir les {{count}} unités",
+    "continueHere": "Continuer ici",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",
@@ -2267,6 +2283,8 @@
     "allKnown": "Tous les mots sont marqués comme connus. Décochez ceux que vous souhaitez pratiquer.",
     "scopeHelp": "Ces jeux utilisent uniquement les mots de cette unité, sauf ceux marqués comme connus.",
     "noImage": "Aucune image n’est disponible pour ce mot actuellement.",
-    "listenExample": "Écouter la phrase"
+    "listenExample": "Écouter la phrase",
+    "learned": "Appris",
+    "learnedHelp": "Appris dans cette unité — exercice réussi."
   }
 }

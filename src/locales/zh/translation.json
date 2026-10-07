@@ -2203,6 +2203,22 @@
     "studyNote": "认识单词是学习步骤，练习时才检验独立回忆。"
   },
   "pathUi": {
+    "programTitle": "从零开始学英语",
+    "levelNames": {
+      "beginner": "基础",
+      "intermediate": "中级",
+      "advanced": "高级"
+    },
+    "toggleUnit": "展开或收起单元详情",
+    "completedWords": "已完成 {{count}}/{{total}} 个单词",
+    "practicedWords": "已练习 {{count}}/{{total}} 个单词",
+    "completedActivities": "{{count}} 个已完成活动 · 详情",
+    "upcoming": "本单元接下来",
+    "continueWords": "继续学习单词和句子",
+    "moreWordsHelp": "学习更多单词并造句。",
+    "allUnits": "所有单元",
+    "scrollUnits": "滚动查看全部 {{count}} 个单元",
+    "continueHere": "从这里继续",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",
@@ -2267,6 +2283,8 @@
     "allKnown": "本单元的所有单词都已标记为认识。请取消勾选想要练习的单词。",
     "scopeHelp": "这些游戏仅使用本单元的单词，不包括已标记为认识的单词。",
     "noImage": "此单词目前没有可用图片。",
-    "listenExample": "听例句"
+    "listenExample": "听例句",
+    "learned": "已学",
+    "learnedHelp": "已在本单元成功完成练习。"
   }
 }

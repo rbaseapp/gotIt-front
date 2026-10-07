@@ -1,0 +1,523 @@
+/* Canonical Figma map (43:2557) and levels (43:3083); live data stays dynamic. */
+.path-view-levels .path-back {
+  flex-direction: row-reverse;
+}
+.path-view-map progress,
+.path-view-levels progress {
+  direction: ltr;
+}
+@media (min-width: 1280px) {
+  .path-view-map {
+    position: relative;
+    inset-inline-start: -36px;
+  }
+}
+.path-view-map .path-page-header {
+  margin-bottom: 14px;
+}
+.path-view-map .path-program {
+  min-height: 48px;
+  padding-block: 8px;
+}
+.path-view-map .unit-map-tabs button {
+  min-height: 52px;
+}
+.path-view-levels .path-level-tabs > button.active {
+  color: var(--green);
+}
+.path-view-levels .path-level-tabs > button:not(.active) {
+  color: var(--ink);
+}
+.path-view-levels .pill.mint {
+  color: var(--green);
+  background: var(--green-soft);
+}
+.path-view-levels .pill.lavender {
+  color: var(--muted);
+  background: #f2eeff;
+}
+.path-artwork {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.path-artwork > img {
+  grid-area: 1 / 1;
+  display: block;
+  max-width: none;
+}
+.path-view-map .path-page-header h1 {
+  font-size: calc(52px * var(--text-scale, 1));
+  margin-bottom: 0;
+}
+.path-view-map .unit-map-tabs svg {
+  display: none;
+}
+.path-program {
+  flex-direction: row;
+  justify-content: space-between;
+}
+.path-view-map .unit-map-selectors {
+  display: grid;
+  grid-template-columns: minmax(0, 574fr) minmax(0, 316fr);
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.path-level-select {
+  position: relative;
+  margin: 0;
+}
+.path-level-select select {
+  width: 100%;
+  appearance: none;
+  padding-inline-end: 62px;
+  height: 64px;
+  padding-block: 8px;
+  line-height: 1.3;
+}
+.path-level-select > .path-artwork {
+  position: absolute;
+  inset-inline-end: 18px;
+  top: 18px;
+  pointer-events: none;
+}
+.path-view-map .unit-map-selectors > .button {
+  min-height: 64px;
+  font-size: 28px;
+  padding: 12px 16px;
+}
+.path-view-map .unit-roadmap-card {
+  padding: 16px;
+}
+.unit-roadmap-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 8px 12px;
+}
+.unit-roadmap-heading h2 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.2;
+}
+.path-disclosure {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.path-view-map .unit-roadmap-progress {
+  margin: 0 90px 18px 60px;
+  gap: 24px;
+}
+.path-view-map .unit-roadmap-progress progress {
+  width: 100%;
+  min-width: 0;
+}
+.path-view-map .unit-roadmap-progress span {
+  flex-shrink: 0;
+}
+.path-view-map .unit-teacher-station {
+  padding: 20px;
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+  gap: 10px 18px;
+  min-height: 213px;
+}
+.path-view-map .unit-station-icon {
+  background: transparent;
+}
+.path-view-map .unit-station-copy {
+  display: contents;
+}
+.path-view-map .unit-station-copy .eyebrow {
+  grid-column: 2 / -1;
+  grid-row: 1;
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+.path-view-map .unit-station-icon {
+  grid-column: 1;
+  grid-row: 2 / 5;
+}
+.path-view-map .unit-station-copy h3 {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0;
+  font-size: 34px;
+}
+.path-view-map .unit-station-copy > p:not(.eyebrow) {
+  grid-column: 2;
+  grid-row: 3;
+  margin: 0;
+}
+.path-view-map .unit-station-copy small {
+  grid-column: 2;
+  grid-row: 4;
+}
+.path-view-map .unit-teacher-station > .button {
+  grid-column: 3;
+  grid-row: 2 / 5;
+  font-size: 27px;
+  padding-inline: 20px;
+  white-space: normal;
+  max-width: 282px;
+}
+.path-view-map .unit-station-links {
+  grid-column: 3;
+  grid-row: 5;
+  gap: 12px;
+  justify-content: center;
+}
+.path-view-map .unit-station-links .button {
+  padding: 2px;
+  font-size: 16px;
+  white-space: nowrap;
+  min-height: 32px;
+}
+.path-view-map .path-completed {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 12px;
+  margin-top: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--muted);
+  border-radius: 12px;
+}
+.path-completed > span:nth-child(2) {
+  flex: 1;
+  text-align: start;
+}
+.path-view-map .unit-upcoming-heading {
+  font-size: 20px;
+  margin: 24px 8px 12px;
+}
+.path-view-map .unit-upcoming-row {
+  padding: 11px 14px;
+  gap: 18px;
+  text-decoration: none;
+  min-height: 80px;
+}
+.path-view-map .unit-upcoming-row > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.path-view-map .unit-upcoming-row strong,
+.path-view-map .unit-upcoming-row small {
+  display: block;
+}
+.path-view-map .unit-upcoming-row strong {
+  font-size: 22px;
+}
+.path-view-map .unit-upcoming-row small {
+  font-size: 18px;
+  margin-top: 4px;
+}
+.path-view-map .unit-future {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  width: 100%;
+  min-height: 72px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--muted);
+  text-align: start;
+}
+.unit-future > span:first-child {
+  flex: 1;
+}
+.unit-future strong,
+.unit-future small {
+  display: block;
+}
+.unit-future strong {
+  font-size: 22px;
+}
+.unit-future small {
+  font-size: 16px;
+  font-weight: 400;
+  margin-top: 3px;
+}
+.unit-future-link {
+  color: var(--green);
+  font-size: 18px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.path-view-levels .path-level-tabs {
+  margin-top: 32px;
+  gap: 38px;
+}
+.path-view-levels .path-level-tabs > button {
+  min-height: 116px;
+  padding: 20px 16px;
+  gap: 20px;
+}
+.path-view-levels .path-level-tabs strong {
+  font-size: 30px;
+}
+.path-view-levels .path-level-tabs small {
+  font-size: 20px;
+  margin-top: 8px;
+}
+.path-view-levels .path-level-layout {
+  grid-template-columns: minmax(0, 749fr) minmax(0, 398fr);
+}
+.path-view-levels .path-level-layout .ux-card {
+  border-radius: 20px;
+  min-height: 530px;
+  padding: 23px;
+}
+.path-view-levels .path-level-scroll {
+  max-height: 344px;
+  overflow-y: auto;
+  margin-top: 24px;
+}
+.path-view-levels .path-unit-row {
+  min-height: 80px;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+.path-view-levels .path-unit-row strong {
+  font-size: 22px;
+}
+.path-view-levels .path-unit-row .pill {
+  font-size: 16px;
+  padding: 6px 14px;
+}
+.path-view-levels .path-scroll-hint {
+  font-size: 20px;
+  margin: 24px 0 0;
+}
+.path-view-levels .path-level-featured {
+  display: flex;
+  flex-direction: column;
+}
+.path-view-levels .path-level-featured > .pill {
+  align-self: flex-start;
+  font-size: 20px;
+  min-width: 160px;
+  text-align: center;
+}
+.path-view-levels .path-featured-number {
+  margin: 20px 0 8px;
+}
+.path-view-levels .path-level-featured h2 {
+  min-height: 64px;
+  font-size: 32px;
+}
+.path-view-levels .path-level-featured > p:not(.path-featured-number) {
+  margin: 20px 0 10px;
+  font-size: 24px;
+}
+.path-view-levels .path-level-featured progress {
+  height: 10px;
+  flex-shrink: 0;
+}
+.path-view-levels .path-level-meeting {
+  position: relative;
+  text-align: start;
+  margin: 26px 0 10px;
+  padding: 20px;
+  padding-inline-start: 65px;
+  min-height: 118px;
+}
+.path-level-meeting > .path-artwork {
+  position: absolute;
+  inset-inline-start: 18px;
+  top: 20px;
+}
+.path-view-levels .path-level-meeting strong {
+  font-size: 24px;
+}
+.path-view-levels .path-level-meeting p {
+  font-size: 20px;
+}
+.path-view-levels .path-level-featured > .button.primary {
+  margin-top: auto;
+  min-height: 60px;
+  font-size: 28px;
+}
+.path-view-levels .path-level-featured > .button.ghost {
+  margin-top: 10px;
+  font-size: 22px;
+}
+@media (max-width: 1100px) {
+  .path-view-map .unit-teacher-station {
+    grid-template-columns: 62px minmax(0, 1fr);
+  }
+  .path-view-map .unit-teacher-station > .button {
+    grid-column: 2;
+    grid-row: 5;
+    justify-self: start;
+  }
+  .path-view-map .unit-station-links {
+    grid-column: 2;
+    grid-row: 6;
+    justify-content: start;
+  }
+  .path-view-levels .path-level-tabs {
+    gap: 16px;
+  }
+  .path-view-levels .path-level-tabs > button {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  .path-view-levels .path-level-tabs small {
+    font-size: 16px;
+  }
+  .path-view-levels .path-unit-row .pill {
+    font-size: 13px;
+    min-width: 0;
+  }
+}
+@media (max-width: 600px) {
+  .path-view-map .path-page-header h1 {
+    font-size: 32px;
+  }
+  .path-view-map .unit-map-selectors {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .path-view-map .unit-map-selectors > .button {
+    font-size: 20px;
+    min-height: 48px;
+  }
+  .path-level-select select {
+    font-size: 18px;
+  }
+  .path-view-map .unit-roadmap-card {
+    padding: 12px;
+  }
+  .unit-roadmap-heading {
+    margin-inline: 0;
+  }
+  .unit-roadmap-heading h2 {
+    font-size: 23px;
+  }
+  .path-view-map .unit-roadmap-progress {
+    margin: 0 0 16px;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .path-view-map .unit-teacher-station {
+    padding: 14px;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .path-view-map .unit-station-icon {
+    display: none;
+  }
+  .path-view-map .unit-station-copy .eyebrow,
+  .path-view-map .unit-station-copy h3,
+  .path-view-map .unit-station-copy > p:not(.eyebrow),
+  .path-view-map .unit-station-copy small,
+  .path-view-map .unit-teacher-station > .button,
+  .path-view-map .unit-station-links {
+    grid-column: 1;
+  }
+  .path-view-map .unit-station-copy h3 {
+    font-size: 25px;
+  }
+  .path-view-map .unit-teacher-station > .button {
+    font-size: 21px;
+    max-width: none;
+    width: 100%;
+  }
+  .path-view-map .path-completed {
+    font-size: 16px;
+    gap: 8px;
+  }
+  .path-view-map .unit-upcoming-row {
+    gap: 8px;
+    padding-inline: 8px;
+  }
+  .path-view-map .unit-upcoming-row > .path-artwork:first-child {
+    display: none;
+  }
+  .path-view-map .unit-upcoming-row strong {
+    font-size: 18px;
+  }
+  .path-view-map .unit-upcoming-row small {
+    font-size: 15px;
+  }
+  .path-view-map .unit-future {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .unit-future-link {
+    display: none;
+  }
+  .unit-future strong {
+    font-size: 18px;
+  }
+  .path-view-levels .path-level-tabs {
+    gap: 8px;
+    margin-top: 24px;
+  }
+  .path-view-levels .path-level-tabs > button {
+    padding: 10px 4px;
+  }
+  .path-view-levels .path-level-tabs strong {
+    font-size: 18px;
+  }
+  .path-view-levels .path-level-tabs small {
+    font-size: 13px;
+  }
+  .path-view-levels .path-level-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .path-view-levels .path-level-layout .ux-card {
+    min-height: 0;
+    padding: 16px;
+  }
+  .path-view-levels .path-level-layout h2 {
+    font-size: 24px;
+  }
+  .path-view-levels .path-unit-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-inline: 8px;
+  }
+  .path-view-levels .path-unit-row strong {
+    font-size: 18px;
+  }
+  .path-view-levels .path-unit-row > .path-artwork {
+    display: none;
+  }
+  .path-view-levels .path-unit-row .pill {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  .path-view-levels .path-level-featured > .button.primary {
+    margin-top: 20px;
+    font-size: 24px;
+  }
+}
+
+.unit-learned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: 8px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 500;
+}
+.unit-learned-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+}
