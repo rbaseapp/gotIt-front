@@ -100,7 +100,8 @@
 .ux-home .ux-home-illustration {
   width: 48%;
 }
-.ux-home .ux-home-illustration img {
+.ux-home .ux-home-illustration img,
+.ux-home .ux-home-illustration .learning-hero-overlay {
   width: 100%;
   height: 467px;
   object-fit: contain;
@@ -256,31 +257,38 @@
    Expanded progress and enlarged text can still grow the document naturally. */
 @media (min-width: 861px) {
   .app-layout > .main-column > .page-content:has(.ux-home) {
-    max-width: 1360px;
-    padding: clamp(12px, 2dvh, 24px) clamp(20px, 3vw, 46px);
+    --home-padding-block: clamp(12px, 2dvh, 32px);
+    max-width: clamp(1360px, 75vw, 2040px);
+    padding: var(--home-padding-block) clamp(20px, 3vw, 46px);
   }
   .ux-home {
-    gap: clamp(8px, 1.2dvh, 14px);
+    min-height: calc(100dvh - 2 * var(--home-padding-block));
+    gap: clamp(8px, 1.2dvh, 22px);
+  }
+  .ux-home > * {
+    flex-shrink: 0;
   }
   .ux-home-heading {
     margin-bottom: 0;
   }
   .ux-home-heading h1 {
-    font-size: calc(clamp(28px, 3.8dvh, 40px) * var(--text-scale, 1));
+    font-size: calc(clamp(28px, 3.8dvh, 56px) * var(--text-scale, 1));
     margin-bottom: 4px;
   }
   .ux-home-heading p {
-    font-size: calc(clamp(16px, 2.2dvh, 22px) * var(--text-scale, 1));
+    font-size: calc(clamp(16px, 2.2dvh, 32px) * var(--text-scale, 1));
     margin: 0;
   }
   .ux-home .ux-home-next {
-    min-height: clamp(230px, calc(100dvh - 490px), 400px);
+    flex: 1 0 auto;
+    min-height: 0;
   }
   .ux-home .ux-home-illustration {
     width: 44%;
     position: relative;
   }
-  .ux-home .ux-home-illustration img {
+  .ux-home .ux-home-illustration img,
+  .ux-home .ux-home-illustration .learning-hero-overlay {
     position: absolute;
     inset: 0;
     height: 100%;
@@ -288,15 +296,15 @@
   }
   .ux-home .ux-home-next-copy {
     justify-content: center;
-    padding: clamp(16px, 2.4dvh, 28px);
-    gap: clamp(6px, 1dvh, 12px);
+    padding: clamp(16px, 2.4dvh, 40px);
+    gap: clamp(6px, 1dvh, 18px);
   }
   .ux-home .ux-home-next h2 {
-    font-size: calc(clamp(28px, 3.8dvh, 42px) * var(--text-scale, 1));
+    font-size: calc(clamp(28px, 3.8dvh, 56px) * var(--text-scale, 1));
     margin-bottom: 0;
   }
   .ux-home .ux-home-next-copy > p {
-    font-size: calc(clamp(16px, 2.3dvh, 22px) * var(--text-scale, 1));
+    font-size: calc(clamp(16px, 2.3dvh, 32px) * var(--text-scale, 1));
     margin: 0;
   }
   .ux-home .ux-home-next .ux-icon {
@@ -308,54 +316,60 @@
   }
   .ux-home .ux-home-next .button.primary,
   .ux-home .ux-home-next .button.ghost {
-    min-height: 44px;
+    min-height: clamp(44px, 4.9dvh, 70px);
     padding: 8px 16px;
-    font-size: calc(clamp(16px, 2.4dvh, 22px) * var(--text-scale, 1));
+    font-size: calc(clamp(16px, 2.4dvh, 34px) * var(--text-scale, 1));
   }
   .ux-home-section-heading {
     margin: 0;
     gap: 12px;
   }
   .ux-home-section-heading h2 {
-    font-size: calc(clamp(20px, 2.6dvh, 26px) * var(--text-scale, 1));
+    font-size: calc(clamp(20px, 2.6dvh, 38px) * var(--text-scale, 1));
   }
   .ux-home-section-heading a {
-    font-size: calc(16px * var(--text-scale, 1));
+    font-size: calc(clamp(16px, 1.78dvh, 24px) * var(--text-scale, 1));
   }
   .ux-home .ux-home-options {
-    gap: 16px;
+    gap: clamp(16px, 1.8dvh, 26px);
   }
   .ux-home .ux-home-options .ux-card {
-    padding: 12px 16px;
+    padding: clamp(12px, 1.4dvh, 20px) clamp(16px, 1.8dvh, 28px);
     min-height: 0;
   }
   .ux-home .ux-home-options h2,
   .ux-home .ux-home-other-program h2 {
-    font-size: calc(22px * var(--text-scale, 1));
+    font-size: calc(clamp(22px, 2.44dvh, 34px) * var(--text-scale, 1));
     margin-bottom: 4px;
   }
   .ux-home .ux-home-options p,
   .ux-home .ux-home-other-program p {
-    font-size: calc(16px * var(--text-scale, 1));
+    font-size: calc(clamp(16px, 1.78dvh, 24px) * var(--text-scale, 1));
     margin-bottom: 4px;
   }
   .ux-home .ux-home-words .ux-word-illustration {
-    width: 84px;
-    height: 64px;
+    width: clamp(84px, 9.33dvh, 132px);
+    height: clamp(64px, 7.1dvh, 100px);
   }
   .ux-home .ux-home-other-program > img {
-    width: 100px;
-    height: 64px;
+    width: clamp(100px, 11.1dvh, 160px);
+    height: clamp(64px, 7.1dvh, 100px);
   }
   .ux-home .ux-home-options .button {
-    font-size: calc(16px * var(--text-scale, 1));
-    min-height: 44px;
+    font-size: calc(clamp(16px, 1.78dvh, 24px) * var(--text-scale, 1));
+    min-height: clamp(44px, 4.9dvh, 70px);
     padding: 8px 12px;
+    line-height: 1.4;
   }
   .ux-home .ux-home-word-actions {
     min-height: 0;
     margin-top: 8px;
     gap: 4px;
+  }
+  .ux-home .ux-home-word-game-link {
+    font-size: calc(clamp(16px, 1.78dvh, 24px) * var(--text-scale, 1));
+    min-height: clamp(44px, 4.9dvh, 70px);
+    line-height: 1.4;
   }
   .ux-home-word-action-buttons {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
@@ -378,10 +392,11 @@
     margin: 0;
   }
   .ux-home-footer .button,
+  .ux-home .ux-home-footer .ux-explore .button,
   .ux-home-footer .dashboard-more > summary {
-    min-height: 44px;
+    min-height: clamp(44px, 4.9dvh, 70px);
     padding: 8px 12px;
-    font-size: calc(16px * var(--text-scale, 1));
+    font-size: calc(clamp(16px, 1.78dvh, 24px) * var(--text-scale, 1));
   }
   .ux-home-footer > .dashboard-more[open],
   .ux-home-footer > .ux-secondary-status[open] {
@@ -394,7 +409,7 @@
     font-size: calc(14px * var(--text-scale, 1));
   }
 }
-/* Short laptop windows use the available width for the secondary cards. */
+/* Keep the same home hierarchy on short laptop windows. */
 @media (min-width: 861px) and (max-height: 850px) {
   .app-layout:has(.ux-home) > .sidebar {
     padding: 12px 16px;
@@ -431,26 +446,23 @@
     text-align: center;
   }
   .ux-home {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    align-items: start;
-    gap: 8px 16px;
+    gap: 6px;
   }
-  .ux-home-heading,
-  .ux-home-footer {
-    grid-column: 1 / -1;
+  .ux-home-heading h1 {
+    font-size: calc(26px * var(--text-scale, 1));
   }
-  .ux-home .ux-home-next {
-    grid-column: 1;
-    grid-row: 2 / 4;
-    align-self: stretch;
-    min-height: 0;
+  .ux-home-heading p {
+    font-size: calc(14px * var(--text-scale, 1));
   }
-  .ux-home .ux-home-illustration {
-    width: 30%;
+  .ux-home .ux-home-next-copy {
+    padding: 12px 16px;
+    gap: 4px;
   }
   .ux-home .ux-home-next h2 {
-    font-size: calc(26px * var(--text-scale, 1));
+    font-size: calc(24px * var(--text-scale, 1));
+  }
+  .ux-home .ux-home-next-copy > p {
+    font-size: calc(14px * var(--text-scale, 1));
   }
   .ux-home .ux-home-next .ux-icon {
     width: 32px;
@@ -459,12 +471,7 @@
   .ux-home .ux-home-next .ux-card-heading {
     gap: 8px;
   }
-  .ux-home-section-heading,
   .ux-home .ux-home-options {
-    grid-column: 2;
-  }
-  .ux-home .ux-home-options {
-    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }
   .ux-home .ux-home-options .ux-card {
@@ -473,12 +480,29 @@
   .ux-home .ux-home-options h2 {
     font-size: calc(20px * var(--text-scale, 1));
   }
+  .ux-home .ux-home-options p {
+    font-size: calc(14px * var(--text-scale, 1));
+  }
   .ux-home .ux-home-options .ux-card-heading {
     gap: 8px;
   }
   .ux-home .ux-home-words .ux-word-illustration {
     width: 56px;
     height: 44px;
+  }
+  .ux-home .ux-home-word-actions {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .ux-home .ux-home-word-action-buttons {
+    flex: 1;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 90px), 1fr));
+  }
+  .ux-home .ux-home-word-action-buttons .button,
+  .ux-home .ux-home-word-game-link {
+    font-size: calc(14px * var(--text-scale, 1));
+    padding: 4px 6px;
   }
   .ux-home .ux-home-options .form-error {
     display: flex;

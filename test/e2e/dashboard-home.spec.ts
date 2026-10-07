@@ -6,9 +6,13 @@ for (const viewport of [
   { width: 390, height: 844 },
   { width: 1024, height: 600 },
   { width: 1024, height: 720 },
+  { width: 1280, height: 600 },
+  { width: 1366, height: 640 },
   { width: 1366, height: 768 },
   { width: 1440, height: 900 },
+  { width: 1536, height: 864 },
   { width: 1920, height: 1080 },
+  { width: 2560, height: 1440 },
 ]) {
   test(`home separates word practice and private lessons at ${viewport.width}x${viewport.height}`, async ({
     page,
@@ -132,9 +136,7 @@ for (const viewport of [
         .locator(".ux-home-next-copy .button.primary")
         .boundingBox();
       const hero = await page.locator(".ux-home-next").boundingBox();
-      expect(primary!.width).toBeLessThan(
-        hero!.width * (viewport.height < 700 ? 0.75 : 0.55),
-      );
+      expect(primary!.width).toBeLessThan(hero!.width * 0.55);
       await expect
         .poll(() =>
           page.evaluate(
@@ -144,6 +146,17 @@ for (const viewport of [
         .toBe(true);
       const footer = await page.locator(".ux-home-footer").boundingBox();
       expect(footer!.y + footer!.height).toBeLessThanOrEqual(viewport.height);
+      const padding = await page
+        .locator(".page-content")
+        .evaluate((element) =>
+          parseFloat(getComputedStyle(element).paddingBottom),
+        );
+      expect(
+        Math.abs(viewport.height - footer!.y - footer!.height - padding),
+      ).toBeLessThan(2);
+      const options = await page.locator(".ux-home-options").boundingBox();
+      expect(options!.y).toBeGreaterThanOrEqual(hero!.y + hero!.height);
+      expect(options!.width).toBeCloseTo(hero!.width, 0);
       expect(
         await page
           .locator(".sidebar")
