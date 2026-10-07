@@ -753,7 +753,7 @@
     display: none;
   }
   .lesson-room-composer-help {
-    font-size: calc(11px * var(--text-scale, 1));
+    font-size: calc(12px * var(--text-scale, 1));
   }
 }
 @media (max-height: 600px) and (max-width: 860px) {

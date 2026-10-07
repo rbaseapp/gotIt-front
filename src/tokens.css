@@ -1,0 +1,89 @@
+/*
+ * Design tokens — single source of truth. Loaded last so it wins over the
+ * legacy :root blocks in styles.css and ux.css. Prefer these variables in new
+ * CSS; migrate hard-coded values to them when touching a rule.
+ */
+:root {
+  /* Text on light surfaces: every pair below is >= 4.5:1 on cream, white and the *-soft tints. */
+  --muted: #566660;
+  --orange-text: #a84a18;
+  --blue-text: #2f6c84;
+  --purple-text: #6355a0;
+
+  /* Borders: --line is decorative; --line-ui is for controls (>= 3:1 on white). */
+  --line-ui: #7f8f88;
+
+  /* Keyboard focus: 3:1 or better against white and cream. */
+  --focus-ring: #1f604c;
+
+  /* Type scale (px). 12 is the floor for any visible text. */
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+  --fs-3xl: 32px;
+
+  /* Spacing scale (px). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Radii. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* Minimum interactive target. */
+  --target-min: 44px;
+}
+
+html :focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.search-box:focus-within {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Form controls need a visible boundary (WCAG 1.4.11). */
+.field input,
+.field textarea,
+.field select,
+.ui-language-select .language-combobox input,
+.search-box,
+.sort-box {
+  border-color: var(--line-ui);
+}
+
+/* Footer and legal links: readable size and a real hit area. */
+.sidebar-legal-links a,
+.sidebar-legal-links button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding-inline: 6px;
+}
+
+/* Inline text links and compact selects: extend the hit area without changing the layout. */
+.text-link,
+.skill-insight > a {
+  position: relative;
+}
+.text-link::after,
+.skill-insight > a::after {
+  content: "";
+  position: absolute;
+  inset-block: calc((100% - var(--target-min)) / 2);
+  inset-inline: -6px;
+}
+.select-compact {
+  min-height: 36px;
+}

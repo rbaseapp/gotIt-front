@@ -13,6 +13,7 @@ import "./figma-review.css";
 import "./path-review.css";
 import "./learning-map.css";
 import "./auth-production.css";
+import "./tokens.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

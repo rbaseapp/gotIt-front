@@ -375,7 +375,7 @@
 .course-message strong {
   display: block;
   margin-block-end: 5px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .course-message.learner {
@@ -890,7 +890,7 @@
 }
 .homework-footer small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
   text-align: end;
 }
@@ -978,7 +978,7 @@
   }
   .course-steps li {
     gap: 6px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .course-steps li > span {
     width: 23px;

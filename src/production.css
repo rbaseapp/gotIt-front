@@ -904,7 +904,7 @@
 .private-lesson-turn small {
   display: block;
   margin-bottom: 3px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1118,7 +1118,7 @@
 }
 .private-lesson-skill-grid article span {
   color: #52685b;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .private-lesson-skill-grid article p {
@@ -1454,7 +1454,7 @@ body.private-lesson-session-open .private-lesson-session > .button {
   }
   body.private-lesson-session-open .private-lesson-status {
     max-width: calc(100vw - 118px);
-    font-size: 11px;
+    font-size: 12px;
   }
   body.private-lesson-session-open .private-lesson-timer {
     width: auto;
@@ -1483,7 +1483,7 @@ body.private-lesson-session-open .private-lesson-session > .button {
   body.private-lesson-session-open .private-lesson-meta span,
   body.private-lesson-session-open .private-lesson-words span {
     padding: 3px 7px;
-    font-size: 10px;
+    font-size: 12px;
   }
   body.private-lesson-session-open .private-lesson-tutor-stage {
     min-height: 0;
@@ -1497,13 +1497,13 @@ body.private-lesson-session-open .private-lesson-session > .button {
   body.private-lesson-session-open .private-lesson-tutor-caption {
     max-width: 98%;
     padding: 3px 9px;
-    font-size: 10px;
+    font-size: 12px;
   }
   body.private-lesson-session-open .private-lesson-words {
     gap: 3px;
   }
   body.private-lesson-session-open .private-lesson-words > strong {
-    font-size: 10px;
+    font-size: 12px;
   }
   body.private-lesson-session-open .private-lesson-words > div {
     gap: 3px;
@@ -1515,7 +1515,7 @@ body.private-lesson-session-open .private-lesson-session > .button {
   }
   body.private-lesson-session-open .private-lesson-transcript-title {
     margin: 0;
-    font-size: 11px;
+    font-size: 12px;
   }
   body.private-lesson-session-open .private-lesson-turn {
     width: 92%;
@@ -1524,7 +1524,7 @@ body.private-lesson-session-open .private-lesson-session > .button {
   }
   body.private-lesson-session-open .private-lesson-turn small {
     margin-bottom: 1px;
-    font-size: 8px;
+    font-size: 12px;
   }
   body.private-lesson-session-open .private-lesson-turn p {
     line-height: 1.4;
@@ -1818,7 +1818,7 @@ body.private-lesson-viewport-compact .private-lesson-meta {
   border-radius: 999px;
   color: #fff;
   background: var(--green);
-  font-size: 11px;
+  font-size: 12px;
 }
 .vocabulary-advanced-filters > summary small {
   color: #66796e;
@@ -2430,7 +2430,7 @@ progress::-webkit-progress-value {
   padding: 8px 12px;
   color: white;
   background: rgba(25, 35, 30, 0.74);
-  font-size: 10px;
+  font-size: 12px;
 }
 .image-credit a {
   color: white;
@@ -3092,7 +3092,7 @@ progress::-webkit-progress-value {
 .slot-correction {
   flex: 1 0 100%;
   color: #934426;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 750;
   line-height: 1.35;
 }
@@ -3141,7 +3141,7 @@ progress::-webkit-progress-value {
 }
 .meaning-bank-heading small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 550;
 }
 .meaning-cards {
@@ -3876,7 +3876,7 @@ progress::-webkit-progress-value {
   gap: 2px;
   color: #607167;
   background: rgba(255, 255, 255, 0.8);
-  font-size: 11px;
+  font-size: 12px;
   text-align: center;
 }
 .pack-overview b {
@@ -3946,11 +3946,11 @@ html[dir="ltr"] .pack-search input {
 }
 .pack-topic-card small {
   color: #627269;
-  font-size: 11px;
+  font-size: 12px;
 }
 .pack-topic-card em {
   color: var(--green-dark);
-  font-size: 10px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 700;
 }
@@ -4051,7 +4051,7 @@ html[dir="ltr"] .pack-search input {
   border-radius: 999px;
   color: #4f685a;
   background: #f0f4f1;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
 }
 .pack-card h3,
@@ -4445,7 +4445,7 @@ html[dir="ltr"] .pack-search input {
 }
 .pack-included {
   color: var(--green-dark);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 700;
 }
@@ -4862,7 +4862,7 @@ html[dir="ltr"] .pack-search input {
     min-height: 28px;
     flex-wrap: nowrap;
     gap: 6px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .live-session-main > .live-toolbar > span:last-of-type:not(:first-child) {
     overflow: hidden;
@@ -4939,7 +4939,7 @@ html[dir="ltr"] .pack-search input {
   }
   .feedback-rewards span {
     padding: 5px 8px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .live-exercise > .exercise-primary-action,
   .live-exercise > .exercise-skip-action,
@@ -5037,7 +5037,7 @@ html[dir="ltr"] .pack-search input {
   }
   .drag-drop-actions {
     min-height: 40px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .drag-drop-actions .button {
     min-height: 40px;

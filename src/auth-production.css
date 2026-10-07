@@ -1,7 +1,6 @@
 /* Preserve the production login appearance within the DEV design system. */
 .auth-production {
   --ink: #24352f;
-  --muted: #74817d;
   --cream: #f6f5f0;
   --surface: #fff;
   --line: #e6e9e4;
