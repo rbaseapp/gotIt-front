@@ -83,13 +83,29 @@ for (const width of [320, 390, 1487])
         `/learn/smart?items=${item}&language=en`,
         ".ux-smart-ready",
       ],
-      ["games", `/learn?items=${item}&language=en`, ".ux-game-hub"],
+      ["games", `/learn?items=${item}&language=en`, ".learn-page"],
       ["history", "/history?language=fr&view=lessons", ".ux-history"],
       ["programs", "/courses", ".programs-page"],
     ] as const;
     for (const [name, url, selector] of cases) {
       await page.goto(url);
       await expect(page.locator(selector)).toBeVisible();
+      if (name === "games") {
+        await expect(
+          page.locator(".learn-page .smart-session-card"),
+        ).toBeVisible();
+        await expect(page.locator(".learn-page .game-card")).toHaveCount(6);
+        await expect(page.locator(".learn-page .smart-start")).toHaveAttribute(
+          "href",
+          new RegExp(`/learn/session/smart\\?items=${item}.*language=en`),
+        );
+        await expect(
+          page.locator(".learn-page .game-card[href]").first(),
+        ).toHaveAttribute("href", new RegExp(`items=${item}.*language=en`));
+        await expect(
+          page.getByRole("heading", { name: he.learn.nextWords }),
+        ).toHaveCount(0);
+      }
       await expect(page.locator(selector).locator("[role=status]")).toHaveCount(
         0,
       );

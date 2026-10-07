@@ -462,7 +462,7 @@ for (const [locale, text] of [
         .locator(".ux-home-next")
         .getByRole("link", { name: text.ux.chooseGame })
         .click();
-      await expect(page.locator(".ux-game-grid")).toBeVisible();
+      await expect(page.locator(".learn-page .game-grid")).toBeVisible();
       await page.getByRole("button", { name: text.ux.changeWords }).click();
       await expect(page.getByRole("dialog")).toBeVisible();
       await withinViewport(page);
