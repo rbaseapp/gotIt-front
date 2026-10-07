@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Mail, MessageCircle, Star } from "lucide-react";
+import { Check, Flame, Mail, MessageCircle, Star, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Logo } from "../components/Logo";
@@ -18,6 +18,7 @@ import {
   ScaledScreen,
 } from "../components/LandingReplicas";
 import iconUrl from "../assets/gotit-icon.svg";
+import tutorPortrait from "../assets/private-lesson/tutor-female-speaking-wide.png";
 import "../landing.css";
 
 const REGISTER_PATH = "/login?auth=register";
@@ -89,14 +90,58 @@ function Hero() {
           {t("landing.hero.haveAccount")}
         </Link>
       </div>
-      <HeroDemo />
+      <HeroArt />
     </section>
   );
 }
 
-/** The one orchestrated moment: a word is marked on a page and saved. */
-function HeroDemo() {
+/**
+ * The hero's picture: the tutor in an arch, with the moments a learner meets
+ * around her (a saved word, her question, the streak). Decorative; the copy
+ * beside it says the same thing in words.
+ */
+function HeroArt() {
   const { t } = useTranslation();
+  return (
+    <div className="hero-art" aria-hidden="true">
+      <span className="hero-art-sun" />
+      <span className="hero-art-blob" />
+      <div className="hero-art-arch">
+        <img src={tutorPortrait} alt="" draggable={false} />
+      </div>
+      <div className="hero-chip hero-chip-word" dir="ltr" lang="en">
+        <span className="hero-chip-check">
+          <Check size={14} strokeWidth={3} />
+        </span>
+        <span>
+          <mark>thrive</mark>
+          <small dir="auto">{t("landing.demo.translation")}</small>
+        </span>
+      </div>
+      <p className="hero-chip hero-chip-bubble" dir="ltr" lang="en">
+        How do small cafés <mark>thrive</mark>?
+      </p>
+      <div className="hero-chip hero-chip-stats" dir="ltr">
+        <span className="hero-stat-streak">
+          <Flame size={16} fill="currentColor" />7
+        </span>
+        <span className="hero-stat-xp">
+          <Zap size={16} fill="currentColor" />
+          +15 XP
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A word is marked on a page and saved. Plays when `active` turns on (the
+ * desktop stage) or, without it, when it scrolls into view (phones).
+ */
+function MarkDemo({ active }: { active?: boolean }) {
+  const { t } = useTranslation();
+  const [viewRef, inView] = useInView<HTMLElement>();
+  const play = active ?? inView;
   const [stage, setStage] = useState(0);
   const browserRef = useRef<HTMLDivElement>(null);
   const wordRef = useRef<HTMLElement>(null);
@@ -109,7 +154,8 @@ function HeroDemo() {
     const update = () => {
       const box = browser.getBoundingClientRect();
       const rect = word.getBoundingClientRect();
-      const panelWidth = Math.min(300, box.width);
+      const panel = browser.querySelector<HTMLElement>(".demo-panel");
+      const panelWidth = Math.min(panel?.offsetWidth || 300, box.width);
       setAnchor({
         top: rect.bottom - box.top + 10,
         left: Math.max(
@@ -128,13 +174,18 @@ function HeroDemo() {
       setStage(3);
       return;
     }
-    const timers = [500, 1400, 2900].map((delay, index) =>
+    if (!play) {
+      setStage(0);
+      return;
+    }
+    const timers = [400, 1300, 2800].map((delay, index) =>
       window.setTimeout(() => setStage(index + 1), delay),
     );
     return () => timers.forEach(window.clearTimeout);
-  }, []);
+  }, [play]);
   return (
     <figure
+      ref={viewRef}
       className="landing-demo"
       data-stage={stage}
       aria-label={t("landing.demo.label")}
@@ -220,7 +271,11 @@ function Journey() {
                 ))}
               </ul>
               <div className="journey-inline-visual" aria-hidden="true">
-                <StepVisual step={step} compact />
+                {step === "mark" ? (
+                  <MarkDemo />
+                ) : (
+                  <StepVisual step={step} compact />
+                )}
               </div>
             </li>
           ))}
@@ -233,7 +288,11 @@ function Journey() {
               data-active={active === step || undefined}
             >
               <StageWords step={step} />
-              <StepVisual step={step} maxHeight={STAGE_FIT_HEIGHT} />
+              {step === "mark" ? (
+                <MarkDemo active={active === step} />
+              ) : (
+                <StepVisual step={step} maxHeight={STAGE_FIT_HEIGHT} />
+              )}
             </div>
           ))}
         </div>
