@@ -166,6 +166,13 @@
   gap: 12px;
   margin-top: 36px;
 }
+/* Sized to stand next to the headline, not the nav. */
+.landing-hero-actions .landing-button {
+  min-height: 56px;
+  padding: 0 32px;
+  border-radius: 12px;
+  font-size: 1.125rem;
+}
 .landing-hero-login {
   display: inline-flex;
   align-items: center;
