@@ -2362,5 +2362,32 @@
     "reviewUnavailable": "يمكن إعادة التدريبات المكتملة فقط",
     "backToMap": "العودة إلى الخريطة",
     "finishReview": "إنهاء المراجعة"
+  },
+  "lessonRoom": {
+    "guided": "درس موجّه",
+    "conversation": "محادثتكم",
+    "translate": "ترجمة",
+    "historyCaption": "اليوم · درسكم",
+    "voice": "تحدث",
+    "text": "كتابة",
+    "micActive": "الميكروفون يعمل",
+    "micMuted": "الميكروفون مكتوم",
+    "send": "إرسال",
+    "placeholder": "اكتبوا إجابتكم…",
+    "keyboardHelp": "Enter للإرسال · Shift + Enter لسطر جديد",
+    "switchAnytime": "يمكن الانتقال إلى الكتابة في أي وقت",
+    "ownPace": "أجيبوا بالوتيرة التي تناسبكم",
+    "mute": "كتم",
+    "unmute": "تشغيل الميكروفون",
+    "speakNow": "الميكروفون يعمل — يمكنكم التحدث",
+    "voiceTranscript": "سيظهر كلامكم في المحادثة",
+    "unmuteHelp": "شغّلوا الميكروفون للتحدث أو انتقلوا إلى الكتابة",
+    "connected": "متصل",
+    "connecting": "جارٍ الاتصال…",
+    "speaking": "{{teacher}} يتحدث",
+    "thinking": "{{teacher}} يفكر…",
+    "listening": "{{teacher}} يستمع إليكم",
+    "yourTurn": "حان دوركم للمحاولة.",
+    "goal": "نتدرّب اليوم"
   }
 }

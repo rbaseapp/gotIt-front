@@ -1,0 +1,785 @@
+/* Lesson v3: Figma 129:1240 / 129:1241 / 129:1242. Content is live lesson data. */
+.lesson-session.lesson-room {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: var(--private-lesson-viewport-height, 100dvh);
+  padding: 32px;
+  overflow: hidden;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: calc(16px * var(--text-scale, 1));
+}
+.lesson-room * {
+  min-width: 0;
+}
+.lesson-room p,
+.lesson-room h1,
+.lesson-room h2,
+.lesson-room h3 {
+  margin: 0;
+}
+.lesson-room img {
+  flex: none;
+  max-width: none;
+}
+.lesson-room-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 130px;
+  direction: ltr;
+  gap: 24px;
+  align-items: center;
+  flex: none;
+  min-height: 64px;
+}
+.lesson-room-header .brand {
+  width: 130px;
+}
+.lesson-room-header .brand-logo {
+  display: block;
+  width: 130px;
+  height: auto;
+}
+.lesson-room-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.lesson-room-timer {
+  display: grid;
+  place-items: center;
+  min-width: 90px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--mint);
+  color: var(--green);
+  font-size: calc(24px * var(--text-scale, 1));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lesson-room-topic {
+  text-align: end;
+}
+.lesson-room-topic h1 {
+  font-size: calc(24px * var(--text-scale, 1));
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.lesson-room-topic p {
+  color: var(--muted);
+  font-size: calc(14px * var(--text-scale, 1));
+  line-height: 1.55;
+  direction: var(--lesson-direction);
+}
+.lesson-room-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--green);
+  font-size: calc(14px * var(--text-scale, 1));
+  line-height: 22px;
+}
+.lesson-room-action.outlined {
+  border-color: var(--line);
+  background: var(--surface);
+  font-weight: 700;
+}
+.lesson-room-action.primary {
+  background: var(--green);
+  color: var(--surface);
+  font-weight: 700;
+}
+.lesson-room button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.lesson-room-action:hover:not(:disabled) {
+  background: var(--mint);
+}
+.lesson-room-action.primary:hover:not(:disabled) {
+  background: var(--green-dark);
+}
+.lesson-room-action:focus-visible,
+.lesson-room-modes button:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 2px;
+}
+.lesson-room-context {
+  display: flex;
+  direction: ltr;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+  flex: none;
+}
+.lesson-room-chips,
+.lesson-room-stages,
+.lesson-room-words {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.lesson-room-stages {
+  flex-direction: row-reverse;
+}
+.lesson-room-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--green);
+  font-size: calc(12px * var(--text-scale, 1));
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.lesson-room-chip.current {
+  background: var(--green);
+  color: var(--surface);
+}
+.lesson-room-chip.complete {
+  background: var(--mint);
+}
+.lesson-room-chip.upcoming {
+  color: var(--muted);
+  background: transparent;
+}
+.lesson-room-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 904fr) minmax(300px, 448fr);
+  direction: ltr;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+}
+.lesson-room-conversation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.lesson-room-conversation-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  min-height: 36px;
+}
+.lesson-room-conversation-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  font-size: calc(16px * var(--text-scale, 1));
+}
+.lesson-room-conversation-tools {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.lesson-room-conversation-tools .lesson-room-action {
+  padding: 6px 8px;
+}
+.lesson-room-conversation-tools .lesson-room-more {
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.lesson-room-history {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overscroll-behavior: contain;
+  padding: 0 0 2px;
+  scrollbar-width: thin;
+}
+.lesson-room-history > * {
+  flex: none;
+}
+.lesson-room-history-caption {
+  text-align: center;
+  font-size: calc(12px * var(--text-scale, 1));
+  color: var(--muted);
+  padding: 8px 0 0;
+}
+.lesson-room-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 16px;
+  padding: 14px 18px;
+  width: min(648px, 76%);
+}
+.lesson-room-turn.tutor {
+  background: var(--green);
+  color: var(--surface);
+  align-self: flex-start;
+}
+.lesson-room-turn.learner {
+  background: var(--mint);
+  color: var(--ink);
+  width: min(500px, 68%);
+  align-self: flex-end;
+}
+.lesson-room-turn strong {
+  text-align: right;
+  font-size: calc(12px * var(--text-scale, 1));
+  line-height: 19px;
+}
+.lesson-room-turn.learner strong {
+  color: var(--green);
+}
+.lesson-room-turn p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
+.lesson-room-question {
+  font-weight: 500;
+}
+.lesson-room-example,
+.lesson-room-translation,
+.lesson-room-feedback {
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: var(--cream);
+  font-size: calc(14px * var(--text-scale, 1));
+}
+.lesson-room-example summary,
+.lesson-room-translation summary {
+  cursor: pointer;
+  text-align: right;
+  color: var(--muted);
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.lesson-room-example p,
+.lesson-room-translation p {
+  margin-top: 6px;
+  color: var(--green);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.lesson-room-example small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.lesson-room-processing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.lesson-room-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: none;
+}
+.lesson-room-modes {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  background: var(--cream);
+  border-radius: 16px;
+  min-height: 44px;
+  padding: 0 4px;
+}
+.lesson-room-modes button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 116px;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: calc(14px * var(--text-scale, 1));
+}
+.lesson-room-modes button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--green);
+  border-color: var(--line);
+  font-weight: 700;
+}
+.lesson-room-mic-status {
+  margin-left: auto;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.lesson-room-answer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1.5px solid var(--green);
+  border-radius: 16px;
+  background: var(--surface);
+  min-height: 76px;
+}
+.lesson-room-answer .primary {
+  min-width: 98px;
+  flex: none;
+}
+.lesson-room-answer textarea {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  resize: none;
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: inherit;
+  line-height: 25px;
+  max-height: 125px;
+}
+.lesson-room-answer textarea:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 4px;
+}
+.lesson-room-answer textarea::placeholder {
+  color: var(--muted);
+}
+.lesson-room-voice {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  min-height: 76px;
+  border-radius: 16px;
+  background: var(--mint);
+}
+.lesson-room-voice > div {
+  text-align: right;
+  font-size: calc(14px * var(--text-scale, 1));
+  color: var(--green);
+}
+.lesson-room-voice small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.lesson-room-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  flex: none;
+}
+.lesson-room-wave i {
+  width: 4px;
+  border-radius: 2px;
+  background: var(--green);
+}
+.lesson-room-voice:not(.recording) .lesson-room-wave {
+  opacity: 0.25;
+}
+.lesson-room-voice.recording .lesson-room-wave i {
+  animation: lesson-room-wave 1s ease-in-out infinite alternate;
+}
+.lesson-room-voice.recording .lesson-room-wave i:nth-child(2n) {
+  animation-delay: -0.6s;
+}
+.lesson-room-composer-help {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
+  color: var(--muted);
+  line-height: 1.55;
+}
+.lesson-room .form-error {
+  margin: 0;
+  font-size: calc(14px * var(--text-scale, 1));
+  overflow-wrap: anywhere;
+}
+.lesson-room-teacher {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--mint);
+  min-height: 0;
+  overflow-y: auto;
+}
+.lesson-room-teacher > * {
+  flex: none;
+}
+.lesson-room-teacher > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.lesson-room-teacher h2 {
+  font-size: calc(20px * var(--text-scale, 1));
+  line-height: 1.55;
+}
+.lesson-room-teacher header > div {
+  text-align: right;
+}
+.lesson-room-teacher header p {
+  color: var(--muted);
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.lesson-room-teacher-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 360px;
+}
+.lesson-room .teacher-avatar {
+  width: min(300px, 100%);
+  height: auto;
+  flex: none;
+  aspect-ratio: 1;
+  border: 3px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  overflow: hidden;
+}
+.lesson-room .teacher-avatar-ring {
+  inset: 0;
+  box-shadow: none;
+  background: var(--surface);
+}
+.lesson-room .teacher-avatar-portrait {
+  border-radius: 50%;
+}
+.lesson-room .teacher-avatar-level {
+  display: none;
+}
+.lesson-room-encouragement {
+  text-align: center;
+}
+.lesson-room-encouragement h2 {
+  font-size: calc(22px * var(--text-scale, 1));
+  margin-bottom: 16px;
+}
+.lesson-room-encouragement p {
+  color: var(--muted);
+  font-size: calc(14px * var(--text-scale, 1));
+  line-height: 1.55;
+}
+.lesson-room-goal {
+  margin-top: auto;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  text-align: right;
+}
+.lesson-room-goal h3 {
+  color: var(--green);
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.lesson-room-goal p {
+  font-size: calc(14px * var(--text-scale, 1));
+  font-weight: 700;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.lesson-room-words {
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+.lesson-room-words .lesson-room-chip {
+  background: var(--mint);
+}
+.lesson-room-mobile-status {
+  display: none;
+}
+@keyframes lesson-room-wave {
+  to {
+    transform: scaleY(0.4);
+  }
+}
+@media (max-width: 1100px) {
+  .lesson-session.lesson-room {
+    padding: 24px;
+    gap: 16px;
+  }
+  .lesson-room-workspace {
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+    gap: 16px;
+  }
+  .lesson-room-header {
+    grid-template-columns: auto minmax(0, 1fr) 100px;
+    gap: 12px;
+  }
+  .lesson-room-header .brand,
+  .lesson-room-header .brand-logo {
+    width: 100px;
+  }
+  .lesson-room-topic h1 {
+    font-size: calc(20px * var(--text-scale, 1));
+  }
+  .lesson-room-tools {
+    gap: 8px;
+  }
+  .lesson-room-pause span {
+    display: none;
+  }
+  .lesson-room-teacher,
+  .lesson-room-conversation {
+    padding: 16px;
+  }
+  .lesson-room-teacher-portrait {
+    min-height: 280px;
+  }
+  .lesson-room-conversation-header {
+    flex-wrap: wrap;
+  }
+  .lesson-room-turn {
+    width: 88%;
+  }
+  .lesson-room-mic-status,
+  .lesson-room-composer-help > span:last-child {
+    display: none;
+  }
+}
+@media (max-width: 860px) {
+  .lesson-session.lesson-room {
+    padding: 16px;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  .lesson-room-header {
+    grid-template-columns: minmax(0, 1fr) 100px;
+    gap: 12px;
+    min-height: auto;
+  }
+  .lesson-room-tools {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .lesson-room-timer {
+    font-size: calc(18px * var(--text-scale, 1));
+    min-width: 54px;
+    height: 44px;
+    background: transparent;
+  }
+  .lesson-room-exit {
+    padding-inline: 8px;
+  }
+  .lesson-room-pause.outlined {
+    padding-inline: 8px;
+    background: transparent;
+    border-color: transparent;
+  }
+  .lesson-room-header .brand {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .lesson-room-topic {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .lesson-room-topic h1 {
+    font-size: calc(18px * var(--text-scale, 1));
+  }
+  .lesson-room-topic p {
+    font-size: calc(12px * var(--text-scale, 1));
+  }
+  .lesson-room-context {
+    display: none;
+  }
+  .lesson-room-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 460px;
+  }
+  .lesson-room-teacher {
+    order: -1;
+    min-height: 76px;
+    max-height: 100px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 52px;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 16px;
+  }
+  .lesson-room-teacher > header {
+    grid-column: 1;
+    grid-row: 1;
+    gap: 8px;
+  }
+  .lesson-room-teacher header > div {
+    margin-left: auto;
+  }
+  .lesson-room-teacher h2 {
+    font-size: calc(14px * var(--text-scale, 1));
+  }
+  .lesson-room-teacher header p {
+    display: none;
+  }
+  .lesson-room-teacher-portrait {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    min-height: 0;
+  }
+  .lesson-room .teacher-avatar {
+    width: 52px;
+    height: 52px;
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+  }
+  .lesson-room .teacher-avatar-portrait {
+    border-radius: 0;
+  }
+  .lesson-room .teacher-avatar-ring,
+  .lesson-room-teacher-portrait > .lesson-room-chip,
+  .lesson-room-encouragement,
+  .lesson-room-goal {
+    display: none;
+  }
+  .lesson-room-mobile-status {
+    display: block;
+    grid-row: 2;
+    grid-column: 1;
+    text-align: right;
+    color: var(--green);
+    font-size: calc(12px * var(--text-scale, 1));
+  }
+  .lesson-room-conversation {
+    flex: 1;
+    padding: 12px;
+    gap: 12px;
+    border-radius: 20px;
+    min-height: 370px;
+  }
+  .lesson-room-conversation-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    min-height: 32px;
+    align-items: start;
+  }
+  .lesson-room-conversation-header h2 {
+    font-size: calc(14px * var(--text-scale, 1));
+  }
+  .lesson-room-conversation-tools {
+    gap: 0;
+  }
+  .lesson-room-conversation-tools .lesson-room-action {
+    min-height: 32px;
+    padding: 4px 6px;
+    font-size: calc(12px * var(--text-scale, 1));
+  }
+  .lesson-room-conversation-tools .lesson-room-action span {
+    display: none;
+  }
+  .lesson-room-conversation-tools .lesson-room-more {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .lesson-room-history-caption {
+    display: none;
+  }
+  .lesson-room-history {
+    gap: 12px;
+    min-height: 100px;
+  }
+  .lesson-room-turn {
+    width: calc(100% - 12px);
+  }
+  .lesson-room-turn.learner {
+    width: calc(100% - 26px);
+  }
+  .lesson-room-modes button {
+    min-width: 100px;
+  }
+  .lesson-room-answer {
+    min-height: 70px;
+    gap: 12px;
+  }
+  .lesson-room-answer .primary {
+    min-width: 64px;
+    padding-inline: 8px;
+  }
+  .lesson-room-answer .primary img {
+    display: none;
+  }
+  .lesson-room-answer textarea {
+    font-size: calc(14px * var(--text-scale, 1));
+    line-height: 22px;
+  }
+  .lesson-room-voice {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .lesson-room-voice > div {
+    flex: 1;
+  }
+  .lesson-room-voice .lesson-room-wave {
+    display: none;
+  }
+  .lesson-room-composer-help {
+    font-size: calc(11px * var(--text-scale, 1));
+  }
+}
+@media (max-height: 640px) and (min-width: 861px) {
+  .lesson-session.lesson-room {
+    padding: 16px;
+    gap: 8px;
+    overflow-y: auto;
+  }
+  .lesson-room-context {
+    min-height: 40px;
+  }
+  .lesson-room-workspace {
+    min-height: 400px;
+  }
+  .lesson-room-teacher-portrait {
+    min-height: 180px;
+  }
+  .lesson-room .teacher-avatar {
+    width: 160px;
+  }
+  .lesson-room-encouragement {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson-room-voice.recording .lesson-room-wave i {
+    animation: none;
+  }
+}

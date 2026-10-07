@@ -1076,6 +1076,18 @@ export function PrivateLessonPage() {
       flowRef.current?.setPaused(false);
     }
   };
+  const selectLessonInputMode = (mode: "voice" | "text") => {
+    if (mode === "text") {
+      connectionRef.current?.setMicrophoneMuted(true);
+      microphoneMutedRef.current = true;
+      setMicrophoneMuted(true);
+      setInputMode("text");
+      flowRef.current?.microphoneMuted();
+      flowRef.current?.setPaused(true);
+    } else if (inputMode !== "voice") {
+      void enableLessonMicrophone();
+    }
+  };
   const replayGuidedTurn = async (
     activeSession: PrivateLessonSession,
     kind: "original" | "translation",
@@ -2829,6 +2841,7 @@ export function PrivateLessonPage() {
               onReview={(answer) => submitActivity(session, "review", answer)}
               onAction={(action) => void submitActivity(session, action)}
               onMicrophone={() => void enableLessonMicrophone()}
+              onInputMode={selectLessonInputMode}
               onReplay={(rate) =>
                 void replayGuidedTurn(session, "original", rate)
               }

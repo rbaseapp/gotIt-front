@@ -2317,5 +2317,32 @@
     "reviewUnavailable": "只能重做已完成的练习",
     "backToMap": "返回学习地图",
     "finishReview": "结束复习"
+  },
+  "lessonRoom": {
+    "guided": "引导课程",
+    "conversation": "你的对话",
+    "translate": "翻译",
+    "historyCaption": "今天 · 你的课程",
+    "voice": "说话",
+    "text": "写作",
+    "micActive": "麦克风已开启",
+    "micMuted": "麦克风已静音",
+    "send": "发送",
+    "placeholder": "写下你的回答…",
+    "keyboardHelp": "Enter 发送 · Shift + Enter 换行",
+    "switchAnytime": "随时可以切换到写作",
+    "ownPace": "按照自己的节奏回答",
+    "mute": "静音",
+    "unmute": "开启麦克风",
+    "speakNow": "麦克风已开启，可以说话",
+    "voiceTranscript": "你的发言会显示在对话中",
+    "unmuteHelp": "开启麦克风说话，或切换到写作",
+    "connected": "已连接",
+    "connecting": "正在连接…",
+    "speaking": "{{teacher}} 正在说话",
+    "thinking": "{{teacher}} 正在思考…",
+    "listening": "{{teacher}} 正在聆听",
+    "yourTurn": "轮到你试一试了。",
+    "goal": "今天练习"
   }
 }
