@@ -111,6 +111,9 @@ const AchievementsPage = lazy(() =>
     default: m.AchievementsPage,
   })),
 );
+const LandingPage = lazy(() =>
+  import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })),
+);
 const HistoryPage = lazy(() =>
   import("./pages/HistoryPage").then((m) => ({ default: m.HistoryPage })),
 );
@@ -154,7 +157,21 @@ export default function App() {
         <p>{t("app.checkingSession")}</p>
       </div>
     );
-  if (mode === "signed-out") return <AuthPage />;
+  if (mode === "signed-out")
+    return normalizedPath === "/" ? (
+      <Suspense
+        fallback={
+          <div className="empty-session" role="status">
+            <LoaderCircle className="spin" size={30} />
+            <p>{t("app.loadingScreen")}</p>
+          </div>
+        }
+      >
+        <LandingPage />
+      </Suspense>
+    ) : (
+      <AuthPage />
+    );
   return (
     <SubscriptionProvider
       enabled={mode === "live"}

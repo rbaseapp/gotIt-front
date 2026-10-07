@@ -2350,5 +2350,117 @@
     "reviewUnavailable": "只能重做已完成的练习",
     "backToMap": "返回学习地图",
     "finishReview": "结束复习"
+  },
+  "landing": {
+    "nav": {
+      "primary": "主导航",
+      "howItWorks": "使用方式",
+      "languages": "语言",
+      "login": "登录",
+      "createAccount": "创建账户"
+    },
+    "hero": {
+      "title": "从你本来就在读的内容里学单词",
+      "body": "在任何网站上标记单词，用简短的小游戏练习，在与虚拟老师的对话中使用它，再在为你写的文章里与它重逢。",
+      "createAccount": "创建账户",
+      "addToChrome": "添加到 Chrome",
+      "haveAccount": "我已有账户"
+    },
+    "demo": {
+      "label": "示例：从文章中保存一个单词",
+      "translation": "蓬勃发展"
+    },
+    "journey": {
+      "title": "一个单词，四个站点",
+      "intro": "你保存的每个单词都走同一条路，直到你能不假思索地使用它。",
+      "mark": {
+        "title": "在任何网站上标记",
+        "body": "Chrome 扩展会把单词连同所在句子和网页一起保存，让你记得是在哪里遇到它的。",
+        "points": [
+          "适用于任何网站",
+          "自动、词典或 AI 翻译",
+          "保留句子和链接"
+        ]
+      },
+      "practice": {
+        "title": "用简短的小游戏练习",
+        "body": "配对、补全字母和凭记忆回想。单词会在你快要忘记时恰好回来。",
+        "points": [
+          "抽认卡",
+          "听力",
+          "配对",
+          "拼写",
+          "回想"
+        ]
+      },
+      "speak": {
+        "title": "和老师聊任何话题",
+        "body": "选一个话题，用语音和虚拟形象老师对话。对话结束后你会收到一份报告：哪里说得好、哪里需要改，以及你用到了哪些单词。",
+        "points": [
+          "任选话题",
+          "开口说",
+          "结束时的报告"
+        ]
+      },
+      "read": {
+        "title": "阅读用你的单词写成的文章",
+        "body": "GotIt 会按你的水平写一篇短文，融入你保存的单词，让你在新的语境中再次遇到它们。",
+        "points": [
+          "按你的水平写成",
+          "由你保存的单词构成"
+        ]
+      }
+    },
+    "languages": {
+      "title": "几乎任何语言都能学",
+      "body": "可以保存和练习 30 种语言的单词。",
+      "interface": "界面支持英语、希伯来语、阿拉伯语、俄语、西班牙语、法语、德语和中文。"
+    },
+    "testimonials": {
+      "title": "学习者怎么说",
+      "rating": "{{rating}} 星（满分 5 星）"
+    },
+    "cta": {
+      "title": "从你遇到的下一个单词开始",
+      "button": "创建账户",
+      "body": "创建账户并添加扩展，你标记的下一个单词就会在练习里等着你。"
+    },
+    "footer": {
+      "tagline": "在语境中学单词。",
+      "product": "产品",
+      "legal": "法律信息",
+      "contact": "联系我们",
+      "rights": "© {{year}} GotIt"
+    },
+    "extension": {
+      "title": "右键一下就能保存单词",
+      "body": "在任意网页上选中单词或短语，点击右键并选择Save to GotIt。保存前可以检查并修改翻译。",
+      "button": "添加到 Chrome",
+      "menuCopy": "复制",
+      "menuSearch": "使用 Google 搜索"
+    },
+    "ext": {
+      "saveShort": "保存",
+      "edit": "编辑",
+      "speak": "播放发音",
+      "translateAi": "使用 AI 翻译",
+      "wordSaved": "单词已保存到 GotIt ✓",
+      "removeShort": "移除",
+      "shortDescription": "简短描述",
+      "practiceTitle": "更多单词在等待您",
+      "practiceDescription": "打开 GotIt 练习所有已保存的单词。",
+      "practiceAction": "在应用中练习",
+      "close": "关闭"
+    },
+    "sample": {
+      "partOfSpeech": "动词",
+      "explanation": "茁壮成长，蓬勃发展；非常成功。",
+      "subtle": "微妙的，不明显的",
+      "wander": "漫无目的地闲逛",
+      "strength1": "你用完整、清楚的句子描述了开咖啡馆的想法。",
+      "strength2": "你自然地用上了“thrive”和“regulars”。",
+      "focus": "“have”后面要用过去分词：“I have gone”，或者直接说“I went”。",
+      "next": "用过去时聊聊你在城市里喜欢的一个地方。"
+    }
   }
 }

@@ -2350,5 +2350,117 @@
     "reviewUnavailable": "Nur abgeschlossene Übungen können wiederholt werden",
     "backToMap": "Zurück zur Lernkarte",
     "finishReview": "Wiederholung beenden"
+  },
+  "landing": {
+    "nav": {
+      "primary": "Hauptmenü",
+      "howItWorks": "So funktioniert’s",
+      "languages": "Sprachen",
+      "login": "Anmelden",
+      "createAccount": "Konto erstellen"
+    },
+    "hero": {
+      "title": "Lerne Wörter aus dem, was du ohnehin liest",
+      "body": "Markiere ein Wort auf jeder Website, übe es in kurzen Spielen, nutze es im Gespräch mit einer virtuellen Lehrkraft und begegne ihm wieder in einem Artikel, der für dich geschrieben wurde.",
+      "createAccount": "Konto erstellen",
+      "addToChrome": "Zu Chrome hinzufügen",
+      "haveAccount": "Ich habe schon ein Konto"
+    },
+    "demo": {
+      "label": "Beispiel: ein Wort aus einem Artikel speichern",
+      "translation": "gedeihen"
+    },
+    "journey": {
+      "title": "Ein Wort, vier Stationen",
+      "intro": "Jedes gespeicherte Wort geht denselben Weg, bis du es ohne Nachdenken verwendest.",
+      "mark": {
+        "title": "Auf jeder Website markieren",
+        "body": "Die Chrome-Erweiterung speichert das Wort zusammen mit dem Satz und der Seite, auf der du es gefunden hast, damit du weißt, wo du ihm begegnet bist.",
+        "points": [
+          "Funktioniert auf jeder Website",
+          "Automatische, Wörterbuch- oder KI-Übersetzung",
+          "Speichert Satz und Link"
+        ]
+      },
+      "practice": {
+        "title": "In kurzen Spielen üben",
+        "body": "Zuordnen, fehlende Buchstaben und Abrufen aus dem Gedächtnis. Wörter kommen genau dann zurück, wenn du sie zu vergessen beginnst.",
+        "points": [
+          "Karteikarten",
+          "Hören",
+          "Zuordnen",
+          "Rechtschreibung",
+          "Abrufen"
+        ]
+      },
+      "speak": {
+        "title": "Mit einer Lehrkraft über jedes Thema sprechen",
+        "body": "Wähle ein Thema und sprich laut mit einer Avatar-Lehrkraft. Am Ende bekommst du einen Bericht: was gut lief, was du korrigieren solltest und welche deiner Wörter du benutzt hast.",
+        "points": [
+          "Jedes Thema deiner Wahl",
+          "Laut sprechen",
+          "Ein Bericht am Ende"
+        ]
+      },
+      "read": {
+        "title": "Einen Artikel aus deinen Wörtern lesen",
+        "body": "GotIt schreibt einen kurzen Artikel auf deinem Niveau mit deinen gespeicherten Wörtern, damit du ihnen in einem neuen Zusammenhang wieder begegnest.",
+        "points": [
+          "Auf deinem Niveau geschrieben",
+          "Aus deinen gespeicherten Wörtern"
+        ]
+      }
+    },
+    "languages": {
+      "title": "Lerne fast jede Sprache",
+      "body": "Speichere und übe Wörter in 30 Sprachen.",
+      "interface": "Die Oberfläche gibt es auf Englisch, Hebräisch, Arabisch, Russisch, Spanisch, Französisch, Deutsch und Chinesisch."
+    },
+    "testimonials": {
+      "title": "Das sagen Lernende",
+      "rating": "{{rating}} von 5 Sternen"
+    },
+    "cta": {
+      "title": "Fang mit dem nächsten Wort an, das dir begegnet",
+      "button": "Konto erstellen",
+      "body": "Erstelle ein Konto, füge die Erweiterung hinzu, und das nächste markierte Wort wartet schon in der Übung auf dich."
+    },
+    "footer": {
+      "tagline": "Wörter im Kontext lernen.",
+      "product": "Produkt",
+      "legal": "Rechtliches",
+      "contact": "Kontakt",
+      "rights": "© {{year}} GotIt"
+    },
+    "extension": {
+      "title": "Ein Wort per Rechtsklick speichern",
+      "body": "Markiere ein Wort oder eine Wendung auf einer beliebigen Seite, klicke mit der rechten Maustaste und wähle Save to GotIt. Die Übersetzung kannst du vorher prüfen und bearbeiten.",
+      "button": "Zu Chrome hinzufügen",
+      "menuCopy": "Kopieren",
+      "menuSearch": "Mit Google suchen"
+    },
+    "ext": {
+      "saveShort": "Speichern",
+      "edit": "Bearbeiten",
+      "speak": "Aussprache abspielen",
+      "translateAi": "Mit KI übersetzen",
+      "wordSaved": "Wort in GotIt gespeichert ✓",
+      "removeShort": "Entfernen",
+      "shortDescription": "Kurzbeschreibung",
+      "practiceTitle": "Weitere Wörter warten auf dich",
+      "practiceDescription": "Öffne GotIt, um alle gespeicherten Wörter zu üben.",
+      "practiceAction": "In der App üben",
+      "close": "Schließen"
+    },
+    "sample": {
+      "partOfSpeech": "Verb",
+      "explanation": "Kräftig und erfolgreich wachsen; sehr gut laufen.",
+      "subtle": "subtil, unauffällig",
+      "wander": "ziellos umherwandern",
+      "strength1": "Du hast deine Café-Idee in vollständigen, klaren Sätzen beschrieben.",
+      "strength2": "Du hast „thrive“ und „regulars“ ganz natürlich verwendet.",
+      "focus": "Nach „have“ kommt das Partizip: „I have gone“ – oder einfach „I went“.",
+      "next": "Erzähl in der Vergangenheit von einem Ort, den du in deiner Stadt magst."
+    }
   }
 }

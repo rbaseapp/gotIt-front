@@ -2350,5 +2350,117 @@
     "reviewUnavailable": "Seuls les exercices terminés peuvent être refaits",
     "backToMap": "Retour à la carte",
     "finishReview": "Terminer la révision"
+  },
+  "landing": {
+    "nav": {
+      "primary": "Principal",
+      "howItWorks": "Comment ça marche",
+      "languages": "Langues",
+      "login": "Se connecter",
+      "createAccount": "Créer un compte"
+    },
+    "hero": {
+      "title": "Apprenez des mots dans ce que vous lisez déjà",
+      "body": "Marquez un mot sur n’importe quel site, entraînez-vous avec de courts jeux, utilisez-le dans une conversation avec un professeur virtuel, puis retrouvez-le dans un article écrit pour vous.",
+      "createAccount": "Créer un compte",
+      "addToChrome": "Ajouter à Chrome",
+      "haveAccount": "J’ai déjà un compte"
+    },
+    "demo": {
+      "label": "Exemple : enregistrer un mot depuis un article",
+      "translation": "prospérer"
+    },
+    "journey": {
+      "title": "Un mot, quatre étapes",
+      "intro": "Chaque mot enregistré suit le même parcours, jusqu’à ce que vous l’utilisiez sans y penser.",
+      "mark": {
+        "title": "Marquez-le sur n’importe quel site",
+        "body": "L’extension Chrome enregistre le mot avec la phrase et la page où vous l’avez trouvé, pour que vous vous rappeliez où vous l’avez rencontré.",
+        "points": [
+          "Fonctionne sur tous les sites",
+          "Traduction automatique, dictionnaire ou IA",
+          "Garde la phrase et le lien"
+        ]
+      },
+      "practice": {
+        "title": "Entraînez-vous avec de courts jeux",
+        "body": "Associations, lettres manquantes et rappel de mémoire. Les mots reviennent juste au moment où vous commencez à les oublier.",
+        "points": [
+          "Cartes mémoire",
+          "Écoute",
+          "Associations",
+          "Orthographe",
+          "Rappel"
+        ]
+      },
+      "speak": {
+        "title": "Parlez de tout avec un professeur",
+        "body": "Choisissez un sujet et parlez à voix haute avec un professeur avatar. À la fin, vous recevez un rapport : ce qui allait bien, ce qu’il faut corriger et les mots que vous avez utilisés.",
+        "points": [
+          "Le sujet de votre choix",
+          "Parlez à voix haute",
+          "Un rapport à la fin"
+        ]
+      },
+      "read": {
+        "title": "Lisez un article écrit avec vos mots",
+        "body": "GotIt rédige un court article à votre niveau qui intègre vos mots enregistrés, pour les retrouver dans un nouveau contexte.",
+        "points": [
+          "Écrit à votre niveau",
+          "Construit avec vos mots"
+        ]
+      }
+    },
+    "languages": {
+      "title": "Apprenez presque toutes les langues",
+      "body": "Enregistrez et pratiquez des mots dans 30 langues.",
+      "interface": "L’interface est disponible en anglais, hébreu, arabe, russe, espagnol, français, allemand et chinois."
+    },
+    "testimonials": {
+      "title": "Ce qu’en disent nos apprenants",
+      "rating": "{{rating}} sur 5 étoiles"
+    },
+    "cta": {
+      "title": "Commencez par le prochain mot que vous croiserez",
+      "button": "Créer un compte",
+      "body": "Créez un compte, ajoutez l’extension, et le prochain mot que vous marquerez vous attendra dans vos exercices."
+    },
+    "footer": {
+      "tagline": "Apprendre les mots en contexte.",
+      "product": "Produit",
+      "legal": "Mentions légales",
+      "contact": "Contact",
+      "rights": "© {{year}} GotIt"
+    },
+    "extension": {
+      "title": "Enregistrez un mot d’un clic droit",
+      "body": "Sélectionnez un mot ou une expression sur n’importe quelle page, faites un clic droit et choisissez Save to GotIt. Vous pouvez vérifier et modifier la traduction avant d’enregistrer.",
+      "button": "Ajouter à Chrome",
+      "menuCopy": "Copier",
+      "menuSearch": "Rechercher sur Google"
+    },
+    "ext": {
+      "saveShort": "Enregistrer",
+      "edit": "Modifier",
+      "speak": "Lire la prononciation",
+      "translateAi": "Traduire avec l'IA",
+      "wordSaved": "Mot enregistré dans GotIt ✓",
+      "removeShort": "Retirer",
+      "shortDescription": "Brève description",
+      "practiceTitle": "D'autres mots vous attendent",
+      "practiceDescription": "Ouvrez GotIt pour pratiquer tous les mots que vous avez enregistrés.",
+      "practiceAction": "Pratiquer dans l'application",
+      "close": "Fermer"
+    },
+    "sample": {
+      "partOfSpeech": "verbe",
+      "explanation": "Grandir et se développer avec succès ; très bien marcher.",
+      "subtle": "subtil, discret",
+      "wander": "errer sans but",
+      "strength1": "Vous avez décrit votre idée de café avec des phrases complètes et claires.",
+      "strength2": "Vous avez utilisé « thrive » et « regulars » naturellement.",
+      "focus": "Après « have », on utilise le participe passé : « I have gone », ou simplement « I went ».",
+      "next": "Parlez d’un lieu que vous aimez dans votre ville, au passé."
+    }
   }
 }

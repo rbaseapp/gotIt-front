@@ -2349,5 +2349,117 @@
     "reviewUnavailable": "Only completed exercises can be repeated",
     "backToMap": "Back to map",
     "finishReview": "Finish review"
+  },
+  "landing": {
+    "nav": {
+      "primary": "Main",
+      "howItWorks": "How it works",
+      "languages": "Languages",
+      "login": "Log in",
+      "createAccount": "Create account"
+    },
+    "hero": {
+      "title": "Learn words from what you already read",
+      "body": "Mark a word on any website, practice it in short games, use it in a conversation with a virtual teacher, and meet it again in an article written for you.",
+      "createAccount": "Create account",
+      "addToChrome": "Add to Chrome",
+      "haveAccount": "I already have an account"
+    },
+    "demo": {
+      "label": "Example: saving a word from an article",
+      "translation": "to grow and do well"
+    },
+    "journey": {
+      "title": "One word, four stops",
+      "intro": "Every word you save moves through the same path, until you can use it without thinking.",
+      "mark": {
+        "title": "Mark it on any website",
+        "body": "The Chrome extension saves the word together with the sentence and the page where you found it, so you remember where you met it.",
+        "points": [
+          "Works on any website",
+          "Automatic, dictionary or AI translation",
+          "Keeps the sentence and the link"
+        ]
+      },
+      "practice": {
+        "title": "Practice it in short games",
+        "body": "Matching, missing letters and recall from memory. Words come back right when you start to forget them.",
+        "points": [
+          "Flashcards",
+          "Listening",
+          "Matching",
+          "Spelling",
+          "Recall"
+        ]
+      },
+      "speak": {
+        "title": "Talk about any topic with a teacher",
+        "body": "Pick a topic and speak out loud with an avatar teacher. When the conversation ends you get a report: what went well, what to fix, and which of your words you used.",
+        "points": [
+          "Any topic you choose",
+          "Speak out loud",
+          "A report at the end"
+        ]
+      },
+      "read": {
+        "title": "Read an article built from your words",
+        "body": "GotIt writes a short article at your level that weaves in the words you saved, so you meet them again in a new context.",
+        "points": [
+          "Written at your level",
+          "Built from your saved words"
+        ]
+      }
+    },
+    "languages": {
+      "title": "Learn almost any language",
+      "body": "Save and practice words in 30 languages.",
+      "interface": "The interface is available in English, Hebrew, Arabic, Russian, Spanish, French, German and Chinese."
+    },
+    "testimonials": {
+      "title": "What learners say",
+      "rating": "{{rating}} out of 5 stars"
+    },
+    "cta": {
+      "title": "Start with the next word you meet",
+      "button": "Create account",
+      "body": "Create an account, add the extension, and the next word you mark will be waiting for you in practice."
+    },
+    "footer": {
+      "tagline": "Learn words in context.",
+      "product": "Product",
+      "legal": "Legal",
+      "contact": "Contact",
+      "rights": "© {{year}} GotIt"
+    },
+    "extension": {
+      "title": "Save a word with a right-click",
+      "body": "Select a word or phrase on any page, right-click and choose Save to GotIt. You can check and edit the translation before saving.",
+      "button": "Add to Chrome",
+      "menuCopy": "Copy",
+      "menuSearch": "Search Google"
+    },
+    "ext": {
+      "saveShort": "Save",
+      "edit": "Edit",
+      "speak": "Play pronunciation",
+      "translateAi": "Translate with AI",
+      "wordSaved": "Word saved to GotIt ✓",
+      "removeShort": "Remove",
+      "shortDescription": "Short description",
+      "practiceTitle": "More words are waiting for you",
+      "practiceDescription": "Open GotIt to practice all the words you saved.",
+      "practiceAction": "Practice in the app",
+      "close": "Close"
+    },
+    "sample": {
+      "partOfSpeech": "verb",
+      "explanation": "To grow strongly and successfully; to do very well.",
+      "subtle": "delicate, not obvious",
+      "wander": "to walk around without a goal",
+      "strength1": "You described your café idea in full, clear sentences.",
+      "strength2": "You used “thrive” and “regulars” naturally.",
+      "focus": "After “have”, use the past participle: “I have gone”, or simply “I went”.",
+      "next": "Talk about a place you love in your city, using the past tense."
+    }
   }
 }

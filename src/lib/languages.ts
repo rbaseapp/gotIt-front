@@ -1,4 +1,4 @@
-const LANGUAGE_CODES = [
+export const LANGUAGE_CODES = [
   "en",
   "he",
   "ar",
