@@ -2350,5 +2350,137 @@
     "reviewUnavailable": "Nur abgeschlossene Übungen können wiederholt werden",
     "backToMap": "Zurück zur Lernkarte",
     "finishReview": "Wiederholung beenden"
+  },
+  "landing": {
+    "nav": {
+      "primary": "Hauptmenü",
+      "howItWorks": "So funktioniert’s",
+      "languages": "Sprachen",
+      "login": "Anmelden",
+      "createAccount": "Konto erstellen"
+    },
+    "hero": {
+      "title": "Lerne Wörter aus dem, was du ohnehin liest",
+      "body": "Markiere ein Wort auf jeder Website, und GotIt macht daraus kurze Übungen, Gespräche und Lesetexte, bis es sitzt.",
+      "createAccount": "Konto erstellen",
+      "addToChrome": "Zu Chrome hinzufügen",
+      "haveAccount": "Ich habe schon ein Konto"
+    },
+    "demo": {
+      "label": "Beispiel: ein Wort aus einem Artikel speichern",
+      "translation": "gedeihen"
+    },
+    "journey": {
+      "title": "Ein Wort, vier Stationen",
+      "intro": "Jedes gespeicherte Wort geht denselben Weg, bis du es ohne Nachdenken verwendest.",
+      "mark": {
+        "title": "Auf jeder Website markieren",
+        "body": "Die Chrome-Erweiterung speichert das Wort zusammen mit dem Satz und der Seite, auf der du es gefunden hast, damit du weißt, wo du ihm begegnet bist.",
+        "points": [
+          "Funktioniert auf jeder Website",
+          "Automatische, Wörterbuch- oder KI-Übersetzung",
+          "Speichert Satz und Link"
+        ]
+      },
+      "practice": {
+        "title": "In kurzen Spielen üben",
+        "body": "Zuordnen, fehlende Buchstaben und Abrufen aus dem Gedächtnis. Wörter kommen genau dann zurück, wenn du sie zu vergessen beginnst.",
+        "points": [
+          "Karteikarten",
+          "Hören",
+          "Zuordnen",
+          "Rechtschreibung",
+          "Abrufen"
+        ]
+      },
+      "speak": {
+        "title": "Mit einer Lehrkraft über jedes Thema sprechen",
+        "body": "Wähle ein Thema und sprich laut mit einer Avatar-Lehrkraft. Am Ende bekommst du einen Bericht: was gut lief, was du korrigieren solltest und welche deiner Wörter du benutzt hast.",
+        "points": [
+          "Jedes Thema deiner Wahl",
+          "Laut sprechen",
+          "Ein Bericht am Ende"
+        ]
+      },
+      "read": {
+        "title": "Einen Artikel aus deinen Wörtern lesen",
+        "body": "GotIt schreibt einen kurzen Artikel auf deinem Niveau mit deinen gespeicherten Wörtern, damit du ihnen in einem neuen Zusammenhang wieder begegnest.",
+        "points": [
+          "Auf deinem Niveau geschrieben",
+          "Aus deinen gespeicherten Wörtern"
+        ]
+      }
+    },
+    "languages": {
+      "title": "Lerne fast jede Sprache",
+      "body": "Speichere und übe Wörter in 30 Sprachen.",
+      "interface": "Die Oberfläche gibt es auf Englisch, Hebräisch, Arabisch, Russisch, Spanisch, Französisch, Deutsch und Chinesisch."
+    },
+    "testimonials": {
+      "title": "Das sagen Lernende",
+      "rating": "{{rating}} von 5 Sternen"
+    },
+    "faq": {
+      "title": "Häufige Fragen",
+      "items": [
+        {
+          "q": "Was kostet das?",
+          "a": "Die Anmeldung ist kostenlos, und die ersten 14 Tage enthalten alle Funktionen, ohne Kreditkarte. Danach kannst du ein Abo abschließen oder ein kostenloses Konto behalten, in dem alle gespeicherten Wörter sichtbar bleiben."
+        },
+        {
+          "q": "Auf welchen Websites funktioniert es?",
+          "a": "Die Erweiterung funktioniert auf jeder Website, die du in Chrome öffnest: Artikel, Blogs, soziale Netzwerke und mehr. Wort oder Ausdruck markieren, rechts klicken und speichern."
+        },
+        {
+          "q": "Brauche ich die Erweiterung?",
+          "a": "Nein. Du kannst Wörter direkt in der App hinzufügen und ohne Erweiterung üben, mit der Lehrkraft sprechen und lesen. Sie erspart dir nur das Kopieren."
+        },
+        {
+          "q": "Was wird gespeichert, wenn ich ein Wort markiere?",
+          "a": "Das Wort, der Satz, in dem es stand, und ein Link zur Seite, damit du zum Zusammenhang zurückkehren kannst."
+        },
+        {
+          "q": "Kann ich auf dem Handy lernen?",
+          "a": "Ja. Die App funktioniert im Browser deines Handys, sodass du überall üben kannst. Die Erweiterung zum Markieren gibt es für Chrome am Computer."
+        }
+      ],
+      "askTitle": "Keine Antwort gefunden?",
+      "askBody": "Schreib uns, wir helfen gern."
+    },
+    "cta": {
+      "title": "Fang mit dem nächsten Wort an, das dir begegnet",
+      "button": "Konto erstellen",
+      "body": "Erstelle ein Konto, füge die Erweiterung hinzu, und das nächste markierte Wort wartet schon in der Übung auf dich."
+    },
+    "footer": {
+      "tagline": "Wörter im Kontext lernen.",
+      "product": "Produkt",
+      "legal": "Rechtliches",
+      "contact": "Kontakt",
+      "rights": "© {{year}} GotIt"
+    },
+    "ext": {
+      "saveShort": "Speichern",
+      "edit": "Bearbeiten",
+      "speak": "Aussprache abspielen",
+      "translateAi": "Mit KI übersetzen",
+      "wordSaved": "Wort in GotIt gespeichert ✓",
+      "removeShort": "Entfernen",
+      "shortDescription": "Kurzbeschreibung",
+      "practiceTitle": "Weitere Wörter warten auf dich",
+      "practiceDescription": "Öffne GotIt, um alle gespeicherten Wörter zu üben.",
+      "practiceAction": "In der App üben",
+      "close": "Schließen"
+    },
+    "sample": {
+      "partOfSpeech": "Verb",
+      "explanation": "Kräftig und erfolgreich wachsen; sehr gut laufen.",
+      "subtle": "subtil, unauffällig",
+      "wander": "ziellos umherwandern",
+      "strength1": "Du hast deine Café-Idee in vollständigen, klaren Sätzen beschrieben.",
+      "strength2": "Du hast „thrive“ und „regulars“ ganz natürlich verwendet.",
+      "focus": "Nach „have“ kommt das Partizip: „I have gone“ – oder einfach „I went“.",
+      "next": "Erzähl in der Vergangenheit von einem Ort, den du in deiner Stadt magst."
+    }
   }
 }

@@ -579,7 +579,7 @@ describe("live server-backed flows", () => {
     vi.stubEnv("VITE_DEMO_MODE", "false");
     clearTokens();
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={["/login"]}>
         <FeedbackProvider>
           <AppProvider>
             <App />
@@ -594,6 +594,28 @@ describe("live server-backed flows", () => {
       screen.queryByRole("button", { name: /כניסה לסביבת ההדגמה/ }),
     ).not.toBeInTheDocument();
     expect(localStorage.getItem("gotit.demo.v2")).toBeNull();
+  });
+  it("shows the landing page at the root when signed out", async () => {
+    vi.stubEnv("VITE_DEMO_MODE", "false");
+    clearTokens();
+    render(
+      <MemoryRouter>
+        <FeedbackProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </FeedbackProvider>
+      </MemoryRouter>,
+    );
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "לומדים מילים מהדברים שאתם כבר קוראים",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link", { name: "יצירת חשבון" })[0],
+    ).toHaveAttribute("href", "/login?auth=register");
   });
   it("shows a spinner while checking an answer, then an error and retry after failure", async () => {
     let rejectAttempt!: (reason: Error) => void;

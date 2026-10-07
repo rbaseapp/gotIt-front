@@ -2350,5 +2350,137 @@
     "reviewUnavailable": "Solo puedes repetir ejercicios completados",
     "backToMap": "Volver al mapa",
     "finishReview": "Terminar repaso"
+  },
+  "landing": {
+    "nav": {
+      "primary": "Principal",
+      "howItWorks": "Cómo funciona",
+      "languages": "Idiomas",
+      "login": "Iniciar sesión",
+      "createAccount": "Crear cuenta"
+    },
+    "hero": {
+      "title": "Aprende palabras de lo que ya lees",
+      "body": "Marca una palabra en cualquier sitio web y GotIt la convierte en práctica breve, conversación y lectura hasta que se te quede.",
+      "createAccount": "Crear cuenta",
+      "addToChrome": "Añadir a Chrome",
+      "haveAccount": "Ya tengo una cuenta"
+    },
+    "demo": {
+      "label": "Ejemplo: guardar una palabra de un artículo",
+      "translation": "prosperar"
+    },
+    "journey": {
+      "title": "Una palabra, cuatro paradas",
+      "intro": "Cada palabra que guardas recorre el mismo camino, hasta que la usas sin pensar.",
+      "mark": {
+        "title": "Márcala en cualquier sitio web",
+        "body": "La extensión de Chrome guarda la palabra junto con la frase y la página donde la encontraste, para que recuerdes dónde la viste.",
+        "points": [
+          "Funciona en cualquier sitio",
+          "Traducción automática, de diccionario o con IA",
+          "Guarda la frase y el enlace"
+        ]
+      },
+      "practice": {
+        "title": "Practícala en juegos cortos",
+        "body": "Emparejar, letras que faltan y recordar de memoria. Las palabras vuelven justo cuando empiezas a olvidarlas.",
+        "points": [
+          "Tarjetas",
+          "Escucha",
+          "Emparejar",
+          "Ortografía",
+          "Recordar"
+        ]
+      },
+      "speak": {
+        "title": "Habla de cualquier tema con un profesor",
+        "body": "Elige un tema y habla en voz alta con un profesor avatar. Al terminar recibes un informe: qué salió bien, qué corregir y cuáles de tus palabras usaste.",
+        "points": [
+          "Cualquier tema que elijas",
+          "Habla en voz alta",
+          "Un informe al final"
+        ]
+      },
+      "read": {
+        "title": "Lee un artículo hecho con tus palabras",
+        "body": "GotIt escribe un artículo corto a tu nivel que incluye las palabras que guardaste, para que las encuentres de nuevo en otro contexto.",
+        "points": [
+          "Escrito a tu nivel",
+          "Hecho con tus palabras guardadas"
+        ]
+      }
+    },
+    "languages": {
+      "title": "Aprende casi cualquier idioma",
+      "body": "Guarda y practica palabras en 30 idiomas.",
+      "interface": "La interfaz está disponible en inglés, hebreo, árabe, ruso, español, francés, alemán y chino."
+    },
+    "testimonials": {
+      "title": "Lo que dicen quienes aprenden",
+      "rating": "{{rating}} de 5 estrellas"
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "items": [
+        {
+          "q": "¿Cuánto cuesta?",
+          "a": "Registrarte es gratis y los primeros 14 días incluyen todo, sin tarjeta de crédito. Después puedes suscribirte o quedarte con una cuenta gratuita en la que todas las palabras que guardaste siguen disponibles para consultar."
+        },
+        {
+          "q": "¿En qué sitios web funciona?",
+          "a": "La extensión funciona en cualquier sitio que abras en Chrome: artículos, blogs, redes sociales y más. Selecciona una palabra o frase, haz clic derecho y guárdala."
+        },
+        {
+          "q": "¿Necesito la extensión?",
+          "a": "No. Puedes añadir palabras directamente en la app, y practicar, hablar con el profesor y leer sin la extensión. Solo te ahorra copiar y pegar."
+        },
+        {
+          "q": "¿Qué se guarda cuando marco una palabra?",
+          "a": "La palabra, la frase en la que apareció y un enlace a la página, para que puedas volver al contexto donde la encontraste."
+        },
+        {
+          "q": "¿Puedo aprender desde el móvil?",
+          "a": "Sí. La app funciona en el navegador del móvil, así que puedes practicar en cualquier lugar. La extensión para marcar palabras está disponible en Chrome en el ordenador."
+        }
+      ],
+      "askTitle": "¿No encontraste tu respuesta?",
+      "askBody": "Escríbenos y te ayudamos con gusto."
+    },
+    "cta": {
+      "title": "Empieza con la próxima palabra que encuentres",
+      "button": "Crear cuenta",
+      "body": "Crea una cuenta, añade la extensión y la próxima palabra que marques te estará esperando en la práctica."
+    },
+    "footer": {
+      "tagline": "Aprende palabras en contexto.",
+      "product": "Producto",
+      "legal": "Legal",
+      "contact": "Contacto",
+      "rights": "© {{year}} GotIt"
+    },
+    "ext": {
+      "saveShort": "Guardar",
+      "edit": "Editar",
+      "speak": "Reproducir pronunciación",
+      "translateAi": "Traducir con IA",
+      "wordSaved": "Palabra guardada en GotIt ✓",
+      "removeShort": "Quitar",
+      "shortDescription": "Descripción breve",
+      "practiceTitle": "Hay más palabras esperándote",
+      "practiceDescription": "Abre GotIt para practicar todas las palabras que guardaste.",
+      "practiceAction": "Practicar en la app",
+      "close": "Cerrar"
+    },
+    "sample": {
+      "partOfSpeech": "verbo",
+      "explanation": "Crecer y desarrollarse con éxito; irle muy bien.",
+      "subtle": "sutil, discreto",
+      "wander": "deambular sin rumbo",
+      "strength1": "Describiste tu idea de cafetería con frases completas y claras.",
+      "strength2": "Usaste «thrive» y «regulars» con naturalidad.",
+      "focus": "Después de «have» va el participio: «I have gone», o simplemente «I went».",
+      "next": "Habla de un lugar que te encanta de tu ciudad, en pasado."
+    }
   }
 }

@@ -42,7 +42,7 @@ before(async () => {
   await mkdir(join(directory, ".well-known"));
   await writeFile(
     join(directory, "index.html"),
-    "<!doctype html><title>GotIt</title>",
+    '<!doctype html><title>GotIt</title><meta property="og:image" content="/og-image.png" />',
   );
   await writeFile(join(directory, "assets", "app.js"), "export default 1");
   await writeFile(
@@ -190,6 +190,13 @@ describe("production frontend gateway", () => {
       "same-origin-allow-popups",
     );
     assert.equal(page.headers.get("cache-control"), "no-store");
+    // Link previews need an absolute image URL on the public origin.
+    const html = await page.text();
+    assert.match(html, /content="http:\/\/localhost:10000\/og-image\.png"/);
+    assert.equal(
+      Number(page.headers.get("content-length")),
+      Buffer.byteLength(html),
+    );
     const asset = await fetch(`${gatewayOrigin}/assets/app.js`);
     assert.match(asset.headers.get("cache-control"), /immutable/);
     assert.equal(await asset.text(), "export default 1");

@@ -1,0 +1,662 @@
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Check, Flame, Mail, MessageCircle, Star, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { UiLanguageSelect } from "../components/UiLanguageSelect";
+import { CHROME_EXTENSION_URL } from "../config";
+import { testimonials } from "../data/testimonials";
+import { useInView } from "../hooks/useInView";
+import { useScrolled } from "../hooks/useScrolled";
+import { LANGUAGE_CODES } from "../lib/languages";
+import { supportEmailHref, supportWhatsappHref } from "../lib/supportContact";
+import {
+  ExtensionPanel,
+  LessonRoom,
+  MatchingBoard,
+  ReadingArticle,
+  ScaledScreen,
+} from "../components/LandingReplicas";
+import logoClearUrl from "../assets/gotit-logo-clear.svg";
+import logoOnDarkUrl from "../assets/gotit-logo-on-dark.svg";
+import tutorPortrait from "../assets/private-lesson/tutor-female-speaking-wide.png";
+import tutorThinking from "../assets/private-lesson/tutor-female-thinking.png";
+import "../landing.css";
+
+const REGISTER_PATH = "/login?auth=register";
+const STEPS = ["mark", "practice", "speak", "read"] as const;
+type Step = (typeof STEPS)[number];
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+}
+
+export function LandingPage() {
+  const { t } = useTranslation();
+  const scrolled = useScrolled();
+  return (
+    <div className="landing">
+      <header className="landing-header" data-scrolled={scrolled || undefined}>
+        <div className="landing-header-inner">
+          <LandingLogo src={logoClearUrl} />
+          <nav className="landing-nav" aria-label={t("landing.nav.primary")}>
+            <a href="#how">{t("landing.nav.howItWorks")}</a>
+            <a href="#languages">{t("landing.nav.languages")}</a>
+          </nav>
+          <div className="landing-header-actions">
+            <UiLanguageSelect compact />
+            <Link className="landing-login" to="/login">
+              {t("landing.nav.login")}
+            </Link>
+            <Link className="landing-button" to={REGISTER_PATH}>
+              {t("landing.nav.createAccount")}
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <Hero />
+        <Journey />
+        <Languages />
+        <Testimonials />
+        <Faq />
+      </main>
+
+      <Closing />
+    </div>
+  );
+}
+
+function Hero() {
+  const { t } = useTranslation();
+  return (
+    <section className="landing-hero">
+      <div className="landing-hero-copy">
+        <h1>{t("landing.hero.title")}</h1>
+        <p>{t("landing.hero.body")}</p>
+        <div className="landing-hero-actions">
+          <Link className="landing-button on-dark" to={REGISTER_PATH}>
+            {t("landing.hero.createAccount")}
+          </Link>
+          <a
+            className="landing-button ghost"
+            href={CHROME_EXTENSION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("landing.hero.addToChrome")}
+          </a>
+        </div>
+        <Link className="landing-hero-login" to="/login">
+          {t("landing.hero.haveAccount")}
+        </Link>
+      </div>
+      <HeroArt />
+    </section>
+  );
+}
+
+/**
+ * The hero's picture: the tutor in an arch, with the moments a learner meets
+ * around her (a saved word, her question, the streak). Decorative; the copy
+ * beside it says the same thing in words.
+ */
+function HeroArt() {
+  const { t } = useTranslation();
+  return (
+    <div className="hero-art" aria-hidden="true">
+      <span className="hero-art-sun" />
+      <span className="hero-art-blob" />
+      <div className="hero-art-arch">
+        <img src={tutorPortrait} alt="" draggable={false} />
+      </div>
+      <div className="hero-chip hero-chip-word" dir="ltr" lang="en">
+        <span className="hero-chip-check">
+          <Check size={14} strokeWidth={3} />
+        </span>
+        <span>
+          <mark>thrive</mark>
+          <small dir="auto">{t("landing.demo.translation")}</small>
+        </span>
+      </div>
+      <p className="hero-chip hero-chip-bubble" dir="ltr" lang="en">
+        How do small cafés <mark>thrive</mark>?
+      </p>
+      <div className="hero-chip hero-chip-stats" dir="ltr">
+        <span className="hero-stat-streak">
+          <Flame size={16} fill="currentColor" />7
+        </span>
+        <span className="hero-stat-xp">
+          <Zap size={16} fill="currentColor" />
+          +15 XP
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A word is marked on a page and saved. Plays when `active` turns on (the
+ * desktop stage) or, without it, when it scrolls into view (phones).
+ */
+function MarkDemo({ active }: { active?: boolean }) {
+  const { t } = useTranslation();
+  const [viewRef, inView] = useInView<HTMLElement>();
+  const play = active ?? inView;
+  const [stage, setStage] = useState(0);
+  const browserRef = useRef<HTMLDivElement>(null);
+  const wordRef = useRef<HTMLElement>(null);
+  const [anchor, setAnchor] = useState({ top: 150, left: 0 });
+  // Like the extension, open the panel 10px under the selected word.
+  useLayoutEffect(() => {
+    const browser = browserRef.current;
+    const word = wordRef.current;
+    if (!browser || !word || !("ResizeObserver" in window)) return;
+    const update = () => {
+      const box = browser.getBoundingClientRect();
+      const rect = word.getBoundingClientRect();
+      const panel = browser.querySelector<HTMLElement>(".demo-panel");
+      const panelWidth = Math.min(panel?.offsetWidth || 300, box.width);
+      setAnchor({
+        top: rect.bottom - box.top + 10,
+        left: Math.max(
+          0,
+          Math.min(rect.left - box.left - 24, box.width - panelWidth),
+        ),
+      });
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(browser);
+    update();
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setStage(3);
+      return;
+    }
+    if (!play) {
+      setStage(0);
+      return;
+    }
+    const timers = [400, 1300, 2800].map((delay, index) =>
+      window.setTimeout(() => setStage(index + 1), delay),
+    );
+    return () => timers.forEach(window.clearTimeout);
+  }, [play]);
+  return (
+    <figure
+      ref={viewRef}
+      className="landing-demo"
+      data-stage={stage}
+      aria-label={t("landing.demo.label")}
+    >
+      <div className="demo-browser" aria-hidden="true" ref={browserRef}>
+        <div className="demo-browser-bar">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="demo-article" dir="ltr" lang="en">
+          <p className="demo-article-kicker">City life</p>
+          <p className="demo-article-title">
+            The corner café is back in fashion
+          </p>
+          <p>
+            Small neighborhood cafés{" "}
+            <mark className="demo-word" ref={wordRef}>
+              thrive
+            </mark>{" "}
+            when regulars treat them like a second living room. Owners say the
+            trick is simple: remember names, and keep the bread warm.
+          </p>
+          <p className="demo-article-faded">
+            In the last two years, more than forty new places have opened on the
+            east side alone.
+          </p>
+        </div>
+        <div className="demo-panel" style={anchor}>
+          <ScaledScreen width={430}>
+            <ExtensionPanel saved={stage >= 3} />
+          </ScaledScreen>
+        </div>
+      </div>
+    </figure>
+  );
+}
+
+function Journey() {
+  const { t } = useTranslation();
+  const [active, setActive] = useState<Step>("mark");
+  const listRef = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    const items = listRef.current?.querySelectorAll<HTMLElement>("[data-step]");
+    if (!items?.length || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries)
+          if (entry.isIntersecting)
+            setActive((entry.target as HTMLElement).dataset.step as Step);
+      },
+      { rootMargin: "-45% 0px -45% 0px" },
+    );
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <section className="landing-journey" id="how">
+      <div className="landing-section-head">
+        <h2>{t("landing.journey.title")}</h2>
+        <p>{t("landing.journey.intro")}</p>
+      </div>
+      <div className="journey-grid">
+        <ol className="journey-steps" ref={listRef}>
+          {STEPS.map((step, index) => (
+            <li
+              key={step}
+              data-step={step}
+              data-active={active === step || undefined}
+            >
+              <span className="journey-number" aria-hidden="true">
+                {index + 1}
+              </span>
+              <h3>{t(`landing.journey.${step}.title`)}</h3>
+              <p>{t(`landing.journey.${step}.body`)}</p>
+              <ul className="journey-points">
+                {(
+                  t(`landing.journey.${step}.points`, {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+              {step === "mark" && (
+                <a
+                  className="landing-button journey-cta"
+                  href={CHROME_EXTENSION_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("landing.hero.addToChrome")}
+                </a>
+              )}
+              <div className="journey-inline-visual" aria-hidden="true">
+                {step === "mark" ? (
+                  <MarkDemo />
+                ) : (
+                  <StepVisual step={step} compact />
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="journey-stage" aria-hidden="true">
+          {STEPS.map((step) => (
+            <div
+              key={step}
+              className="journey-stage-item"
+              data-active={active === step || undefined}
+            >
+              <StageWords step={step} />
+              {step === "mark" ? (
+                <MarkDemo active={active === step} />
+              ) : (
+                <StepVisual step={step} maxHeight={STAGE_FIT_HEIGHT} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Room for a screen inside the 480px desktop stage. */
+const STAGE_FIT_HEIGHT = 420;
+
+const STAGE_WORDS: Record<Step, string[]> = {
+  mark: ["regulars", "living room", "warm"],
+  practice: ["regulars", "cozy", "remember"],
+  speak: ["owner", "neighborhood", "thrive"],
+  read: ["bakery", "secret", "quiet"],
+};
+
+/** Saved words drifting behind the active visual on the desktop stage. */
+function StageWords({ step }: { step: Step }) {
+  return (
+    <ul className="stage-words" dir="ltr" lang="en">
+      {STAGE_WORDS[step].map((word) => (
+        <li key={word}>{word}</li>
+      ))}
+    </ul>
+  );
+}
+
+function StepVisual({
+  step,
+  maxHeight,
+  compact = false,
+}: {
+  step: Step;
+  maxHeight?: number;
+  /** Phone-width rendering for the inline (mobile) visuals. */
+  compact?: boolean;
+}) {
+  if (step === "mark")
+    return (
+      <ScaledScreen
+        width={430}
+        maxHeight={maxHeight}
+        className="visual-screen visual-mark"
+      >
+        <ExtensionPanel saved />
+      </ScaledScreen>
+    );
+  if (step === "practice")
+    return (
+      <ScaledScreen
+        width={compact ? 380 : 640}
+        maxHeight={maxHeight}
+        className="visual-screen"
+      >
+        <MatchingBoard />
+      </ScaledScreen>
+    );
+  if (step === "speak")
+    return (
+      <ScaledScreen
+        width={compact ? 380 : 560}
+        maxHeight={maxHeight}
+        className="visual-screen"
+      >
+        <LessonRoom />
+      </ScaledScreen>
+    );
+  return (
+    <ScaledScreen
+      width={compact ? 380 : 640}
+      maxHeight={maxHeight}
+      className="visual-screen"
+    >
+      <ReadingArticle />
+    </ScaledScreen>
+  );
+}
+
+/** "Hello" in each supported language, shown on the moving rows. */
+const GREETINGS: Record<(typeof LANGUAGE_CODES)[number], string> = {
+  en: "Hello",
+  he: "שלום",
+  ar: "مرحبا",
+  es: "Hola",
+  fr: "Bonjour",
+  de: "Hallo",
+  it: "Ciao",
+  pt: "Olá",
+  "pt-BR": "Oi",
+  ru: "Привет",
+  uk: "Привіт",
+  pl: "Cześć",
+  nl: "Hallo",
+  tr: "Merhaba",
+  el: "Γειά σου",
+  hi: "नमस्ते",
+  "zh-CN": "你好",
+  "zh-TW": "哈囉",
+  ja: "こんにちは",
+  ko: "안녕하세요",
+  vi: "Xin chào",
+  th: "สวัสดี",
+  id: "Halo",
+  sv: "Hej",
+  da: "Hej",
+  no: "Hei",
+  fi: "Hei",
+  cs: "Ahoj",
+  ro: "Bună",
+  hu: "Szia",
+};
+const GREETING_ROWS = 3;
+
+function Languages() {
+  const { t } = useTranslation();
+  const rows = useMemo(() => {
+    const items = LANGUAGE_CODES.map((code) => {
+      let name: string = code;
+      try {
+        name =
+          new Intl.DisplayNames([code], { type: "language" }).of(code) ?? code;
+      } catch {
+        // Older engines without DisplayNames show the code.
+      }
+      return { code, name, hello: GREETINGS[code] };
+    });
+    return Array.from({ length: GREETING_ROWS }, (_, row) =>
+      items.filter((_, index) => index % GREETING_ROWS === row),
+    );
+  }, []);
+  return (
+    <section className="landing-languages" id="languages">
+      <div className="landing-languages-head">
+        <span className="languages-count" aria-hidden="true">
+          {LANGUAGE_CODES.length}
+        </span>
+        <div className="landing-section-head">
+          <h2>{t("landing.languages.title")}</h2>
+          <p>{t("landing.languages.body")}</p>
+        </div>
+      </div>
+      <div className="greeting-rows" dir="ltr">
+        {rows.map((row, index) => (
+          <div className="greeting-row" key={index}>
+            {/* The second copy closes the loop; only the first is announced. */}
+            {[false, true].map((copy) => (
+              <ul
+                key={String(copy)}
+                className="greeting-track"
+                aria-hidden={copy || undefined}
+              >
+                {row.map(({ code, name, hello }) => (
+                  <li key={code}>
+                    <b lang={code}>{hello}</b>
+                    <span lang={code}>{name}</span>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        ))}
+      </div>
+      <p className="landing-languages-note">
+        {t("landing.languages.interface")}
+      </p>
+    </section>
+  );
+}
+
+function Testimonials() {
+  const { t } = useTranslation();
+  if (!testimonials.length) return null;
+  return (
+    <section
+      className="landing-testimonials"
+      aria-labelledby="testimonials-title"
+    >
+      <h2 id="testimonials-title">{t("landing.testimonials.title")}</h2>
+      <ul className="review-grid">
+        {testimonials.map((item) => (
+          <li key={item.quote} className="review-card">
+            <figure>
+              {item.rating && (
+                <span
+                  className="testimonial-stars"
+                  role="img"
+                  aria-label={t("landing.testimonials.rating", {
+                    rating: item.rating,
+                  })}
+                >
+                  {Array.from({ length: 5 }, (_, star) => (
+                    <Star
+                      key={star}
+                      size={20}
+                      aria-hidden="true"
+                      data-on={star < item.rating! || undefined}
+                    />
+                  ))}
+                </span>
+              )}
+              <blockquote lang={item.lang}>{item.quote}</blockquote>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Saved words drifting behind the closing call to action. */
+const CLOSING_WORDS = [
+  "thrive",
+  "regulars",
+  "cozy",
+  "wander",
+  "subtle",
+  "neighborhood",
+  "remember",
+  "bakery",
+];
+
+function Closing() {
+  const { t } = useTranslation();
+  const [ref, inView] = useInView<HTMLDivElement>({ once: true });
+  return (
+    <footer className="landing-closing">
+      <div ref={ref} className="closing-cta" data-inview={inView || undefined}>
+        <ul className="closing-words" dir="ltr" lang="en" aria-hidden="true">
+          {CLOSING_WORDS.map((word) => (
+            <li key={word}>{word}</li>
+          ))}
+        </ul>
+        <h2>{t("landing.cta.title")}</h2>
+        <p>{t("landing.cta.body")}</p>
+        <div className="closing-actions">
+          <Link className="landing-button on-dark" to={REGISTER_PATH}>
+            {t("landing.cta.button")}
+          </Link>
+          <a
+            className="landing-button ghost"
+            href={CHROME_EXTENSION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("landing.hero.addToChrome")}
+          </a>
+        </div>
+      </div>
+      <div className="landing-footer">
+        <div className="landing-footer-brand">
+          <LandingLogo src={logoOnDarkUrl} />
+          <p>{t("landing.footer.tagline")}</p>
+        </div>
+        <nav aria-label={t("landing.footer.product")}>
+          <h2>{t("landing.footer.product")}</h2>
+          <a href="#how">{t("landing.nav.howItWorks")}</a>
+          <a href="#languages">{t("landing.nav.languages")}</a>
+          <a
+            href={CHROME_EXTENSION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("landing.hero.addToChrome")}
+          </a>
+          <Link to="/login">{t("landing.nav.login")}</Link>
+        </nav>
+        <nav aria-label={t("landing.footer.legal")}>
+          <h2>{t("landing.footer.legal")}</h2>
+          <Link to="/terms-of-service">{t("auth.terms")}</Link>
+          <Link to="/privacy-policy">{t("auth.privacy")}</Link>
+          <Link to="/refund-policy">{t("auth.refunds")}</Link>
+        </nav>
+        <nav aria-label={t("landing.footer.contact")}>
+          <h2>{t("landing.footer.contact")}</h2>
+          <a href={supportEmailHref(t("help.emailSubject"))}>
+            <Mail size={16} aria-hidden="true" />
+            {t("help.contactEmail")}
+          </a>
+          <a
+            href={supportWhatsappHref(t("help.whatsappMessage"))}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle size={16} aria-hidden="true" />
+            {t("help.contactWhatsapp")}
+          </a>
+        </nav>
+        <div className="landing-footer-base">
+          <p>
+            {t("landing.footer.rights", { year: new Date().getFullYear() })}
+          </p>
+          <UiLanguageSelect />
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function LandingLogo({ src }: { src: string }) {
+  return (
+    <Link to="/" className="brand" aria-label="GotIt home">
+      <img className="brand-logo" src={src} alt="" draggable={false} />
+    </Link>
+  );
+}
+
+type FaqItem = { q: string; a: string };
+
+function Faq() {
+  const { t } = useTranslation();
+  const items = t("landing.faq.items", { returnObjects: true }) as FaqItem[];
+  return (
+    <section className="landing-faq" id="faq">
+      <div className="faq-main">
+        <div className="landing-section-head">
+          <h2>{t("landing.faq.title")}</h2>
+        </div>
+        <div className="faq-list">
+          {items.map(({ q, a }) => (
+            <details key={q}>
+              <summary>{q}</summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+      <aside className="faq-ask">
+        <div className="faq-ask-portrait" aria-hidden="true">
+          <img src={tutorThinking} alt="" loading="lazy" draggable={false} />
+        </div>
+        <h3>{t("landing.faq.askTitle")}</h3>
+        <p>{t("landing.faq.askBody")}</p>
+        <div className="faq-ask-actions">
+          <a
+            className="landing-button"
+            href={supportWhatsappHref(t("help.whatsappMessage"))}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle size={18} aria-hidden="true" />
+            {t("help.contactWhatsapp")}
+          </a>
+          <a
+            className="landing-button outline"
+            href={supportEmailHref(t("help.emailSubject"))}
+          >
+            <Mail size={18} aria-hidden="true" />
+            {t("help.contactEmail")}
+          </a>
+        </div>
+      </aside>
+    </section>
+  );
+}
