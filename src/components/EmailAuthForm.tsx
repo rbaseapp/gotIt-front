@@ -1,4 +1,18 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  LockKeyhole,
+  Mail,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { api, ApiError } from "../lib/api";
 
@@ -6,6 +20,7 @@ type Mode = "login" | "register" | "verify" | "forgot" | "reset";
 export function EmailAuthForm({
   authenticate,
   onBusy,
+  children,
 }: {
   authenticate: (
     mode: "login" | "register",
@@ -13,6 +28,7 @@ export function EmailAuthForm({
     password: string,
   ) => Promise<void>;
   onBusy: (busy: boolean) => void;
+  children?: ReactNode;
 }) {
   const { t } = useTranslation();
   const initial = new URLSearchParams(window.location.search).get("auth");
@@ -25,6 +41,7 @@ export function EmailAuthForm({
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -50,6 +67,7 @@ export function EmailAuthForm({
     setNotice("");
     setCode("");
     setPassword("");
+    setShowPassword(false);
     setConfirm("");
   };
   const requestCode = async (purpose: "verify" | "reset") => {
@@ -142,16 +160,20 @@ export function EmailAuthForm({
       <form onSubmit={submit} className="form-stack" aria-busy={busy}>
         <label className="field">
           <span>{t("auth.email")}</span>
-          <input
-            type="email"
-            autoComplete="email"
-            maxLength={320}
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            dir="ltr"
-            disabled={busy || completing}
-          />
+          <div className="input-with-icon">
+            <Mail size={18} aria-hidden="true" />
+            <input
+              type="email"
+              autoComplete="email"
+              placeholder="name@example.com"
+              maxLength={320}
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              dir="ltr"
+              disabled={busy || completing}
+            />
+          </div>
         </label>
         {completing && (
           <label className="field">
@@ -175,20 +197,33 @@ export function EmailAuthForm({
         {mode !== "forgot" && (
           <label className="field">
             <span>{t(completing ? "auth.newPassword" : "auth.password")}</span>
-            <input
-              type="password"
-              autoComplete={
-                mode === "login" ? "current-password" : "new-password"
-              }
-              minLength={12}
-              maxLength={128}
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder={t("auth.passwordHint")}
-              dir="ltr"
-              disabled={busy}
-            />
+            <div className="input-with-icon">
+              <LockKeyhole size={18} aria-hidden="true" />
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete={
+                  mode === "login" ? "current-password" : "new-password"
+                }
+                minLength={12}
+                maxLength={128}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={t("auth.passwordHint")}
+                dir="ltr"
+                disabled={busy}
+              />
+              <button
+                type="button"
+                disabled={busy}
+                aria-label={t(
+                  showPassword ? "auth.hidePassword" : "auth.showPassword",
+                )}
+                onClick={() => setShowPassword((value) => !value)}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
           </label>
         )}
         {completing && (
@@ -214,6 +249,9 @@ export function EmailAuthForm({
           </div>
         )}
         <button className="button primary auth-submit" disabled={busy}>
+          {busy && (
+            <LoaderCircle size={18} className="spin" aria-hidden="true" />
+          )}
           {t(
             busy
               ? "common.loading"
@@ -227,6 +265,7 @@ export function EmailAuthForm({
                       ? "auth.resetSubmit"
                       : "auth.sendCode",
           )}
+          <ArrowLeft size={18} aria-hidden="true" />
         </button>
         {completing && (
           <button
@@ -247,7 +286,7 @@ export function EmailAuthForm({
         {mode === "login" && (
           <button
             type="button"
-            className="button"
+            className="button auth-forgot-password"
             disabled={busy}
             onClick={() => changeMode("forgot")}
           >
@@ -255,7 +294,9 @@ export function EmailAuthForm({
           </button>
         )}
       </form>
+      {children}
       <p className="auth-switch">
+        {mode === "login" ? t("auth.noAccount") : t("auth.hasAccount")}{" "}
         <button
           disabled={busy}
           onClick={() => changeMode(mode === "login" ? "register" : "login")}
