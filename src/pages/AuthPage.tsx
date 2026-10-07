@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { BookOpenCheck, Mail, MessageCircle } from "lucide-react";
+import {
+  BookOpenCheck,
+  Brain,
+  Check,
+  Mail,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react";
 import { EmailAuthForm } from "../components/EmailAuthForm";
 import { Logo } from "../components/Logo";
 import { useApp } from "../context/AppContext";
@@ -17,28 +24,62 @@ export function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   return (
-    <div
-      className="auth-page auth-review"
-      data-figma-desktop="98:3162"
-      data-figma-mobile="98:40117"
-    >
+    <div className="auth-page auth-production">
       <UiLanguageSelect compact />
-      <header className="auth-review-header">
+      <section className="auth-showcase">
         <Logo />
-      </header>
+        <div className="showcase-copy">
+          <span className="pill light">
+            <Sparkles size={14} />
+            {t("auth.tagline")}
+          </span>
+          <h1>
+            {t("auth.headlineLine1")}
+            <br />
+            {t("auth.headlineLine2")}
+            <br />
+            <em>{t("auth.headlineEmphasis")}</em>
+          </h1>
+          <p>{t("auth.description")}</p>
+          <ul>
+            <li>
+              <Check size={17} />
+              {t("auth.benefitPace")}
+            </li>
+            <li>
+              <Check size={17} />
+              {t("auth.benefitSkills")}
+            </li>
+            <li>
+              <Check size={17} />
+              {t("auth.benefitContext")}
+            </li>
+          </ul>
+        </div>
+        <div className="floating-word-card">
+          <span>
+            <Brain size={18} />
+          </span>
+          <div>
+            <b dir="ltr">serendipity</b>
+            <small>{t("auth.sampleTranslation")}</small>
+          </div>
+          <em>{t("auth.sampleWord")}</em>
+        </div>
+        <p className="showcase-footer">{t("auth.footer")}</p>
+      </section>
       <main className="auth-main">
         <div className="auth-mobile-logo">
           <Logo />
         </div>
         <div className="auth-card">
-          <EmailAuthForm authenticate={authenticate} onBusy={setLoading} />
-          {error && (
-            <div className="form-error" role="alert">
-              {error}
-            </div>
-          )}
-          <details className="auth-extra">
-            <summary>{t("authUi.moreOptions")}</summary>
+          <p className="eyebrow">{t("auth.welcome")}</p>
+          <EmailAuthForm authenticate={authenticate} onBusy={setLoading}>
+            {error && (
+              <div className="form-error" role="alert">
+                {error}
+              </div>
+            )}
             <div className="or-divider">
               <span>{t("auth.or")}</span>
             </div>
@@ -88,8 +129,8 @@ export function AuthPage() {
                 <p className="auth-footnote">{t("auth.demoNote")}</p>
               </>
             )}
-            <p className="auth-footnote">{t("auth.socialNote")}</p>
-          </details>
+          </EmailAuthForm>
+          <p className="auth-footnote">{t("auth.socialNote")}</p>
           <nav
             className="auth-support-links"
             aria-label={t("help.contactTitle")}
