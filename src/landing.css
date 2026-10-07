@@ -185,11 +185,6 @@
   border-radius: 12px;
   font-size: 1.125rem;
 }
-.landing-hero-trial {
-  margin-top: 16px !important;
-  color: var(--lp-on-green);
-  font-size: 0.9375rem;
-}
 .landing-hero-login {
   display: inline-flex;
   align-items: center;

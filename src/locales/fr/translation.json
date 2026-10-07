@@ -2364,8 +2364,7 @@
       "body": "Marquez un mot sur n’importe quel site, et GotIt le transforme en courts exercices, en conversation et en lecture jusqu’à ce qu’il reste.",
       "createAccount": "Créer un compte",
       "addToChrome": "Ajouter à Chrome",
-      "haveAccount": "J’ai déjà un compte",
-      "trialNote": "14 jours gratuits avec tout inclus. Sans carte bancaire."
+      "haveAccount": "J’ai déjà un compte"
     },
     "demo": {
       "label": "Exemple : enregistrer un mot depuis un article",

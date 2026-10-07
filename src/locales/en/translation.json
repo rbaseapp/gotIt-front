@@ -2363,8 +2363,7 @@
       "body": "Mark a word on any website, and GotIt turns it into short practice, conversation and reading until it sticks.",
       "createAccount": "Create account",
       "addToChrome": "Add to Chrome",
-      "haveAccount": "I already have an account",
-      "trialNote": "14 days free with everything included. No credit card."
+      "haveAccount": "I already have an account"
     },
     "demo": {
       "label": "Example: saving a word from an article",

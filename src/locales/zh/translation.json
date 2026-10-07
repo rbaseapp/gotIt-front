@@ -2364,8 +2364,7 @@
       "body": "在任何网站上标记单词，GotIt 会把它变成简短的练习、对话和阅读，直到你真正记住。",
       "createAccount": "创建账户",
       "addToChrome": "添加到 Chrome",
-      "haveAccount": "我已有账户",
-      "trialNote": "免费试用 14 天，所有功能全开。无需信用卡。"
+      "haveAccount": "我已有账户"
     },
     "demo": {
       "label": "示例：从文章中保存一个单词",

@@ -87,7 +87,6 @@ function Hero() {
             {t("landing.hero.addToChrome")}
           </a>
         </div>
-        <p className="landing-hero-trial">{t("landing.hero.trialNote")}</p>
         <Link className="landing-hero-login" to="/login">
           {t("landing.hero.haveAccount")}
         </Link>
