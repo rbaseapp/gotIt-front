@@ -26,7 +26,21 @@ import "../lesson-room.css";
 
 type Props = {
   lesson: PrivateLessonSession["lesson"];
-  activity: LessonActivity;
+  activity: Pick<
+    LessonActivity,
+    | "stage"
+    | "tutorText"
+    | "question"
+    | "example"
+    | "feedback"
+    | "turns"
+    | "lastAnswer"
+    | "review"
+    | "interactionMode"
+  >;
+  needsContinue?: boolean;
+  finishBlocked?: boolean;
+  answerBlocked?: boolean;
   remaining: number;
   status: string;
   audioLevel: number;
@@ -66,7 +80,8 @@ export function LessonWorkspace(p: Props) {
   const unavailable = p.busy || !p.ready || submitting || panel !== null;
   const lastTurn = p.activity.turns.at(-1);
   const messages =
-    lastTurn?.role === "tutor" && lastTurn.text === p.activity.tutorText
+    !p.activity.tutorText ||
+    (lastTurn?.role === "tutor" && lastTurn.text === p.activity.tutorText)
       ? p.activity.turns
       : [
           ...p.activity.turns,
@@ -78,7 +93,8 @@ export function LessonWorkspace(p: Props) {
     new Intl.DisplayNames([locale], { type: "language" }).of(
       p.lesson.targetLanguageCode,
     ) ?? p.lesson.targetLanguageCode;
-  const teacherState = !p.ready
+  const connected = p.ready || p.busy;
+  const teacherState = !connected
     ? "connecting"
     : p.audioLevel > 0.025
       ? "speaking"
@@ -92,7 +108,8 @@ export function LessonWorkspace(p: Props) {
   }, [lastMessage, messages.length, p.translatedTurn]);
 
   const submit = async () => {
-    if (unavailable || submission.current || !draft.trim()) return;
+    if (unavailable || p.answerBlocked || submission.current || !draft.trim())
+      return;
     submission.current = true;
     setSubmitting(true);
     try {
@@ -322,12 +339,25 @@ export function LessonWorkspace(p: Props) {
             {p.busy && (
               <p className="lesson-room-processing" role="status">
                 <LoaderCircle className="spin" size={16} />
-                {t("lessonRoom.thinking")}
+                {t(`lessonRoom.${teacherState}`, {
+                  teacher: teacherName,
+                  context: p.lesson.teacherVoice,
+                })}
               </p>
             )}
           </div>
 
           <div className="lesson-room-composer">
+            {p.needsContinue && (
+              <button
+                type="button"
+                className="lesson-room-action outlined"
+                disabled={unavailable}
+                onClick={() => p.onAction("continue")}
+              >
+                {t("privateLesson.continueLesson")}
+              </button>
+            )}
             <div
               className="lesson-room-modes"
               role="group"
@@ -377,7 +407,7 @@ export function LessonWorkspace(p: Props) {
                   type="submit"
                   className="lesson-room-action primary"
                   aria-label={t("lessonUi.send")}
-                  disabled={unavailable || !draft.trim()}
+                  disabled={unavailable || p.answerBlocked || !draft.trim()}
                 >
                   {submitting ? (
                     <LoaderCircle size={18} className="spin" />
@@ -476,8 +506,8 @@ export function LessonWorkspace(p: Props) {
         >
           <header>
             <span className="lesson-room-chip">
-              {p.ready && <img src={checkIcon} alt="" />}
-              {t(p.ready ? "lessonRoom.connected" : "lessonRoom.connecting")}
+              {connected && <img src={checkIcon} alt="" />}
+              {t(connected ? "lessonRoom.connected" : "lessonRoom.connecting")}
             </span>
             <div>
               <h2>{teacherName}</h2>
@@ -491,13 +521,16 @@ export function LessonWorkspace(p: Props) {
                 p.lesson.teacherVoice === "female" ? teacherFemale : teacherMale
               }
               activity={p.busy ? "thinking" : "listening"}
-              active={p.ready}
+              active={connected}
               audioLevel={p.audioLevel}
               label={p.status}
             />
             <span className="lesson-room-chip" role="status">
               <img src={micStatusIcon} alt="" />
-              {t(`lessonRoom.${teacherState}`, { teacher: teacherName })}
+              {t(`lessonRoom.${teacherState}`, {
+                teacher: teacherName,
+                context: p.lesson.teacherVoice,
+              })}
             </span>
           </div>
           <div className="lesson-room-encouragement">
@@ -532,7 +565,10 @@ export function LessonWorkspace(p: Props) {
             )}
           </section>
           <p className="lesson-room-mobile-status" role="status">
-            {t(`lessonRoom.${teacherState}`, { teacher: teacherName })}
+            {t(`lessonRoom.${teacherState}`, {
+              teacher: teacherName,
+              context: p.lesson.teacherVoice,
+            })}
           </p>
         </aside>
       </main>
@@ -722,6 +758,7 @@ export function LessonWorkspace(p: Props) {
           </button>
           <button
             className="button ghost"
+            disabled={!p.ready || submitting || p.finishBlocked}
             onClick={() => {
               setPanel(null);
               p.onFinish();
@@ -740,7 +777,7 @@ export function LessonWorkspace(p: Props) {
           <p>{t("lessonUi.exitDescription")}</p>
           <button
             className="button primary"
-            disabled={p.busy}
+            disabled={!p.ready || submitting || p.finishBlocked}
             onClick={() => {
               setPanel(null);
               p.onFinish();

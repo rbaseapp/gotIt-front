@@ -39,6 +39,7 @@ import { TeacherAvatar } from "../components/TeacherAvatar";
 import { TeacherVoicePreview } from "../components/TeacherVoicePreview";
 import { LessonWorkspace } from "../components/LessonWorkspace";
 import { LanguageCombobox } from "../components/LanguageCombobox";
+import { PrivateLessonText } from "../lib/privateLessonText";
 import { PrivateLessonFlow } from "../lib/privateLessonFlow";
 import { Modal } from "../components/Modal";
 import { speak } from "../lib/utils";
@@ -223,6 +224,8 @@ export function PrivateLessonPage() {
   const [completedLesson, setCompletedLesson] = useState<SavedPrivateLesson>();
   const [reportLoading, setReportLoading] = useState(false);
   const [reportRequested, setReportRequested] = useState(false);
+  const reportRequestedRef = useRef(reportRequested);
+  reportRequestedRef.current = reportRequested;
   const [reportError, setReportError] = useState("");
   const [history, setHistory] = useState<SavedPrivateLesson[]>([]);
   const [historyError, setHistoryError] = useState("");
@@ -233,7 +236,6 @@ export function PrivateLessonPage() {
   const [showLevelDetails, setShowLevelDetails] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [showLessonOptions, setShowLessonOptions] = useState(false);
-  const [showTextAlternative, setShowTextAlternative] = useState(false);
   const [showTeacherPicker, setShowTeacherPicker] = useState(false);
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
   const [replayError, setReplayError] = useState("");
@@ -256,6 +258,7 @@ export function PrivateLessonPage() {
   const [activityBusy, setActivityBusy] = useState(false);
   const activityBusyRef = useRef(false);
   const [activityError, setActivityError] = useState("");
+  const textTurnRef = useRef<PrivateLessonText | undefined>(undefined);
   const flowRef = useRef<PrivateLessonFlow | undefined>(undefined);
   const microphoneMutedRef = useRef(false);
   const turnId = useRef(0);
@@ -298,6 +301,8 @@ export function PrivateLessonPage() {
   };
   const dispose = () => {
     clearTimers();
+    textTurnRef.current?.close();
+    textTurnRef.current = undefined;
     flowRef.current = undefined;
     microphoneMutedRef.current = false;
     setNeedsContinue(false);
@@ -366,7 +371,10 @@ export function PrivateLessonPage() {
     setRemaining(0);
     setStatus(message);
     setPhase("ended");
-    if (activeSession?.activity) {
+    if (
+      activeSession &&
+      (activeSession.activity || reportRequestedRef.current)
+    ) {
       setReportRequested(true);
       void finalizeLesson(activeSession);
     }
@@ -523,6 +531,7 @@ export function PrivateLessonPage() {
     event: Record<string, unknown>,
     activeSession: PrivateLessonSession,
   ) => {
+    textTurnRef.current?.observe(event);
     const flow = flowRef.current;
     flow?.observe(event);
     if (flow) setNeedsContinue(flow.needsContinue);
@@ -837,24 +846,30 @@ export function PrivateLessonPage() {
             flowRef.current?.audioLevel(level);
             setTutorAudioLevel(level);
           },
-          ...(created.activity
-            ? {
-                onMicrophoneUnavailable() {
-                  setInputMode("text");
-                  setMicrophoneMuted(true);
-                  microphoneMutedRef.current = true;
-                },
-              }
-            : {}),
+          onMicrophoneUnavailable() {
+            setInputMode("text");
+            setMicrophoneMuted(true);
+            microphoneMutedRef.current = true;
+          },
         },
         controller.signal,
-        created.activity ? inputMode : "voice",
+        inputMode,
       );
       if (controller.signal.aborted) connection.close();
       else {
         connectionRef.current = connection;
+        if (!created.activity) {
+          textTurnRef.current = new PrivateLessonText(
+            (event) => connection.send(event),
+            (text) => {
+              addTurn("learner", text);
+              setTranslatedTurn("");
+            },
+            () => flowRef.current?.sendFailed(),
+          );
+        }
         setMicrophoneReady(true);
-        if (created.activity) {
+        if (created.activity || inputMode === "text") {
           connection.setMicrophoneMuted(true);
           setMicrophoneMuted(true);
           microphoneMutedRef.current = true;
@@ -1054,6 +1069,43 @@ export function PrivateLessonPage() {
     }
   };
 
+  const submitConversationAnswer = async (answer: string) => {
+    if (
+      !textTurnRef.current ||
+      phaseRef.current !== "active" ||
+      activeResponse.current ||
+      flowRef.current?.busy
+    )
+      return false;
+    setActivityError("");
+    const accepted = await textTurnRef.current.submit(answer);
+    if (!accepted) setActivityError(t("lessonUi.retrySameAnswer"));
+    return accepted;
+  };
+  const requestConversationHelp = (action: "hint" | "continue") => {
+    if (!session || phaseRef.current !== "active" || flowRef.current?.busy)
+      return;
+    const base = session.realtime.continuationEvent;
+    if (!base) return;
+    const eventId = crypto.randomUUID();
+    flowRef.current?.requested(eventId);
+    const sent = connectionRef.current?.send({
+      ...base,
+      event_id: eventId,
+      ...(action === "hint"
+        ? {
+            response: {
+              instructions: `${base.response.instructions}\nThe learner requests a hint for the current question. Give one short hint without revealing its answer, moving to another task or counting this as an attempt. Wait for the learner.`,
+            },
+          }
+        : {}),
+    });
+    if (sent) {
+      activeResponse.current = true;
+      setResponding(true);
+      setNeedsContinue(false);
+    } else flowRef.current?.sendFailed();
+  };
   const enableLessonMicrophone = async () => {
     const connection = connectionRef.current;
     if (!connection || activityBusyRef.current) return;
@@ -1542,12 +1594,7 @@ export function PrivateLessonPage() {
                     }
                   >
                     <option value="voice">{t("lessonPrep.voiceOrText")}</option>
-                    <option
-                      value="text"
-                      disabled={
-                        !lessonSetup?.interactionCapabilities?.textAnswers
-                      }
-                    >
+                    <option value="text">
                       {t("lessonUi.textWithoutMicrophone")}
                     </option>
                   </select>
@@ -1665,22 +1712,20 @@ export function PrivateLessonPage() {
                     )?.[1] ?? lessonSupportLanguage}
                   </span>
                 </label>
-                {lessonSetup?.interactionCapabilities?.textAnswers && (
-                  <label className="field lesson-answer-mode">
-                    <span>{t("lessonUi.answerMode")}</span>
-                    <select
-                      value={inputMode}
-                      onChange={(event) =>
-                        setInputMode(event.target.value as "voice" | "text")
-                      }
-                    >
-                      <option value="voice">{t("lessonUi.voiceOrText")}</option>
-                      <option value="text">
-                        {t("lessonUi.textWithoutMicrophone")}
-                      </option>
-                    </select>
-                  </label>
-                )}
+                <label className="field lesson-answer-mode">
+                  <span>{t("lessonUi.answerMode")}</span>
+                  <select
+                    value={inputMode}
+                    onChange={(event) =>
+                      setInputMode(event.target.value as "voice" | "text")
+                    }
+                  >
+                    <option value="voice">{t("lessonUi.voiceOrText")}</option>
+                    <option value="text">
+                      {t("lessonUi.textWithoutMicrophone")}
+                    </option>
+                  </select>
+                </label>
                 {coursePreferences && !coursePreferences.absoluteBeginner && (
                   <label className="field private-lesson-explanation-language">
                     <span>{t("privateLesson.mode.teachingLanguage")}</span>
@@ -1922,51 +1967,20 @@ export function PrivateLessonPage() {
                       </p>
                     </div>
                   )}
-                  {lessonSetup?.interactionCapabilities?.textAnswers ? (
-                    <label className="field lesson-answer-mode">
-                      <span>{t("lessonUi.answerMode")}</span>
-                      <select
-                        value={inputMode}
-                        onChange={(event) =>
-                          setInputMode(event.target.value as "voice" | "text")
-                        }
-                      >
-                        <option value="voice">
-                          {t("lessonUi.voiceOrText")}
-                        </option>
-                        <option value="text">
-                          {t("lessonUi.textWithoutMicrophone")}
-                        </option>
-                      </select>
-                    </label>
-                  ) : (
-                    <button
-                      type="button"
-                      className="button secondary lesson-text-choice"
-                      onClick={() => setShowTextAlternative(true)}
+                  <label className="field lesson-answer-mode">
+                    <span>{t("lessonUi.answerMode")}</span>
+                    <select
+                      value={inputMode}
+                      onChange={(event) =>
+                        setInputMode(event.target.value as "voice" | "text")
+                      }
                     >
-                      {t("ux.textAlternative")}
-                    </button>
-                  )}
-                  <Modal
-                    open={showTextAlternative}
-                    onClose={() => setShowTextAlternative(false)}
-                    title={t("ux.textAlternative")}
-                  >
-                    <div className="modal-body">
-                      <p>{t("ux.textUnavailable")}</p>
-                      <button
-                        className="button primary"
-                        onClick={() =>
-                          navigate(
-                            `/learn?language=${encodeURIComponent(targetLanguage)}&return=%2Fprivate-lesson`,
-                          )
-                        }
-                      >
-                        {t("ux.writtenPractice")}
-                      </button>
-                    </div>
-                  </Modal>
+                      <option value="voice">{t("lessonUi.voiceOrText")}</option>
+                      <option value="text">
+                        {t("lessonUi.textWithoutMicrophone")}
+                      </option>
+                    </select>
+                  </label>
                   <button
                     type="button"
                     className="button ghost private-lesson-customize"
@@ -2824,29 +2838,69 @@ export function PrivateLessonPage() {
         </>
       ) : (
         createPortal(
-          activity && session && phase !== "ended" ? (
+          session && phase !== "ended" ? (
             <LessonWorkspace
               lesson={session.lesson}
-              activity={activity}
+              activity={
+                activity ?? {
+                  interactionMode: "conversation",
+                  stage: "chat",
+                  tutorText: "",
+                  question: "",
+                  example: null,
+                  feedback: null,
+                  turns: turns.filter(
+                    (turn): turn is Turn & { role: "learner" | "tutor" } =>
+                      turn.role !== "system",
+                  ),
+                }
+              }
+              needsContinue={needsContinue}
+              finishBlocked={activityBusy}
               remaining={remaining}
               status={status}
               audioLevel={tutorAudioLevel}
               busy={activityBusy || responding || phase === "wrapping"}
+              answerBlocked={!activity && Boolean(flowRef.current?.busy)}
               ready={phase === "active"}
               microphoneMuted={microphoneMuted}
               inputMode={inputMode}
               error={activityError || replayError}
               translatedTurn={translatedTurn}
-              onAnswer={(answer) => submitActivity(session, "answer", answer)}
-              onReview={(answer) => submitActivity(session, "review", answer)}
-              onAction={(action) => void submitActivity(session, action)}
+              onAnswer={(answer) =>
+                activity
+                  ? submitActivity(session, "answer", answer)
+                  : submitConversationAnswer(answer)
+              }
+              onReview={
+                activity
+                  ? (answer) => submitActivity(session, "review", answer)
+                  : undefined
+              }
+              onAction={(action) =>
+                activity
+                  ? void submitActivity(session, action)
+                  : requestConversationHelp(action)
+              }
               onMicrophone={() => void enableLessonMicrophone()}
               onInputMode={selectLessonInputMode}
               onReplay={(rate) =>
-                void replayGuidedTurn(session, "original", rate)
+                activity
+                  ? void replayGuidedTurn(session, "original", rate)
+                  : speak(
+                      turns.filter((turn) => turn.role === "tutor").at(-1)
+                        ?.text ?? "",
+                      session.lesson.teachingLanguage === "support"
+                        ? (session.lesson.supportLanguageCode ??
+                            session.lesson.targetLanguageCode)
+                        : session.lesson.targetLanguageCode,
+                      rate,
+                    )
               }
               onTranslate={() =>
-                void replayGuidedTurn(session, "translation", 1)
+                activity
+                  ? void replayGuidedTurn(session, "translation", 1)
+                  : requestTranslation(session)
               }
               onPause={(paused) => {
                 connectionRef.current?.setMicrophoneMuted(true);

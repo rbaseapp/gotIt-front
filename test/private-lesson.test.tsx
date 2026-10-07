@@ -586,7 +586,7 @@ describe("private voice lesson", () => {
         vocabularyMode: "learned",
       }),
     );
-    expect(await screen.findByText("achieve · להשיג")).toBeInTheDocument();
+    expect(await screen.findByText("achieve")).toBeInTheDocument();
     const fullscreenLesson = screen.getByRole("dialog", {
       name: "השיעור הפרטי שלך",
     });
@@ -611,16 +611,11 @@ describe("private voice lesson", () => {
     expect(avatar).toHaveClass("listening");
     expect(Number(avatar.style.getPropertyValue("--tutor-mouth-soft"))).toBe(0);
 
-    const openSidebar = vi.fn();
-    window.addEventListener("gotit:open-sidebar", openSidebar, { once: true });
-    await user.click(screen.getByRole("button", { name: "פתיחת תפריט" }));
-    expect(openSidebar).toHaveBeenCalledOnce();
-
-    await user.click(screen.getByRole("button", { name: "השתקת המיקרופון" }));
+    await user.click(screen.getByRole("button", { name: "עצירת המיקרופון" }));
     expect(mocks.setMicrophoneMuted).toHaveBeenCalledWith(true);
     expect(
-      screen.getByRole("button", { name: "הפעלת המיקרופון" }),
-    ).toHaveAttribute("aria-pressed", "true");
+      screen.getByRole("button", { name: "לחצו כדי לדבר" }),
+    ).toHaveAttribute("aria-pressed", "false");
   });
 
   it("explicitly disables the help language when none is selected", async () => {
@@ -760,7 +755,8 @@ describe("private voice lesson", () => {
       expect.objectContaining(session.realtime.translationEvent),
     );
 
-    await user.click(screen.getByRole("button", { name: "סיום השיעור" }));
+    await user.click(screen.getByRole("button", { name: "לסיים" }));
+    await user.click(screen.getByRole("button", { name: "סיום ושמירה" }));
     expect(mocks.send).toHaveBeenCalledWith(
       expect.objectContaining({ type: "session.update" }),
     );
@@ -876,12 +872,13 @@ describe("private voice lesson", () => {
       act(() => {
         onEvent({ type: "response.done" });
       });
-      fireEvent.click(screen.getByRole("button", { name: /השתקת המיקרופון/u }));
+      fireEvent.click(screen.getByRole("button", { name: "עצירת המיקרופון" }));
       await act(async () => {
         await vi.advanceTimersByTimeAsync(30_000);
       });
       expect(mocks.send).toHaveBeenCalledTimes(3);
-      fireEvent.click(screen.getByRole("button", { name: "סיום השיעור" }));
+      fireEvent.click(screen.getByRole("button", { name: "לסיים" }));
+      fireEvent.click(screen.getByRole("button", { name: "סיום ושמירה" }));
       const sendsAtClosing = mocks.send.mock.calls.length;
       await act(async () => {
         await vi.advanceTimersByTimeAsync(30_000);
@@ -1071,15 +1068,9 @@ describe("private voice lesson", () => {
     });
     await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "התחלת השיעור" }));
-    await screen.findByRole("button", { name: "סיום השיעור" });
-    const settings = document.querySelector(
-      ".private-lesson-settings-details",
-    )!;
-    expect(settings).not.toHaveAttribute("open");
-    await user.click(settings.querySelector("summary")!);
-    expect(settings).toHaveAttribute("open");
-    expect(settings.querySelector(".private-lesson-meta")).toHaveTextContent(
-      session.lesson.targetLanguageCode,
+    await screen.findByRole("button", { name: "לסיים" });
+    expect(document.querySelector(".lesson-room-chips")).toHaveTextContent(
+      session.lesson.level,
     );
     act(() =>
       onEvent?.({
@@ -1135,7 +1126,7 @@ describe("private voice lesson", () => {
     const start = await screen.findByRole("button", { name: "התחלת השיעור" });
     await waitFor(() => expect(start).toBeEnabled());
     await user.click(start);
-    await screen.findByRole("button", { name: "סיום השיעור" });
+    await screen.findByRole("button", { name: "לסיים" });
 
     act(() => onEvent?.({ type: "response.created" }));
     await waitFor(

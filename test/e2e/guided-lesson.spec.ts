@@ -20,9 +20,16 @@ const lesson = {
     { learningItemId: id, sourceText: "coffee", translationText: "קפה" },
   ],
 };
-async function fixture(page: Page) {
+async function fixture(
+  page: Page,
+  options: {
+    allowMicrophone?: boolean;
+    conversation?: boolean;
+    legacy?: boolean;
+  } = {},
+) {
   const commands: Array<Record<string, unknown>> = [];
-  await page.addInitScript(() => {
+  await page.addInitScript(({ allowMicrophone, legacy }) => {
     localStorage.removeItem("gotit.mode");
     localStorage.setItem("gotit.uiLocale.v1", "he");
     sessionStorage.setItem("gotit.refresh", "fixture-refresh");
@@ -32,15 +39,50 @@ async function fixture(page: Page) {
     });
     navigator.mediaDevices.getUserMedia = async () => {
       microphoneCaptures += 1;
-      throw new DOMException("Denied", "NotAllowedError");
+      if (!allowMicrophone) throw new DOMException("Denied", "NotAllowedError");
+      const track = {
+        enabled: true,
+        readyState: "live",
+        stop() {
+          this.readyState = "ended";
+        },
+      };
+      Reflect.set(window, "gotitTestTrack", track);
+      return {
+        getTracks: () => [track],
+        getAudioTracks: () => [track],
+      } as unknown as MediaStream;
     };
     class Channel extends EventTarget {
       readyState = "connecting";
       send(raw: string) {
-        if (JSON.parse(raw).type !== "response.create") return;
+        const event = JSON.parse(raw);
+        if (event.type === "conversation.item.create") {
+          queueMicrotask(() =>
+            this.dispatchEvent(
+              new MessageEvent("message", {
+                data: JSON.stringify({
+                  type: "conversation.item.added",
+                  item: event.item,
+                }),
+              }),
+            ),
+          );
+          return;
+        }
+        if (event.type !== "response.create") return;
         queueMicrotask(() => {
           for (const event of [
             { type: "response.created" },
+            ...(legacy
+              ? [
+                  {
+                    type: "response.output_audio_transcript.done",
+                    transcript:
+                      "Try using the present continuous for a temporary situation.",
+                  },
+                ]
+              : []),
             { type: "response.done", response: { status: "completed" } },
             { type: "output_audio_buffer.stopped" },
           ])
@@ -59,6 +101,9 @@ async function fixture(page: Page) {
       createDataChannel() {
         return this.channel;
       }
+      addTrack() {
+        return { replaceTrack: async () => {} };
+      }
       addTransceiver() {
         return { sender: { replaceTrack: async () => {} } };
       }
@@ -76,7 +121,7 @@ async function fixture(page: Page) {
       }
     }
     Object.defineProperty(window, "RTCPeerConnection", { value: Peer });
-  });
+  }, options);
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     let payload: unknown;
@@ -127,11 +172,15 @@ async function fixture(page: Page) {
           grammarTopics: [],
           communicationGoals: [],
         },
-        interactionCapabilities: {
-          guidedTasks: true,
-          textAnswers: true,
-          billingPause: false,
-        },
+        ...(options.legacy
+          ? {}
+          : {
+              interactionCapabilities: {
+                guidedTasks: true,
+                textAnswers: true,
+                billingPause: false,
+              },
+            }),
       };
     else if (path.endsWith(`/private-lessons/units/${id}`))
       payload = {
@@ -165,13 +214,24 @@ async function fixture(page: Page) {
         },
       };
     else if (path.endsWith("/private-lessons/realtime-sessions"))
-      payload = { ...guidedSession, lesson, activity };
+      payload = {
+        ...guidedSession,
+        lesson,
+        activity: options.legacy
+          ? null
+          : {
+              ...activity,
+              interactionMode: options.conversation ? "conversation" : "guided",
+            },
+      };
     else if (path.endsWith("/realtime/connect")) {
       await route.fulfill({ body: "fixture-answer" });
       return;
     } else if (path.endsWith("/private-lessons")) payload = { lessons: [] };
-    else if (path.endsWith("/complete")) payload = { lesson: guidedReport };
-    else if (path.endsWith(`/courses/homework/${id}`))
+    else if (path.endsWith("/complete")) {
+      if (options.legacy) commands.push(route.request().postDataJSON());
+      payload = { lesson: guidedReport };
+    } else if (path.endsWith(`/courses/homework/${id}`))
       payload = {
         homework: {
           id,
@@ -233,7 +293,10 @@ for (const width of [320, 390, 1487])
     await page.goto(`/private-lesson?pack=${id}`);
     await page.getByLabel(he.lessonUi.answerMode).selectOption("text");
     await page
-      .getByRole("button", { name: he.privateLesson.start, exact: true })
+      .getByRole("button", {
+        name: he.lessonPrep.startWithTeacher,
+        exact: true,
+      })
       .click();
     await expect(page.locator(".lesson-session")).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
@@ -243,19 +306,17 @@ for (const width of [320, 390, 1487])
       ),
     ).toBe(0);
     const portrait = await page
-      .locator(".lesson-teacher-profile .teacher-avatar")
+      .locator(".lesson-room .teacher-avatar")
       .boundingBox();
-    expect(portrait?.width).toBe(width === 1487 ? 204 : 48);
-    await expect(page.locator(".lesson-tutor-turn h1")).toHaveCSS(
+    expect(portrait?.width).toBe(width === 1487 ? 300 : 52);
+    await expect(page.locator(".lesson-room-topic h1")).toHaveCSS(
       "font-size",
-      width === 1487 ? "56px" : "20px",
+      width === 1487 ? "24px" : "18px",
     );
-    const mic = await page.locator(".lesson-microphone").boundingBox();
-    expect(mic?.width).toBe(width === 1487 ? 160 : 88);
-    if (width === 1487)
-      expect(
-        (await page.locator(".lesson-tutor-turn").boundingBox())?.width,
-      ).toBe(882);
+    const composer = await page.locator(".lesson-room-composer").boundingBox();
+    expect(composer!.y + composer!.height).toBeLessThanOrEqual(
+      width === 1487 ? 1058 : 844,
+    );
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -265,9 +326,6 @@ for (const width of [320, 390, 1487])
       path: `test-results/guided-lesson-${width}.png`,
       animations: "disabled",
     });
-    await page
-      .locator(width === 1487 ? ".lesson-text-action" : ".lesson-mobile-text")
-      .click();
     await page.getByLabel(he.lessonUi.yourAnswer).fill("I want tea.");
     await page
       .getByRole("button", { name: he.lessonUi.send, exact: true })
@@ -275,16 +333,20 @@ for (const width of [320, 390, 1487])
     await expect(page.getByLabel(he.lessonUi.yourAnswer)).toHaveValue(
       "I want tea.",
     );
-    await expect(page.locator(".modal .form-error")).toBeVisible();
+    await expect(
+      page.locator(".lesson-room-composer .form-error"),
+    ).toBeVisible();
     await page
       .getByRole("button", { name: he.lessonUi.send, exact: true })
       .click();
-    await expect(page.locator(".lesson-tutor-turn p")).toHaveText(
-      "יפה, ננסה בקשה חדשה.",
-    );
+    await expect(
+      page
+        .locator(".lesson-room-turn.tutor > p:not(.lesson-room-question)")
+        .last(),
+    ).toHaveText("יפה, ננסה בקשה חדשה.");
     expect(commands).toHaveLength(2);
     expect(commands[1]).toEqual(commands[0]);
-    await page.locator(".lesson-exit").click();
+    await page.locator(".lesson-room-exit").click();
     await page
       .getByRole("button", { name: he.lessonUi.finishAndSave, exact: true })
       .click();
@@ -339,3 +401,124 @@ for (const width of [320, 390, 1487])
     });
     expect(errors).toEqual([]);
   });
+
+test("input mode fallback preserves draft when microphone is denied and composer fits a keyboard-sized viewport", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await fixture(page);
+  await page.goto(`/private-lesson?pack=${id}`);
+  await page.getByLabel(he.lessonUi.answerMode).selectOption("text");
+  await page
+    .getByRole("button", { name: he.lessonPrep.startWithTeacher, exact: true })
+    .click();
+  const answer = page.getByLabel(he.lessonUi.yourAnswer);
+  await answer.fill("A draft I want to keep.");
+  await page
+    .getByRole("button", { name: he.lessonRoom.voice, exact: true })
+    .click();
+  await expect(page.locator(".lesson-room-composer .form-error")).toBeVisible();
+  await expect(answer).toHaveValue("A draft I want to keep.");
+  expect(
+    await page.evaluate(() =>
+      Reflect.get(window, "gotitTestMicrophoneCaptures"),
+    ),
+  ).toBe(1);
+  await page.setViewportSize({ width: 390, height: 430 });
+  const composer = await page.locator(".lesson-room-composer").boundingBox();
+  expect(composer!.y + composer!.height).toBeLessThanOrEqual(430);
+  await expect(
+    page.getByRole("button", { name: he.lessonUi.send, exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: "test-results/lesson-room-keyboard.png",
+    animations: "disabled",
+  });
+});
+
+test("conversation lesson switches voice to writing, mutes the actual track, preserves drafts and resumes voice", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await fixture(page, { allowMicrophone: true, conversation: true });
+  await page.goto(`/private-lesson?pack=${id}`);
+  await page
+    .getByRole("button", { name: he.lessonPrep.startWithTeacher, exact: true })
+    .click();
+  await expect(page.locator(".lesson-room-voice")).toBeVisible();
+  await expect(page.locator(".lesson-room-stages")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: he.lessonUi.speak, exact: true })
+    .click();
+  expect(
+    await page.evaluate(() => Reflect.get(window, "gotitTestTrack").enabled),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/lesson-room-voice.png",
+    animations: "disabled",
+  });
+  await page
+    .getByRole("button", { name: he.lessonUi.answerText, exact: true })
+    .click();
+  expect(
+    await page.evaluate(() => Reflect.get(window, "gotitTestTrack").enabled),
+  ).toBe(false);
+  const answer = page.getByLabel(he.lessonUi.yourAnswer);
+  await answer.fill("Keep my draft between modes.");
+  await page
+    .getByRole("button", { name: he.lessonRoom.voice, exact: true })
+    .click();
+  await expect(page.locator(".lesson-room-voice.recording")).toBeVisible();
+  expect(
+    await page.evaluate(() => Reflect.get(window, "gotitTestTrack").enabled),
+  ).toBe(true);
+  await page
+    .getByRole("button", { name: he.lessonUi.stopSpeaking, exact: true })
+    .click();
+  expect(
+    await page.evaluate(() => Reflect.get(window, "gotitTestTrack").enabled),
+  ).toBe(false);
+  await page
+    .getByRole("button", { name: he.lessonUi.answerText, exact: true })
+    .click();
+  await expect(answer).toHaveValue("Keep my draft between modes.");
+  expect(
+    await page.evaluate(() =>
+      Reflect.get(window, "gotitTestMicrophoneCaptures"),
+    ),
+  ).toBe(1);
+});
+
+test("deployed legacy session accepts a written answer without microphone and saves it in the report", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const commands = await fixture(page, { legacy: true });
+  await page.goto(`/private-lesson?pack=${id}`);
+  await page.getByLabel(he.lessonUi.answerMode).selectOption("text");
+  await page
+    .getByRole("button", { name: he.lessonPrep.startWithTeacher, exact: true })
+    .click();
+  const answer = page.getByLabel(he.lessonUi.yourAnswer);
+  await answer.fill("I am working from home this week.");
+  await answer.press("Enter");
+  await expect(answer).toHaveValue("");
+  await expect(page.locator(".lesson-room-turn.learner")).toHaveText(
+    new RegExp("I am working from home this week"),
+  );
+  expect(
+    await page.evaluate(() =>
+      Reflect.get(window, "gotitTestMicrophoneCaptures"),
+    ),
+  ).toBe(0);
+  await page.locator(".lesson-room-exit").click();
+  await page
+    .getByRole("button", { name: he.lessonUi.finishAndSave, exact: true })
+    .click();
+  await expect(page.locator(".lesson-summary")).toBeVisible({ timeout: 15000 });
+  expect(commands).toHaveLength(1);
+  expect(commands[0].turns).toContainEqual({
+    role: "learner",
+    text: "I am working from home this week.",
+  });
+});

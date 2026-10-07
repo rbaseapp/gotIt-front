@@ -1,4 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { expect, it, vi } from "vitest";
@@ -10,6 +16,7 @@ function mount(
   onAnswer = vi.fn(async () => true),
   onReview = vi.fn(async () => true),
   activity = guidedSession.activity!,
+  answerBlocked = false,
 ) {
   const onAction = vi.fn(),
     onPause = vi.fn(),
@@ -25,6 +32,7 @@ function mount(
         status="Ready"
         audioLevel={0}
         busy={false}
+        answerBlocked={answerBlocked}
         ready
         microphoneMuted
         inputMode="text"
@@ -143,4 +151,87 @@ it("reviews an edited transcript without recording another learning answer, and 
   await screen.findByText(i18n.t("lessonReview.originalPreserved"));
   expect(review.mock.calls).toEqual([["Water, please."], ["Water, please."]]);
   expect(answer).not.toHaveBeenCalled();
+});
+
+it("sends Enter once, keeps Shift+Enter and composition for editing, and locks an in-flight draft", async () => {
+  let resolve!: (success: boolean) => void;
+  const answer = vi.fn(
+    () =>
+      new Promise<boolean>((done) => {
+        resolve = done;
+      }),
+  );
+  mount(answer);
+  const textbox = screen.getByRole("textbox", {
+    name: i18n.t("lessonUi.yourAnswer"),
+  });
+  fireEvent.change(textbox, { target: { value: "I want tea." } });
+  fireEvent.keyDown(textbox, { key: "Enter", shiftKey: true });
+  fireEvent.keyDown(textbox, { key: "Enter", isComposing: true });
+  expect(answer).not.toHaveBeenCalled();
+  fireEvent.keyDown(textbox, { key: "Enter" });
+  fireEvent.keyDown(textbox, { key: "Enter" });
+  expect(answer).toHaveBeenCalledExactlyOnceWith("I want tea.");
+  expect(textbox).toBeDisabled();
+  resolve(false);
+  await waitFor(() => expect(textbox).toBeEnabled());
+  expect(textbox).toHaveValue("I want tea.");
+});
+
+it("switches input modes without submitting or losing the learner's draft", async () => {
+  const answer = vi.fn(async () => true);
+  const actions = mount(answer);
+  const user = userEvent.setup();
+  const textbox = screen.getByRole("textbox", {
+    name: i18n.t("lessonUi.yourAnswer"),
+  });
+  await user.type(textbox, "An unfinished answer");
+  await user.click(
+    screen.getByRole("button", {
+      name: i18n.t("lessonRoom.voice"),
+      exact: true,
+    }),
+  );
+  expect(actions.onInputMode).toHaveBeenLastCalledWith("voice");
+  await user.click(
+    screen.getByRole("button", {
+      name: i18n.t("lessonUi.answerText"),
+      exact: true,
+    }),
+  );
+  expect(actions.onInputMode).toHaveBeenLastCalledWith("text");
+  expect(textbox).toHaveValue("An unfinished answer");
+  expect(answer).not.toHaveBeenCalled();
+});
+
+it("renders canonical conversation turns and avoids duplicating the current tutor turn", () => {
+  const activity = {
+    ...guidedSession.activity!,
+    interactionMode: "conversation" as const,
+    tutorText: "What do you enjoy doing?",
+    turns: [
+      { role: "tutor" as const, text: "Hello!" },
+      { role: "learner" as const, text: "I enjoy reading." },
+      { role: "tutor" as const, text: "What do you enjoy doing?" },
+    ],
+  };
+  mount(undefined, undefined, activity);
+  expect(screen.getAllByText("What do you enjoy doing?")).toHaveLength(1);
+  expect(screen.getByText("I enjoy reading.")).toHaveAttribute("dir", "auto");
+});
+
+it("lets the learner write during teacher playback but prevents an unanswered send", () => {
+  const answer = vi.fn(async () => true);
+  mount(answer, undefined, undefined, true);
+  const textbox = screen.getByRole("textbox", {
+    name: i18n.t("lessonUi.yourAnswer"),
+  });
+  fireEvent.change(textbox, { target: { value: "My next answer." } });
+  expect(textbox).toBeEnabled();
+  expect(
+    screen.getByRole("button", { name: i18n.t("lessonUi.send") }),
+  ).toBeDisabled();
+  fireEvent.keyDown(textbox, { key: "Enter" });
+  expect(answer).not.toHaveBeenCalled();
+  expect(textbox).toHaveValue("My next answer.");
 });
