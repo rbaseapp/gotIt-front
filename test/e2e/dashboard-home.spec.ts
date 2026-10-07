@@ -4,10 +4,13 @@ import { seedProfile } from "../../src/data/seed";
 
 for (const viewport of [
   { width: 390, height: 844 },
+  { width: 1024, height: 600 },
   { width: 1024, height: 720 },
+  { width: 1366, height: 768 },
   { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
 ]) {
-  test(`home separates word practice and private lessons at ${viewport.width}px`, async ({
+  test(`home separates word practice and private lessons at ${viewport.width}x${viewport.height}`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport);
@@ -129,7 +132,25 @@ for (const viewport of [
         .locator(".ux-home-next-copy .button.primary")
         .boundingBox();
       const hero = await page.locator(".ux-home-next").boundingBox();
-      expect(primary!.width).toBeLessThan(hero!.width * 0.55);
+      expect(primary!.width).toBeLessThan(
+        hero!.width * (viewport.height < 700 ? 0.75 : 0.55),
+      );
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => document.documentElement.scrollHeight <= innerHeight + 1,
+          ),
+        )
+        .toBe(true);
+      const footer = await page.locator(".ux-home-footer").boundingBox();
+      expect(footer!.y + footer!.height).toBeLessThanOrEqual(viewport.height);
+      expect(
+        await page
+          .locator(".sidebar")
+          .evaluate(
+            (element) => element.scrollHeight <= element.clientHeight + 1,
+          ),
+      ).toBe(true);
     }
     await expect(page.locator(".dashboard-more")).not.toHaveAttribute("open");
     // An unselected course never takes over the user's vocabulary-first home.
@@ -144,7 +165,7 @@ for (const viewport of [
       ),
     ).toBe(true);
     await page.screenshot({
-      path: `test-results/dashboard-${viewport.width}.png`,
+      path: `test-results/dashboard-${viewport.width}-${viewport.height}.png`,
       fullPage: true,
     });
   });

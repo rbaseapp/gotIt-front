@@ -252,9 +252,262 @@
     }
   }
 }
+/* Fit the resting desktop home to the viewport without clipping content.
+   Expanded progress and enlarged text can still grow the document naturally. */
+@media (min-width: 861px) {
+  .app-layout > .main-column > .page-content:has(.ux-home) {
+    max-width: 1360px;
+    padding: clamp(12px, 2dvh, 24px) clamp(20px, 3vw, 46px);
+  }
+  .ux-home {
+    gap: clamp(8px, 1.2dvh, 14px);
+  }
+  .ux-home-heading {
+    margin-bottom: 0;
+  }
+  .ux-home-heading h1 {
+    font-size: calc(clamp(28px, 3.8dvh, 40px) * var(--text-scale, 1));
+    margin-bottom: 4px;
+  }
+  .ux-home-heading p {
+    font-size: calc(clamp(16px, 2.2dvh, 22px) * var(--text-scale, 1));
+    margin: 0;
+  }
+  .ux-home .ux-home-next {
+    min-height: clamp(230px, calc(100dvh - 490px), 400px);
+  }
+  .ux-home .ux-home-illustration {
+    width: 44%;
+    position: relative;
+  }
+  .ux-home .ux-home-illustration img {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    object-fit: contain;
+  }
+  .ux-home .ux-home-next-copy {
+    justify-content: center;
+    padding: clamp(16px, 2.4dvh, 28px);
+    gap: clamp(6px, 1dvh, 12px);
+  }
+  .ux-home .ux-home-next h2 {
+    font-size: calc(clamp(28px, 3.8dvh, 42px) * var(--text-scale, 1));
+    margin-bottom: 0;
+  }
+  .ux-home .ux-home-next-copy > p {
+    font-size: calc(clamp(16px, 2.3dvh, 22px) * var(--text-scale, 1));
+    margin: 0;
+  }
+  .ux-home .ux-home-next .ux-icon {
+    width: 44px;
+    height: 44px;
+  }
+  .ux-home .ux-home-next .ux-card-heading {
+    gap: 12px;
+  }
+  .ux-home .ux-home-next .button.primary,
+  .ux-home .ux-home-next .button.ghost {
+    min-height: 44px;
+    padding: 8px 16px;
+    font-size: calc(clamp(16px, 2.4dvh, 22px) * var(--text-scale, 1));
+  }
+  .ux-home-section-heading {
+    margin: 0;
+    gap: 12px;
+  }
+  .ux-home-section-heading h2 {
+    font-size: calc(clamp(20px, 2.6dvh, 26px) * var(--text-scale, 1));
+  }
+  .ux-home-section-heading a {
+    font-size: calc(16px * var(--text-scale, 1));
+  }
+  .ux-home .ux-home-options {
+    gap: 16px;
+  }
+  .ux-home .ux-home-options .ux-card {
+    padding: 12px 16px;
+    min-height: 0;
+  }
+  .ux-home .ux-home-options h2,
+  .ux-home .ux-home-other-program h2 {
+    font-size: calc(22px * var(--text-scale, 1));
+    margin-bottom: 4px;
+  }
+  .ux-home .ux-home-options p,
+  .ux-home .ux-home-other-program p {
+    font-size: calc(16px * var(--text-scale, 1));
+    margin-bottom: 4px;
+  }
+  .ux-home .ux-home-words .ux-word-illustration {
+    width: 84px;
+    height: 64px;
+  }
+  .ux-home .ux-home-other-program > img {
+    width: 100px;
+    height: 64px;
+  }
+  .ux-home .ux-home-options .button {
+    font-size: calc(16px * var(--text-scale, 1));
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+  .ux-home .ux-home-word-actions {
+    min-height: 0;
+    margin-top: 8px;
+    gap: 4px;
+  }
+  .ux-home-word-action-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+  }
+  .ux-home-footer {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ux-home-footer > .ux-explore {
+    flex: 2;
+    width: auto;
+    gap: 8px;
+  }
+  .ux-home-footer > .ux-achievements-entry,
+  .ux-home-footer > .dashboard-more {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+  }
+  .ux-home-footer .button,
+  .ux-home-footer .dashboard-more > summary {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: calc(16px * var(--text-scale, 1));
+  }
+  .ux-home-footer > .dashboard-more[open],
+  .ux-home-footer > .ux-secondary-status[open] {
+    flex-basis: 100%;
+  }
+  .ux-home-footer > .ux-secondary-status {
+    margin-inline-start: auto;
+  }
+  .ux-home-footer .ux-secondary-status > summary {
+    font-size: calc(14px * var(--text-scale, 1));
+  }
+}
+/* Short laptop windows use the available width for the secondary cards. */
+@media (min-width: 861px) and (max-height: 850px) {
+  .app-layout:has(.ux-home) > .sidebar {
+    padding: 12px 16px;
+  }
+  .app-layout:has(.ux-home) .sidebar-top {
+    margin-bottom: 12px;
+  }
+  .app-layout:has(.ux-home) .sidebar .brand-logo {
+    width: 144px;
+  }
+  .app-layout:has(.ux-home) .sidebar-nav {
+    gap: 2px;
+  }
+  .app-layout:has(.ux-home) .nav-link {
+    min-height: 44px;
+    padding-block: 8px;
+    font-size: 16px;
+  }
+  .app-layout:has(.ux-home) .sidebar .add-word-button {
+    margin-block: 8px 0;
+  }
+}
+@media (min-width: 861px) and (max-height: 699px) {
+  .app-layout:has(.ux-home) .sidebar-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .app-layout:has(.ux-home) .nav-link {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 4px;
+    font-size: 14px;
+    text-align: center;
+  }
+  .ux-home {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 8px 16px;
+  }
+  .ux-home-heading,
+  .ux-home-footer {
+    grid-column: 1 / -1;
+  }
+  .ux-home .ux-home-next {
+    grid-column: 1;
+    grid-row: 2 / 4;
+    align-self: stretch;
+    min-height: 0;
+  }
+  .ux-home .ux-home-illustration {
+    width: 30%;
+  }
+  .ux-home .ux-home-next h2 {
+    font-size: calc(26px * var(--text-scale, 1));
+  }
+  .ux-home .ux-home-next .ux-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .ux-home .ux-home-next .ux-card-heading {
+    gap: 8px;
+  }
+  .ux-home-section-heading,
+  .ux-home .ux-home-options {
+    grid-column: 2;
+  }
+  .ux-home .ux-home-options {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .ux-home .ux-home-options .ux-card {
+    padding: 8px 12px;
+  }
+  .ux-home .ux-home-options h2 {
+    font-size: calc(20px * var(--text-scale, 1));
+  }
+  .ux-home .ux-home-options .ux-card-heading {
+    gap: 8px;
+  }
+  .ux-home .ux-home-words .ux-word-illustration {
+    width: 56px;
+    height: 44px;
+  }
+  .ux-home .ux-home-options .form-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    font-size: calc(14px * var(--text-scale, 1));
+  }
+  .ux-home .ux-home-options .form-error .button {
+    flex-shrink: 0;
+    width: auto;
+    margin: 0;
+    padding-inline: 8px;
+    font-size: calc(14px * var(--text-scale, 1));
+  }
+}
+.ux-home-footer {
+  min-width: 0;
+}
+@media (max-width: 860px) {
+  .ux-home-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
 .ux-home .ux-explore .button {
-  font-size: calc(24px * var(--text-scale, 1));
-  min-height: 60px;
+  font-size: calc(16px * var(--text-scale, 1));
+  min-height: 44px;
 }
 
 /* Program cards keep the same hierarchy with one or many server-backed plans. */
@@ -814,13 +1067,6 @@ html body.private-lesson-session-open .private-lesson-mute span {
   .app-layout > .main-column > .page-content {
     padding-inline: 28px;
   }
-  .ux-home .ux-home-next-copy {
-    padding: 24px;
-  }
-  .ux-home .ux-home-next h2 {
-    font-size: calc(34px * var(--text-scale, 1));
-  }
-  .ux-home .ux-home-options p,
   .programs-page .program-card p {
     font-size: calc(20px * var(--text-scale, 1));
   }

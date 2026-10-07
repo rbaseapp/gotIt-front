@@ -260,7 +260,7 @@ test("words dashboard shares the illustrated program layout", async ({
   ).toBeVisible();
   await expect(page.locator(".ux-home-next h2")).toHaveCSS(
     "font-size",
-    "53.532px",
+    "40.204px",
   );
   await expect(page.locator(".ux-home-other-program img")).toBeVisible();
   const art = await page.locator(".ux-home-illustration").boundingBox();
@@ -276,6 +276,8 @@ test("words dashboard shares the illustrated program layout", async ({
 test("home keeps its large artwork and columns while a selected program loads", async ({
   page,
 }) => {
+  // Measure loading geometry after suppressing the decorative entry animation.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1487, height: 1058 });
   await fixtures(page, "he");
   const course = courseWithPlan(true);
@@ -312,11 +314,17 @@ test("home keeps its large artwork and columns while a selected program loads", 
   await expect(page.locator(".ux-home-illustration img")).toBeVisible();
   await withinViewport(page);
 });
-for (const width of [390, 1487])
-  test(`an explicitly chosen program appears even before words exist in its language at ${width}px`, async ({
+for (const { width, height } of [
+  { width: 390, height: 844 },
+  { width: 1024, height: 600 },
+  { width: 1024, height: 720 },
+  { width: 1366, height: 768 },
+  { width: 1487, height: 1058 },
+])
+  test(`an explicitly chosen program appears even before words exist in its language at ${width}x${height}`, async ({
     page,
   }, testInfo) => {
-    await page.setViewportSize({ width, height: width > 860 ? 1058 : 844 });
+    await page.setViewportSize({ width, height });
     await fixtures(page, "he");
     await page.addInitScript(
       ({ ownerKey, courseId }) => {
@@ -343,6 +351,13 @@ for (const width of [390, 1487])
         copy?.x ?? 0,
       );
       await expect(page.locator(".ux-home-illustration img")).toBeVisible();
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => document.documentElement.scrollHeight <= innerHeight + 1,
+          ),
+        )
+        .toBe(true);
     }
     await withinViewport(page);
     await page.screenshot({
@@ -359,6 +374,51 @@ for (const width of [390, 1487])
     await expect(languages).toHaveValue("fr");
     await expect(page.locator(".ux-home")).toHaveClass(/words-home/);
   });
+for (const viewport of [
+  { width: 1024, height: 600 },
+  { width: 1024, height: 720 },
+  { width: 1366, height: 768 },
+  { width: 1906, height: 906 },
+]) {
+  test(`resumed program home fits the desktop viewport at ${viewport.width}x${viewport.height}`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize(viewport);
+    await fixtures(page, "he");
+    await page.addInitScript(
+      ({ ownerKey }) => {
+        localStorage.setItem(ownerKey, "english-path");
+        localStorage.setItem(ownerKey + ".en", "english-path");
+        localStorage.setItem(ownerKey + ".language", "en");
+      },
+      { ownerKey: `gotit.selectedProgram.v1.${sessionId}.${itemId}` },
+    );
+    await page.route("**/api/v1/practice/sessions?**", (route) =>
+      route.fulfill({ json: { items: [session], nextCursor: null } }),
+    );
+    await page.goto("/dashboard");
+    await expect(page.locator(".ux-home")).toHaveClass(/with-program/);
+    await expect(page.locator(".ux-home-next h2")).toHaveText(
+      he.ux.resumeActivity,
+    );
+    await expect(page.locator(".ux-home-heading select")).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document.documentElement.scrollHeight <= innerHeight + 1 &&
+            document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      )
+      .toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath("resumed-home.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+  });
+}
+
 for (const [locale, text] of [
   ["he", he],
   ["en", en],
@@ -378,6 +438,15 @@ for (const [locale, text] of [
         text.ux.wordsYourPace,
       );
       await expect(page.locator(".dashboard-more")).not.toHaveAttribute("open");
+      if (width > 860) {
+        await expect
+          .poll(() =>
+            page.evaluate(
+              () => document.documentElement.scrollHeight <= innerHeight + 1,
+            ),
+          )
+          .toBe(true);
+      }
       await withinViewport(page);
       if (width < 860) {
         await expect(page.locator(".mobile-brand")).toBeVisible();

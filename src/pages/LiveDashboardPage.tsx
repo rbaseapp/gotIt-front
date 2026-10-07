@@ -385,41 +385,43 @@ export function LiveDashboardPage() {
           </div>
         </>
       )}
-      <ExploreActions />
-      <Link
-        className="button ghost ux-achievements-entry"
-        to="/achievements?return=%2Fdashboard"
-      >
-        {t("ux.achievements")}
-      </Link>
-      {d && (
-        <DashboardDetails
-          d={d}
-          languageCode={code}
-          recentPage={recentPage}
-          setRecentPage={setRecentPage}
-        />
-      )}
-      {programs.error && (
-        <details className="ux-secondary-status">
-          <summary>{t("ux.programs")}</summary>
-          <RemoteState
-            loading={false}
-            error={programs.error}
-            retry={() => void programs.reload()}
+      <div className="ux-home-footer">
+        <ExploreActions />
+        <Link
+          className="button ghost ux-achievements-entry"
+          to="/achievements?return=%2Fdashboard"
+        >
+          {t("ux.achievements")}
+        </Link>
+        {d && (
+          <DashboardDetails
+            d={d}
+            languageCode={code}
+            recentPage={recentPage}
+            setRecentPage={setRecentPage}
           />
-        </details>
-      )}
-      {sessions.error && (
-        <details className="ux-secondary-status">
-          <summary>{t("ux.history")}</summary>
-          <RemoteState
-            loading={false}
-            error={sessions.error}
-            retry={() => void sessions.reload()}
-          />
-        </details>
-      )}
+        )}
+        {programs.error && (
+          <details className="ux-secondary-status">
+            <summary>{t("ux.programs")}</summary>
+            <RemoteState
+              loading={false}
+              error={programs.error}
+              retry={() => void programs.reload()}
+            />
+          </details>
+        )}
+        {sessions.error && (
+          <details className="ux-secondary-status">
+            <summary>{t("ux.history")}</summary>
+            <RemoteState
+              loading={false}
+              error={sessions.error}
+              retry={() => void sessions.reload()}
+            />
+          </details>
+        )}
+      </div>
     </div>
   );
 }
