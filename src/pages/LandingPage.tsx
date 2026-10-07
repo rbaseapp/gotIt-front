@@ -475,92 +475,42 @@ function Languages() {
   );
 }
 
-/** How long each review stays before the next one, in ms (matches the CSS bar). */
-const REVIEW_MS = 7000;
-const AVATAR_TONES = ["green", "mark", "purple", "blue"] as const;
-
 function Testimonials() {
   const { t } = useTranslation();
-  const [index, setIndex] = useState(0);
-  const [held, setHeld] = useState(false);
-  const [ref, inView] = useInView<HTMLElement>();
   if (!testimonials.length) return null;
-  const current = testimonials[index];
-  const next = () => setIndex((value) => (value + 1) % testimonials.length);
-  // Auto-advance is driven by the progress bar's CSS animation, so hovering,
-  // focusing or scrolling away pauses both together; reduced motion stops it.
-  const running = inView && !held && testimonials.length > 1;
   return (
     <section
-      ref={ref}
       className="landing-testimonials"
       aria-labelledby="testimonials-title"
-      onPointerEnter={() => setHeld(true)}
-      onPointerLeave={() => setHeld(false)}
-      onFocus={() => setHeld(true)}
-      onBlur={() => setHeld(false)}
     >
-      <div className="reviews-side">
-        <h2 id="testimonials-title">{t("landing.testimonials.title")}</h2>
-        <ul className="reviews-people">
-          {testimonials.map((item, itemIndex) => (
-            <li key={item.name + item.quote.slice(0, 16)}>
-              <button
-                type="button"
-                aria-pressed={itemIndex === index}
-                onClick={() => setIndex(itemIndex)}
-              >
+      <h2 id="testimonials-title">{t("landing.testimonials.title")}</h2>
+      <ul className="review-grid">
+        {testimonials.map((item) => (
+          <li key={item.quote} className="review-card">
+            <figure>
+              {item.rating && (
                 <span
-                  className="review-avatar"
-                  data-tone={AVATAR_TONES[itemIndex % AVATAR_TONES.length]}
-                  aria-hidden="true"
+                  className="testimonial-stars"
+                  role="img"
+                  aria-label={t("landing.testimonials.rating", {
+                    rating: item.rating,
+                  })}
                 >
-                  {Array.from(item.name)[0]}
+                  {Array.from({ length: 5 }, (_, star) => (
+                    <Star
+                      key={star}
+                      size={20}
+                      aria-hidden="true"
+                      data-on={star < item.rating! || undefined}
+                    />
+                  ))}
                 </span>
-                <span className="review-person">
-                  <b>{item.name}</b>
-                  {item.detail && <small>{item.detail}</small>}
-                </span>
-                {itemIndex === index && (
-                  <span
-                    key={index}
-                    className="review-progress"
-                    data-running={running || undefined}
-                    onAnimationEnd={next}
-                    style={{ animationDuration: `${REVIEW_MS}ms` }}
-                    aria-hidden="true"
-                  />
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <figure className="review-stage" key={index}>
-        {current.rating && (
-          <span
-            className="testimonial-stars"
-            role="img"
-            aria-label={t("landing.testimonials.rating", {
-              rating: current.rating,
-            })}
-          >
-            {Array.from({ length: 5 }, (_, star) => (
-              <Star
-                key={star}
-                size={22}
-                aria-hidden="true"
-                data-on={star < current.rating! || undefined}
-              />
-            ))}
-          </span>
-        )}
-        <blockquote lang={current.lang}>{current.quote}</blockquote>
-        <figcaption>
-          <b>{current.name}</b>
-          {current.detail && <span>{current.detail}</span>}
-        </figcaption>
-      </figure>
+              )}
+              <blockquote lang={item.lang}>{item.quote}</blockquote>
+            </figure>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
