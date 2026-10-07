@@ -2856,6 +2856,7 @@ export function PrivateLessonPage() {
               status={status}
               audioLevel={tutorAudioLevel}
               busy={activityBusy || responding || phase === "wrapping"}
+              answerBlocked={!activity && Boolean(flowRef.current?.busy)}
               ready={phase === "active"}
               microphoneMuted={microphoneMuted}
               inputMode={inputMode}

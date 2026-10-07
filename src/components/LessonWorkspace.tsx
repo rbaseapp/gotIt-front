@@ -40,6 +40,7 @@ type Props = {
   >;
   needsContinue?: boolean;
   finishBlocked?: boolean;
+  answerBlocked?: boolean;
   remaining: number;
   status: string;
   audioLevel: number;
@@ -92,7 +93,8 @@ export function LessonWorkspace(p: Props) {
     new Intl.DisplayNames([locale], { type: "language" }).of(
       p.lesson.targetLanguageCode,
     ) ?? p.lesson.targetLanguageCode;
-  const teacherState = !p.ready
+  const connected = p.ready || p.busy;
+  const teacherState = !connected
     ? "connecting"
     : p.audioLevel > 0.025
       ? "speaking"
@@ -106,7 +108,8 @@ export function LessonWorkspace(p: Props) {
   }, [lastMessage, messages.length, p.translatedTurn]);
 
   const submit = async () => {
-    if (unavailable || submission.current || !draft.trim()) return;
+    if (unavailable || p.answerBlocked || submission.current || !draft.trim())
+      return;
     submission.current = true;
     setSubmitting(true);
     try {
@@ -336,7 +339,10 @@ export function LessonWorkspace(p: Props) {
             {p.busy && (
               <p className="lesson-room-processing" role="status">
                 <LoaderCircle className="spin" size={16} />
-                {t("lessonRoom.thinking")}
+                {t(`lessonRoom.${teacherState}`, {
+                  teacher: teacherName,
+                  context: p.lesson.teacherVoice,
+                })}
               </p>
             )}
           </div>
@@ -401,7 +407,7 @@ export function LessonWorkspace(p: Props) {
                   type="submit"
                   className="lesson-room-action primary"
                   aria-label={t("lessonUi.send")}
-                  disabled={unavailable || !draft.trim()}
+                  disabled={unavailable || p.answerBlocked || !draft.trim()}
                 >
                   {submitting ? (
                     <LoaderCircle size={18} className="spin" />
@@ -500,8 +506,8 @@ export function LessonWorkspace(p: Props) {
         >
           <header>
             <span className="lesson-room-chip">
-              {p.ready && <img src={checkIcon} alt="" />}
-              {t(p.ready ? "lessonRoom.connected" : "lessonRoom.connecting")}
+              {connected && <img src={checkIcon} alt="" />}
+              {t(connected ? "lessonRoom.connected" : "lessonRoom.connecting")}
             </span>
             <div>
               <h2>{teacherName}</h2>
@@ -515,7 +521,7 @@ export function LessonWorkspace(p: Props) {
                 p.lesson.teacherVoice === "female" ? teacherFemale : teacherMale
               }
               activity={p.busy ? "thinking" : "listening"}
-              active={p.ready}
+              active={connected}
               audioLevel={p.audioLevel}
               label={p.status}
             />
