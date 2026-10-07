@@ -1,0 +1,94 @@
+/* Temporary production learning hub, isolated from the DEV game-hub redesign. */
+.learn-page {
+  --ink: #24352f;
+  --muted: #74817d;
+  --line: #e6e9e4;
+  --green: #2c7a62;
+  --green-dark: #1f604c;
+  --green-soft: #e6f2ed;
+  --purple: #7a6cb3;
+  --purple-soft: #f0edfa;
+  color: var(--ink);
+  min-width: 0;
+}
+.learn-page .page-heading-row h1 {
+  font-size: calc(38px * var(--text-scale, 1));
+  margin: 0 0 10px;
+}
+.learn-page .page-heading-row p {
+  font-size: calc(14px * var(--text-scale, 1));
+  line-height: 1.65;
+}
+.learn-page .page-heading-row .eyebrow {
+  display: block;
+  color: var(--green);
+  font-size: calc(12px * var(--text-scale, 1));
+  margin-bottom: 10px;
+}
+.learn-page .smart-copy {
+  min-width: 0;
+}
+.learn-page .smart-start {
+  flex-shrink: 0;
+  color: #285f4e;
+  background: #f6d694;
+  border-radius: 12px;
+  font-size: calc(14px * var(--text-scale, 1));
+}
+.learn-page .smart-copy h2 {
+  font-size: calc(28px * var(--text-scale, 1));
+}
+.learn-page .game-card {
+  text-align: start;
+  min-width: 0;
+}
+.learn-page .live-panel {
+  border-radius: 17px;
+}
+.learn-page .live-weak-word,
+.learn-page .session-history-row {
+  overflow-wrap: anywhere;
+}
+.learn-more-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (min-width: 861px) {
+  .app-layout > .main-column > .page-content:has(.learn-page) {
+    max-width: 1390px;
+    padding: 38px 58px 60px;
+  }
+}
+@media (max-width: 700px) {
+  .learn-page .page-heading-row h1 {
+    font-size: calc(28px * var(--text-scale, 1));
+  }
+  .learn-page .smart-session-card {
+    padding: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .learn-page .smart-visual {
+    display: none;
+  }
+  .learn-page .smart-copy {
+    flex-basis: 100%;
+  }
+  .learn-page .smart-start {
+    width: 100%;
+  }
+  .learn-page .game-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .learn-page .game-card,
+  .learn-page .game-card:nth-child(4),
+  .learn-page .game-card:nth-child(5) {
+    grid-column: span 1;
+    min-height: 160px;
+    padding: 16px;
+  }
+  .learn-page .live-weak-word {
+    flex-wrap: wrap;
+  }
+}

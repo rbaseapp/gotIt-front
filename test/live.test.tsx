@@ -559,7 +559,7 @@ describe("live server-backed flows", () => {
       ).toBeInTheDocument(),
     );
     await user.click(
-      within(document.querySelector(".ux-game-hub")!).getByRole("link", {
+      within(document.querySelector(".learn-page")!).getByRole("link", {
         name: i18n.t("ux.history"),
       }),
     );

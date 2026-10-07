@@ -237,7 +237,7 @@ for (const width of [390, 1440])
         program === "personal" ? "مرحبا" : "I",
       );
       await expect(
-        page.locator(".session-launch, .ux-smart-ready, .ux-game-hub"),
+        page.locator(".session-launch, .ux-smart-ready, .learn-page"),
       ).toHaveCount(0);
       expect(inputs).toHaveLength(2);
       if (program === "personal") {
