@@ -34,6 +34,7 @@ import {
 } from "../lib/product";
 import { useResource } from "../lib/useResource";
 import { listPrivateLessons } from "../lib/privateLesson";
+import { getUnitLearningPath } from "../lib/unitLearningPath";
 import {
   chooseProgram,
   learningReturn,
@@ -93,6 +94,28 @@ export function EnglishLearningPathPage() {
       [current],
     ),
   );
+  const currentId = current?.id;
+  const unitPath = useResource(
+    useCallback(
+      () =>
+        currentId ? getUnitLearningPath(currentId) : Promise.resolve(undefined),
+      [currentId],
+    ),
+  );
+  const reloadUnitPath = unitPath.reload;
+  useEffect(() => {
+    if (tab !== "map" || !currentId) return;
+    const refresh = () => {
+      if (document.visibilityState !== "hidden") void reloadUnitPath();
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [currentId, tab, reloadUnitPath]);
   const unitPractice = useResource(
     useCallback(
       () =>
@@ -196,6 +219,7 @@ export function EnglishLearningPathPage() {
         { entryIds, known },
       );
       await resource.reload();
+      await unitPath.reload();
       if (preview?.pack.id === pack.id) {
         const detail = await product(
           wordPackDetailSchema,
@@ -361,20 +385,19 @@ export function EnglishLearningPathPage() {
     setBulkOpen(false);
     setParams({ unit: pack.id, tab: value });
   };
-  const stations = current?.teacherStations ?? [];
-  const completedStations = new Set(
-    unitLessons.data
-      ?.filter((lesson) => lesson.status === "completed")
-      .map((lesson) => lesson.wordPack?.station),
+  const pathForCurrent =
+    unitPath.data?.path.packId === current?.id
+      ? unitPath.data?.path
+      : undefined;
+  const stations = pathForCurrent?.stations ?? [];
+  const nextStation = stations.find(
+    (step) => step.available && !step.meetingCompleted,
   );
-  const nextStation = [...stations]
-    .reverse()
-    .find((step) => step.available && !completedStations.has(step.station));
   const meetingStation = params.get("station")
     ? stations.find(
         (step) => step.station === params.get("station") && step.available,
       )
-    : (nextStation ?? [...stations].reverse().find((step) => step.available));
+    : nextStation;
   const showWords = () => current && selectUnit(current, "words");
   const showAll = (level?: string) => {
     const query = new URLSearchParams(params);
@@ -392,8 +415,20 @@ export function EnglishLearningPathPage() {
             ? "pathUi.teacherInPath"
             : `structuredUi.${tab}`,
       );
-  if (current && tab === "meetings" && meetingStation)
-    return <Navigate to={unitUrl(current, meetingStation.station)} replace />;
+  if (
+    current &&
+    tab === "meetings" &&
+    !unitPath.loading &&
+    (pathForCurrent || unitPath.error)
+  )
+    return (
+      <Navigate
+        to={
+          meetingStation ? unitUrl(current, meetingStation.station) : currentUrl
+        }
+        replace
+      />
+    );
   return (
     <div
       className={`english-path-page live-page page-enter path-view-${showLevels ? "levels" : tab}`}
@@ -479,10 +514,16 @@ export function EnglishLearningPathPage() {
             <>
               {current && tab === "map" && (
                 <EnglishUnitMap
+                  key={current.id}
+                  path={pathForCurrent}
+                  pathLoading={
+                    unitPath.loading || (!pathForCurrent && !unitPath.error)
+                  }
+                  pathError={unitPath.error}
+                  onRetryPath={() => void unitPath.reload()}
                   current={current}
                   packs={resource.data?.packs ?? []}
                   nextStation={nextStation}
-                  completedStations={completedStations}
                   completedActivities={
                     (unitLessons.data?.filter(
                       (lesson) => lesson.status === "completed",
@@ -496,7 +537,6 @@ export function EnglishLearningPathPage() {
                   onAll={showAll}
                   onActivities={() => changeTab("activities")}
                   stationUrl={(station) => unitUrl(current, station)}
-                  detailsUrl={`${currentUrl}&tab=meetings`}
                 />
               )}
               {current && tab === "words" && (
@@ -582,44 +622,11 @@ export function EnglishLearningPathPage() {
                 </>
               )}
               {current && tab === "meetings" && (
-                <section
-                  className="path-meeting-details"
-                  data-figma-desktop="43:3801"
-                >
-                  <h2>{t("pathUi.teacherInPath")}</h2>
-                  <p>{t("pathUi.meetingsHelp")}</p>
-                  {stations.map((step) => (
-                    <article className="ux-card" key={step.station}>
-                      <h3>
-                        {t(`pathUi.${step.station}`)} ·{" "}
-                        {t("privateLesson.durationMinutes", {
-                          count: step.durationMinutes,
-                        })}
-                      </h3>
-                      <p>
-                        {t("pathUi.meetingThreshold", {
-                          count: step.requiredWords,
-                          minutes: step.durationMinutes,
-                        })}
-                      </p>
-                      <p>{t("structuredUi.supportedHelp")}</p>
-                      {step.available && (
-                        <Link
-                          className="button primary"
-                          to={unitUrl(current, step.station)}
-                        >
-                          {t("structuredUi.withTeacher")}
-                        </Link>
-                      )}
-                    </article>
-                  ))}
-                  <button
-                    className="button primary"
-                    onClick={() => changeTab("map")}
-                  >
-                    {t("pathUi.backToMap")}
-                  </button>
-                </section>
+                <RemoteState
+                  loading={unitPath.loading || !pathForCurrent}
+                  error={unitPath.error}
+                  retry={() => void unitPath.reload()}
+                />
               )}
             </>
           )}

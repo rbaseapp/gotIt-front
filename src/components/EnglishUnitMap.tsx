@@ -1,48 +1,135 @@
-import { useState } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { Check, ChevronDown, LockKeyhole, SquarePen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { PathArtwork } from "./PathArtwork";
 import { englishPathLevels } from "../lib/englishPath";
 import type { WordPack } from "../lib/product";
+import { errorMessage } from "../lib/product";
+import { courseApi, type Homework } from "../lib/courses";
+import {
+  homeworkTaskLink,
+  type UnitLearningPath,
+} from "../lib/unitLearningPath";
 
 type Station = NonNullable<WordPack["teacherStations"]>[number];
 export function EnglishUnitMap({
   current,
   packs,
   nextStation,
-  completedStations,
   completedActivities,
   onSelect,
   onWords,
   onAll,
   onActivities,
   stationUrl,
-  detailsUrl,
+  path,
+  pathLoading,
+  pathError,
+  onRetryPath,
 }: {
   current: WordPack;
   packs: WordPack[];
   nextStation?: Station;
-  completedStations: Set<string | undefined>;
   completedActivities: number;
   onSelect: (pack: WordPack) => void;
   onWords: () => void;
   onAll: (level?: string) => void;
   onActivities: () => void;
   stationUrl: (station: string) => string;
-  detailsUrl: string;
+  path?: UnitLearningPath;
+  pathLoading: boolean;
+  pathError: string;
+  onRetryPath: () => void;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
+  const [wordsOpen, setWordsOpen] = useState(false);
+  const [meetingOpen, setMeetingOpen] = useState(false);
+  const id = useId();
+  const practiceStation = path?.stations.find(
+    (step) =>
+      step.station === path.nextAction.station &&
+      path.nextAction.kind === "homework",
+  );
+  const rowStation =
+    practiceStation ??
+    path?.stations.find((step) => !step.meetingCompleted) ??
+    path?.stations.at(-1);
+  const remoteHomework = rowStation?.homework;
+  const [preparedHomework, setPreparedHomework] = useState<Homework>();
+  const [preparingPractice, setPreparingPractice] = useState(false);
+  const [practiceError, setPracticeError] = useState("");
+  const preparation = useRef<{ key: string; eventId: string } | undefined>(
+    undefined,
+  );
+  const preparationLock = useRef(false);
+  const assignmentId = remoteHomework?.id;
+  const assignmentRevision = remoteHomework?.revision;
+  const homework =
+    preparedHomework &&
+    remoteHomework &&
+    preparedHomework.id === remoteHomework.id &&
+    preparedHomework.revision >= remoteHomework.revision
+      ? preparedHomework
+      : remoteHomework;
+  const preparePractice = async () => {
+    if (
+      !assignmentId ||
+      assignmentRevision === undefined ||
+      preparationLock.current
+    )
+      return;
+    preparationLock.current = true;
+    const key = `${assignmentId}:${assignmentRevision}`;
+    if (preparation.current?.key !== key)
+      preparation.current = { key, eventId: crypto.randomUUID() };
+    setPreparingPractice(true);
+    setPracticeError("");
+    try {
+      const result = await courseApi.homeworkCommand(assignmentId, "prepare", {
+        revision: assignmentRevision,
+        eventId: preparation.current.eventId,
+      });
+      setPreparedHomework(result.homework);
+    } catch (error) {
+      setPracticeError(errorMessage(error));
+    } finally {
+      preparationLock.current = false;
+      setPreparingPractice(false);
+    }
+  };
+  const prepareOnOpen = useEffectEvent(() => {
+    void preparePractice();
+  });
+  useEffect(() => {
+    if (
+      meetingOpen &&
+      !pathLoading &&
+      !pathError &&
+      rowStation?.meetingCompleted &&
+      homework &&
+      (homework.status === "pending" || homework.needsRefresh)
+    )
+      prepareOnOpen();
+  }, [
+    meetingOpen,
+    rowStation?.meetingCompleted,
+    homework,
+    pathLoading,
+    pathError,
+  ]);
+  const returnTo = `/english-learning?unit=${current.id}`;
+  const nextTask = homework?.tasks.findIndex((task) => !task.done) ?? -1;
+  const practiceLink = practiceStation?.homework
+    ? homeworkTaskLink(practiceStation.homework.id, undefined, false, returnTo)
+    : undefined;
+  const ready = Boolean(path && !pathLoading && !pathError);
   const levels = englishPathLevels(packs);
   const level = levels.find(({ level }) => level === current.track.levelCode)!;
   const completed = current.progress.completed ?? current.progress.mastered;
   const next = level.packs.find(
     (pack) => pack.moduleNumber > current.moduleNumber,
-  );
-  const upcoming = (current.teacherStations ?? []).filter(
-    (step) =>
-      step.station !== nextStation?.station &&
-      !completedStations.has(step.station),
   );
   return (
     <>
@@ -115,7 +202,7 @@ export function EnglishUnitMap({
               </span>
             </div>
             <div
-              className={`unit-teacher-station${nextStation ? "" : " unit-word-station"}`}
+              className={`unit-teacher-station${nextStation || practiceStation ? "" : " unit-word-station"}`}
             >
               <span className="unit-station-icon">
                 <PathArtwork
@@ -125,14 +212,20 @@ export function EnglishUnitMap({
               </span>
               <div className="unit-station-copy">
                 <p className="eyebrow">
-                  {nextStation
-                    ? t("pathUi.nextMinutes", {
-                        count: nextStation.durationMinutes,
+                  {practiceStation
+                    ? t("unitMap.practiceMinutes", {
+                        count: practiceStation.homework?.estimatedMinutes ?? 3,
                       })
-                    : t("pathUi.nextStep")}
+                    : nextStation
+                      ? t("pathUi.nextMinutes", {
+                          count: nextStation.durationMinutes,
+                        })
+                      : t("pathUi.nextStep")}
                 </p>
                 <h3>
-                  {nextStation ? (
+                  {practiceStation ? (
+                    t("unitMap.followUp")
+                  ) : nextStation && ready ? (
                     <Link to={stationUrl(nextStation.station)}>
                       {t(`pathUi.${nextStation.station}`)}
                     </Link>
@@ -141,17 +234,29 @@ export function EnglishUnitMap({
                   )}
                 </h3>
                 <p>
-                  {nextStation
-                    ? t("structuredUi.supportedHelp")
-                    : t("pathUi.firstWordsHelp")}
+                  {practiceStation
+                    ? t("unitMap.followUpHelp")
+                    : nextStation
+                      ? t("structuredUi.supportedHelp")
+                      : t("pathUi.firstWordsHelp")}
                 </p>
                 <small>
-                  {nextStation
-                    ? t("structuredUi.answerHelp")
-                    : t("pathUi.wordPace")}
+                  {practiceStation
+                    ? t("unitMap.meetingComplete")
+                    : nextStation
+                      ? t("structuredUi.answerHelp")
+                      : t("pathUi.wordPace")}
                 </small>
               </div>
-              {nextStation ? (
+              {practiceLink ? (
+                <Link className="button primary" to={practiceLink}>
+                  {t("unitMap.continuePractice")}
+                </Link>
+              ) : practiceStation ? (
+                <button className="button primary" disabled>
+                  {t("unitMap.continuePractice")}
+                </button>
+              ) : nextStation && ready ? (
                 <Link
                   className="button primary"
                   to={stationUrl(nextStation.station)}
@@ -164,9 +269,6 @@ export function EnglishUnitMap({
                 </button>
               )}
               <div className="unit-station-links">
-                <Link className="button ghost" to={detailsUrl}>
-                  {t("structuredUi.stationDetails")}
-                </Link>
                 <button className="button ghost" onClick={onWords}>
                   {t("structuredUi.words")}
                 </button>
@@ -187,57 +289,234 @@ export function EnglishUnitMap({
               </button>
             )}
             <h3 className="unit-upcoming-heading">{t("pathUi.upcoming")}</h3>
+            {pathError && (
+              <p role="alert" className="unit-path-error">
+                {pathError}{" "}
+                <button className="button ghost" onClick={onRetryPath}>
+                  {t("common.retry")}
+                </button>
+              </p>
+            )}
             <div className="unit-upcoming">
-              <button className="unit-upcoming-row" onClick={onWords}>
-                <PathArtwork name="map-BookOpen1" circle="map-Circle4" />
-                <span>
-                  <strong>{t("pathUi.continueWords")}</strong>
-                  <small>{t("pathUi.moreWordsHelp")}</small>
-                </span>
-                <PathArtwork
-                  name="map-GlyphChevronRight"
-                  circle="map-Circle5"
-                />
-              </button>
-              {upcoming.map((step) => (
-                <Link
-                  className="unit-upcoming-row"
-                  key={step.station}
-                  to={
-                    step.available
-                      ? stationUrl(step.station)
-                      : `${detailsUrl}&station=${step.station}`
-                  }
-                >
+              <div className="unit-map-activity">
+                <div className="unit-upcoming-row">
+                  <PathArtwork name="map-BookOpen1" circle="map-Circle4" />
+                  <span className="unit-activity-copy">
+                    <strong>{t("pathUi.continueWords")}</strong>
+                    <small>{t("pathUi.moreWordsHelp")}</small>
+                  </span>
+                  <button
+                    className="button secondary unit-entry"
+                    onClick={onWords}
+                  >
+                    {t("unitMap.enterPractice")}
+                  </button>
+                  <button
+                    className="unit-detail-toggle"
+                    aria-expanded={wordsOpen}
+                    aria-controls={`${id}-words`}
+                    aria-label={t("unitMap.toggleWords")}
+                    onClick={() => setWordsOpen((value) => !value)}
+                  >
+                    <ChevronDown size={20} />
+                  </button>
+                </div>
+                {wordsOpen && (
+                  <div id={`${id}-words`} className="unit-activity-detail">
+                    {pathLoading ? (
+                      <p role="status">{t("common.loading")}</p>
+                    ) : (
+                      <>
+                        <p className="unit-detail-caption">
+                          {t("unitMap.currentWords", {
+                            count: path?.words.length ?? 0,
+                          })}
+                        </p>
+                        <ul className="unit-stage-words">
+                          {path?.words.map((word, index) => (
+                            <li key={`${word.sourceText}-${index}`}>
+                              <strong
+                                lang={current.track.sourceLanguageCode}
+                                dir="auto"
+                              >
+                                {word.sourceText}
+                              </strong>
+                              <span
+                                lang={current.track.translationLanguageCode}
+                                dir="auto"
+                              >
+                                {word.translationText}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        {!path?.words.length && !pathError && (
+                          <p>{t("unitMap.noStageWords")}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="unit-map-activity">
+                <div className="unit-upcoming-row">
                   <PathArtwork name="map-Mic1" circle="map-Circle6" />
-                  <span>
-                    <strong>{t(`pathUi.${step.station}`)}</strong>
+                  <span className="unit-activity-copy">
+                    <strong>
+                      {rowStation
+                        ? t(`pathUi.${rowStation.station}`)
+                        : t("pathUi.review")}
+                    </strong>
                     <small>
-                      {t("pathUi.meetingThreshold", {
-                        count: step.requiredWords,
-                        minutes: step.durationMinutes,
-                      })}
+                      {rowStation?.meetingCompleted
+                        ? t("unitMap.meetingComplete")
+                        : t("unitMap.meetingMinutes", {
+                            count: rowStation?.durationMinutes ?? 10,
+                          })}
+                    </small>
+                    <small>
+                      {rowStation?.meetingCompleted
+                        ? t("unitMap.followUpHelp")
+                        : rowStation?.lockReason === "previous_preparation"
+                          ? t("unitMap.previousPreparation")
+                          : !rowStation?.available
+                            ? t("unitMap.wordsRequired", {
+                                count: Math.max(
+                                  0,
+                                  (rowStation?.requiredWords ?? 0) -
+                                    (current.progress.introduced ?? 0),
+                                ),
+                              })
+                            : t("unitMap.practiceAfterMeeting")}
                     </small>
                   </span>
-                  <PathArtwork
-                    name="map-GlyphChevronRight"
-                    circle="map-Circle5"
-                  />
-                </Link>
-              ))}
-              {!upcoming.length && (
-                <Link className="unit-upcoming-row" to={detailsUrl}>
-                  <PathArtwork name="map-Mic1" circle="map-Circle6" />
-                  <span>
-                    <strong>{t("pathUi.review")}</strong>
-                    <small>{t("pathUi.meetingsHelp")}</small>
-                  </span>
-                  <PathArtwork
-                    name="map-GlyphChevronRight"
-                    circle="map-Circle5"
-                  />
-                </Link>
-              )}
+                  {rowStation?.available && !pathLoading && !pathError ? (
+                    <Link
+                      className="button secondary unit-entry"
+                      to={stationUrl(rowStation.station)}
+                    >
+                      {t(
+                        rowStation.meetingCompleted
+                          ? "unitMap.repeatMeeting"
+                          : "unitMap.enterMeeting",
+                      )}
+                    </Link>
+                  ) : (
+                    <button className="button secondary unit-entry" disabled>
+                      {t("unitMap.enterMeeting")}
+                    </button>
+                  )}
+                  <button
+                    className="unit-detail-toggle"
+                    aria-expanded={meetingOpen}
+                    aria-controls={`${id}-meeting`}
+                    aria-label={t("unitMap.toggleExercises")}
+                    onClick={() => setMeetingOpen((value) => !value)}
+                  >
+                    <ChevronDown size={20} />
+                  </button>
+                </div>
+                {meetingOpen && (
+                  <div id={`${id}-meeting`} className="unit-activity-detail">
+                    <p className="unit-detail-caption">
+                      {t("unitMap.meetingExercises")}
+                    </p>
+                    {!ready ? (
+                      <p role="status">{pathError || t("common.loading")}</p>
+                    ) : !rowStation?.meetingCompleted ? (
+                      <p className="unit-practice-gate">
+                        <LockKeyhole size={20} aria-hidden="true" />
+                        {t("unitMap.practiceAfterMeeting")}
+                      </p>
+                    ) : !homework ? (
+                      <p>{t("unitMap.noAssignment")}</p>
+                    ) : preparingPractice ? (
+                      <p role="status">{t("courses.preparingHomework")}</p>
+                    ) : practiceError ? (
+                      <div role="alert">
+                        <p>{practiceError}</p>
+                        <button
+                          className="button secondary unit-entry"
+                          onClick={() => void preparePractice()}
+                        >
+                          {t("common.retry")}
+                        </button>
+                      </div>
+                    ) : !homework.tasks.length ? (
+                      <Link
+                        className="button secondary unit-entry"
+                        to={homeworkTaskLink(
+                          homework.id,
+                          undefined,
+                          false,
+                          returnTo,
+                        )}
+                      >
+                        {t("unitMap.preparePractice")}
+                      </Link>
+                    ) : (
+                      <ul className="unit-follow-up-list">
+                        {homework.tasks.map((task, index) => {
+                          const available = index === nextTask;
+                          return (
+                            <li
+                              key={index}
+                              className={
+                                available
+                                  ? "is-available"
+                                  : task.done
+                                    ? "is-completed"
+                                    : "is-locked"
+                              }
+                            >
+                              {task.done ? (
+                                <Check size={21} aria-hidden="true" />
+                              ) : available ? (
+                                <SquarePen size={21} aria-hidden="true" />
+                              ) : (
+                                <LockKeyhole size={21} aria-hidden="true" />
+                              )}
+                              <span className="unit-exercise-copy">
+                                <strong dir="auto">{task.objective}</strong>
+                                <small>
+                                  {t(
+                                    task.done
+                                      ? "unitMap.completed"
+                                      : available
+                                        ? "unitMap.available"
+                                        : "unitMap.locked",
+                                  )}
+                                </small>
+                              </span>
+                              {task.done || available ? (
+                                <Link
+                                  className={`button ${task.done ? "secondary" : "primary"} unit-task-entry`}
+                                  to={homeworkTaskLink(
+                                    homework.id,
+                                    index,
+                                    task.done,
+                                    returnTo,
+                                  )}
+                                >
+                                  {t(
+                                    task.done
+                                      ? "unitMap.repeat"
+                                      : "unitMap.enterPractice",
+                                  )}
+                                </Link>
+                              ) : (
+                                <span className="unit-locked-label">
+                                  {t("unitMap.previousExercise")}
+                                </span>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <button
               className="button secondary unit-future"
