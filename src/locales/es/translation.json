@@ -1988,6 +1988,8 @@
     "shortReview": "Short review",
     "vocabularyReview": "Repasar mi vocabulario",
     "programSmartReview": "Práctica inteligente en mi último programa",
+    "vocabularyReviewShort": "Repasar palabras",
+    "programSmartReviewShort": "Practicar el plan",
     "wordCollection": "Open my words",
     "allPrograms": "All my programs",
     "gameHubTitle": "What would you like to play?",
@@ -2203,6 +2205,22 @@
     "studyNote": "Familiarizarse es un paso de aprendizaje. El recuerdo independiente se comprueba al practicar."
   },
   "pathUi": {
+    "programTitle": "Inglés desde cero",
+    "levelNames": {
+      "beginner": "Fundamentos",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "toggleUnit": "Abrir o cerrar los detalles de la unidad",
+    "completedWords": "{{count}}/{{total}} palabras completadas",
+    "practicedWords": "Practicamos {{count}}/{{total}} palabras",
+    "completedActivities": "{{count}} actividades completadas · Detalles",
+    "upcoming": "Más adelante en esta unidad",
+    "continueWords": "Continuar con palabras y frases",
+    "moreWordsHelp": "Aprender más palabras y formar frases.",
+    "allUnits": "Todas las unidades",
+    "scrollUnits": "Desplázate para ver las {{count}} unidades",
+    "continueHere": "Continuamos aquí",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",
@@ -2250,6 +2268,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "Profesor de IA",
+    "availableMinutes": "{{count}} minutos disponibles en tu cuenta",
+    "startWithTeacher": "Empezar con el profesor",
+    "learnWordsFirst": "Conocer primero las palabras",
+    "myTeacher": "Mi profesor",
+    "voiceOrText": "Por voz o por escrito",
+    "preferences": "Preferencias de la clase",
+    "inputHelp": "Puedes escribir sin dar permiso al micrófono. Puedes cambiar cómo respondes durante la clase."
+  },
   "unitStudy": {
     "chooseGame": "Elegir un juego para esta unidad",
     "knownLabel": "Conozco esta palabra: omitir en la práctica",
@@ -2257,6 +2285,8 @@
     "allKnown": "Todas las palabras están marcadas como conocidas. Desmarca las que quieras practicar.",
     "scopeHelp": "Estos juegos usan solo las palabras de esta unidad, salvo las marcadas como conocidas.",
     "noImage": "No hay una imagen disponible para esta palabra ahora.",
-    "listenExample": "Escuchar la frase"
+    "listenExample": "Escuchar la frase",
+    "learned": "Aprendida",
+    "learnedHelp": "Aprendida en esta unidad — ejercicio completado con éxito."
   }
 }

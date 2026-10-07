@@ -198,6 +198,62 @@
   clear: both;
   width: 100%;
 }
+.ux-home-words {
+  container: home-words / inline-size;
+}
+.ux-home-word-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+.ux-home-word-action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 8px;
+}
+.ux-home .ux-home-word-action-buttons .button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: calc(16px * var(--text-scale, 1));
+  font-weight: 600;
+  line-height: 22px;
+}
+.ux-home-word-game-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: var(--green);
+  font-size: calc(16px * var(--text-scale, 1));
+  line-height: 22px;
+}
+.ux-home-word-game-link:hover {
+  background: var(--green-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* Reserve the previous action area so compact buttons do not move the cards below. */
+@media (min-width: 861px) {
+  .ux-home.with-program .ux-home-word-actions {
+    min-height: calc(100.8px * var(--text-scale, 1) + 26px);
+  }
+  @container home-words (max-width: 489px) {
+    .ux-home.with-program .ux-home-word-actions {
+      min-height: calc(134.4px * var(--text-scale, 1) + 26px);
+    }
+  }
+  @container home-words (max-width: 350px) {
+    .ux-home.with-program .ux-home-word-actions {
+      min-height: calc(201.6px * var(--text-scale, 1) + 30.8px);
+    }
+  }
+}
 .ux-home.words-home {
   max-width: 1080px;
   margin-inline: auto;
@@ -3959,4 +4015,98 @@ html[dir="ltr"] .auth-review .auth-submit {
     height: 1px;
     background: var(--border);
   }
+}
+/* Unit meeting preparation: Screen/D/LESSON_PREP (43:6205). */
+.path-teacher-step strong a {
+  color: inherit;
+  text-decoration: none;
+}
+.path-teacher-step strong a:hover {
+  text-decoration: underline;
+}
+.unit-prep-page .unit-lesson-prep > header > p,
+.unit-prep-page .unit-lesson-prep .unit-lesson-input-help {
+  color: var(--muted);
+}
+.private-lesson-page.unit-prep-page
+  .unit-lesson-preferences
+  .field
+  > span:first-child {
+  font-size: calc(18px * var(--text-scale, 1));
+  color: var(--muted);
+}
+.private-lesson-page.unit-prep-page .unit-lesson-preferences .button.secondary,
+.private-lesson-page.unit-prep-page .unit-help-language,
+.private-lesson-page.unit-prep-page .unit-lesson-preferences select {
+  min-height: 60px;
+  padding: 12px 20px;
+  border-radius: 16px;
+  background-color: var(--surface);
+  color: var(--green);
+  font-size: calc(24px * var(--text-scale, 1));
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+.unit-prep-page .unit-lesson-preferences > details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: var(--green);
+  cursor: pointer;
+}
+.unit-prep-page
+  .unit-lesson-preferences
+  > details
+  > summary::-webkit-details-marker {
+  display: none;
+}
+@media (max-width: 700px) {
+  .private-lesson-page.unit-prep-page
+    .unit-lesson-preferences
+    .field
+    > span:first-child {
+    font-size: calc(14px * var(--text-scale, 1));
+  }
+  .private-lesson-page.unit-prep-page
+    .unit-lesson-preferences
+    .button.secondary,
+  .private-lesson-page.unit-prep-page .unit-help-language,
+  .private-lesson-page.unit-prep-page .unit-lesson-preferences select {
+    min-height: 44px;
+    font-size: calc(16px * var(--text-scale, 1));
+  }
+  .unit-prep-page .unit-lesson-preferences > details > summary {
+    min-height: 44px;
+  }
+}
+.unit-prep-page .unit-lesson-prep .ux-card.mint > p {
+  color: var(--muted);
+}
+.private-lesson-page.unit-prep-page
+  .unit-lesson-preferences
+  .field
+  > span:first-child {
+  font-weight: 400;
+}
+.private-lesson-page.unit-prep-page .unit-lesson-prep form {
+  margin: 0;
+}
+.focus-shell:has(.unit-prep-page) .mobile-menu {
+  display: none;
+}
+.private-lesson-page.unit-prep-page .unit-lesson-prep form {
+  display: flex;
+}
+html[dir="rtl"] .unit-prep-page .unit-lesson-prep h2 {
+  text-align: right;
+}
+html[dir="ltr"] .unit-prep-page .unit-lesson-prep h2 {
+  text-align: left;
+}
+.unit-prep-page .unit-lesson-prep .ux-card > .button {
+  margin-top: 0;
 }

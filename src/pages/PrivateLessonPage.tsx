@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -51,6 +52,8 @@ import { useApp } from "../context/AppContext";
 import { getBilingualLanguageOptions } from "../lib/languages";
 import { captureReceipt, errorMessage, product } from "../lib/product";
 import { ApiError } from "../lib/api";
+import { billing } from "../lib/billing";
+import { useResource } from "../lib/useResource";
 import {
   completePrivateLessonSession,
   connectPrivateLesson,
@@ -111,11 +114,20 @@ const speechRateMultipliers: Record<PrivateLessonSpeechRate, number> = {
 };
 
 export function PrivateLessonPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("course");
   const packId = searchParams.get("pack");
+  useLayoutEffect(() => {
+    if (packId) window.scrollTo({ top: 0, behavior: "instant" });
+  }, [packId]);
+  const minuteBalance = useResource(
+    useCallback(
+      () => (packId ? billing.minutes() : Promise.resolve(null)),
+      [packId],
+    ),
+  );
   const [unit, setUnit] = useState<LessonUnit>();
   const [unitError, setUnitError] = useState("");
   useEffect(() => {
@@ -746,8 +758,8 @@ export function PrivateLessonPage() {
                     : ("supported" as const),
             }
           : {}),
-        targetLanguageCode: targetLanguage.trim(),
-        supportLanguageCode: supportLanguage.trim() || null,
+        targetLanguageCode: lessonTargetLanguage.trim(),
+        supportLanguageCode: lessonSupportLanguage?.trim() || null,
         lessonMode,
         teachingLanguage: lessonTeachingLanguage,
         ...(level ? { requestedLevel: level } : {}),
@@ -1356,33 +1368,35 @@ export function PrivateLessonPage() {
 
   return (
     <div
-      className={`private-lesson-page live-page page-enter${sessionFullscreen ? " session-fullscreen" : ""}`}
+      className={`private-lesson-page live-page page-enter${packId ? " unit-prep-page" : ""}${sessionFullscreen ? " session-fullscreen" : ""}`}
     >
-      <section className="page-heading-row private-lesson-heading">
-        <div>
-          <p className="eyebrow">{t("privateLesson.eyebrow")}</p>
-          <h1>
-            {courseId && courseData?.nextLesson
-              ? courseData.nextLesson.title
-              : t("ux.readyForLesson")}
-          </h1>
-          <p>
-            {courseId ? (
-              <>
-                {t("courses.yourCourse")} ·{" "}
-                {languageOptions.find(
-                  ([code]) => code === lessonTargetLanguage,
-                )?.[1] ?? lessonTargetLanguage}
-              </>
-            ) : (
-              t("privateLesson.description")
-            )}
-          </p>
-        </div>
-        <span className="private-lesson-heading-icon" aria-hidden="true">
-          <Mic2 size={34} />
-        </span>
-      </section>
+      {!packId && (
+        <section className="page-heading-row private-lesson-heading">
+          <div>
+            <p className="eyebrow">{t("privateLesson.eyebrow")}</p>
+            <h1>
+              {courseId && courseData?.nextLesson
+                ? courseData.nextLesson.title
+                : t("ux.readyForLesson")}
+            </h1>
+            <p>
+              {courseId ? (
+                <>
+                  {t("courses.yourCourse")} ·{" "}
+                  {languageOptions.find(
+                    ([code]) => code === lessonTargetLanguage,
+                  )?.[1] ?? lessonTargetLanguage}
+                </>
+              ) : (
+                t("privateLesson.description")
+              )}
+            </p>
+          </div>
+          <span className="private-lesson-heading-icon" aria-hidden="true">
+            <Mic2 size={34} />
+          </span>
+        </section>
+      )}
 
       {phase === "setup" || phase === "preparing" ? (
         <>
@@ -1392,22 +1406,47 @@ export function PrivateLessonPage() {
               data-figma-desktop="43:6205"
               data-figma-mobile="44:8465"
             >
+              <header>
+                <h1>{t("ux.readyForLesson")}</h1>
+                <p>
+                  {t("ux.fromZeroLanguage", {
+                    language: new Intl.DisplayNames([i18n.language], {
+                      type: "language",
+                    }).of(lessonTargetLanguage),
+                  })}{" "}
+                  ·{" "}
+                  {t("englishPath.unit", { number: unit?.moduleNumber ?? "…" })}{" "}
+                  · {t("lessonPrep.aiTeacher")}
+                </p>
+              </header>
               <section className="ux-card mint">
                 <h2 dir="auto">{unit?.title}</h2>
                 <p>
                   {t("privateLesson.durationMinutes", {
                     count: plannedMinutes,
                   })}
-                </p>
-                <p
-                  className="unit-lesson-word-preview"
-                  lang={unit?.targetLanguageCode}
-                  dir="auto"
-                >
-                  {unit?.words
-                    .slice(0, 5)
-                    .map((word) => word.sourceText)
-                    .join(" · ")}
+                  {minuteBalance.data && (
+                    <>
+                      {" "}
+                      ·{" "}
+                      {t("lessonPrep.availableMinutes", {
+                        count: Math.floor(
+                          minuteBalance.data.secondsRemaining / 60,
+                        ),
+                      })}
+                    </>
+                  )}
+                  <br />
+                  <span
+                    className="unit-lesson-word-preview"
+                    lang={unit?.targetLanguageCode}
+                    dir="auto"
+                  >
+                    {unit?.words
+                      .slice(0, 5)
+                      .map((word) => word.sourceText)
+                      .join(" · ")}
+                  </span>
                 </p>
                 {unitError && (
                   <p role="alert" className="form-error">
@@ -1442,7 +1481,7 @@ export function PrivateLessonPage() {
                     {phase === "preparing" && (
                       <LoaderCircle size={18} className="spin" />
                     )}
-                    {t("privateLesson.start")}
+                    {t("lessonPrep.startWithTeacher")}
                   </button>
                 </form>
                 <button
@@ -1450,23 +1489,16 @@ export function PrivateLessonPage() {
                   className="button secondary"
                   onClick={() =>
                     navigate(
-                      "/learn?pack=" +
-                        packId +
-                        "&language=" +
-                        encodeURIComponent(
-                          unit?.targetLanguageCode ?? targetLanguage,
-                        ) +
-                        "&return=" +
-                        encodeURIComponent("/private-lesson?" + searchParams),
+                      `/english-learning?unit=${packId}&tab=words&return=${encodeURIComponent("/private-lesson?" + searchParams)}`,
                     )
                   }
                 >
-                  {t("ux.warmup")}
+                  {t("lessonPrep.learnWordsFirst")}
                 </button>
               </section>
               <section className="ux-card unit-lesson-preferences">
                 <label className="field">
-                  <span>{t("ux.chooseTeacher")}</span>
+                  <span>{t("lessonPrep.myTeacher")}</span>
                   <button
                     className="button secondary"
                     type="button"
@@ -1478,9 +1510,10 @@ export function PrivateLessonPage() {
                 <label className="field">
                   <span>{t("privateLesson.supportLanguage")}</span>
                   <span className="unit-help-language">
-                    {languageOptions.find(
-                      ([code]) => code === unit?.supportLanguageCode,
-                    )?.[1] ?? unit?.supportLanguageCode}
+                    {unit?.supportLanguageCode &&
+                      new Intl.DisplayNames([i18n.language], {
+                        type: "language",
+                      }).of(unit.supportLanguageCode)}
                   </span>
                 </label>
                 <label className="field">
@@ -1491,7 +1524,7 @@ export function PrivateLessonPage() {
                       setInputMode(event.target.value as "voice" | "text")
                     }
                   >
-                    <option value="voice">{t("lessonUi.voiceOrText")}</option>
+                    <option value="voice">{t("lessonPrep.voiceOrText")}</option>
                     <option
                       value="text"
                       disabled={
@@ -1503,7 +1536,7 @@ export function PrivateLessonPage() {
                   </select>
                 </label>
                 <details>
-                  <summary>{t("accountUi.morePreferences")}</summary>
+                  <summary>{t("lessonPrep.preferences")}</summary>
                   <p>
                     {t("privateLesson.durationMinutes", {
                       count: plannedMinutes,
@@ -1519,14 +1552,10 @@ export function PrivateLessonPage() {
                     ))}
                   </details>
                 </details>
-                <p>{t("privateLesson.privacy")}</p>
               </section>
-              <button
-                className="button ghost"
-                onClick={() => navigate("/english-learning?unit=" + packId)}
-              >
-                {t("courses.backToCourse")}
-              </button>
+              <p className="unit-lesson-input-help">
+                {t("lessonPrep.inputHelp")}
+              </p>
               {error && (
                 <p role="alert" className="form-error">
                   {error}
@@ -2651,92 +2680,99 @@ export function PrivateLessonPage() {
           >
             <div className="modal-body">{teacherChoices}</div>
           </Modal>
-          <section className="private-lesson-history live-panel">
-            <div className="private-lesson-history-heading">
-              <div>
-                <p className="eyebrow">{t("privateLesson.history.eyebrow")}</p>
-                <h2>
-                  {t(
-                    courseId
-                      ? "courses.courseHistory"
-                      : "privateLesson.history.title",
-                  )}
-                </h2>
+          {!packId && (
+            <section className="private-lesson-history live-panel">
+              <div className="private-lesson-history-heading">
+                <div>
+                  <p className="eyebrow">
+                    {t("privateLesson.history.eyebrow")}
+                  </p>
+                  <h2>
+                    {t(
+                      courseId
+                        ? "courses.courseHistory"
+                        : "privateLesson.history.title",
+                    )}
+                  </h2>
+                </div>
+                <BookOpen size={24} aria-hidden="true" />
               </div>
-              <BookOpen size={24} aria-hidden="true" />
-            </div>
-            {historyError ? (
-              <p className="form-error" role="alert">
-                {historyError}
-              </p>
-            ) : visibleHistory.length ? (
-              <div className="private-lesson-history-groups">
-                {historyGroups.map(([languageCode, lessons]) => (
-                  <section
-                    key={languageCode}
-                    className="private-lesson-history-group"
-                  >
-                    <h3>
-                      <Languages size={18} aria-hidden="true" />
-                      {languageOptions.find(
-                        ([code]) => code === languageCode,
-                      )?.[1] ?? languageCode}
-                    </h3>
-                    <div className="private-lesson-history-list">
-                      {lessons.map((lesson) => (
-                        <article key={lesson.id}>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedHistory(lesson)}
-                          >
-                            <strong dir="auto">{lesson.topic}</strong>
-                            <span>
-                              {new Date(lesson.startedAt).toLocaleDateString()}{" "}
-                              · {lesson.level}
-                            </span>
-                            <small
-                              dir="auto"
-                              lang={
-                                lesson.report
-                                  ? (lesson.supportLanguageCode ??
-                                    lesson.targetLanguageCode)
-                                  : undefined
+              {historyError ? (
+                <p className="form-error" role="alert">
+                  {historyError}
+                </p>
+              ) : visibleHistory.length ? (
+                <div className="private-lesson-history-groups">
+                  {historyGroups.map(([languageCode, lessons]) => (
+                    <section
+                      key={languageCode}
+                      className="private-lesson-history-group"
+                    >
+                      <h3>
+                        <Languages size={18} aria-hidden="true" />
+                        {languageOptions.find(
+                          ([code]) => code === languageCode,
+                        )?.[1] ?? languageCode}
+                      </h3>
+                      <div className="private-lesson-history-list">
+                        {lessons.map((lesson) => (
+                          <article key={lesson.id}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedHistory(lesson)}
+                            >
+                              <strong dir="auto">{lesson.topic}</strong>
+                              <span>
+                                {new Date(
+                                  lesson.startedAt,
+                                ).toLocaleDateString()}{" "}
+                                · {lesson.level}
+                              </span>
+                              <small
+                                dir="auto"
+                                lang={
+                                  lesson.report
+                                    ? (lesson.supportLanguageCode ??
+                                      lesson.targetLanguageCode)
+                                    : undefined
+                                }
+                              >
+                                {lesson.report?.summary ??
+                                  t(
+                                    `privateLesson.history.status.${lesson.status}`,
+                                  )}
+                              </small>
+                            </button>
+                            <button
+                              className="icon-button"
+                              type="button"
+                              aria-label={t("privateLesson.history.delete")}
+                              onClick={() =>
+                                void removeHistoryLesson(lesson).catch(
+                                  (reason) =>
+                                    setHistoryError(errorMessage(reason)),
+                                )
                               }
                             >
-                              {lesson.report?.summary ??
-                                t(
-                                  `privateLesson.history.status.${lesson.status}`,
-                                )}
-                            </small>
-                          </button>
-                          <button
-                            className="icon-button"
-                            type="button"
-                            aria-label={t("privateLesson.history.delete")}
-                            onClick={() =>
-                              void removeHistoryLesson(lesson).catch((reason) =>
-                                setHistoryError(errorMessage(reason)),
-                              )
-                            }
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </article>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-            ) : (
-              <p>
-                {t(
-                  courseId
-                    ? "courses.noCourseHistory"
-                    : "privateLesson.history.empty",
-                )}
-              </p>
-            )}
-          </section>
+                              <Trash2 size={16} />
+                            </button>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  {t(
+                    courseId
+                      ? "courses.noCourseHistory"
+                      : "privateLesson.history.empty",
+                  )}
+                </p>
+              )}
+            </section>
+          )}
           <Modal
             open={Boolean(selectedHistory)}
             onClose={() => setSelectedHistory(undefined)}

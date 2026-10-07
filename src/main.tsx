@@ -11,6 +11,7 @@ import "./production.css";
 import "./ux.css";
 import "./figma-review.css";
 import "./path-review.css";
+import "./learning-map.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

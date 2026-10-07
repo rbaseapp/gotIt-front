@@ -2018,6 +2018,8 @@
     "shortReview": "Short review",
     "vocabularyReview": "Повторить мои слова",
     "programSmartReview": "Умная практика в последней программе",
+    "vocabularyReviewShort": "Повторить слова",
+    "programSmartReviewShort": "Практика по плану",
     "wordCollection": "Open my words",
     "allPrograms": "All my programs",
     "gameHubTitle": "What would you like to play?",
@@ -2233,6 +2235,22 @@
     "studyNote": "Знакомство со словом — этап обучения. Самостоятельное вспоминание проверяется в практике."
   },
   "pathUi": {
+    "programTitle": "Английский с нуля",
+    "levelNames": {
+      "beginner": "Основы",
+      "intermediate": "Средний",
+      "advanced": "Продвинутый"
+    },
+    "toggleUnit": "Открыть или закрыть подробности раздела",
+    "completedWords": "Завершено {{count}}/{{total}} слов",
+    "practicedWords": "Отработано {{count}}/{{total}} слов",
+    "completedActivities": "{{count}} завершённых занятий · Подробнее",
+    "upcoming": "Далее в этом разделе",
+    "continueWords": "Продолжить со словами и предложениями",
+    "moreWordsHelp": "Учить новые слова и строить предложения.",
+    "allUnits": "Все разделы",
+    "scrollUnits": "Прокрутите, чтобы увидеть все {{count}} разделов",
+    "continueHere": "Продолжаем здесь",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",
@@ -2280,6 +2298,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "ИИ-преподаватель",
+    "availableMinutes": "На вашем счёте доступно {{count}} минут",
+    "startWithTeacher": "Начать с преподавателем",
+    "learnWordsFirst": "Сначала изучить слова",
+    "myTeacher": "Мой преподаватель",
+    "voiceOrText": "Голосом или текстом",
+    "preferences": "Настройки урока",
+    "inputHelp": "Можно писать без доступа к микрофону. Способ ответа можно изменить во время урока."
+  },
   "unitStudy": {
     "chooseGame": "Выбрать игру для слов раздела",
     "knownLabel": "Я знаю это слово — пропускать в тренировке",
@@ -2287,6 +2315,8 @@
     "allKnown": "Все слова отмечены как знакомые. Снимите отметки со слов, которые хотите тренировать.",
     "scopeHelp": "В этих играх используются только слова этого раздела, кроме отмеченных как знакомые.",
     "noImage": "Изображение для этого слова сейчас недоступно.",
-    "listenExample": "Прослушать предложение"
+    "listenExample": "Прослушать предложение",
+    "learned": "Изучено",
+    "learnedHelp": "Изучено в этом разделе — упражнение выполнено успешно."
   }
 }

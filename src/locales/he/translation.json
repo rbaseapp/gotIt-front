@@ -1987,6 +1987,8 @@
     "shortReview": "חזרה קצרה",
     "vocabularyReview": "חזרה על אוצר המילים שלי",
     "programSmartReview": "תרגול חכם בתוכנית האחרונה",
+    "vocabularyReviewShort": "חזרה על המילים",
+    "programSmartReviewShort": "תרגול בתוכנית",
     "wordCollection": "למילים שלי",
     "allPrograms": "כל התוכניות שלי",
     "gameHubTitle": "במה תרצו לשחק?",
@@ -2202,6 +2204,22 @@
     "studyNote": "היכרות עם המילה היא שלב לימוד. הצלחה עצמאית נבדקת בתרגול."
   },
   "pathUi": {
+    "programTitle": "אנגלית מאפס",
+    "levelNames": {
+      "beginner": "בסיס",
+      "intermediate": "ביניים",
+      "advanced": "מתקדמים"
+    },
+    "toggleUnit": "פתיחה וסגירה של פרטי היחידה",
+    "completedWords": "{{count}}/{{total}} מילים הושלמו",
+    "practicedWords": "תרגלנו {{count}}/{{total}} מילים",
+    "completedActivities": "{{count}} פעילויות שהושלמו · לפרטים",
+    "upcoming": "בהמשך היחידה",
+    "continueWords": "ממשיכים עם מילים ומשפטים",
+    "moreWordsHelp": "נלמד עוד מילים ונבנה משפטים.",
+    "allUnits": "כל היחידות",
+    "scrollUnits": "גללו לצפייה בכל {{count}} היחידות",
+    "continueHere": "כאן ממשיכים",
     "chooseWord": "לוחצים על מילה כדי לשמוע ולראות דוגמה",
     "word": "המילה",
     "meaning": "הפירוש",
@@ -2249,6 +2267,16 @@
     "openFromZero": "פתיחת מסלול מאפס",
     "pairUnavailable": "מסלול מוכן אינו זמין כרגע לזוג השפות הזה. אפשר לבנות תוכנית אישית."
   },
+  "lessonPrep": {
+    "aiTeacher": "מורה AI",
+    "availableMinutes": "{{count}} דקות זמינות בחשבון",
+    "startWithTeacher": "מתחילים עם המורה",
+    "learnWordsFirst": "מכירים את המילים קודם",
+    "myTeacher": "המורה שלי",
+    "voiceOrText": "בקול או בכתב",
+    "preferences": "העדפות השיעור",
+    "inputHelp": "כתיבה זמינה בלי הרשאת מיקרופון. אפשר לשנות את דרך המענה במהלך המפגש."
+  },
   "unitStudy": {
     "chooseGame": "בחירת משחק למילות היחידה",
     "knownLabel": "אני מכיר/ה את המילה — לדלג בתרגול",
@@ -2256,6 +2284,8 @@
     "allKnown": "כל מילות היחידה מסומנות כמוכרות. בטלו את הסימון במילים שתרצו לתרגל.",
     "scopeHelp": "המשחקים כאן מתרגלים רק מילים מהיחידה הזאת, למעט מילים שסומנו כמוכרות.",
     "noImage": "לא זמינה כרגע תמונה למילה הזאת.",
-    "listenExample": "שומעים את המשפט"
+    "listenExample": "שומעים את המשפט",
+    "learned": "נלמדה",
+    "learnedHelp": "נלמדה בתרגול היחידה — התרגיל הושלם בהצלחה."
   }
 }

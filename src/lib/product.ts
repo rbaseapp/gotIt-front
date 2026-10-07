@@ -262,6 +262,7 @@ export const sessionSchema = z.object({
   correctCount: count,
   xpEarned: count,
   algorithmVersion: z.string(),
+  curriculumOrder: z.boolean().optional(),
   scope: z
     .object({
       type: z.enum(["pack", "track", "topic"]),
@@ -327,6 +328,7 @@ export const wordPackEntrySchema = z.object({
   learningItemId: uuid.nullable(),
   excludedAt: nullableDate,
   known: z.boolean().optional(),
+  learned: z.boolean().optional(),
 });
 export type WordPackEntry = z.infer<typeof wordPackEntrySchema>;
 export const wordPackDetailSchema = z.object({

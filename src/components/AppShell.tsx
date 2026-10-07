@@ -37,6 +37,7 @@ import {
   type SavedPrivateLesson,
 } from "../lib/privateLesson";
 import { getBilingualLanguageOptions } from "../lib/languages";
+import { learningReturn } from "../lib/learningNavigation";
 
 function sameBaseLanguage(first: string, second: string) {
   try {
@@ -368,10 +369,17 @@ export function AppShell({
                 to={
                   location.pathname === "/achievements"
                     ? "/account"
-                    : "/courses"
+                    : learningReturn(
+                        new URLSearchParams(location.search).get("return"),
+                        "/courses",
+                      )
                 }
               >
-                {t("ux.backHome")}
+                {t(
+                  new URLSearchParams(location.search).has("pack")
+                    ? "common.back"
+                    : "ux.backHome",
+                )}
               </Link>
             )}
             {latestLessonAssessment?.report && (

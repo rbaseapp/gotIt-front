@@ -2033,6 +2033,8 @@
     "shortReview": "Short review",
     "vocabularyReview": "مراجعة مفرداتي",
     "programSmartReview": "تدريب ذكي في آخر برنامج لي",
+    "vocabularyReviewShort": "مراجعة الكلمات",
+    "programSmartReviewShort": "تدريب البرنامج",
     "wordCollection": "Open my words",
     "allPrograms": "All my programs",
     "gameHubTitle": "What would you like to play?",
@@ -2248,6 +2250,22 @@
     "studyNote": "التعرف على الكلمة خطوة تعلم. يتم اختبار التذكر المستقل في التدريب."
   },
   "pathUi": {
+    "programTitle": "الإنجليزية من الصفر",
+    "levelNames": {
+      "beginner": "الأساسيات",
+      "intermediate": "المتوسط",
+      "advanced": "المتقدم"
+    },
+    "toggleUnit": "فتح أو إغلاق تفاصيل الوحدة",
+    "completedWords": "اكتملت {{count}}/{{total}} كلمة",
+    "practicedWords": "تدرّبنا على {{count}}/{{total}} كلمة",
+    "completedActivities": "{{count}} أنشطة مكتملة · التفاصيل",
+    "upcoming": "لاحقًا في هذه الوحدة",
+    "continueWords": "متابعة الكلمات والجمل",
+    "moreWordsHelp": "نتعلم كلمات أخرى ونبني جملًا.",
+    "allUnits": "كل الوحدات",
+    "scrollUnits": "مرّر لعرض الوحدات الـ {{count}}",
+    "continueHere": "نتابع هنا",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",
@@ -2295,6 +2313,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "معلم بالذكاء الاصطناعي",
+    "availableMinutes": "{{count}} دقيقة متاحة في حسابك",
+    "startWithTeacher": "نبدأ مع المعلم",
+    "learnWordsFirst": "نتعرف على الكلمات أولاً",
+    "myTeacher": "معلمي",
+    "voiceOrText": "بالصوت أو بالكتابة",
+    "preferences": "تفضيلات الدرس",
+    "inputHelp": "الكتابة متاحة دون إذن الميكروفون. يمكنك تغيير طريقة الإجابة أثناء اللقاء."
+  },
   "unitStudy": {
     "chooseGame": "اختيار لعبة لكلمات الوحدة",
     "knownLabel": "أعرف هذه الكلمة — تخطّيها في التدريب",
@@ -2302,6 +2330,8 @@
     "allKnown": "كل كلمات الوحدة محددة كمعروفة. ألغِ تحديد الكلمات التي تريد تدريبها.",
     "scopeHelp": "تستخدم هذه الألعاب كلمات هذه الوحدة فقط، باستثناء الكلمات المحددة كمعروفة.",
     "noImage": "لا تتوفر صورة لهذه الكلمة حاليًا.",
-    "listenExample": "استمع إلى الجملة"
+    "listenExample": "استمع إلى الجملة",
+    "learned": "تم تعلمها",
+    "learnedHelp": "تم تعلمها في هذه الوحدة — أُكمل التدريب بنجاح."
   }
 }

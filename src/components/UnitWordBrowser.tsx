@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft } from "lucide-react";
+import { CheckCircle2, ChevronLeft } from "lucide-react";
 import { ReadAloud } from "./CourseComposer";
 import {
   product,
@@ -89,6 +89,15 @@ export function UnitWordBrowser({
               <ChevronLeft size={22} aria-hidden="true" />
               <b dir="auto" lang={language}>
                 {entry.sourceText}
+                {entry.learned && (
+                  <small
+                    className="unit-learned-badge"
+                    data-testid={`unit-learned-${entry.id}`}
+                  >
+                    <CheckCircle2 size={15} aria-hidden="true" />
+                    {t("unitStudy.learned")}
+                  </small>
+                )}
               </b>
               <span dir="auto" lang={supportLanguage}>
                 {entry.translationText}
@@ -119,6 +128,12 @@ export function UnitWordBrowser({
           <h2 dir="auto" lang={language}>
             {selected.sourceText}
           </h2>
+          {selected.learned && (
+            <p className="unit-learned-summary" role="status">
+              <CheckCircle2 size={18} aria-hidden="true" />
+              {t("unitStudy.learnedHelp")}
+            </p>
+          )}
           <ReadAloud
             text={selected.sourceText}
             language={language}

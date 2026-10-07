@@ -416,6 +416,7 @@ export function LiveGameSessionPage() {
         });
       let value = session;
       let resumedCards: StudyCard[] | undefined;
+      let replacementPackId: string | undefined;
       if (!value) {
         const resume = params.get("resume");
         if (resume && uuid.safeParse(resume).success) {
@@ -425,7 +426,15 @@ export function LiveGameSessionPage() {
               `practice/sessions/${resume}`,
             )
           ).session;
-          if (value.status === "active") {
+          if (
+            value.status === "active" &&
+            type === "smart" &&
+            value.scope?.type === "pack" &&
+            value.curriculumOrder !== true
+          ) {
+            replacementPackId = value.scope.id;
+            value = undefined;
+          } else if (value.status === "active") {
             resumedCards = (
               await product(
                 studyCardsSchema,
@@ -440,7 +449,8 @@ export function LiveGameSessionPage() {
             )
               throw new Error(t("game.languageMismatch"));
           }
-        } else {
+        }
+        if (!value) {
           const ids = params.get("items")?.split(",");
           if (
             ids &&
@@ -448,7 +458,7 @@ export function LiveGameSessionPage() {
           )
             throw new Error(t("game.invalidItems"));
           const readingId = params.get("reading");
-          const packId = params.get("pack");
+          const packId = params.get("pack") || replacementPackId;
           if (packId && !uuid.safeParse(packId).success)
             throw new Error(t("game.invalidPack"));
           if (type === "article_quiz" && !uuid.safeParse(readingId).success)
@@ -467,6 +477,7 @@ export function LiveGameSessionPage() {
             ...(ids ? { learningItemIds: ids } : {}),
             ...(readingId && type === "article_quiz" ? { readingId } : {}),
             ...(packId ? { scope: { type: "pack", id: packId } } : {}),
+            ...(packId && type === "smart" ? { curriculumOrder: true } : {}),
           });
           value = (
             await product(

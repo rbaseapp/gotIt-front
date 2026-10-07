@@ -1987,6 +1987,8 @@
     "shortReview": "Short review",
     "vocabularyReview": "Review my vocabulary",
     "programSmartReview": "Smart practice in my latest program",
+    "vocabularyReviewShort": "Review words",
+    "programSmartReviewShort": "Program practice",
     "wordCollection": "Open my words",
     "allPrograms": "All my programs",
     "gameHubTitle": "What would you like to play?",
@@ -2202,6 +2204,22 @@
     "studyNote": "Getting familiar is a study step. Independent recall is checked in practice."
   },
   "pathUi": {
+    "programTitle": "English from zero",
+    "levelNames": {
+      "beginner": "Foundation",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "toggleUnit": "Expand or collapse unit details",
+    "completedWords": "{{count}}/{{total}} words completed",
+    "practicedWords": "Practiced {{count}}/{{total}} words",
+    "completedActivities": "{{count}} completed activities · Details",
+    "upcoming": "Coming up in this unit",
+    "continueWords": "Continue with words and sentences",
+    "moreWordsHelp": "Learn more words and build sentences.",
+    "allUnits": "All units",
+    "scrollUnits": "Scroll to view all {{count}} units",
+    "continueHere": "Continue here",
     "chooseWord": "Choose a word to listen and see an example",
     "word": "Word",
     "meaning": "Meaning",
@@ -2249,6 +2267,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "AI teacher",
+    "availableMinutes": "{{count}} minutes available in your account",
+    "startWithTeacher": "Start with the teacher",
+    "learnWordsFirst": "Learn the words first",
+    "myTeacher": "My teacher",
+    "voiceOrText": "Voice or text",
+    "preferences": "Lesson preferences",
+    "inputHelp": "Typing is available without microphone permission. You can change how you answer during the lesson."
+  },
   "unitStudy": {
     "chooseGame": "Choose a game for this unit",
     "knownLabel": "I know this word — skip it in unit practice",
@@ -2256,6 +2284,8 @@
     "allKnown": "All unit words are marked familiar. Uncheck the words you want to practise.",
     "scopeHelp": "These games use only this unit’s words, excluding words marked familiar.",
     "noImage": "No image is available for this word right now.",
-    "listenExample": "Listen to the sentence"
+    "listenExample": "Listen to the sentence",
+    "learned": "Learned",
+    "learnedHelp": "Learned in this unit — successfully practised."
   }
 }
