@@ -2287,5 +2287,32 @@
     "listenExample": "Listen to the sentence",
     "learned": "Learned",
     "learnedHelp": "Learned in this unit — successfully practised."
+  },
+  "lessonRoom": {
+    "guided": "Guided lesson",
+    "conversation": "Your conversation",
+    "translate": "Translate",
+    "historyCaption": "Today · Your lesson",
+    "voice": "Voice",
+    "text": "Writing",
+    "micActive": "Microphone on",
+    "micMuted": "Microphone muted",
+    "send": "Send",
+    "placeholder": "Write your answer…",
+    "keyboardHelp": "Enter to send · Shift + Enter for a new line",
+    "switchAnytime": "Switch to writing at any time",
+    "ownPace": "Answer at your own pace",
+    "mute": "Mute",
+    "unmute": "Enable microphone",
+    "speakNow": "Microphone on — you can speak",
+    "voiceTranscript": "Your speech will appear in the conversation",
+    "unmuteHelp": "Enable the microphone to speak, or switch to writing",
+    "connected": "Connected",
+    "connecting": "Connecting…",
+    "speaking": "{{teacher}} is speaking",
+    "thinking": "{{teacher}} is thinking…",
+    "listening": "{{teacher}} is listening",
+    "yourTurn": "Your turn to try.",
+    "goal": "Practising today"
   }
 }

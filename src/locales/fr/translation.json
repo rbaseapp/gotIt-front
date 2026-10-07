@@ -2288,5 +2288,32 @@
     "listenExample": "Écouter la phrase",
     "learned": "Appris",
     "learnedHelp": "Appris dans cette unité — exercice réussi."
+  },
+  "lessonRoom": {
+    "guided": "Leçon guidée",
+    "conversation": "Votre conversation",
+    "translate": "Traduire",
+    "historyCaption": "Aujourd’hui · Votre leçon",
+    "voice": "Parler",
+    "text": "Écrire",
+    "micActive": "Microphone actif",
+    "micMuted": "Microphone coupé",
+    "send": "Envoyer",
+    "placeholder": "Écrivez votre réponse…",
+    "keyboardHelp": "Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne",
+    "switchAnytime": "Vous pouvez passer à l’écrit à tout moment",
+    "ownPace": "Répondez à votre rythme",
+    "mute": "Couper",
+    "unmute": "Activer le microphone",
+    "speakNow": "Microphone actif — vous pouvez parler",
+    "voiceTranscript": "Vos paroles apparaîtront dans la conversation",
+    "unmuteHelp": "Activez le microphone pour parler ou passez à l’écrit",
+    "connected": "Connecté",
+    "connecting": "Connexion…",
+    "speaking": "{{teacher}} parle",
+    "thinking": "{{teacher}} réfléchit…",
+    "listening": "{{teacher}} vous écoute",
+    "yourTurn": "À vous d’essayer.",
+    "goal": "Aujourd’hui, on pratique"
   }
 }
