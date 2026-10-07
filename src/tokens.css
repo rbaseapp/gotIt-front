@@ -74,16 +74,80 @@ html :focus-visible {
 
 /* Inline text links and compact selects: extend the hit area without changing the layout. */
 .text-link,
-.skill-insight > a {
+.skill-insight > a,
+.auth-switch button,
+.auth-production .auth-forgot-password,
+.auth-support-links a,
+.auth-legal-links a {
   position: relative;
 }
 .text-link::after,
-.skill-insight > a::after {
+.skill-insight > a::after,
+.auth-switch button::after,
+.auth-production .auth-forgot-password::after {
   content: "";
   position: absolute;
   inset-block: calc((100% - var(--target-min)) / 2);
   inset-inline: -6px;
 }
+/* Link rows sit close together; 32px keeps neighbours from overlapping (WCAG 2.5.8 asks for 24). */
+.auth-support-links a::after,
+.auth-legal-links a::after {
+  content: "";
+  position: absolute;
+  inset-block: calc((100% - 32px) / 2);
+  inset-inline: -4px;
+}
+.input-with-icon > button {
+  inset-inline-end: 3px;
+  width: var(--target-min);
+  height: var(--target-min);
+}
 .select-compact {
   min-height: 36px;
+}
+
+/* Language picker: one look everywhere instead of the browser default. */
+.language-combobox input {
+  min-height: var(--target-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  background: var(--surface);
+}
+.language-combobox-list {
+  border-color: var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.language-combobox-list [role="option"] {
+  min-height: var(--target-min);
+}
+.language-combobox-list [role="option"].active,
+.language-combobox-list [role="option"]:hover {
+  background: var(--green-soft);
+  color: var(--ink);
+}
+
+/* Vocabulary secondary filters: tag select and language picker share one control style. */
+.library-secondary-filters {
+  gap: var(--space-4);
+  align-items: center;
+}
+.library-secondary-filters label {
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.library-secondary-filters select,
+.library-secondary-filters .language-combobox input {
+  min-height: var(--target-min);
+  min-width: 180px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  background: var(--surface);
+  font-size: var(--fs-sm);
 }
