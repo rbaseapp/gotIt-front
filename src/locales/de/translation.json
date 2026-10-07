@@ -2250,6 +2250,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "KI-Lehrkraft",
+    "availableMinutes": "{{count}} Minuten auf deinem Konto verfügbar",
+    "startWithTeacher": "Mit der Lehrkraft beginnen",
+    "learnWordsFirst": "Zuerst die Wörter kennenlernen",
+    "myTeacher": "Meine Lehrkraft",
+    "voiceOrText": "Per Sprache oder Text",
+    "preferences": "Unterrichtseinstellungen",
+    "inputHelp": "Du kannst ohne Mikrofonfreigabe schreiben. Die Antwortart lässt sich während des Unterrichts ändern."
+  },
   "unitStudy": {
     "chooseGame": "Spiel für diese Einheit wählen",
     "knownLabel": "Ich kenne das Wort – im Training überspringen",

@@ -2249,6 +2249,16 @@
     "openFromZero": "פתיחת מסלול מאפס",
     "pairUnavailable": "מסלול מוכן אינו זמין כרגע לזוג השפות הזה. אפשר לבנות תוכנית אישית."
   },
+  "lessonPrep": {
+    "aiTeacher": "מורה AI",
+    "availableMinutes": "{{count}} דקות זמינות בחשבון",
+    "startWithTeacher": "מתחילים עם המורה",
+    "learnWordsFirst": "מכירים את המילים קודם",
+    "myTeacher": "המורה שלי",
+    "voiceOrText": "בקול או בכתב",
+    "preferences": "העדפות השיעור",
+    "inputHelp": "כתיבה זמינה בלי הרשאת מיקרופון. אפשר לשנות את דרך המענה במהלך המפגש."
+  },
   "unitStudy": {
     "chooseGame": "בחירת משחק למילות היחידה",
     "knownLabel": "אני מכיר/ה את המילה — לדלג בתרגול",

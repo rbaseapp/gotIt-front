@@ -2295,6 +2295,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "معلم بالذكاء الاصطناعي",
+    "availableMinutes": "{{count}} دقيقة متاحة في حسابك",
+    "startWithTeacher": "نبدأ مع المعلم",
+    "learnWordsFirst": "نتعرف على الكلمات أولاً",
+    "myTeacher": "معلمي",
+    "voiceOrText": "بالصوت أو بالكتابة",
+    "preferences": "تفضيلات الدرس",
+    "inputHelp": "الكتابة متاحة دون إذن الميكروفون. يمكنك تغيير طريقة الإجابة أثناء اللقاء."
+  },
   "unitStudy": {
     "chooseGame": "اختيار لعبة لكلمات الوحدة",
     "knownLabel": "أعرف هذه الكلمة — تخطّيها في التدريب",

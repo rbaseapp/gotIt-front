@@ -2280,6 +2280,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "ИИ-преподаватель",
+    "availableMinutes": "На вашем счёте доступно {{count}} минут",
+    "startWithTeacher": "Начать с преподавателем",
+    "learnWordsFirst": "Сначала изучить слова",
+    "myTeacher": "Мой преподаватель",
+    "voiceOrText": "Голосом или текстом",
+    "preferences": "Настройки урока",
+    "inputHelp": "Можно писать без доступа к микрофону. Способ ответа можно изменить во время урока."
+  },
   "unitStudy": {
     "chooseGame": "Выбрать игру для слов раздела",
     "knownLabel": "Я знаю это слово — пропускать в тренировке",

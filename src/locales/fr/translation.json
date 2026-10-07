@@ -2250,6 +2250,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "Professeur IA",
+    "availableMinutes": "{{count}} minutes disponibles sur votre compte",
+    "startWithTeacher": "Commencer avec le professeur",
+    "learnWordsFirst": "Découvrir les mots d’abord",
+    "myTeacher": "Mon professeur",
+    "voiceOrText": "À l’oral ou à l’écrit",
+    "preferences": "Préférences du cours",
+    "inputHelp": "Vous pouvez écrire sans autoriser le microphone. Vous pouvez changer votre mode de réponse pendant le cours."
+  },
   "unitStudy": {
     "chooseGame": "Choisir un jeu pour cette unité",
     "knownLabel": "Je connais ce mot : passer pendant la pratique",

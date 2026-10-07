@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { BookOpen, CheckCircle2, Mic2, LockKeyhole } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { UnitWordBrowser } from "../components/UnitWordBrowser";
 import { UnitActivities } from "../components/UnitActivities";
@@ -337,6 +337,11 @@ export function EnglishLearningPathPage() {
   const nextStation = [...stations]
     .reverse()
     .find((step) => step.available && !completedStations.has(step.station));
+  const meetingStation = params.get("station")
+    ? stations.find(
+        (step) => step.station === params.get("station") && step.available,
+      )
+    : (nextStation ?? [...stations].reverse().find((step) => step.available));
   const introduced = current?.progress.introduced ?? 0;
   const showWords = () => current && selectUnit(current, "words");
   const showAll = () => {
@@ -354,6 +359,8 @@ export function EnglishLearningPathPage() {
             ? "pathUi.teacherInPath"
             : `structuredUi.${tab}`,
       );
+  if (current && tab === "meetings" && meetingStation)
+    return <Navigate to={unitUrl(current, meetingStation.station)} replace />;
   return (
     <div
       className={`english-path-page live-page page-enter path-view-${showLevels ? "levels" : tab}`}
@@ -513,7 +520,11 @@ export function EnglishLearningPathPage() {
                         </button>
                         <Link
                           className="button ghost"
-                          to={`${currentUrl}&tab=meetings`}
+                          to={
+                            meetingStation
+                              ? unitUrl(current, meetingStation.station)
+                              : `${currentUrl}&tab=meetings`
+                          }
                         >
                           {t("structuredUi.stationDetails")}
                         </Link>
@@ -570,7 +581,15 @@ export function EnglishLearningPathPage() {
                               )}
                             </span>
                             <span>
-                              <strong>{t(`pathUi.${step.station}`)}</strong>
+                              <strong>
+                                {step.available ? (
+                                  <Link to={unitUrl(current, step.station)}>
+                                    {t(`pathUi.${step.station}`)}
+                                  </Link>
+                                ) : (
+                                  t(`pathUi.${step.station}`)
+                                )}
+                              </strong>
                               <small>
                                 {t("pathUi.meetingThreshold", {
                                   count: step.requiredWords,

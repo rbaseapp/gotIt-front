@@ -230,7 +230,7 @@ test("server midpoint availability selects the correct five-minute station", asy
     "href",
     /station=midpoint/,
   );
-  await expect(page.locator(".path-stations").getByRole("link")).toHaveCount(2);
+  await expect(page.locator(".path-stations a.button")).toHaveCount(2);
 });
 test("activity selection shows actual results and preserves resume scope", async ({
   page,
@@ -307,4 +307,137 @@ test("new program preserves chosen languages and only offers a published prepare
   await expect(
     page.locator(".course-language-pair").getByRole("combobox").first(),
   ).toHaveValue(/Spanish.*espa\u00f1ol/u);
+});
+
+async function meetingFixture(page: Page, introduced: number) {
+  const pack = await pathFixture(page, introduced);
+  await page.route("**/private-lessons/units/*", (route) =>
+    route.fulfill({
+      json: {
+        unit: {
+          packId,
+          title: "Building Your First Sentences",
+          moduleNumber: 1,
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          level: "A1",
+          station: "supported",
+          introduced,
+          completed: introduced,
+          total: pack.wordCount,
+          teacherStations: pack.teacherStations,
+          words: ["water", "coffee", "want"].map((sourceText) => ({
+            sourceText,
+            translationText: "מילה",
+            exampleText: null,
+            introduced: true,
+          })),
+        },
+      },
+    }),
+  );
+  await page.route("**/private-lessons/setup?**", (route) =>
+    route.fulfill({
+      json: {
+        interactionCapabilities: {
+          guidedTasks: true,
+          textAnswers: true,
+          billingPause: true,
+        },
+        preferences: null,
+        roadmap: null,
+        curriculum: {
+          recommended: {
+            goalKind: "grammar",
+            goalKey: "fixture",
+            reason: "fixture",
+          },
+          communicationGoals: [],
+          grammarTopics: [],
+        },
+      },
+    }),
+  );
+  await page.route("**/private-lesson-minutes", (route) =>
+    route.fulfill({
+      json: {
+        secondsTotal: 2400,
+        secondsUsed: 0,
+        secondsRemaining: 2400,
+        expiresAt: null,
+      },
+    }),
+  );
+}
+
+for (const width of [320, 1487]) {
+  test(`unlocked summary meeting opens lesson preparation at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 1058 });
+    await meetingFixture(page, 50);
+    await page.goto(`/english-learning?unit=${packId}`);
+    await page
+      .getByRole("link", { name: he.pathUi.review, exact: true })
+      .click();
+    await expect(page).toHaveURL(/private-lesson\?pack=.*station=review/);
+    await expect(
+      page.getByRole("heading", { name: he.ux.readyForLesson, exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".unit-lesson-prep")).toContainText(
+      "40 דקות זמינות בחשבון",
+    );
+    await expect(page.locator(".unit-lesson-prep")).toContainText("10 דקות");
+    await expect(
+      page.getByRole("button", {
+        name: he.lessonPrep.startWithTeacher,
+        exact: true,
+      }),
+    ).toBeEnabled();
+    await expect(page.locator(".sidebar")).not.toBeVisible();
+    await expect(
+      page.locator(".unit-lesson-preferences .unit-help-language"),
+    ).toHaveText("עברית");
+    await page.screenshot({
+      path: info.outputPath(`summary-prep-${width}.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width + 1);
+    await page
+      .getByRole("button", { name: he.lessonPrep.learnWordsFirst, exact: true })
+      .click();
+    await expect(page).toHaveURL(/english-learning\?unit=.*tab=words/);
+    await expect(page.locator(".unit-browser-list")).toBeVisible();
+  });
+}
+
+test("legacy meeting link opens the available station and locked review cannot start", async ({
+  page,
+}) => {
+  await meetingFixture(page, 25);
+  await page.goto(`/english-learning?unit=${packId}&tab=meetings`);
+  await expect(page).toHaveURL(/private-lesson\?pack=.*station=midpoint/);
+  await expect(
+    page.getByRole("button", {
+      name: he.lessonPrep.startWithTeacher,
+      exact: true,
+    }),
+  ).toBeEnabled();
+  await page.goto(`/english-learning?unit=${packId}`);
+  await expect(
+    page.getByRole("link", { name: he.pathUi.review, exact: true }),
+  ).toHaveCount(0);
+  await page.goto(`/private-lesson?pack=${packId}&language=en&station=review`);
+  await expect(
+    page.getByRole("button", {
+      name: he.lessonPrep.startWithTeacher,
+      exact: true,
+    }),
+  ).toBeDisabled();
+  await expect(page.locator(".unit-lesson-prep")).toContainText(
+    "עוד 25 מילים לפתיחת המפגש",
+  );
 });

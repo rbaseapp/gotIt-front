@@ -2250,6 +2250,16 @@
     "openFromZero": "Open a from-zero path",
     "pairUnavailable": "A prepared path is not available for this language pair yet. You can build a personal program."
   },
+  "lessonPrep": {
+    "aiTeacher": "AI教师",
+    "availableMinutes": "账户中有{{count}}分钟可用",
+    "startWithTeacher": "开始跟老师学习",
+    "learnWordsFirst": "先认识这些单词",
+    "myTeacher": "我的老师",
+    "voiceOrText": "语音或文字",
+    "preferences": "课程偏好",
+    "inputHelp": "无需麦克风权限即可输入文字。你可以在课程中更改回答方式。"
+  },
   "unitStudy": {
     "chooseGame": "选择本单元的练习游戏",
     "knownLabel": "我认识这个词——练习时跳过",
