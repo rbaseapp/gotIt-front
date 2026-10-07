@@ -1,0 +1,56 @@
+@font-face {
+  font-family: "Hero Latin";
+  src: url("../assets/ux/hero-fonts/hero-latin.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hero Arabic";
+  src: url("../assets/ux/hero-fonts/hero-arabic.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hero Hebrew";
+  src: url("../assets/ux/hero-fonts/hero-hebrew.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hero CJK";
+  src: url("../assets/ux/hero-fonts/hero-cjk.ttf") format("truetype");
+  font-display: swap;
+}
+.ux-home-illustration {
+  position: relative;
+}
+.learning-hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hero-font-latin {
+  font-family: "Hero Latin", cursive;
+}
+.hero-font-arabic {
+  font-family: "Hero Arabic", serif;
+}
+.hero-font-hebrew {
+  font-family: "Hero Hebrew", cursive;
+}
+.hero-font-cjk {
+  font-family: "Hero CJK", serif;
+}
+.learning-hero-text {
+  animation: hero-lettering-appear 350ms ease-out;
+}
+@keyframes hero-lettering-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .learning-hero-text {
+    animation: none;
+  }
+}

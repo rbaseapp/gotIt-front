@@ -24,7 +24,7 @@ import {
   smartSessionLink,
 } from "../lib/learningNavigation";
 import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
-import hero from "../assets/ux/learning-hero.png";
+import { LearningHero } from "../components/LearningHero";
 import wordCards from "../assets/ux/word-cards.png";
 import personalProgram from "../assets/ux/personal-program.png";
 
@@ -232,7 +232,7 @@ export function LiveDashboardPage() {
         <>
           <section className="ux-home-next ux-card illustrated-next">
             <div className="ux-home-illustration">
-              <img src={hero} alt="" />
+              <LearningHero />
             </div>
             <div className="ux-home-next-copy">
               <div className="ux-card-heading">

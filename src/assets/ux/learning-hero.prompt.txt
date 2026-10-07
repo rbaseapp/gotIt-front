@@ -1,0 +1,7 @@
+Generated with the built-in image_gen tool on 2026-10-07.
+Edit target: learning-hero.png (original preserved).
+Output: learning-hero-textless.png, resized to the original 553 x 467 dimensions.
+LearningHero uses this only inside the lettering masks, retaining the original scene.
+
+Final prompt:
+Use case: text-localization. Edit target: the attached GotIt learning illustration (plant, white coffee mug on green/lavender books, cream sticky note, pale lavender wall). Create a clean text-free version of this EXACT image. Remove ONLY the alphabetic English lettering 'Hello' on the green book spine, 'Good ideas start here' on the mug, and 'Small Steps Big Progress' on the sticky note. Seamlessly restore the original surface colors, shading and textures where those letters were. RETAIN the filled dark heart on the mug and outlined heart on the sticky note in their exact positions and shapes. Preserve EVERY other pixel/feature as faithfully as possible: identical framing, aspect ratio, plant leaves, pot, mug shape, handle, coffee, steam, book geometry, lighting, wall window shadows, tabletop, note edges, colors and textures. No new text, objects, restyling, crop or perspective change. This is a minimal lettering removal, not a new illustration.

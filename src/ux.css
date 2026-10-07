@@ -440,7 +440,8 @@ progress::-moz-progress-bar {
   flex-shrink: 0;
   align-self: stretch;
 }
-.ux-home-illustration img {
+.ux-home-illustration img,
+.ux-home-illustration .learning-hero-overlay {
   display: block;
   width: 100%;
   height: 100%;
