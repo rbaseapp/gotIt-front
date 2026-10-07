@@ -681,10 +681,16 @@ test("new program preserves chosen languages and only offers a published prepare
   await pathFixture(page);
   await page.goto("/courses?choose=1");
   await expect(page.locator(".new-program-page")).toBeVisible();
+  // The fixture profile is Hebrew/French; discovery must follow explicit choices.
+  const target = page.getByRole("combobox").first();
+  await target.fill("English");
+  await target.press("Enter");
+  const support = page.getByRole("combobox").nth(1);
+  await support.fill("Hebrew");
+  await support.press("Enter");
   await expect(
     page.getByRole("button", { name: he.pathUi.openFromZero }),
   ).toBeEnabled();
-  const target = page.getByRole("combobox").first();
   await target.fill("Spanish");
   await target.press("Enter");
   await expect(

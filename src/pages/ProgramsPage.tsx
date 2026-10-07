@@ -15,22 +15,80 @@ import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
 
 export function ProgramsPage() {
   const { t, i18n } = useTranslation();
-  const { user } = useApp();
+  const { user, profile, updateProfile } = useApp();
   const navigate = useNavigate();
   const { confirm, toast } = useFeedback();
   const [params, setParams] = useSearchParams();
   const newOpen = params.get("choose") === "1";
   const setNewOpen = (open: boolean) => setParams(open ? { choose: "1" } : {});
-  const [target, setTarget] = useState("en");
-  const [support, setSupport] = useState(
-    i18n.resolvedLanguage?.split("-")[0] || "he",
-  );
+  const [selectedTarget, setTarget] = useState<string>();
+  const [selectedSupport, setSupport] = useState<string>();
+  const target = selectedTarget ?? profile.defaultSourceLanguage ?? "en";
+  const support =
+    selectedSupport ??
+    profile.defaultTranslationLanguage ??
+    i18n.resolvedLanguage?.split("-")[0] ??
+    "he";
   const [completedOpen, setCompletedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const courses = useResource(useCallback(() => courseApi.list(), []));
   const packs = useResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
   );
+  const prepared = useResource(
+    useCallback(
+      () =>
+        newOpen
+          ? product(
+              wordPacksSchema,
+              `word-packs?${new URLSearchParams({ sourceLanguageCode: target, translationLanguageCode: support })}`,
+            )
+          : Promise.resolve({ packs: [] }),
+      [newOpen, target, support],
+    ),
+  );
+  const matchingPath = englishPathLevels(prepared.data?.packs ?? []).some(
+    (level) =>
+      level.packs.some(
+        (pack) =>
+          pack.track.sourceLanguageCode ===
+            target.split("-")[0].toLowerCase() &&
+          pack.track.translationLanguageCode ===
+            support.split("-")[0].toLowerCase(),
+      ),
+  );
+  // Older servers filter discovery by saved defaults and ignore the selected pair.
+  // Check the published English/Hebrew path after explicitly switching that pair.
+  const switchPublishedPair =
+    target.split("-")[0].toLowerCase() === "en" &&
+    support.split("-")[0].toLowerCase() === "he" &&
+    ((profile.defaultSourceLanguage !== null &&
+      profile.defaultSourceLanguage.split("-")[0].toLowerCase() !== "en") ||
+      (profile.defaultTranslationLanguage !== null &&
+        profile.defaultTranslationLanguage.split("-")[0].toLowerCase() !==
+          "he"));
+  const pairAvailable = matchingPath || switchPublishedPair;
+  const openPrepared = async () => {
+    setBusy(true);
+    try {
+      if (
+        profile.defaultSourceLanguage !== target ||
+        profile.defaultTranslationLanguage !== support
+      )
+        await updateProfile({
+          defaultSourceLanguage: target,
+          defaultTranslationLanguage: support,
+        });
+      const catalog = await product(wordPacksSchema, "word-packs");
+      if (!englishPathLevels(catalog.packs).some((level) => level.packs.length))
+        throw new Error(t("englishPath.unavailableTitle"));
+      open("/english-learning", "english-path", target);
+    } catch (reason) {
+      toast(errorMessage(reason), { tone: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
   const path = englishPathLevels(packs.data?.packs ?? []).flatMap(
     (level) => level.packs,
   );
@@ -98,6 +156,7 @@ export function ProgramsPage() {
               ariaLabel={t("courses.targetLanguage")}
               value={target}
               onChange={setTarget}
+              disabled={busy}
             />
           </label>
           <label className="field">
@@ -106,30 +165,33 @@ export function ProgramsPage() {
               ariaLabel={t("courses.supportLanguage")}
               value={support}
               onChange={setSupport}
+              disabled={busy}
             />
           </label>
         </section>
         <section className="ux-card">
           <h2>{t("englishPath.title")}</h2>
           <p>{t("ux.structuredHelp")}</p>
+          <RemoteState
+            loading={prepared.loading}
+            error={prepared.error}
+            retry={() => void prepared.reload()}
+          />
           <button
             className="button primary"
             disabled={
-              !path.some(
-                (pack) =>
-                  pack.track.sourceLanguageCode === target &&
-                  pack.track.translationLanguageCode === support,
-              )
+              busy ||
+              prepared.loading ||
+              Boolean(prepared.error) ||
+              !pairAvailable
             }
-            onClick={() => open("/english-learning", "english-path", target)}
+            onClick={() => void openPrepared()}
           >
             {t("pathUi.openFromZero")}
           </button>
-          {!path.some(
-            (pack) =>
-              pack.track.sourceLanguageCode === target &&
-              pack.track.translationLanguageCode === support,
-          ) && <p>{t("pathUi.pairUnavailable")}</p>}
+          {!prepared.loading && !prepared.error && !pairAvailable && (
+            <p>{t("pathUi.pairUnavailable")}</p>
+          )}
         </section>
         <section className="ux-card">
           <h2>{t("ux.personalProgram")}</h2>
