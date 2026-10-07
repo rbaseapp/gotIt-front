@@ -2350,5 +2350,117 @@
     "reviewUnavailable": "Solo puedes repetir ejercicios completados",
     "backToMap": "Volver al mapa",
     "finishReview": "Terminar repaso"
+  },
+  "landing": {
+    "nav": {
+      "primary": "Principal",
+      "howItWorks": "Cómo funciona",
+      "languages": "Idiomas",
+      "login": "Iniciar sesión",
+      "createAccount": "Crear cuenta"
+    },
+    "hero": {
+      "title": "Aprende palabras de lo que ya lees",
+      "body": "Marca una palabra en cualquier sitio web, practícala en juegos cortos, úsala en una conversación con un profesor virtual y vuelve a encontrarla en un artículo escrito para ti.",
+      "createAccount": "Crear cuenta",
+      "addToChrome": "Añadir a Chrome",
+      "haveAccount": "Ya tengo una cuenta"
+    },
+    "demo": {
+      "label": "Ejemplo: guardar una palabra de un artículo",
+      "translation": "prosperar"
+    },
+    "journey": {
+      "title": "Una palabra, cuatro paradas",
+      "intro": "Cada palabra que guardas recorre el mismo camino, hasta que la usas sin pensar.",
+      "mark": {
+        "title": "Márcala en cualquier sitio web",
+        "body": "La extensión de Chrome guarda la palabra junto con la frase y la página donde la encontraste, para que recuerdes dónde la viste.",
+        "points": [
+          "Funciona en cualquier sitio",
+          "Traducción automática, de diccionario o con IA",
+          "Guarda la frase y el enlace"
+        ]
+      },
+      "practice": {
+        "title": "Practícala en juegos cortos",
+        "body": "Emparejar, letras que faltan y recordar de memoria. Las palabras vuelven justo cuando empiezas a olvidarlas.",
+        "points": [
+          "Tarjetas",
+          "Escucha",
+          "Emparejar",
+          "Ortografía",
+          "Recordar"
+        ]
+      },
+      "speak": {
+        "title": "Habla de cualquier tema con un profesor",
+        "body": "Elige un tema y habla en voz alta con un profesor avatar. Al terminar recibes un informe: qué salió bien, qué corregir y cuáles de tus palabras usaste.",
+        "points": [
+          "Cualquier tema que elijas",
+          "Habla en voz alta",
+          "Un informe al final"
+        ]
+      },
+      "read": {
+        "title": "Lee un artículo hecho con tus palabras",
+        "body": "GotIt escribe un artículo corto a tu nivel que incluye las palabras que guardaste, para que las encuentres de nuevo en otro contexto.",
+        "points": [
+          "Escrito a tu nivel",
+          "Hecho con tus palabras guardadas"
+        ]
+      }
+    },
+    "languages": {
+      "title": "Aprende casi cualquier idioma",
+      "body": "Guarda y practica palabras en 30 idiomas.",
+      "interface": "La interfaz está disponible en inglés, hebreo, árabe, ruso, español, francés, alemán y chino."
+    },
+    "testimonials": {
+      "title": "Lo que dicen quienes aprenden",
+      "rating": "{{rating}} de 5 estrellas"
+    },
+    "cta": {
+      "title": "Empieza con la próxima palabra que encuentres",
+      "button": "Crear cuenta",
+      "body": "Crea una cuenta, añade la extensión y la próxima palabra que marques te estará esperando en la práctica."
+    },
+    "footer": {
+      "tagline": "Aprende palabras en contexto.",
+      "product": "Producto",
+      "legal": "Legal",
+      "contact": "Contacto",
+      "rights": "© {{year}} GotIt"
+    },
+    "extension": {
+      "title": "Guarda una palabra con clic derecho",
+      "body": "Selecciona una palabra o expresión en cualquier página, haz clic derecho y elige Save to GotIt. Puedes revisar y editar la traducción antes de guardar.",
+      "button": "Añadir a Chrome",
+      "menuCopy": "Copiar",
+      "menuSearch": "Buscar en Google"
+    },
+    "ext": {
+      "saveShort": "Guardar",
+      "edit": "Editar",
+      "speak": "Reproducir pronunciación",
+      "translateAi": "Traducir con IA",
+      "wordSaved": "Palabra guardada en GotIt ✓",
+      "removeShort": "Quitar",
+      "shortDescription": "Descripción breve",
+      "practiceTitle": "Hay más palabras esperándote",
+      "practiceDescription": "Abre GotIt para practicar todas las palabras que guardaste.",
+      "practiceAction": "Practicar en la app",
+      "close": "Cerrar"
+    },
+    "sample": {
+      "partOfSpeech": "verbo",
+      "explanation": "Crecer y desarrollarse con éxito; irle muy bien.",
+      "subtle": "sutil, discreto",
+      "wander": "deambular sin rumbo",
+      "strength1": "Describiste tu idea de cafetería con frases completas y claras.",
+      "strength2": "Usaste «thrive» y «regulars» con naturalidad.",
+      "focus": "Después de «have» va el participio: «I have gone», o simplemente «I went».",
+      "next": "Habla de un lugar que te encanta de tu ciudad, en pasado."
+    }
   }
 }
