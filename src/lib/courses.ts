@@ -111,6 +111,12 @@ export const courseSchema = z.object({
   }),
 });
 export const homeworkSummarySchema = z.object({
+  packId: uuid.nullable().optional().default(null),
+  station: z
+    .enum(["supported", "midpoint", "review"])
+    .nullable()
+    .optional()
+    .default(null),
   id: uuid,
   lessonId: uuid,
   courseId: uuid.nullable(),
@@ -123,6 +129,16 @@ export const homeworkSummarySchema = z.object({
   completedCount: z.number(),
 });
 export const homeworkSchema = homeworkSummarySchema.extend({
+  review: z
+    .object({
+      taskIndex: z.number().int(),
+      result: z.enum(["correct", "retry", "uncertain"]),
+      feedback: z.string(),
+      hint: z.string().nullable(),
+    })
+    .nullable()
+    .optional()
+    .default(null),
   revision: z.number(),
   needsRefresh: z.boolean().default(false),
   supportLanguageCode: z.string(),

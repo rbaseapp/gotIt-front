@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
@@ -15,6 +20,8 @@ import { courseApi, type Homework } from "../lib/courses";
 import { errorMessage } from "../lib/product";
 import { ApiError } from "../lib/api";
 import { useApp } from "../context/AppContext";
+import { learningReturn } from "../lib/learningNavigation";
+import { homeworkTaskLink } from "../lib/unitLearningPath";
 import "../courses.css";
 
 export function HomeworkPage() {
@@ -22,6 +29,11 @@ export function HomeworkPage() {
     { t } = useTranslation(),
     { user } = useApp(),
     navigate = useNavigate();
+  const [params] = useSearchParams();
+  const requestedTask = Number(params.get("task"));
+  const reviewMode = params.get("review") === "1";
+  const [reviewFeedback, setReviewFeedback] =
+    useState<Homework["review"]>(null);
   const [homework, setHomework] = useState<Homework | null>(null),
     [index, setIndex] = useState(0),
     [answer, setAnswer] = useState("");
@@ -39,6 +51,20 @@ export function HomeworkPage() {
   function restore(data: Homework) {
     const next = data.tasks.findIndex((task) => !task.done);
     setHomework(data);
+    if (reviewMode) {
+      if (
+        params.has("task") &&
+        Number.isInteger(requestedTask) &&
+        data.tasks[requestedTask]?.done
+      ) {
+        setIndex(requestedTask);
+        setAnswer("");
+        setReviewFeedback(null);
+        return;
+      }
+      setIndex(-1);
+      throw new Error(t("unitMap.reviewUnavailable"));
+    }
     setIndex(
       next < 0 && data.tasks.length ? data.tasks.length : Math.max(0, next),
     );
@@ -78,9 +104,10 @@ export function HomeworkPage() {
   }
   useEffect(() => {
     void load(); /* Restore only when the route changes. */
-  }, [homeworkId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [homeworkId, params.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
   function changeAnswer(value: string) {
     setAnswer(value);
+    if (reviewMode) return;
     try {
       sessionStorage.setItem(
         draftKey,
@@ -105,6 +132,7 @@ export function HomeworkPage() {
       action: kind,
       answer: value,
       channel,
+      ...(reviewMode ? { review: true } : {}),
     };
     try {
       const result = await courseApi.homeworkCommand(homeworkId, "actions", {
@@ -112,11 +140,12 @@ export function HomeworkPage() {
         eventId: eventId(JSON.stringify(body)),
       });
       setHomework(result.homework);
+      if (reviewMode) setReviewFeedback(result.homework.review);
       pending.current = null;
       if (kind === "answer" || kind === "skip") {
         setAnswer("");
         try {
-          sessionStorage.removeItem(draftKey);
+          if (!reviewMode) sessionStorage.removeItem(draftKey);
         } catch {
           /* Optional storage. */
         }
@@ -138,9 +167,29 @@ export function HomeworkPage() {
       setBusy(false);
     }
   }
-  const task = homework?.tasks[index],
-    attempt = task?.attempts.at(-1),
-    back = homework?.courseId ? `/courses/${homework.courseId}` : "/courses";
+  const originalTask = homework?.tasks[index];
+  const task =
+    originalTask && reviewMode
+      ? {
+          ...originalTask,
+          done: false,
+          hint: reviewFeedback?.hint ?? null,
+          hintUsed: Boolean(reviewFeedback?.hint),
+        }
+      : originalTask;
+  const attempt = reviewMode ? reviewFeedback : task?.attempts.at(-1);
+  const back = learningReturn(
+    params.get("return"),
+    homework?.packId
+      ? `/english-learning?unit=${homework.packId}`
+      : homework?.courseId
+        ? `/courses/${homework.courseId}`
+        : "/courses",
+  );
+  const backLabel =
+    homework?.packId || params.has("return")
+      ? "unitMap.backToMap"
+      : "courses.backToCourse";
   const finished = Boolean(
     homework && homework.tasks.length && index >= homework.tasks.length,
   );
@@ -159,7 +208,7 @@ export function HomeworkPage() {
           <h1 dir="auto">{homework?.title ?? t("courses.homeworkTitle")}</h1>
         </div>
         <Link className="course-text-link" to={back}>
-          {t("courses.backToCourse")}
+          {t(backLabel)}
         </Link>
       </header>
       {error && (
@@ -196,7 +245,7 @@ export function HomeworkPage() {
           )}
           <p className="course-note">{t("courses.homeworkContinuation")}</p>
           <Link className="button primary" to={back}>
-            {t("courses.backToCourse")}
+            {t(backLabel)}
             <ArrowRight size={17} className="directional-arrow" />
           </Link>
           <details className="course-adjust">
@@ -214,6 +263,12 @@ export function HomeworkPage() {
                   )}
                 </p>
                 <p dir="auto">{item.solution?.explanation}</p>
+                <Link
+                  className="course-text-link"
+                  to={homeworkTaskLink(homework.id, taskIndex, true, back)}
+                >
+                  {t("unitMap.repeat")}
+                </Link>
               </article>
             ))}
           </details>
@@ -393,14 +448,21 @@ export function HomeworkPage() {
                   <Lightbulb size={16} />
                   {t("courses.hint")}
                 </button>
-                <button
-                  className="course-text-link"
-                  disabled={busy}
-                  onClick={() => void action("skip")}
-                >
-                  {t("courses.skipTask")}
-                </button>
+                {!reviewMode && (
+                  <button
+                    className="course-text-link"
+                    disabled={busy}
+                    onClick={() => void action("skip")}
+                  >
+                    {t("courses.skipTask")}
+                  </button>
+                )}
               </div>
+            )}
+            {reviewMode && (
+              <Link className="button secondary" to={back}>
+                {t("unitMap.finishReview")}
+              </Link>
             )}
           </section>
           <footer className="homework-footer">
@@ -408,7 +470,7 @@ export function HomeworkPage() {
               className="course-text-link"
               disabled={busy}
               onClick={() => {
-                if (task.done) navigate(back);
+                if (task.done || reviewMode) navigate(back);
                 else
                   void action("draft").then((saved) => {
                     if (saved) navigate(back);

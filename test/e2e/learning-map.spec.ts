@@ -1,8 +1,236 @@
 import { test, expect, type Page } from "@playwright/test";
 import { figmaFixtures } from "./figma-fixtures";
 import he from "../../src/locales/he/translation.json" with { type: "json" };
+import { fixtureHomework } from "../course-fixtures";
 const packId = "d3000000-0000-4000-8000-000000000001";
-async function pathFixture(page: Page, introduced = 0) {
+test("follow-up is prepared inline only after disclosure and a retry reuses its command", async ({
+  page,
+}) => {
+  const pack = await pathFixture(page, 26, 1);
+  const pending = {
+    ...fixtureHomework,
+    courseId: null,
+    packId,
+    station: "midpoint",
+    status: "pending",
+    tasks: [],
+    taskCount: 0,
+    completedCount: 0,
+  };
+  const commands: Array<{ eventId: string }> = [];
+  await page.route("**/private-lessons/units/*/map", (route) =>
+    route.fulfill({
+      json: {
+        path: {
+          packId,
+          words: [],
+          stations: pack.teacherStations.map((station, index) => ({
+            ...station,
+            available: index < 2,
+            meetingCompleted: index < 2,
+            preparationComplete: index === 0,
+            lessonId: index < 2 ? pending.lessonId : null,
+            homework: index === 1 ? pending : null,
+            lockReason: index < 2 ? null : "previous_preparation",
+          })),
+          nextAction: {
+            kind: "homework",
+            station: "midpoint",
+            homeworkId: pending.id,
+          },
+        },
+      },
+    }),
+  );
+  await page.route("**/courses/homework/*/prepare", (route) => {
+    commands.push(route.request().postDataJSON());
+    return commands.length === 1
+      ? route.fulfill({
+          status: 400,
+          json: {
+            error: { code: "TEST_PREPARE_FAILED", message: "Try again" },
+          },
+        })
+      : route.fulfill({
+          json: {
+            homework: {
+              ...fixtureHomework,
+              revision: 1,
+              packId,
+              courseId: null,
+            },
+          },
+        });
+  });
+  await page.goto(`/english-learning?unit=${packId}`);
+  await expect(page.locator(".unit-teacher-station h3")).toHaveText(
+    he.unitMap.followUp,
+  );
+  expect(commands).toHaveLength(0);
+  await page.getByRole("button", { name: he.unitMap.toggleExercises }).click();
+  await expect(
+    page.locator(".unit-activity-detail [role=alert]"),
+  ).toBeVisible();
+  await page
+    .locator(".unit-activity-detail")
+    .getByRole("button", { name: he.common.retry })
+    .click();
+  await expect(page.locator(".unit-follow-up-list > li")).toHaveCount(2);
+  expect(commands).toHaveLength(2);
+  expect(commands[0]!.eventId).toBe(commands[1]!.eventId);
+  await expect(page).toHaveURL(/english-learning/);
+});
+test("words and follow-up disclosures stay closed, preserve entry actions and lock practice before a meeting", async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 1487, height: 1058 });
+  await pathFixture(page, 26, 1);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(`/english-learning?unit=${packId}`);
+  await expect(page.locator(".unit-activity-detail")).toHaveCount(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: info.outputPath("approved-map-closed.png"),
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: he.unitMap.toggleWords }).click();
+  await expect(page.locator(".unit-stage-words li")).toHaveCount(6);
+  await expect(page).toHaveURL(/english-learning/);
+  await page.getByRole("button", { name: he.unitMap.toggleExercises }).click();
+  await expect(page.locator(".unit-practice-gate")).toHaveText(
+    he.unitMap.practiceAfterMeeting,
+  );
+  await expect(page.locator(".unit-follow-up-list")).toHaveCount(0);
+  await expect(
+    page.locator(".unit-upcoming-row .unit-entry").last(),
+  ).toHaveAttribute("href", /station=midpoint/);
+  await expect(
+    page.locator(".unit-upcoming-row .unit-entry").first(),
+  ).toBeEnabled();
+  await page.screenshot({
+    path: info.outputPath("map-before-meeting-expanded.png"),
+    fullPage: true,
+  });
+  expect(errors).toEqual([]);
+  await page.locator(".unit-upcoming-row .unit-entry").first().click();
+  await expect(page.locator(".unit-browser-list")).toBeVisible();
+});
+for (const width of [320, 1487])
+  test(`completed/current/future homework stays compact and routes to its own task at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 1058 });
+    const pack = await pathFixture(page, 26, 1);
+    const homework = {
+      ...fixtureHomework,
+      courseId: null,
+      packId,
+      station: "midpoint",
+      taskCount: 3,
+      completedCount: 1,
+      tasks: [
+        { ...fixtureHomework.tasks[0], done: true },
+        fixtureHomework.tasks[1],
+        { ...fixtureHomework.tasks[1], objective: "תרגול המשך" },
+      ],
+    };
+    await page.route("**/private-lessons/units/*/map", (route) =>
+      route.fulfill({
+        json: {
+          path: {
+            packId,
+            words: [
+              {
+                sourceText: "today",
+                translationText: "היום",
+                exampleText: null,
+                introduced: true,
+              },
+            ],
+            stations: pack.teacherStations.map((station, index) => ({
+              ...station,
+              available: index < 2,
+              meetingCompleted: index < 2,
+              preparationComplete: index === 0,
+              lessonId: index < 2 ? homework.lessonId : null,
+              homework: index === 1 ? homework : null,
+              lockReason: index < 2 ? null : "previous_preparation",
+            })),
+            nextAction: {
+              kind: "homework",
+              station: "midpoint",
+              homeworkId: homework.id,
+            },
+          },
+        },
+      }),
+    );
+    await page.route("**/courses/homework/*", (route) =>
+      route.fulfill({ json: { homework } }),
+    );
+    await page.goto(`/english-learning?unit=${packId}`);
+    await expect(page.locator(".unit-teacher-station h3")).toHaveText(
+      he.unitMap.followUp,
+    );
+    await expect(page.locator(".unit-follow-up-list")).toHaveCount(0);
+    await page
+      .getByRole("button", { name: he.unitMap.toggleExercises })
+      .click();
+    await page.getByRole("button", { name: he.unitMap.toggleWords }).click();
+    await expect(page.locator(".unit-follow-up-list > li")).toHaveCount(3);
+    await expect(
+      page.locator(".unit-follow-up-list .is-completed a"),
+    ).toHaveAttribute("href", /task=0&review=1/);
+    await expect(
+      page.locator(".unit-follow-up-list .is-available a"),
+    ).toHaveAttribute("href", /task=1/);
+    await expect(
+      page.locator(
+        ".unit-follow-up-list .is-locked a,.unit-follow-up-list .is-locked button",
+      ),
+    ).toHaveCount(0);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width + 1);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({
+      path: info.outputPath(`map-after-meeting-${width}.png`),
+      fullPage: true,
+    });
+    await page.locator(".unit-follow-up-list .is-available a").click();
+    await expect(page).toHaveURL(/homework.*task=1/);
+    await expect(page.locator(".homework-task-card h2")).toHaveText(
+      homework.tasks[1]!.prompt,
+    );
+    await expect(
+      page.getByRole("link", { name: he.unitMap.backToMap }),
+    ).toHaveAttribute("href", `/english-learning?unit=${packId}`);
+  });
+test("high word counts cannot skip meetings, and a failed map request disables teacher entry", async ({
+  page,
+}) => {
+  await pathFixture(page, 50);
+  await page.goto(`/english-learning?unit=${packId}`);
+  await expect(
+    page.locator(".unit-upcoming-row .unit-entry").last(),
+  ).toHaveAttribute("href", /station=supported/);
+  await page.route("**/private-lessons/units/*/map", (route) =>
+    route.fulfill({
+      status: 503,
+      json: { error: { code: "TEST_FAILURE", message: "Please try again" } },
+    }),
+  );
+  await page.reload();
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(
+    page.locator(".unit-upcoming-row .unit-entry").last(),
+  ).toBeDisabled();
+  await expect(
+    page.locator('.unit-roadmap-card a[href*="private-lesson"]'),
+  ).toHaveCount(0);
+});
+async function pathFixture(page: Page, introduced = 0, preparedMeetings = 0) {
   await figmaFixtures(page, "he");
   const pack = {
     id: packId,
@@ -83,6 +311,52 @@ async function pathFixture(page: Page, introduced = 0) {
   }));
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (/\/private-lessons\/units\/[^/]+\/map$/.test(path))
+      return route.fulfill({
+        json: {
+          path: {
+            packId: path.split("/").at(-2),
+            words: entries
+              .slice(0, 6)
+              .map((entry) => ({ ...entry, introduced: introduced > 0 })),
+            stations: pack.teacherStations.map((station, index) => ({
+              ...station,
+              available: station.available && index <= preparedMeetings,
+              meetingCompleted: index < preparedMeetings,
+              preparationComplete: index < preparedMeetings,
+              lessonId:
+                index < preparedMeetings ? fixtureHomework.lessonId : null,
+              homework:
+                index < preparedMeetings
+                  ? {
+                      ...fixtureHomework,
+                      status: "completed",
+                      completedCount: 2,
+                      tasks: fixtureHomework.tasks.map((task) => ({
+                        ...task,
+                        done: true,
+                      })),
+                    }
+                  : null,
+              lockReason:
+                station.available && index <= preparedMeetings
+                  ? null
+                  : index > preparedMeetings
+                    ? "previous_preparation"
+                    : "words",
+            })),
+            nextAction: {
+              kind: pack.teacherStations[preparedMeetings]?.available
+                ? "meeting"
+                : "words",
+              station: pack.teacherStations[preparedMeetings]?.available
+                ? pack.teacherStations[preparedMeetings]?.station
+                : null,
+              homeworkId: null,
+            },
+          },
+        },
+      });
     if (path.endsWith("/word-packs"))
       return route.fulfill({ json: { packs: [pack] } });
     if (path.endsWith(`/word-packs/${packId}`))
@@ -122,7 +396,7 @@ for (const width of [320, 390, 768, 1487])
     await expect(
       page.locator('.unit-roadmap-card a[href*="/private-lesson"]'),
     ).toHaveCount(0);
-    await expect(page.locator(".unit-upcoming-row")).toHaveCount(4);
+    await expect(page.locator(".unit-upcoming-row")).toHaveCount(2);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(width + 1);
@@ -257,7 +531,7 @@ test("unit browsing previews the selected unit without launching or recording pr
   page,
 }, info) => {
   await page.setViewportSize({ width: 1487, height: 1058 });
-  const base = await pathFixture(page, 26);
+  const base = await pathFixture(page, 26, 1);
   const packs = Array.from({ length: 20 }, (_, i) => ({
     ...base,
     id:
@@ -333,7 +607,7 @@ test("unit browsing previews the selected unit without launching or recording pr
 test("server midpoint availability selects the correct five-minute station", async ({
   page,
 }) => {
-  await pathFixture(page, 25);
+  await pathFixture(page, 25, 1);
   await page.goto("/english-learning");
   await expect(page.locator(".unit-teacher-station h3")).toHaveText(
     he.pathUi.midpoint,
@@ -343,11 +617,11 @@ test("server midpoint availability selects the correct five-minute station", asy
     /station=midpoint/,
   );
   await expect(
-    page.locator(".unit-upcoming-row[href*='station=supported']"),
+    page.locator(".unit-upcoming-row a[href*='station=midpoint']"),
   ).toHaveCount(1);
   await expect(
-    page.locator(".unit-upcoming-row[href*='tab=meetings']"),
-  ).toHaveCount(1);
+    page.locator(".unit-upcoming-row a[href*='tab=meetings']"),
+  ).toHaveCount(0);
 });
 test("activity selection shows actual results and preserves resume scope", async ({
   page,
@@ -427,7 +701,7 @@ test("new program preserves chosen languages and only offers a published prepare
 });
 
 async function meetingFixture(page: Page, introduced: number) {
-  const pack = await pathFixture(page, introduced);
+  const pack = await pathFixture(page, introduced, introduced >= 50 ? 2 : 1);
   await page.route("**/private-lessons/units/*", (route) =>
     route.fulfill({
       json: {
@@ -442,7 +716,16 @@ async function meetingFixture(page: Page, introduced: number) {
           introduced,
           completed: introduced,
           total: pack.wordCount,
-          teacherStations: pack.teacherStations,
+          teacherStations: pack.teacherStations.map((station, index) => ({
+            ...station,
+            available: station.available && index <= (introduced >= 50 ? 2 : 1),
+            lockReason:
+              station.available && index <= (introduced >= 50 ? 2 : 1)
+                ? null
+                : index > (introduced >= 50 ? 2 : 1)
+                  ? "previous_preparation"
+                  : "words",
+          })),
           words: ["water", "coffee", "want"].map((sourceText) => ({
             sourceText,
             translationText: "מילה",
@@ -545,8 +828,8 @@ test("legacy meeting link opens the available station and locked review cannot s
   ).toBeEnabled();
   await page.goto(`/english-learning?unit=${packId}`);
   await expect(
-    page.locator(".unit-upcoming-row[href*='station=review']"),
-  ).toHaveAttribute("href", /tab=meetings/);
+    page.locator(".unit-upcoming-row a[href*='station=review']"),
+  ).toHaveCount(0);
   await page.goto(`/private-lesson?pack=${packId}&language=en&station=review`);
   await expect(
     page.getByRole("button", {
@@ -555,6 +838,6 @@ test("legacy meeting link opens the available station and locked review cannot s
     }),
   ).toBeDisabled();
   await expect(page.locator(".unit-lesson-prep")).toContainText(
-    "עוד 25 מילים לפתיחת המפגש",
+    he.unitMap.previousPreparation,
   );
 });
