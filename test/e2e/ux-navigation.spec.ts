@@ -246,7 +246,7 @@ async function withinViewport(page: Page) {
     ),
   ).toBe(true);
 }
-test("Figma words dashboard keeps its illustration and desktop hierarchy", async ({
+test("words dashboard shares the illustrated program layout", async ({
   page,
 }, testInfo) => {
   await page.setViewportSize({ width: 1487, height: 1058 });
@@ -256,15 +256,61 @@ test("Figma words dashboard keeps its illustration and desktop hierarchy", async
     he.ux.wordsYourPace,
   );
   await expect(
-    page.locator(".ux-home-next .ux-primary-word-illustration"),
+    page.locator(".ux-home-next .ux-home-illustration img"),
   ).toBeVisible();
-  await expect(page.locator(".ux-home-next h2")).toHaveCSS("font-size", "32px");
+  await expect(page.locator(".ux-home-next h2")).toHaveCSS(
+    "font-size",
+    "53.532px",
+  );
+  await expect(page.locator(".ux-home-other-program img")).toBeVisible();
+  const art = await page.locator(".ux-home-illustration").boundingBox();
+  const copy = await page.locator(".ux-home-next-copy").boundingBox();
+  expect((art?.x ?? 0) + (art?.width ?? 0)).toBeLessThanOrEqual(copy?.x ?? 0);
   await withinViewport(page);
   await page.screenshot({
     path: testInfo.outputPath("figma-words-desktop.png"),
     fullPage: true,
     animations: "disabled",
   });
+});
+test("home keeps its large artwork and columns while a selected program loads", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1487, height: 1058 });
+  await fixtures(page, "he");
+  const course = courseWithPlan(true);
+  await page.addInitScript(
+    ({ courseId, ownerKey }) => {
+      localStorage.setItem(ownerKey, courseId);
+      localStorage.setItem(ownerKey + ".en", courseId);
+      localStorage.setItem(ownerKey + ".language", "en");
+    },
+    {
+      courseId: course.id,
+      ownerKey: `gotit.selectedProgram.v1.${sessionId}.${itemId}`,
+    },
+  );
+  let releaseCourses!: () => void;
+  const coursesReady = new Promise<void>((resolve) => {
+    releaseCourses = resolve;
+  });
+  await page.route("**/api/v1/courses", async (route) => {
+    await coursesReady;
+    await route.fulfill({
+      json: { courses: [course], homework: [], available: true },
+    });
+  });
+  await page.goto("/dashboard");
+  await expect(page.locator(".ux-home")).toHaveClass(/words-home/);
+  await expect(page.locator(".ux-home-illustration img")).toBeVisible();
+  await expect(page.locator(".ux-home-other-program img")).toBeVisible();
+  const before = await page.locator(".ux-home-illustration img").boundingBox();
+  releaseCourses();
+  await expect(page.locator(".ux-home")).toHaveClass(/with-program/);
+  const after = await page.locator(".ux-home-illustration img").boundingBox();
+  expect(after).toEqual(before);
+  await expect(page.locator(".ux-home-illustration img")).toBeVisible();
+  await withinViewport(page);
 });
 for (const width of [390, 1487])
   test(`an explicitly chosen program appears even before words exist in its language at ${width}px`, async ({

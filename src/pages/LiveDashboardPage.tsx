@@ -9,7 +9,6 @@ import { ExploreActions } from "../components/ExploreActions";
 import { DashboardDetails } from "../components/DashboardDetails";
 import { useResource } from "../lib/useResource";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
-import { getLanguageOptions } from "../lib/languages";
 import {
   product,
   dashboardSchema,
@@ -30,7 +29,7 @@ import wordCards from "../assets/ux/word-cards.png";
 import personalProgram from "../assets/ux/personal-program.png";
 
 export function LiveDashboardPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { profile, user } = useApp();
   const language = useLearningLanguage();
   const [chosenLanguage, setChosenLanguage] = useState(() =>
@@ -181,9 +180,6 @@ export function LiveDashboardPage() {
           : d?.counts.total === 0
             ? "/vocabulary"
             : smart + returnSuffix;
-  const languageNames = new Map(
-    getLanguageOptions(i18n.resolvedLanguage || "en"),
-  );
   if (language.loading || language.error)
     return (
       <RemoteState
@@ -199,22 +195,10 @@ export function LiveDashboardPage() {
       <header className="ux-home-heading">
         <div>
           <h1>
-            {t(isProgram ? "ux.greeting" : "ux.wordsGreeting", {
+            {t("ux.greeting", {
               name: profile.name,
             })}
           </h1>
-          {!isProgram && (
-            <p className="ux-home-language-pair">
-              {profile.defaultTranslationLanguage
-                ? t("ux.languageWithHelp", {
-                    language: languageNames.get(code) || code,
-                    support:
-                      languageNames.get(profile.defaultTranslationLanguage) ||
-                      profile.defaultTranslationLanguage,
-                  })
-                : languageNames.get(code) || code}
-            </p>
-          )}
           {d && (
             <p className="ux-home-daily-label">
               {t("ux.todayProgress", {
@@ -246,42 +230,23 @@ export function LiveDashboardPage() {
       />
       {d && (
         <>
-          {!isProgram && (
-            <progress
-              className="ux-daily-progress"
-              value={Math.min(d.dailyGoal.current, d.dailyGoal.value)}
-              max={d.dailyGoal.value || 1}
-              aria-label={t("dashboard.dailyGoalAria")}
-            />
-          )}
-          <section
-            className={`ux-home-next ux-card ${isProgram ? "program-next" : "mint"}`}
-          >
-            {isProgram && (
-              <div className="ux-home-illustration">
-                <img src={hero} alt="" />
-              </div>
-            )}
+          <section className="ux-home-next ux-card illustrated-next">
+            <div className="ux-home-illustration">
+              <img src={hero} alt="" />
+            </div>
             <div className="ux-home-next-copy">
-              {!isProgram && (
-                <img
-                  className="ux-primary-word-illustration"
-                  src={wordCards}
-                  alt=""
-                />
-              )}
               <div className="ux-card-heading">
-                <span className={`ux-icon ${isProgram ? "lavender" : "mint"}`}>
+                <span className="ux-icon lavender">
                   {isProgram ? <Mic size={28} /> : <Brain size={28} />}
                 </span>
                 <div>
-                  {isProgram && (
-                    <p>
-                      {course
+                  <p>
+                    {isProgram
+                      ? course
                         ? t("ux.personalProgram")
-                        : t("englishPath.title")}
-                    </p>
-                  )}
+                        : t("englishPath.title")
+                      : t("ux.words")}
+                  </p>
                   <h2>
                     {resumable
                       ? t("ux.resumeActivity")
@@ -329,12 +294,10 @@ export function LiveDashboardPage() {
               </Link>
             </div>
           </section>
-          {isProgram && (
-            <div className="ux-home-section-heading">
-              <h2>{t("ux.oneMoreThing")}</h2>
-              <Link to="/courses">{t("ux.allPrograms")}</Link>
-            </div>
-          )}
+          <div className="ux-home-section-heading">
+            <h2>{t("ux.oneMoreThing")}</h2>
+            <Link to="/courses">{t("ux.allPrograms")}</Link>
+          </div>
           <div className="ux-home-options">
             <section className="ux-card ux-home-words">
               <div className="ux-card-heading">
@@ -411,16 +374,14 @@ export function LiveDashboardPage() {
                 }}
               />
             </section>
-            {isProgram && (
-              <section className="ux-card ux-home-other-program">
-                <img src={personalProgram} alt="" />
-                <h2>{t("ux.programs")}</h2>
-                <p>{t("ux.programsSubtitle")}</p>
-                <Link className="button secondary" to="/courses">
-                  {t("ux.allPrograms")}
-                </Link>
-              </section>
-            )}
+            <section className="ux-card ux-home-other-program">
+              <img src={personalProgram} alt="" />
+              <h2>{t("ux.programs")}</h2>
+              <p>{t("ux.programsSubtitle")}</p>
+              <Link className="button secondary" to="/courses">
+                {t("ux.allPrograms")}
+              </Link>
+            </section>
           </div>
         </>
       )}

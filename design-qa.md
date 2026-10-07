@@ -1,3 +1,41 @@
+# Home layout verification — 2026-10-07
+
+final result: passed
+
+## Source and captures
+
+- Visual truth: the user's attached screenshot of the normal home (original 2836 × 1326 pixels; chat preview 2048 × 958). No local attachment path was supplied.
+- Normal program rendering: `test-results/home-program-reference-size.png`.
+- Vocabulary rendering: `test-results/home-words-reference-size.png`.
+- Responsive captures: `test-results/dashboard-390.png`, `test-results/dashboard-1024.png`, `test-results/dashboard-1440.png`.
+- Matched desktop captures: 2836 × 1326 CSS pixels, deviceScaleFactor 1; both images were opened together in one comparison input. Both use Hebrew, an active unscoped smart review, 71 due words, daily progress 16/20, a 2-day streak and the large-text preference.
+- Chrome preview was additionally inspected through Browser Use. The host's devicePixelRatio is 1.75; physical viewport 4963 × 2321 corresponds to CSS viewport 2836 × 1326. Temporary viewport overrides are reset after inspection.
+- Local preview fixtures are isolated in ignored `test-results/home-preview.config.ts`; they do not affect production routes or APIs.
+
+## Comparison
+
+The normal program and vocabulary renders now share the white hero, large learning illustration on the left, content and actions on the right, matching typography, spacing, corner radii, and the two illustrated cards underneath. The active-session hero bounds were equal in the matched desktop capture test. The three source raster assets are reused without modification.
+
+Focused inspection covered the hero artwork and text, primary-button width, card images and action areas. Context-specific labels, icons, counts and destinations intentionally follow real learning state: vocabulary review keeps its vocabulary destination; program continuation keeps its program destination. These content differences are not represented as fake program state.
+
+## Findings and verification history
+
+- Previous P1: vocabulary mode used a small illustration, a full-width stacked CTA and a one-column secondary section. Fixed by rendering the same illustrated structure in both contexts and removing the vocabulary-only CSS overrides.
+- Previous P2: program-data arrival changed which illustration and card structure existed. Fixed by making those elements unconditional. A delayed-course-response test confirms that the large artwork stays in place before and after program data arrives.
+- Post-fix: no actionable P0/P1/P2 visual findings in the shared layout. Both reference-sized captures and the 390/1024/1440 responsive captures were inspected.
+- 16 related navigation/responsive tests passed across the initial run and corrected test rerun. The corrections were a fixture-name capitalization expectation and comparing artwork geometry rather than the naturally varying height of different text.
+- An additional matched-state screenshot test passed, including equal hero bounds across program and vocabulary contexts.
+- TypeScript, targeted ESLint, formatting, diff whitespace checks and the production build passed.
+- Navigation tests cover word practice, private lessons and language changes, including Hebrew, English and Arabic. Browser console inspection of the local preview returned no errors.
+
+## Limits
+
+The visual review uses local fixture data. Deployment to the development or production site was not part of this task. Mobile follows the existing normal program layout, which hides the desktop illustration and uses a compact card. User data, font rendering and text-size preferences can affect text wrapping while sharing the same layout rules.
+
+---
+
+## Previous QA record (preserved)
+
 # My Map implementation QA
 
 **Final result: passed**

@@ -75,7 +75,7 @@
   z-index: 4100;
 }
 
-/* Home has two genuine variants: a program or personal vocabulary practice. */
+/* Home shares one illustrated layout across program and vocabulary contexts. */
 .ux-home {
   gap: 20px;
 }
@@ -94,37 +94,35 @@
 .ux-home .ux-home-next {
   border-radius: 24px;
   overflow: hidden;
-}
-.ux-home.with-program .ux-home-next {
   min-height: 471px;
   padding: 0;
 }
-.ux-home.with-program .ux-home-illustration {
+.ux-home .ux-home-illustration {
   width: 48%;
 }
-.ux-home.with-program .ux-home-illustration img {
+.ux-home .ux-home-illustration img {
   width: 100%;
   height: 467px;
   object-fit: contain;
 }
-.ux-home.with-program .ux-home-next-copy {
+.ux-home .ux-home-next-copy {
   flex: 1;
   padding: 32px 30px;
   gap: 18px;
 }
-.ux-home.with-program .ux-home-next h2 {
+.ux-home .ux-home-next h2 {
   font-size: clamp(36px, 3.6vw, 56px);
   line-height: 1.18;
 }
-.ux-home.with-program .ux-home-next-copy > p {
+.ux-home .ux-home-next-copy > p {
   font-size: calc(26px * var(--text-scale, 1));
   line-height: 1.45;
 }
-.ux-home.with-program .ux-home-next .button.primary {
+.ux-home .ux-home-next .button.primary {
   min-height: 73px;
   font-size: calc(30px * var(--text-scale, 1));
 }
-.ux-home.with-program .ux-home-next .button.ghost {
+.ux-home .ux-home-next .button.ghost {
   font-size: calc(24px * var(--text-scale, 1));
 }
 .ux-home-section-heading {
@@ -149,17 +147,17 @@
   min-height: 252px;
   border-radius: 24px;
 }
-.ux-home.with-program .ux-home-words {
+.ux-home .ux-home-words {
   background: #f2faf6;
 }
-.ux-home.with-program .ux-home-words .ux-icon {
+.ux-home .ux-home-words .ux-icon {
   display: none;
 }
-.ux-home.with-program .ux-home-words .ux-card-heading {
+.ux-home .ux-home-words .ux-card-heading {
   flex-direction: row-reverse;
   justify-content: end;
 }
-.ux-home.with-program .ux-home-words .ux-word-illustration {
+.ux-home .ux-home-words .ux-word-illustration {
   width: 151px;
   height: 122px;
   margin: 0;
@@ -240,74 +238,19 @@
 }
 /* Reserve the previous action area so compact buttons do not move the cards below. */
 @media (min-width: 861px) {
-  .ux-home.with-program .ux-home-word-actions {
+  .ux-home .ux-home-word-actions {
     min-height: calc(100.8px * var(--text-scale, 1) + 26px);
   }
   @container home-words (max-width: 489px) {
-    .ux-home.with-program .ux-home-word-actions {
+    .ux-home .ux-home-word-actions {
       min-height: calc(134.4px * var(--text-scale, 1) + 26px);
     }
   }
   @container home-words (max-width: 350px) {
-    .ux-home.with-program .ux-home-word-actions {
+    .ux-home .ux-home-word-actions {
       min-height: calc(201.6px * var(--text-scale, 1) + 30.8px);
     }
   }
-}
-.ux-home.words-home {
-  max-width: 1080px;
-  margin-inline: auto;
-}
-.ux-home.words-home .ux-home-heading .ux-home-daily-label {
-  font-size: calc(18px * var(--text-scale, 1));
-  margin-top: 20px;
-}
-.ux-home.words-home .ux-home-heading .ux-home-language-pair {
-  margin-top: 20px;
-}
-.ux-home.words-home .ux-home-next {
-  padding: 24px;
-  background: #e7f4ef;
-  border-radius: 20px;
-}
-.ux-home.words-home .ux-home-next-copy {
-  padding: 0;
-  gap: 16px;
-}
-.ux-primary-word-illustration {
-  width: 128px;
-  height: 104px;
-  object-fit: contain;
-  align-self: flex-start;
-}
-.ux-home.words-home .ux-home-next .ux-icon {
-  display: none;
-}
-.ux-home.words-home .ux-home-next h2 {
-  font-size: calc(32px * var(--text-scale, 1));
-  line-height: 1.45;
-}
-.ux-home.words-home .ux-home-next-copy > p {
-  font-size: calc(24px * var(--text-scale, 1));
-  line-height: 1.45;
-}
-.ux-home.words-home .ux-home-next .button {
-  font-size: calc(24px * var(--text-scale, 1));
-  min-height: 60px;
-}
-.ux-home.words-home .ux-home-options .ux-card {
-  min-height: 0;
-  padding: 24px;
-}
-.ux-home.words-home .ux-home-words .ux-icon,
-.ux-home.words-home .ux-home-words .ux-word-illustration {
-  display: none;
-}
-.ux-home.words-home .ux-inline-actions {
-  flex-direction: column;
-}
-.ux-home.words-home .ux-inline-actions .button {
-  width: 100%;
 }
 .ux-home .ux-explore .button {
   font-size: calc(24px * var(--text-scale, 1));
@@ -871,10 +814,10 @@ html body.private-lesson-session-open .private-lesson-mute span {
   .app-layout > .main-column > .page-content {
     padding-inline: 28px;
   }
-  .ux-home.with-program .ux-home-next-copy {
+  .ux-home .ux-home-next-copy {
     padding: 24px;
   }
-  .ux-home.with-program .ux-home-next h2 {
+  .ux-home .ux-home-next h2 {
     font-size: calc(34px * var(--text-scale, 1));
   }
   .ux-home .ux-home-options p,
@@ -921,30 +864,28 @@ html body.private-lesson-session-open .private-lesson-mute span {
   }
   .ux-home .ux-home-next {
     border-radius: 20px;
-  }
-  .ux-home.with-program .ux-home-next {
     min-height: 0;
   }
-  .ux-home.with-program .ux-home-illustration {
+  .ux-home .ux-home-illustration {
     display: none;
   }
-  .ux-home.with-program .ux-home-next-copy {
+  .ux-home .ux-home-next-copy {
     padding: 20px;
     gap: 12px;
   }
-  .ux-home.with-program .ux-home-next h2 {
+  .ux-home .ux-home-next h2 {
     font-size: calc(20px * var(--text-scale, 1));
     line-height: 26px;
   }
-  .ux-home.with-program .ux-home-next-copy > p {
+  .ux-home .ux-home-next-copy > p {
     font-size: calc(16px * var(--text-scale, 1));
     line-height: 22px;
   }
-  .ux-home.with-program .ux-home-next .button.primary {
+  .ux-home .ux-home-next .button.primary {
     min-height: 48px;
     font-size: calc(16px * var(--text-scale, 1));
   }
-  .ux-home.with-program .ux-home-next .button.ghost {
+  .ux-home .ux-home-next .button.ghost {
     font-size: calc(16px * var(--text-scale, 1));
     min-height: 44px;
   }
@@ -979,43 +920,18 @@ html body.private-lesson-session-open .private-lesson-mute span {
     font-size: calc(16px * var(--text-scale, 1));
     min-height: 44px;
   }
-  .ux-home.with-program .ux-home-words .ux-icon {
+  .ux-home .ux-home-words .ux-icon {
     display: flex;
   }
-  .ux-home.with-program .ux-home-words .ux-card-heading {
+  .ux-home .ux-home-words .ux-card-heading {
     flex-direction: row;
     justify-content: flex-start;
   }
-  .ux-home.with-program .ux-home-words .ux-word-illustration {
+  .ux-home .ux-home-words .ux-word-illustration {
     display: none;
   }
   .ux-home .ux-home-other-program > img {
     display: none;
-  }
-  .ux-home.words-home .ux-home-next {
-    padding: 20px;
-  }
-  .ux-home.words-home .ux-home-next-copy {
-    gap: 12px;
-  }
-  .ux-primary-word-illustration {
-    width: 80px;
-    height: 65px;
-  }
-  .ux-home.words-home .ux-home-next h2 {
-    font-size: calc(20px * var(--text-scale, 1));
-    line-height: 26px;
-  }
-  .ux-home.words-home .ux-home-next-copy > p {
-    font-size: calc(16px * var(--text-scale, 1));
-    line-height: 22px;
-  }
-  .ux-home.words-home .ux-home-next .button {
-    font-size: calc(16px * var(--text-scale, 1));
-    min-height: 48px;
-  }
-  .ux-home.words-home .ux-home-options .ux-card {
-    padding: 16px;
   }
   .ux-home .ux-explore .button {
     font-size: calc(16px * var(--text-scale, 1));

@@ -4,6 +4,7 @@ import { seedProfile } from "../../src/data/seed";
 
 for (const viewport of [
   { width: 390, height: 844 },
+  { width: 1024, height: 720 },
   { width: 1440, height: 900 },
 ]) {
   test(`home separates word practice and private lessons at ${viewport.width}px`, async ({
@@ -114,6 +115,22 @@ for (const viewport of [
       "/private-lesson?practice=free",
     );
     await expect(page.locator(".ux-home-next")).toBeVisible();
+    await expect(page.locator(".ux-home-heading h1")).toHaveText(
+      "היי, learner",
+    );
+    await expect(page.locator(".ux-home-options .ux-card")).toHaveCount(2);
+    if (viewport.width > 860) {
+      await expect(page.locator(".ux-home-illustration img")).toBeVisible();
+      await expect(
+        page.locator(".ux-home-words .ux-word-illustration"),
+      ).toBeVisible();
+      await expect(page.locator(".ux-home-other-program img")).toBeVisible();
+      const primary = await page
+        .locator(".ux-home-next-copy .button.primary")
+        .boundingBox();
+      const hero = await page.locator(".ux-home-next").boundingBox();
+      expect(primary!.width).toBeLessThan(hero!.width * 0.55);
+    }
     await expect(page.locator(".dashboard-more")).not.toHaveAttribute("open");
     // An unselected course never takes over the user's vocabulary-first home.
     await expect(

@@ -430,7 +430,7 @@ progress::-moz-progress-bar {
   padding: 0;
   overflow: hidden;
 }
-.ux-home-next.program-next {
+.ux-home-next.illustrated-next {
   display: flex;
   flex-direction: row-reverse;
   min-height: 390px;
@@ -454,10 +454,10 @@ progress::-moz-progress-bar {
   flex: 1;
   min-width: 0;
 }
-.program-next .ux-home-next-copy > p {
+.illustrated-next .ux-home-next-copy > p {
   font-size: 24px;
 }
-.program-next h2 {
+.illustrated-next h2 {
   font-size: clamp(30px, 3.2vw, 48px);
 }
 .ux-home-next .ux-card-heading {
@@ -470,9 +470,6 @@ progress::-moz-progress-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-}
-.words-home .ux-home-options {
-  grid-template-columns: 1fr;
 }
 .ux-home-words .ux-word-illustration {
   width: 120px;
@@ -497,9 +494,6 @@ progress::-moz-progress-bar {
 }
 .ux-home-other-program .button {
   width: calc(100% + 156px);
-}
-.ux-daily-progress {
-  margin-block: 0 4px;
 }
 .ux-achievements-entry {
   align-self: center;
@@ -1203,10 +1197,10 @@ html body.private-lesson-session-open .private-lesson-session .button {
   .ux-home-next-copy {
     padding: 24px;
   }
-  .ux-home-next.program-next {
+  .ux-home-next.illustrated-next {
     min-height: 340px;
   }
-  .program-next h2 {
+  .illustrated-next h2 {
     font-size: 32px;
   }
 }
@@ -1369,7 +1363,7 @@ html body.private-lesson-session-open .private-lesson-session .button {
   .ux-home-heading .learning-language-select {
     width: 100%;
   }
-  .ux-home-next.program-next {
+  .ux-home-next.illustrated-next {
     display: block;
     min-height: 0;
     background: #f2faf6;
@@ -1383,10 +1377,10 @@ html body.private-lesson-session-open .private-lesson-session .button {
     padding: 16px;
     gap: 8px;
   }
-  .program-next .ux-home-next-copy > p {
+  .illustrated-next .ux-home-next-copy > p {
     font-size: 16px;
   }
-  .program-next h2 {
+  .illustrated-next h2 {
     font-size: 18px;
   }
   .ux-home-options,
