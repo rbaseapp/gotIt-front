@@ -86,7 +86,7 @@ for (const width of [320, 390, 1487])
       }),
     );
     await page.goto("/login", { waitUntil: "domcontentloaded" });
-    await expect(page.locator(".auth-review")).toBeVisible();
+    await expect(page.locator(".auth-production")).toBeVisible();
     await expect(
       page.getByRole("button", { name: he.auth.loginSubmit, exact: true }),
     ).toBeVisible();
