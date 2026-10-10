@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useApp } from "./context/AppContext";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
+import { dashboardDesignEnabled } from "./lib/dashboardDesign";
 import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
@@ -37,6 +38,11 @@ const HelpPage = lazy(() =>
 const LiveDashboardPage = lazy(() =>
   import("./pages/LiveDashboardPage").then((m) => ({
     default: m.LiveDashboardPage,
+  })),
+);
+const DevDashboardPage = lazy(() =>
+  import("./pages/DevDashboardPage").then((m) => ({
+    default: m.DevDashboardPage,
   })),
 );
 const LiveLearnPage = lazy(() =>
@@ -198,7 +204,11 @@ export default function App() {
                     path="/dashboard"
                     element={
                       mode === "live" ? (
-                        <LiveDashboardPage />
+                        dashboardDesignEnabled() ? (
+                          <DevDashboardPage />
+                        ) : (
+                          <LiveDashboardPage />
+                        )
                       ) : (
                         <DashboardPage />
                       )

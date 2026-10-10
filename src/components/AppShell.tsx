@@ -38,6 +38,7 @@ import {
 } from "../lib/privateLesson";
 import { getBilingualLanguageOptions } from "../lib/languages";
 import { learningReturn } from "../lib/learningNavigation";
+import { dashboardDesignEnabled } from "../lib/dashboardDesign";
 
 function sameBaseLanguage(first: string, second: string) {
   try {
@@ -81,10 +82,15 @@ export function AppShell({
   const { profile, stats, items, mode, user, profileError, retryProfile } =
     useApp();
   const location = useLocation();
+  const dashboardShell =
+    mode === "live" &&
+    location.pathname === "/dashboard" &&
+    dashboardDesignEnabled();
   const focusedLearning =
     /^\/(courses\/[^/]+|homework\/[^/]+)(\/|$)/.test(location.pathname) ||
     location.pathname === "/private-lesson";
   const focusShell =
+    dashboardShell ||
     location.pathname === "/private-lesson" ||
     location.pathname === "/achievements";
   const navigate = useNavigate();
@@ -243,7 +249,9 @@ export function AppShell({
     )?.[1] ?? assessmentLanguage;
 
   return (
-    <div className={`app-layout${focusShell ? " focus-shell" : ""}`}>
+    <div
+      className={`app-layout${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}`}
+    >
       <aside
         ref={sidebarRef}
         className={`sidebar ${mobileOpen ? "mobile-open" : ""}`}
@@ -345,8 +353,38 @@ export function AppShell({
           aria-label={t("shell.closeMenu")}
         />
       )}
-      <main className="main-column">
+      <main
+        className="main-column"
+        inert={(dashboardShell && mobileOpen) || undefined}
+      >
         <header className="topbar">
+          {dashboardShell && (
+            <div className="nd-desktop-brand">
+              <Logo />
+            </div>
+          )}
+          {dashboardShell && (
+            <nav
+              className="nd-top-navigation"
+              aria-label={t("shell.mainNavigation")}
+            >
+              {[
+                navItems[0],
+                navItems[1],
+                navItems[4],
+                navItems[3],
+                navItems[2],
+              ].map(({ to, labelKey }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  {t(labelKey)}
+                </NavLink>
+              ))}
+            </nav>
+          )}
           <div className="topbar-title">
             <span className="mobile-brand">
               <Logo />
@@ -363,7 +401,7 @@ export function AppShell({
             <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
           </div>
           <div className="topbar-actions">
-            {focusShell && (
+            {focusShell && !dashboardShell && (
               <Link
                 className="button ghost focus-back"
                 to={
@@ -382,7 +420,7 @@ export function AppShell({
                 )}
               </Link>
             )}
-            {latestLessonAssessment?.report && (
+            {!dashboardShell && latestLessonAssessment?.report && (
               <Link
                 to="/private-lesson?view=level"
                 className="topbar-level-assessment"
@@ -433,6 +471,12 @@ export function AppShell({
               </button>
               {userOpen && (
                 <div className="user-popover">
+                  {dashboardShell && (
+                    <Link to="/account" onClick={() => setUserOpen(false)}>
+                      <UserRound size={18} />
+                      {t("ux.account")}
+                    </Link>
+                  )}
                   {status && (
                     <p className="account-plan">
                       {t(
@@ -511,7 +555,11 @@ export function AppShell({
           {children}
         </div>
       </main>
-      <nav className="mobile-tabs" aria-label={t("ux.rootNavigation")}>
+      <nav
+        className="mobile-tabs"
+        aria-label={t("ux.rootNavigation")}
+        inert={(dashboardShell && mobileOpen) || undefined}
+      >
         {rootNavItems
           .filter((item) => !item.liveOnly || mode === "live")
           .map(({ to, labelKey, icon: Icon }) => (
