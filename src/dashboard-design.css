@@ -778,6 +778,9 @@
 .nd-article .remote-status {
   color: #fff;
 }
+.nd-article .nd-text-link {
+  color: #fff;
+}
 .nd-footer {
   display: flex;
   flex-wrap: wrap;
