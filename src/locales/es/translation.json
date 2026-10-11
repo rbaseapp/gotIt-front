@@ -2471,6 +2471,14 @@
       "listening": {
         "title": "Escuchar y escribir",
         "description": "Escucha y escribe la palabra"
+      },
+      "matching": {
+        "title": "Parejas",
+        "description": "Conecta una palabra con su significado de varias opciones"
+      },
+      "pronunciation": {
+        "title": "Pronunciación",
+        "description": "Una grabación temporal para evaluación real, sujeta a disponibilidad del proveedor"
       }
     },
     "navPrograms": "Mi plan",

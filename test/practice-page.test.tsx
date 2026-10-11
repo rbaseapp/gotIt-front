@@ -180,6 +180,25 @@ beforeEach(() => {
 afterEach(clearTokens);
 
 describe("DEV practice live behavior", () => {
+  it.each([
+    [/^כרטיסי שינון/, "flashcards"],
+    [/^התאמות/, "matching"],
+    [/^גרירה/, "drag_drop"],
+    [/^האזנה וכתיבה/, "listening"],
+    [/^הגייה/, "pronunciation"],
+  ] as const)(
+    "opens each approved game from its visible card (%s)",
+    async (name, type) => {
+      mount();
+      const card = screen.getByRole("button", { name });
+      await waitFor(() => expect(card).toBeEnabled());
+      expect(screen.queryByText("בקרוב")).not.toBeInTheDocument();
+      fireEvent.click(card);
+      expect(screen.getByTestId("location")).toHaveTextContent(
+        `/learn/session/${type}?language=en`,
+      );
+    },
+  );
   it("shows the server goal without inventing completed games or recording progress", async () => {
     mount();
     expect(

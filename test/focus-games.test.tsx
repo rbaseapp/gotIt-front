@@ -84,6 +84,47 @@ const click = async (name: string | RegExp) => {
 const next = () => click(/^Continue$/);
 
 describe("DEV focus game engine", () => {
+  it.each([
+    "flashcards",
+    "matching",
+    "drag_drop",
+    "listening",
+    "pronunciation",
+    "smart",
+  ])(
+    "starts %s for library languages omitted from profile capabilities",
+    async (type) => {
+      const { fixture } = await mount(type, { omitCapabilityLanguage: true });
+      await waitFor(() =>
+        expect(
+          fixture.requests.some((request) =>
+            request.path.endsWith("/exercises"),
+          ),
+        ).toBe(true),
+      );
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(
+        fixture.requests.some((request) => request.path.endsWith("/profile")),
+      ).toBe(true);
+      expect(
+        fixture.requests.some(
+          (request) =>
+            request.path.endsWith("/practice/sessions") &&
+            request.method === "POST",
+        ),
+      ).toBe(true);
+    },
+  );
+  it("preserves explicitly disabled skills when a language capability entry is missing", async () => {
+    const { fixture } = await mount("listening", {
+      omitCapabilityLanguage: true,
+      enabledSkills: ["recognition"],
+    });
+    await screen.findByRole("alert");
+    expect(fixture.requests.every((request) => request.method === "GET")).toBe(
+      true,
+    );
+  });
   it("runs the five real modes, transitions, correction round, voice feedback and authoritative close", async () => {
     vi.mocked(recordVoice).mockResolvedValue("fixture-wave");
     const { fixture } = await mount();

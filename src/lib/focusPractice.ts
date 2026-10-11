@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   exerciseSchema,
+  capabilitiesSchema,
   sessionSchema,
   studyCardsSchema,
   uuid,
@@ -30,6 +31,28 @@ export const exerciseTypeFor = (mode: FocusMode) =>
     : mode === "listening"
       ? "listening_spelling"
       : mode;
+
+/** Capabilities lists profile languages, which can omit languages in the library. */
+export function focusSkills(
+  capabilities: z.infer<typeof capabilitiesSchema>,
+  language: string,
+  preferences?: { enabledSkills: string[] },
+): string[] {
+  const configured = capabilities.learningLanguages.find(
+    (entry) => entry.languageCode === language,
+  );
+  // An explicitly empty capability list remains authoritative.
+  return (
+    configured?.enabledSkills ??
+    preferences?.enabledSkills ?? [
+      "recognition",
+      "recall",
+      "listening",
+      "spelling",
+      "pronunciation",
+    ]
+  );
+}
 export function focusSequence(
   type: string,
   skills: string[],

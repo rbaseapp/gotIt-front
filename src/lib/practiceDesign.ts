@@ -18,10 +18,14 @@ export const practiceCards = [
   },
   { id: "writing", asset: "keyboard", game: "recall", skill: "recall" },
   { id: "drag", asset: "translation", game: "drag_drop", skill: "recall" },
-  { id: "sentences", asset: "puzzle", game: null, skill: "recognition" },
+  { id: "matching", asset: "puzzle", game: "matching", skill: "recognition" },
   { id: "mixed", asset: "gamepad", game: "smart", skill: null },
-  { id: "dialogue", asset: "chat", game: null, skill: null },
-  { id: "pictures", asset: "picture", game: null, skill: "recognition" },
+  {
+    id: "pronunciation",
+    asset: "chat",
+    game: "pronunciation",
+    skill: "pronunciation",
+  },
   {
     id: "listening",
     asset: "headphones",

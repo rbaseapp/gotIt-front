@@ -2471,6 +2471,14 @@
       "listening": {
         "title": "Écoute et écriture",
         "description": "Écoutez et écrivez le mot"
+      },
+      "matching": {
+        "title": "Associations",
+        "description": "Reliez un mot à sa définition parmi plusieurs options"
+      },
+      "pronunciation": {
+        "title": "Prononciation",
+        "description": "Un enregistrement temporaire pour une véritable évaluation, soumis à la disponibilité du fournisseur"
       }
     },
     "navPrograms": "Mon programme",

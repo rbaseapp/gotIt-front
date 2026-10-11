@@ -2516,6 +2516,14 @@
       "listening": {
         "title": "استماع وكتابة",
         "description": "استمع واكتب الكلمة"
+      },
+      "matching": {
+        "title": "مطابقة",
+        "description": "ربط كلمة بمعناها من عدة خيارات"
+      },
+      "pronunciation": {
+        "title": "نطق",
+        "description": "تسجيل مؤقت للتقييم الفعلي، خاضع لتوفر المزود"
       }
     },
     "navPrograms": "خطتي",

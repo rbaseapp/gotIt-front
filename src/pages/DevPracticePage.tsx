@@ -18,7 +18,11 @@ import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { useResource } from "../lib/useResource";
 import { getLanguageOptions } from "../lib/languages";
 import { learningReturn, practiceLink } from "../lib/learningNavigation";
-import { readFocusCheckpoint } from "../lib/focusPractice";
+import {
+  focusSequence,
+  focusSkills,
+  readFocusCheckpoint,
+} from "../lib/focusPractice";
 import {
   practiceCards,
   recentPracticeLink,
@@ -240,9 +244,9 @@ export function DevPracticePage() {
   const progress = goal
     ? Math.min(1, goal.current / Math.max(1, goal.value))
     : 0;
-  const skills = capabilities.data?.learningLanguages.find(
-    (l) => l.languageCode === code,
-  )?.enabledSkills;
+  const skills = capabilities.data
+    ? focusSkills(capabilities.data, code, profile.learningPreferences)
+    : [];
   const blocked =
     language.loading ||
     !!language.error ||
@@ -253,13 +257,16 @@ export function DevPracticePage() {
     (params.has("pack") &&
       (packs.loading || !!packs.error || !pack?.installed));
   const permitted = subscription.hasEntitlement("practice.play");
-  const available = (game: string, skill?: string | null) =>
+  const available = (game: string) =>
     !blocked &&
     permitted &&
     !!capabilities.data?.configured.practice &&
-    ((game !== "listening" && game !== "pronunciation") ||
-      !!capabilities.data?.configured.speech) &&
-    (!skill || !skills || skills.some((s) => s === skill));
+    focusSequence(
+      game === "spelling" ? "recall" : game,
+      skills,
+      !!capabilities.data?.configured.speech,
+      2,
+    ).length > 0;
   const canStart =
     available("smart") &&
     (scoped ||
@@ -467,11 +474,7 @@ export function DevPracticePage() {
                 key={card.id}
                 onClick={() => {
                   if (!permitted && !subscription.loading) navigate("/billing");
-                  else if (
-                    card.game &&
-                    available(card.game, card.skill) &&
-                    canStart
-                  )
+                  else if (card.game && available(card.game) && canStart)
                     navigate(gameLink(card.game));
                   else setDialog("unavailable");
                 }}
@@ -487,8 +490,7 @@ export function DevPracticePage() {
                 <span className="arr" aria-hidden="true">
                   <Arrow size={18} />
                 </span>
-                {(!card.game ||
-                  (!blocked && !available(card.game, card.skill))) && (
+                {(!card.game || (!blocked && !available(card.game))) && (
                   <small className="availability">
                     {t(
                       card.game
@@ -611,14 +613,7 @@ export function DevPracticePage() {
           )}
           {dialog === "more" &&
             ["matching", "pronunciation", "spelling"].map((game) =>
-              available(
-                game,
-                game === "pronunciation"
-                  ? "pronunciation"
-                  : game === "spelling"
-                    ? "recall"
-                    : "recognition",
-              ) && canStart ? (
+              available(game) && canStart ? (
                 <Link className="ux-choice" to={gameLink(game)} key={game}>
                   {t(
                     game === "spelling"

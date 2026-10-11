@@ -2470,6 +2470,14 @@
       "listening": {
         "title": "האזנה וכתיבה",
         "description": "הקשיבו וכתבו את המילה"
+      },
+      "matching": {
+        "title": "התאמות",
+        "description": "מחברים מילה למשמעות מתוך אפשרויות"
+      },
+      "pronunciation": {
+        "title": "הגייה",
+        "description": "הקליטו את עצמכם וקבלו משוב על ההגייה"
       }
     },
     "navPrograms": "התוכנית שלי",

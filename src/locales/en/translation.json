@@ -2470,6 +2470,14 @@
       "listening": {
         "title": "Listen and write",
         "description": "Listen and write the word"
+      },
+      "matching": {
+        "title": "Matching",
+        "description": "Connect a word to its meaning from several options"
+      },
+      "pronunciation": {
+        "title": "Pronunciation",
+        "description": "Record yourself and get pronunciation feedback"
       }
     },
     "navPrograms": "My plan",

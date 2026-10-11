@@ -2471,6 +2471,14 @@
       "listening": {
         "title": "Hören und Schreiben",
         "description": "Höre zu und schreibe das Wort"
+      },
+      "matching": {
+        "title": "Zuordnen",
+        "description": "Verbinde ein Wort mit seiner Bedeutung aus mehreren Optionen"
+      },
+      "pronunciation": {
+        "title": "Aussprache",
+        "description": "Eine temporäre Aufnahme für echte Bewertung, abhängig von der Anbieterverfügbarkeit"
       }
     },
     "navPrograms": "Mein Plan",

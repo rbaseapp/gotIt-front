@@ -2471,6 +2471,14 @@
       "listening": {
         "title": "听音拼写",
         "description": "听音并拼写单词"
+      },
+      "matching": {
+        "title": "匹配",
+        "description": "从多个选项中将一个单词与其含义联系起来"
+      },
+      "pronunciation": {
+        "title": "发音",
+        "description": "用于实际评估的临时记录，具体取决于提供商的可用性"
       }
     },
     "navPrograms": "我的计划",

@@ -30,6 +30,8 @@ export function focusFixture(
     speech?: boolean;
     locale?: string;
     count?: number;
+    omitCapabilityLanguage?: boolean;
+    enabledSkills?: string[];
   } = {},
 ) {
   let serial = 100,
@@ -149,7 +151,7 @@ export function focusFixture(
           defaultSourceLanguage: "en",
           defaultTranslationLanguage: "he",
           learningPreferences: {
-            enabledSkills: [
+            enabledSkills: options.enabledSkills ?? [
               "recognition",
               "recall",
               "listening",
@@ -182,18 +184,20 @@ export function focusFixture(
           readingGeneration: false,
           speech: options.speech !== false,
         },
-        learningLanguages: [
-          {
-            languageCode: "en",
-            enabledSkills: [
-              "recognition",
-              "recall",
-              "listening",
-              "pronunciation",
-              "spelling",
+        learningLanguages: options.omitCapabilityLanguage
+          ? []
+          : [
+              {
+                languageCode: "en",
+                enabledSkills: options.enabledSkills ?? [
+                  "recognition",
+                  "recall",
+                  "listening",
+                  "pronunciation",
+                  "spelling",
+                ],
+              },
             ],
-          },
-        ],
       });
     if (path.endsWith("/word-packs")) return json({ packs: [] });
     if (path.endsWith("/private-lessons")) return json({ lessons: [] });

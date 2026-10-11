@@ -53,3 +53,9 @@ performed. Local mocked receipts do not establish external provider health.
 
 See project-root [design-qa.md](../../design-qa.md) and the specification's
 `docs/37_FOCUS_GAMES_DEV.md` for canonical acceptance/release evidence.
+
+## DEV availability regression (2026-10-11)
+
+The first release incorrectly treated a library language absent from the profile-only capabilities list as having no enabled skills. The hub allowed entry while the game rejected it before session creation. Both now share skill resolution: an existing language capability entry is authoritative; otherwise the game reads the real profile preferences, retaining the server default only when preferences are absent. Explicitly disabled skills remain disabled; no profile write is made. The hub now exposes all five approved games directly, with writing/mixed practice, replacing three unfinished placeholder cards. Listening requires both listening and spelling plus speech configuration in both entry points.
+
+Regression coverage starts all five games and mixed practice with an omitted language, preserves disabled preferences and verifies every visible game card destination. `npm run check` passed typecheck, lint, 284 unit tests in 50 files, production build and 20 gateway/security tests. Live DEV acceptance is tracked in the canonical specification.

@@ -21,6 +21,7 @@ import {
   checkpointKey,
   readFocusCheckpoint,
   focusSequence,
+  focusSkills,
   exerciseTypeFor,
   outcomeFrom,
   reviewItems,
@@ -198,10 +199,13 @@ export function useFocusSession(
       let cached: FocusCheckpoint | undefined;
       let serverAttempts: z.infer<typeof detailSchema>["attempts"] = [];
       const capabilities = await product(capabilitiesSchema, "capabilities");
-      const skills =
-        capabilities.learningLanguages.find(
-          (item) => item.languageCode === language,
-        )?.enabledSkills ?? [];
+      const configuredLanguage = capabilities.learningLanguages.find(
+        (item) => item.languageCode === language,
+      );
+      const preferences = configuredLanguage
+        ? undefined
+        : (await api.getProfile()).learningPreferences;
+      const skills = focusSkills(capabilities, language, preferences);
       if (!capabilities.configured.practice)
         throw new Error(t("focusGames.unavailable"));
       if (
