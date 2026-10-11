@@ -187,7 +187,14 @@ export function DevMyWordsPage() {
     ),
   );
   const packs = useResource(
-    useCallback(() => product(wordPacksSchema, "word-packs"), []),
+    useCallback(
+      () =>
+        product(
+          wordPacksSchema,
+          `word-packs${query({ sourceLanguageCode: language.code || undefined, translationLanguageCode: profile.defaultTranslationLanguage || undefined })}`,
+        ),
+      [language.code, profile.defaultTranslationLanguage],
+    ),
   );
   const [extra, setExtra] = useState<{
     key: string;

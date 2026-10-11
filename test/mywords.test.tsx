@@ -130,6 +130,14 @@ describe("DEV my words", () => {
     expect(within(card).getByText("(n)")).toBeVisible();
     expect(within(card).getByText("ft.com")).toBeVisible();
     expect(
+      requests.some(
+        (r) =>
+          r.url.pathname.endsWith("/word-packs") &&
+          r.url.searchParams.get("sourceLanguageCode") === "en" &&
+          r.url.searchParams.get("translationLanguageCode") === "he",
+      ),
+    ).toBe(true);
+    expect(
       within(card).getByRole("img", { name: "חוזק זיכרון 2 מתוך 5" }),
     ).toBeVisible();
     fireEvent.click(
