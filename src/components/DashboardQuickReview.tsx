@@ -57,7 +57,6 @@ export function DashboardQuickReview({
           sessionType: "recall",
           sourceLanguageCode: language,
           count: 5,
-          includeNewItems: true,
         });
         active = (
           await product(

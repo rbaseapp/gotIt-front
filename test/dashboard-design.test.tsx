@@ -234,9 +234,10 @@ describe("dashboard quick review", () => {
     expect(new Headers(creations[1].headers).get("Idempotency-Key")).toBe(
       new Headers(creations[0].headers).get("Idempotency-Key"),
     );
-    expect(JSON.parse(String(creations[0].body))).toMatchObject({
+    expect(JSON.parse(String(creations[0].body))).toEqual({
+      sessionType: "recall",
       sourceLanguageCode: "en",
-      includeNewItems: true,
+      count: 5,
     });
     expect(screen.getByRole("link", { name: "לחזרה המלאה" })).toHaveAttribute(
       "href",
