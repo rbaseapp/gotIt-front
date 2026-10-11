@@ -77,4 +77,3 @@ Evidence: [captures](corrections-20261011/). The attached video was not availabl
 ### Primary button text correction (2026-10-11)
 
 The shared primary-button selector now matches the specificity of each imported game button reset. Continue and Finish session retain white text (#fff) on green in game feedback and transitions. Local Chrome verification confirmed computed rgb(255, 255, 255) for both labels. Production build and 21 focused game tests passed. This is a CSS-only correction with no API or scoring changes.
-
