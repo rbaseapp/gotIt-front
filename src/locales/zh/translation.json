@@ -2495,8 +2495,8 @@
     "attempts": "尝试次数",
     "back": "返回练习",
     "board": "第 {{current}} 组",
-    "cannotListen": "现在无法听音，跳过此词",
-    "cannotSpeak": "现在无法说话，跳过此词",
+    "cannotListen": "现在无法收听 — 根据翻译拼写",
+    "cannotSpeak": "现在无法说话 — 暂停口语游戏",
     "check": "检查答案",
     "chooseMeaning": "选择对应含义",
     "continue": "继续",
@@ -2533,8 +2533,8 @@
     "play": "播放",
     "playAgain": "再玩一次{{game}}",
     "playSentence": "播放句子",
-    "practiced": "成功练习的单词",
-    "practicedWords": "你成功练习了 {{count}} 个单词",
+    "practiced": "已练习的单词",
+    "practicedWords": "你练习了 {{count}} 个单词",
     "previousCard": "上一张卡片",
     "progress": "游戏进度",
     "rememberFirst": "查看翻译前先试着回忆",
@@ -2602,6 +2602,59 @@
       "recall": "正确答案"
     },
     "level": "等级 {{level}}",
-    "wordReview": "待复习单词："
+    "wordReview": "待复习单词：",
+    "savedReview": "已保存，将在本次练习结束时复习",
+    "tryPairAgain": "差一点…试试另一对",
+    "tryWordOther": "差一点…试试另一个词",
+    "dragSuccess": "太棒了！完全正确",
+    "wrongWord": "{{word}} 不适合这里",
+    "listenReveal": "没关系，我们会再练这个词",
+    "listenLastTry": "还剩一次机会",
+    "listenOops": "不是这个，试试别的字母",
+    "listenSuccess": "对！完全正确",
+    "listenTogether": "一起听…",
+    "listenWrite": "一个字母一个字母来",
+    "listenCue": "点击扬声器",
+    "mistakes": "错误",
+    "backToAudio": "返回听力",
+    "toSummary": "练习总结",
+    "continueLast": "继续最后一个游戏",
+    "practiceStronger": "你的练习在进步！",
+    "keepPracticing": "很好，继续练习！",
+    "newStreakBest": "新的连续练习纪录！",
+    "hardestWord": "今天最难的单词：",
+    "tryAgain": "再试一次",
+    "pronunciationTip": "慢速听一遍，然后大声跟读。",
+    "spokeWithoutAssessment": "我已朗读 · 无评估继续",
+    "micPermissionTitle": "允许使用麦克风？",
+    "micPermissionBody": "我们需要使用麦克风评估发音。录音仅用于评估，不会保存。",
+    "allowMic": "允许麦克风",
+    "withoutMic": "不用麦克风",
+    "speakingPaused": "口语游戏将暂停15分钟",
+    "exampleUnavailable": "句子翻译不可用",
+    "audioBoard": "听力",
+    "ratings": {
+      "good": "简单",
+      "hard": "差点想起",
+      "again": "困难"
+    },
+    "ratingHelp": {
+      "good": "轻松记起",
+      "hard": "有点混淆",
+      "again": "完全没记起"
+    },
+    "stamps": {
+      "good": "记住了！",
+      "hard": "差一点",
+      "again": "待复习"
+    },
+    "currentCard": "返回当前卡片",
+    "pos": {
+      "noun": "名词",
+      "verb": "动词",
+      "adjective": "形容词",
+      "adverb": "副词",
+      "phrase": "短语"
+    }
   }
 }

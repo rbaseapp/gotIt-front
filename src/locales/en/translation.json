@@ -2494,8 +2494,8 @@
     "attempts": "Attempts",
     "back": "Back to practice",
     "board": "Board {{current}}",
-    "cannotListen": "Can't listen now — skip word",
-    "cannotSpeak": "Can't speak now — skip word",
+    "cannotListen": "Can't listen now — write the translation instead",
+    "cannotSpeak": "Can't speak now — pause speaking games",
     "check": "Check answer",
     "chooseMeaning": "Choose the matching meaning",
     "continue": "Continue",
@@ -2532,8 +2532,8 @@
     "play": "Listen",
     "playAgain": "Play {{game}} again",
     "playSentence": "Listen to the sentence",
-    "practiced": "Words practiced successfully",
-    "practicedWords": "You practiced {{count}} words successfully",
+    "practiced": "Words practiced",
+    "practicedWords": "You practiced {{count}} words",
     "previousCard": "Previous card",
     "progress": "Game progress",
     "rememberFirst": "Try to recall the meaning, then reveal the translation",
@@ -2601,6 +2601,59 @@
       "recall": "Correct answers"
     },
     "level": "Level {{level}}",
-    "wordReview": "Word to review:"
+    "wordReview": "Word to review:",
+    "savedReview": "Saved for review at the end of the session",
+    "tryPairAgain": "Almost… try another pair",
+    "tryWordOther": "Almost… try another word",
+    "dragSuccess": "Great! Exactly right",
+    "wrongWord": "{{word}} does not fit here",
+    "listenReveal": "That is okay. We will come back to this word",
+    "listenLastTry": "One more try",
+    "listenOops": "Not that one. Try another letter",
+    "listenSuccess": "Yes! Exactly right",
+    "listenTogether": "Listening with you…",
+    "listenWrite": "One letter at a time",
+    "listenCue": "Press the speaker",
+    "mistakes": "Mistakes",
+    "backToAudio": "Back to listening",
+    "toSummary": "Session summary",
+    "continueLast": "Continue to the last game",
+    "practiceStronger": "Your practice is getting stronger!",
+    "keepPracticing": "Nice, keep practicing!",
+    "newStreakBest": "A new streak record!",
+    "hardestWord": "The hardest word today:",
+    "tryAgain": "Try again",
+    "pronunciationTip": "Listen slowly, then repeat the word aloud.",
+    "spokeWithoutAssessment": "I said it aloud · continue without assessment",
+    "micPermissionTitle": "Allow microphone?",
+    "micPermissionBody": "We need microphone access to assess your pronunciation. Your recording is used only for the assessment and is not saved.",
+    "allowMic": "Allow microphone",
+    "withoutMic": "Without microphone",
+    "speakingPaused": "Speaking games are paused for 15 minutes",
+    "exampleUnavailable": "Sentence translation is unavailable",
+    "audioBoard": "Listening",
+    "ratings": {
+      "good": "Easy",
+      "hard": "Almost remembered",
+      "again": "Difficult"
+    },
+    "ratingHelp": {
+      "good": "I remembered easily",
+      "hard": "I got a little confused",
+      "again": "I did not remember"
+    },
+    "stamps": {
+      "good": "Remembered!",
+      "hard": "Almost",
+      "again": "For review"
+    },
+    "currentCard": "Back to the current card",
+    "pos": {
+      "noun": "noun",
+      "verb": "verb",
+      "adjective": "adjective",
+      "adverb": "adverb",
+      "phrase": "phrase"
+    }
   }
 }

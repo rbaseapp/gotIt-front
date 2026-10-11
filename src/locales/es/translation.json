@@ -2495,8 +2495,8 @@
     "attempts": "Intentos",
     "back": "Volver a practicar",
     "board": "Tablero {{current}}",
-    "cannotListen": "No puedo escuchar: omitir palabra",
-    "cannotSpeak": "No puedo hablar: omitir palabra",
+    "cannotListen": "Sin audio ahora — escribir según la traducción",
+    "cannotSpeak": "No puedo hablar ahora — pausar juegos de voz",
     "check": "Comprobar",
     "chooseMeaning": "Elige el significado",
     "continue": "Continuar",
@@ -2533,8 +2533,8 @@
     "play": "Escuchar",
     "playAgain": "Repetir {{game}}",
     "playSentence": "Escuchar la frase",
-    "practiced": "Palabras practicadas con éxito",
-    "practicedWords": "Practicaste {{count}} palabras con éxito",
+    "practiced": "Palabras practicadas",
+    "practicedWords": "Has practicado {{count}} palabras",
     "previousCard": "Tarjeta anterior",
     "progress": "Progreso del juego",
     "rememberFirst": "Intenta recordar antes de ver la traducción",
@@ -2602,6 +2602,59 @@
       "recall": "Respuestas correctas"
     },
     "level": "Nivel {{level}}",
-    "wordReview": "Palabra por repasar:"
+    "wordReview": "Palabra por repasar:",
+    "savedReview": "Guardada para repasar al final de la sesión",
+    "tryPairAgain": "Casi… prueba otra pareja",
+    "tryWordOther": "Casi… prueba otra palabra",
+    "dragSuccess": "¡Genial! Exactamente",
+    "wrongWord": "{{word}} no encaja aquí",
+    "listenReveal": "No pasa nada. Volveremos a esta palabra",
+    "listenLastTry": "Queda un intento",
+    "listenOops": "Esa no. Prueba otra letra",
+    "listenSuccess": "¡Sí! Exactamente",
+    "listenTogether": "Escuchando contigo…",
+    "listenWrite": "Letra a letra",
+    "listenCue": "Pulsa el altavoz",
+    "mistakes": "Errores",
+    "backToAudio": "Volver al audio",
+    "toSummary": "Resumen de la sesión",
+    "continueLast": "Continuar al último juego",
+    "practiceStronger": "¡Tu práctica mejora!",
+    "keepPracticing": "¡Bien, sigue practicando!",
+    "newStreakBest": "¡Nuevo récord de racha!",
+    "hardestWord": "La palabra más difícil de hoy:",
+    "tryAgain": "Intentar de nuevo",
+    "pronunciationTip": "Escucha despacio y repite la palabra en voz alta.",
+    "spokeWithoutAssessment": "La dije en voz alta · continuar sin evaluación",
+    "micPermissionTitle": "¿Permitir micrófono?",
+    "micPermissionBody": "Necesitamos acceso al micrófono para evaluar tu pronunciación. La grabación solo se usa para la evaluación y no se guarda.",
+    "allowMic": "Permitir micrófono",
+    "withoutMic": "Sin micrófono",
+    "speakingPaused": "Pausaremos los juegos de voz durante 15 minutos",
+    "exampleUnavailable": "La traducción de la frase no está disponible",
+    "audioBoard": "Escucha",
+    "ratings": {
+      "good": "Fácil",
+      "hard": "Casi lo recordé",
+      "again": "Difícil"
+    },
+    "ratingHelp": {
+      "good": "Lo recordé fácilmente",
+      "hard": "Me confundí un poco",
+      "again": "No lo recordé"
+    },
+    "stamps": {
+      "good": "¡Recordado!",
+      "hard": "Casi",
+      "again": "Para repasar"
+    },
+    "currentCard": "Volver a la tarjeta actual",
+    "pos": {
+      "noun": "sustantivo",
+      "verb": "verbo",
+      "adjective": "adjetivo",
+      "adverb": "adverbio",
+      "phrase": "expresión"
+    }
   }
 }

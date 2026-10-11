@@ -2540,8 +2540,8 @@
     "attempts": "المحاولات",
     "back": "العودة للتدريب",
     "board": "اللوحة {{current}}",
-    "cannotListen": "لا أستطيع الاستماع الآن — تخطي الكلمة",
-    "cannotSpeak": "لا أستطيع التحدث الآن — تخطي الكلمة",
+    "cannotListen": "لا أستطيع الاستماع الآن — أكتب حسب الترجمة",
+    "cannotSpeak": "لا أستطيع التحدث الآن — إيقاف ألعاب التحدث",
     "check": "تحقق من الإجابة",
     "chooseMeaning": "اختر المعنى المناسب",
     "continue": "متابعة",
@@ -2578,8 +2578,8 @@
     "play": "استماع",
     "playAgain": "العب {{game}} مجددًا",
     "playSentence": "استمع إلى الجملة",
-    "practiced": "كلمات تدربت عليها بنجاح",
-    "practicedWords": "تدربت بنجاح على {{count}} كلمات",
+    "practiced": "كلمات تدربت عليها",
+    "practicedWords": "تدربت على {{count}} كلمات",
     "previousCard": "البطاقة السابقة",
     "progress": "تقدم اللعبة",
     "rememberFirst": "حاول التذكر قبل كشف الترجمة",
@@ -2647,6 +2647,59 @@
       "recall": "إجابات صحيحة"
     },
     "level": "المستوى {{level}}",
-    "wordReview": "كلمة للمراجعة:"
+    "wordReview": "كلمة للمراجعة:",
+    "savedReview": "حُفظت للمراجعة في نهاية الجلسة",
+    "tryPairAgain": "اقتربت… جرّب زوجًا آخر",
+    "tryWordOther": "اقتربت… جرّب كلمة أخرى",
+    "dragSuccess": "رائع! صحيح تمامًا",
+    "wrongWord": "{{word}} لا تناسب هنا",
+    "listenReveal": "لا بأس. سنعود إلى هذه الكلمة",
+    "listenLastTry": "بقيت محاولة واحدة",
+    "listenOops": "ليست هذه. جرّب حرفًا آخر",
+    "listenSuccess": "نعم! صحيح تمامًا",
+    "listenTogether": "نستمع معًا…",
+    "listenWrite": "حرفًا حرفًا",
+    "listenCue": "اضغط على مكبر الصوت",
+    "mistakes": "أخطاء",
+    "backToAudio": "العودة إلى الاستماع",
+    "toSummary": "ملخص الجلسة",
+    "continueLast": "المتابعة إلى اللعبة الأخيرة",
+    "practiceStronger": "تدريبك يتحسن!",
+    "keepPracticing": "جيد، واصل التدريب!",
+    "newStreakBest": "رقم قياسي جديد للتتابع!",
+    "hardestWord": "أصعب كلمة اليوم:",
+    "tryAgain": "حاول مرة أخرى",
+    "pronunciationTip": "استمع ببطء ثم كرر الكلمة بصوت عالٍ.",
+    "spokeWithoutAssessment": "قلتها بصوت عالٍ · متابعة دون تقييم",
+    "micPermissionTitle": "السماح بالميكروفون؟",
+    "micPermissionBody": "نحتاج إلى الميكروفون لتقييم نطقك. يُستخدم التسجيل للتقييم فقط ولا يُحفظ.",
+    "allowMic": "السماح بالميكروفون",
+    "withoutMic": "دون ميكروفون",
+    "speakingPaused": "ستتوقف ألعاب التحدث لمدة 15 دقيقة",
+    "exampleUnavailable": "ترجمة الجملة غير متاحة",
+    "audioBoard": "استماع",
+    "ratings": {
+      "good": "سهل",
+      "hard": "كدت أتذكر",
+      "again": "صعب"
+    },
+    "ratingHelp": {
+      "good": "تذكرتها بسهولة",
+      "hard": "ارتبكت قليلًا",
+      "again": "لم أتذكرها"
+    },
+    "stamps": {
+      "good": "تذكرتها!",
+      "hard": "تقريبًا",
+      "again": "للمراجعة"
+    },
+    "currentCard": "العودة إلى البطاقة الحالية",
+    "pos": {
+      "noun": "اسم",
+      "verb": "فعل",
+      "adjective": "صفة",
+      "adverb": "ظرف",
+      "phrase": "عبارة"
+    }
   }
 }

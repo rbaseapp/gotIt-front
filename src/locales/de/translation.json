@@ -2495,8 +2495,8 @@
     "attempts": "Versuche",
     "back": "Zurück zum Üben",
     "board": "Runde {{current}}",
-    "cannotListen": "Kann gerade nicht hören — Wort überspringen",
-    "cannotSpeak": "Kann gerade nicht sprechen — Wort überspringen",
+    "cannotListen": "Jetzt ohne Ton — nach Übersetzung schreiben",
+    "cannotSpeak": "Jetzt nicht sprechen — Sprechspiele pausieren",
     "check": "Antwort prüfen",
     "chooseMeaning": "Passende Bedeutung wählen",
     "continue": "Weiter",
@@ -2533,8 +2533,8 @@
     "play": "Anhören",
     "playAgain": "{{game}} wiederholen",
     "playSentence": "Satz anhören",
-    "practiced": "Erfolgreich geübte Wörter",
-    "practicedWords": "Du hast {{count}} Wörter erfolgreich geübt",
+    "practiced": "Geübte Wörter",
+    "practicedWords": "Du hast {{count}} Wörter geübt",
     "previousCard": "Vorherige Karte",
     "progress": "Spielfortschritt",
     "rememberFirst": "Versuche dich vor dem Aufdecken zu erinnern",
@@ -2602,6 +2602,59 @@
       "recall": "Richtige Antworten"
     },
     "level": "Stufe {{level}}",
-    "wordReview": "Wort zum Wiederholen:"
+    "wordReview": "Wort zum Wiederholen:",
+    "savedReview": "Zum Wiederholen am Ende der Sitzung gespeichert",
+    "tryPairAgain": "Fast… versuche ein anderes Paar",
+    "tryWordOther": "Fast… versuche ein anderes Wort",
+    "dragSuccess": "Super! Genau richtig",
+    "wrongWord": "{{word}} passt hier nicht",
+    "listenReveal": "Kein Problem. Wir kommen auf dieses Wort zurück",
+    "listenLastTry": "Noch ein Versuch",
+    "listenOops": "Nicht diese. Versuche einen anderen Buchstaben",
+    "listenSuccess": "Ja! Genau richtig",
+    "listenTogether": "Wir hören gemeinsam…",
+    "listenWrite": "Buchstabe für Buchstabe",
+    "listenCue": "Drücke auf den Lautsprecher",
+    "mistakes": "Fehler",
+    "backToAudio": "Zurück zum Hören",
+    "toSummary": "Zusammenfassung",
+    "continueLast": "Weiter zum letzten Spiel",
+    "practiceStronger": "Deine Übung macht Fortschritte!",
+    "keepPracticing": "Gut, übe weiter!",
+    "newStreakBest": "Ein neuer Serienrekord!",
+    "hardestWord": "Das schwierigste Wort heute:",
+    "tryAgain": "Erneut versuchen",
+    "pronunciationTip": "Höre langsam zu und sprich das Wort laut nach.",
+    "spokeWithoutAssessment": "Laut gesprochen · ohne Bewertung weiter",
+    "micPermissionTitle": "Mikrofon zulassen?",
+    "micPermissionBody": "Wir benötigen das Mikrofon für die Aussprachebewertung. Die Aufnahme wird nur für die Bewertung verwendet und nicht gespeichert.",
+    "allowMic": "Mikrofon zulassen",
+    "withoutMic": "Ohne Mikrofon",
+    "speakingPaused": "Sprechspiele werden für 15 Minuten pausiert",
+    "exampleUnavailable": "Die Satzübersetzung ist nicht verfügbar",
+    "audioBoard": "Hören",
+    "ratings": {
+      "good": "Leicht",
+      "hard": "Fast erinnert",
+      "again": "Schwer"
+    },
+    "ratingHelp": {
+      "good": "Leicht erinnert",
+      "hard": "Etwas verwechselt",
+      "again": "Nicht erinnert"
+    },
+    "stamps": {
+      "good": "Erinnert!",
+      "hard": "Fast",
+      "again": "Wiederholen"
+    },
+    "currentCard": "Zur aktuellen Karte",
+    "pos": {
+      "noun": "Substantiv",
+      "verb": "Verb",
+      "adjective": "Adjektiv",
+      "adverb": "Adverb",
+      "phrase": "Ausdruck"
+    }
   }
 }

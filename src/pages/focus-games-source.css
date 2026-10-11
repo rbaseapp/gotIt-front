@@ -571,7 +571,7 @@ main.gmm {
   background: var(--gold-l);
   color: #c98a00;
 }
-.fg.flashcards .mini . .fg.flashcards .mini h4 {
+.fg.flashcards .mini h4 {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 800;

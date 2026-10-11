@@ -175,6 +175,38 @@ export function focusFixture(
     if (path.endsWith("/dashboard/languages"))
       return json({ languages: [{ code: "en", count: cards.length }] });
     if (path.endsWith("/dashboard")) return json(dashboard);
+    if (path.endsWith("/captures/preview"))
+      return json({
+        preview: {
+          sourceText: body.selectedText,
+          sourceLanguageCode: "en",
+          translationLanguageCode: "he",
+          enrichment: {
+            status: "succeeded",
+            candidates: [
+              {
+                text: "תרגום משפט לדוגמה",
+                variants: [],
+                partOfSpeech: null,
+                phoneticText: null,
+                phoneticScheme: null,
+                examples: [],
+                contextUsed: false,
+                selectionToken: "fixture-selection",
+                provenance: {
+                  providerName: "fixture",
+                  providerType: "dictionary",
+                  providerModel: null,
+                  contextUsed: false,
+                },
+              },
+            ],
+          },
+          existingSenses: { items: [], hasMore: false },
+          requiresManualTranslation: false,
+          requiresLanguageSelection: false,
+        },
+      });
     if (path.endsWith("/capabilities"))
       return json({
         configured: {
@@ -415,23 +447,39 @@ export function focusFixture(
       });
     }
     if (path.includes("/learning-items/") && path.endsWith("/audio"))
-      return new Response(new Uint8Array(44), {
+      return new Response(silentWav(), {
         headers: { "content-type": "audio/wav" },
       });
     if (path.includes("/learning-items/"))
-      return json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: "Optional metadata is unavailable in this fixture",
-          },
-        },
-        404,
-      );
+      return json({ item: { partOfSpeech: "noun", phoneticText: "/tʃeə/" } });
     return json(
       { error: { code: "TEST_UNHANDLED_ROUTE", message: path } },
       404,
     );
   }
   return { response, requests, session, attempts };
+}
+
+function silentWav() {
+  const bytes = new Uint8Array(3244),
+    view = new DataView(bytes.buffer);
+  for (const [offset, text] of [
+    [0, "RIFF"],
+    [8, "WAVE"],
+    [12, "fmt "],
+    [36, "data"],
+  ] as const)
+    [...text].forEach((letter, index) =>
+      view.setUint8(offset + index, letter.charCodeAt(0)),
+    );
+  view.setUint32(4, bytes.length - 8, true);
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, 16000, true);
+  view.setUint32(28, 32000, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  view.setUint32(40, 3200, true);
+  return bytes;
 }

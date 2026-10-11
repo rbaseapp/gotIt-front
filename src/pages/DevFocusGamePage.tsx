@@ -28,7 +28,6 @@ import {
   GripVertical,
   Headphones,
   Lightbulb,
-  LoaderCircle,
   Mic,
   MicOff,
   Play,
@@ -44,6 +43,7 @@ import { LetterBoxesInput } from "../components/LetterBoxesInput";
 import { RemoteState } from "../components/RemoteState";
 import { useFocusSession } from "../hooks/useFocusSession";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
+import { focusTone } from "../lib/focusSound";
 import { useResource } from "../lib/useResource";
 import { learningReturn } from "../lib/learningNavigation";
 import {
@@ -52,6 +52,7 @@ import {
   product,
   type Exercise,
   type StudyCard,
+  previewSchema,
 } from "../lib/product";
 import {
   focusGamesEnabled,
@@ -59,14 +60,17 @@ import {
   listeningLetters,
   readFocusCheckpoint,
   remembered,
+  solved,
   reviewItems,
   stageSummary,
   type FocusOutcome,
 } from "../lib/focusPractice";
 import { LiveGameSessionPage } from "./LiveGameSessionPage";
+import { FocusListeningGame } from "./FocusListeningGame";
 import "./focus-games-source.css";
 import "./focus-games.css";
 import "./focus-session-end.css";
+import "./focus-alignment.css";
 
 const illustration: Record<string, string> = {
   flashcards: "e28750e6768b5cd33105d9344bdbad43.webp",
@@ -109,6 +113,7 @@ function FocusGame({ type }: { type: string }) {
     setParams(next, { replace: true });
   });
   const [exit, setExit] = useState(false);
+  const [toast, setToast] = useState("");
   const [cardMotion, setCardMotion] = useState("");
   const [cardEntry, setCardEntry] = useState("in");
   const cardLock = useRef(false);
@@ -126,12 +131,25 @@ function FocusGame({ type }: { type: string }) {
     params.has("pack") ? "/word-packs" : "/learn",
   );
   const { state, busy, mode, active, error, pending } = engine;
-  const done = new Set(
+  const uniqueDone = new Set(
     state?.outcomes
       .filter((outcome) => outcome.stage === state.stage)
+      .filter(
+        (outcome) =>
+          !["matching", "drag_drop"].includes(mode ?? "") ||
+          solved(outcome) ||
+          outcome.result === "skipped",
+      )
       .map((outcome) => outcome.itemId),
   ).size;
-  const total = state?.stageItems.length ?? 0;
+  const done =
+    mode === "listening"
+      ? (state?.outcomes.filter((outcome) => outcome.stage === state.stage)
+          .length ?? 0)
+      : uniqueDone;
+  const total =
+    (state?.stageItems.length ?? 0) +
+    (mode === "listening" ? (state?.listeningRequeues?.length ?? 0) : 0);
   const xp =
     state?.session.status === "completed"
       ? state.session.xpEarned
@@ -144,10 +162,62 @@ function FocusGame({ type }: { type: string }) {
   const outcome = state?.outcomes.find(
     (outcome) => outcome.exerciseId === active?.id,
   );
+  const lastOutcome = state?.outcomes.at(-1);
+  let cleanListeningStreak = 0;
+  for (const entry of [...(state?.outcomes ?? [])].reverse()) {
+    if (entry.stage !== state?.stage) break;
+    if (entry.result !== "correct") break;
+    cleanListeningStreak++;
+  }
   const card = engine.cards.find(
     (card) => card.learningItemId === active?.learningItemId,
   );
   const NextArrow = i18n.dir() === "rtl" ? ArrowLeft : ArrowRight;
+  const autoAdvance = useEffectEvent(() => void engine.advance());
+  const autoPlay = useEffectEvent(() => void engine.play());
+  useEffect(() => {
+    if (
+      !active ||
+      state?.phase !== "play" ||
+      exit ||
+      outcome ||
+      (mode === "listening" && engine.listeningSilent)
+    )
+      return;
+    const timer = setTimeout(
+      () => autoPlay(),
+      mode === "listening" ? 250 : mode === "pronunciation" ? 300 : 450,
+    );
+    return () => clearTimeout(timer);
+  }, [active, state?.phase, mode, exit, outcome, engine.listeningSilent]);
+  useEffect(() => {
+    if (
+      !outcome ||
+      state?.phase !== "play" ||
+      exit ||
+      error ||
+      busy ||
+      pending ||
+      mode === "flashcards" ||
+      mode === "matching" ||
+      mode === "pronunciation" ||
+      (mode === "drag_drop" && outcome.result === "incorrect")
+    )
+      return;
+    const timer = setTimeout(() => autoAdvance(), 1900);
+    return () => clearTimeout(timer);
+  }, [outcome, state?.phase, mode, busy, pending, error, exit]);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(""), 2800);
+    return () => clearTimeout(timer);
+  }, [toast]);
+  useEffect(() => {
+    if (outcome) focusTone(solved(outcome) ? 660 : 230);
+  }, [outcome]);
+  useEffect(() => {
+    if (state?.speakingPausedUntil) setToast(t("focusGames.speakingPaused"));
+  }, [state?.speakingPausedUntil, t]);
   const rateCard = async (rating: "again" | "hard" | "good") => {
     if (!active || busy || pending || cardLock.current || outcome) return;
     cardLock.current = true;
@@ -167,6 +237,10 @@ function FocusGame({ type }: { type: string }) {
     await animation;
     if (!mounted.current) return;
     if (receipt) {
+      if (rating === "again") {
+        engine.markDifficult(active.learningItemId);
+        setToast(t("focusGames.savedReview"));
+      }
       setCardEntry("in");
       await engine.advance();
     }
@@ -195,7 +269,7 @@ function FocusGame({ type }: { type: string }) {
       exit
     )
       return;
-    const rating = ({ "1": "again", "2": "hard", "3": "good" } as const)[
+    const rating = ({ "1": "good", "2": "hard", "3": "again" } as const)[
       event.key as "1" | "2" | "3"
     ];
     if (rating) {
@@ -265,9 +339,14 @@ function FocusGame({ type }: { type: string }) {
             <span className="cnt" dir="ltr">
               {Math.min(done + (outcome ? 0 : 1), total)} / {total}
             </span>
-            <span className="xpp pill2">
+            <span className="xpp pill2" key={xp}>
               <Star size={18} fill="currentColor" />
               <span dir="ltr">{xp} XP</span>
+              {!!lastOutcome?.xp && (
+                <span className="fg-xp-float" dir="ltr">
+                  +{lastOutcome.xp}
+                </span>
+              )}
             </span>
           </header>
         }
@@ -308,7 +387,7 @@ function FocusGame({ type }: { type: string }) {
                 {cardMotion && (
                   <span className={`stamp ${cardMotion.split("out-")[1]}`}>
                     {t(
-                      `game.ratings.${cardMotion.endsWith("easy") ? "good" : cardMotion.endsWith("mid") ? "hard" : "again"}`,
+                      `focusGames.stamps.${cardMotion.endsWith("easy") ? "good" : cardMotion.endsWith("mid") ? "hard" : "again"}`,
                     )}
                   </span>
                 )}
@@ -348,14 +427,18 @@ function FocusGame({ type }: { type: string }) {
                       >
                         {card.translationText}
                       </div>
-                      <FlashcardMetadata itemId={card.learningItemId} />
+                      <FlashcardMetadata
+                        key={card.learningItemId}
+                        card={card}
+                        revealed={state.flipped}
+                      />
                       {card.context && (
                         <div
                           className="bex"
                           dir="auto"
                           lang={card.sourceLanguageCode}
                         >
-                          {card.context}
+                          {shortContext(card.context, card.sourceText, 12)}
                         </div>
                       )}
                     </div>
@@ -379,7 +462,14 @@ function FocusGame({ type }: { type: string }) {
                   )}
                 </button>
               </div>
-              <span className="round ghostr" aria-hidden="true" />
+              <button
+                className="round"
+                aria-label={t("focusGames.currentCard")}
+                disabled={!outcome || busy || !!pending || !!cardMotion}
+                onClick={() => void engine.advance()}
+              >
+                <NextArrow />
+              </button>
             </div>
             {!state.flipped && !outcome && (
               <div className="rate-wait" role="note">
@@ -389,16 +479,16 @@ function FocusGame({ type }: { type: string }) {
             )}
             {state.flipped && !outcome && (
               <div className="rate">
-                {(["again", "hard", "good"] as const).map((rating, index) => (
+                {(["good", "hard", "again"] as const).map((rating, index) => (
                   <button
                     key={rating}
-                    className={`rating r${index}`}
+                    className={`rating r${2 - index}`}
                     aria-keyshortcuts={String(index + 1)}
                     disabled={busy || !!pending || !!cardMotion}
                     onClick={() => void rateCard(rating)}
                   >
-                    <span>{t(`game.ratings.${rating}`)}</span>
-                    <small>{index + 1}</small>
+                    <span>{t(`focusGames.ratings.${rating}`)}</span>
+                    <small>{t(`focusGames.ratingHelp.${rating}`)}</small>
                   </button>
                 ))}
               </div>
@@ -408,20 +498,29 @@ function FocusGame({ type }: { type: string }) {
         )}
         {mode === "matching" && (
           <MatchingGame
-            key={state.exercises.map((value) => value.id).join(",")}
+            key={`${state.stage}:${state.exercises.map((value) => value.learningItemId).join(",")}`}
             engine={engine}
             hint={hint}
           />
         )}
         {mode === "drag_drop" && active && (
           <ClozeGame
-            key={active.id}
+            key={active.learningItemId}
             engine={engine}
             hint={() => hint()}
             feedback={feedback}
           />
         )}
-        {(mode === "listening" || mode === "recall") && active && card && (
+        {mode === "listening" && active && card && (
+          <FocusListeningGame
+            key={active.id}
+            engine={engine}
+            card={card}
+            hint={() => hint()}
+            feedback={feedback}
+          />
+        )}
+        {mode === "recall" && active && card && (
           <WritingGame
             key={active.id}
             engine={engine}
@@ -447,14 +546,43 @@ function FocusGame({ type }: { type: string }) {
           </button>
         </div>
       )}
-      {pending && !error && (
-        <p className="fg-pending" role="status">
-          <LoaderCircle className="spin" size={18} />
-          {t("focusGames.saving")}
-        </p>
+      {toast && (
+        <div className="fg-toast" role="status">
+          {toast}
+        </div>
       )}
-      {state.phase === "transition" && (
-        <GameTransition engine={engine} onExit={() => setExit(true)} />
+      {engine.audioError && (
+        <div className="fg-toast" role="status">
+          {engine.audioError}
+        </div>
+      )}
+      {lastOutcome &&
+        mode !== "matching" &&
+        (mode === "flashcards"
+          ? state.phase === "transition"
+          : outcome &&
+            solved(outcome) &&
+            (mode !== "listening" ||
+              (outcome.result === "correct" &&
+                cleanListeningStreak > 0 &&
+                cleanListeningStreak % 3 === 0))) && (
+          <Celebration key={lastOutcome.attemptId} />
+        )}
+      {state.phase === "transition" && !exit && (
+        <Modal
+          open
+          title={t("focusGames.finished", {
+            game: t(`focusGames.names.${mode}`),
+          })}
+          className="fg-transition-modal"
+          hideCloseButton
+          size="lg"
+          onClose={() => setExit(true)}
+        >
+          <div className="fg" dir={i18n.dir()}>
+            <GameTransition engine={engine} onExit={() => setExit(true)} />
+          </div>
+        </Modal>
       )}
       {state.phase === "end" && (
         <Modal
@@ -515,7 +643,11 @@ function FocusGame({ type }: { type: string }) {
               })}{" "}
               {t(pending ? "focusGames.pendingExit" : "focusGames.savedExit")}
             </p>
-            <button className="fg-primary" onClick={() => setExit(false)}>
+            <button
+              className="fg-primary"
+              data-autofocus
+              onClick={() => setExit(false)}
+            >
               {t("focusGames.keepPlaying")}
               <NextArrow />
             </button>
@@ -540,18 +672,103 @@ function FocusGame({ type }: { type: string }) {
 const focusMetadataSchema = z.object({
   item: detailSchema.pick({ phoneticText: true, partOfSpeech: true }),
 });
-function FlashcardMetadata({ itemId }: { itemId: string }) {
+function shortContext(text: string, target: string, limit: number) {
+  const words = text.trim().split(/\s+/u);
+  if (words.length <= limit) return text;
+  const position = words.findIndex((word) =>
+    target === "_____"
+      ? /_{2,}|\[(?:…|\.\.\.)\]/u.test(word)
+      : word.toLocaleLowerCase().includes(target.toLocaleLowerCase()),
+  );
+  const start = Math.max(
+    0,
+    Math.min(words.length - limit, position - Math.floor(limit / 2)),
+  );
+  return `${start ? "… " : ""}${words.slice(start, start + limit).join(" ")}${start + limit < words.length ? " …" : ""}`;
+}
+function Celebration() {
+  return (
+    <div className="fg-confetti" aria-hidden="true">
+      {Array.from({ length: 24 }, (_, index) => (
+        <i
+          key={index}
+          style={
+            {
+              "--i": index,
+              "--color": ["#F9C440", "#2EA77E", "#8B5CF6", "#DB2777"][
+                index % 4
+              ],
+            } as CSSProperties
+          }
+        />
+      ))}
+    </div>
+  );
+}
+function useExampleTranslation(
+  card: StudyCard | undefined,
+  revealed: boolean,
+  limit: number,
+) {
+  const [translation, setTranslation] = useState<string>();
+  const requested = useRef(false);
+  const translate = useEffectEvent(async () => {
+    if (!card?.context || requested.current) return;
+    requested.current = true;
+    try {
+      const result = await product(previewSchema, "captures/preview", "POST", {
+        selectedText: shortContext(card.context, card.sourceText, limit),
+        sourceLanguageCode: card.sourceLanguageCode,
+        translationLanguageCode: card.translationLanguageCode,
+        translationMethod: "dictionary",
+        translationDetail: "compact",
+      });
+      setTranslation(result.preview.enrichment.candidates[0]?.text ?? "");
+    } catch {
+      setTranslation("");
+    }
+  });
+  useEffect(() => {
+    if (revealed) void translate();
+  }, [revealed]);
+  return translation;
+}
+function FlashcardMetadata({
+  card,
+  revealed,
+}: {
+  card: StudyCard;
+  revealed: boolean;
+}) {
+  const { t } = useTranslation();
+  const itemId = card.learningItemId;
+  const translation = useExampleTranslation(card, revealed, 12);
   const metadata = useResource(
     useCallback(
       () => product(focusMetadataSchema, `learning-items/${itemId}`),
       [itemId],
     ),
   );
-  return metadata.data?.item.partOfSpeech ? (
-    <div className="pos" dir="auto">
-      {metadata.data.item.partOfSpeech}
-    </div>
-  ) : null;
+  return (
+    <>
+      {metadata.data?.item.partOfSpeech && (
+        <div className="pos" dir="auto">
+          {t(`focusGames.pos.${metadata.data.item.partOfSpeech}`, {
+            defaultValue: metadata.data.item.partOfSpeech,
+          })}
+        </div>
+      )}
+      {revealed && translation !== undefined && (
+        <small
+          className="example-translation"
+          dir="auto"
+          lang={card.translationLanguageCode}
+        >
+          {translation || t("focusGames.exampleUnavailable")}
+        </small>
+      )}
+    </>
+  );
 }
 
 function AnswerFeedback({
@@ -562,7 +779,7 @@ function AnswerFeedback({
   engine: Engine;
 }) {
   const { t, i18n } = useTranslation();
-  const success = remembered(outcome);
+  const success = solved(outcome);
   const Arrow = i18n.dir() === "rtl" ? ArrowLeft : ArrowRight;
   return (
     <section
@@ -574,32 +791,36 @@ function AnswerFeedback({
           {t(
             outcome.result === "skipped"
               ? "focusGames.skipped"
-              : success
-                ? "focusGames.correct"
-                : outcome.result === "partially_correct"
-                  ? "focusGames.assisted"
+              : outcome.result === "partially_correct"
+                ? "focusGames.assisted"
+                : success
+                  ? "focusGames.correct"
                   : "focusGames.correction",
           )}
         </strong>
         {outcome.expectedAnswer && (
           <span dir="auto">{outcome.expectedAnswer}</span>
         )}
-        {outcome.score !== null && engine.mode === "pronunciation" && (
-          <b>{outcome.score} / 100</b>
-        )}
+        {outcome.result !== "skipped" &&
+          outcome.score !== null &&
+          engine.mode === "pronunciation" && <b>{outcome.score} / 100</b>}
         {outcome.pronunciationFeedback && (
           <p>{outcome.pronunciationFeedback}</p>
         )}
-        {outcome.xpKnown !== false && <small dir="ltr">+{outcome.xp} XP</small>}
+        {outcome.xpKnown !== false && outcome.xp > 0 && (
+          <small dir="ltr">+{outcome.xp} XP</small>
+        )}
       </div>
-      <button
-        className="fg-primary"
-        disabled={engine.busy || !!engine.pending}
-        onClick={() => void engine.advance()}
-      >
-        {t("focusGames.continue")}
-        <Arrow size={20} />
-      </button>
+      {engine.mode === "pronunciation" && (
+        <button
+          className="fg-primary"
+          disabled={engine.busy || !!engine.pending}
+          onClick={() => void engine.advance()}
+        >
+          {t("focusGames.continue")}
+          <Arrow size={20} />
+        </button>
+      )}
     </section>
   );
 }
@@ -615,6 +836,9 @@ function MatchingGame({
   const { state, busy, pending } = engine;
   const [selected, setSelected] = useState<string>();
   const [chosen, setChosen] = useState<string>();
+  const [wrong, setWrong] = useState(false);
+  const wrongTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(wrongTimer.current), []);
   const [cursor, setCursor] = useState<{ x: number; y: number }>();
   const [preview, setPreview] = useState<{
     x1: number;
@@ -627,10 +851,34 @@ function MatchingGame({
     Array<{ id: string; x1: number; y1: number; x2: number; y2: number }>
   >([]);
   const exercises = state!.exercises;
-  const choices = exercises[0]?.prompt.choices ?? [];
-  const outcomes = state!.outcomes.filter((outcome) =>
-    exercises.some((exercise) => exercise.id === outcome.exerciseId),
+  const boardStart = state!.stageItems.indexOf(exercises[0]?.learningItemId);
+  const [audioBoard, setAudioBoard] = useState(
+    () =>
+      boardStart > 0 &&
+      boardStart + exercises.length === state!.stageItems.length &&
+      engine.cards.some((card) => !!card.audioUrl),
   );
+  const choices = useRef(exercises[0]?.prompt.choices ?? []).current;
+  const outcomes = state!.outcomes.filter(
+    (outcome) =>
+      exercises.some((exercise) => exercise.id === outcome.exerciseId) &&
+      solved(outcome),
+  );
+  const advanceBoard = useEffectEvent(() => void engine.advance());
+  const phase = state!.phase;
+  useEffect(() => {
+    if (
+      !exercises.length ||
+      outcomes.length !== exercises.length ||
+      busy ||
+      pending ||
+      engine.error ||
+      phase !== "play"
+    )
+      return;
+    const timer = setTimeout(() => advanceBoard(), 1250);
+    return () => clearTimeout(timer);
+  }, [outcomes.length, exercises.length, busy, pending, engine.error, phase]);
   const resolved = (id: string) =>
     outcomes.find((outcome) => outcome.exerciseId === id);
   const choiceFor = (outcome: FocusOutcome) =>
@@ -698,7 +946,7 @@ function MatchingGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [receiptIds, selected, chosen, cursor]);
   const resolve = async (exerciseId: string, choiceId: string) => {
-    if (busy || pending) return;
+    if (busy || pending || wrong) return;
     const exercise = exercises.find((exercise) => exercise.id === exerciseId);
     if (
       !exercise ||
@@ -709,8 +957,28 @@ function MatchingGame({
     setCursor(undefined);
     setSelected(exerciseId);
     setChosen(choiceId);
-    const receipt = await engine.submit(exercise, { choiceId });
+    const text = choices.find((choice) => choice.id === choiceId)?.text;
+    const actualChoice = exercise.prompt.choices?.find(
+      (choice) => choice.text === text,
+    );
+    if (!actualChoice) return;
+    const receipt = await engine.submit(exercise, {
+      choiceId: actualChoice.id,
+    });
     if (receipt) {
+      if (receipt.attempt.result === "incorrect") {
+        setWrong(true);
+        engine.markDifficult(exercise.learningItemId);
+        hint(exercise);
+        const replacement = await engine.retryExercise(exercise);
+        if (replacement) setSelected(replacement.id);
+        wrongTimer.current = setTimeout(() => {
+          setWrong(false);
+          setSelected(undefined);
+          setChosen(undefined);
+        }, 1100);
+        return;
+      }
       setSelected(undefined);
       setChosen(undefined);
     }
@@ -751,16 +1019,7 @@ function MatchingGame({
             <Tag size={18} />
             {state!.session.scope?.title ?? t("focusGames.yourWords")} ·{" "}
             {t("focusGames.board", {
-              current:
-                Math.ceil(
-                  state!.outcomes.filter(
-                    (outcome) =>
-                      outcome.stage === state!.stage &&
-                      !exercises.some(
-                        (exercise) => exercise.id === outcome.exerciseId,
-                      ),
-                  ).length / 5,
-                ) + 1,
+              current: Math.ceil(boardStart / 4) + 1,
             })}
           </span>
         </div>
@@ -773,7 +1032,9 @@ function MatchingGame({
             <span />
             <span className="lab en">
               <i>{sourceCode === "he" ? "א" : sourceCode?.toUpperCase()}</i>
-              {languageName(sourceCode)}
+              {audioBoard
+                ? t("focusGames.audioBoard")
+                : languageName(sourceCode)}
             </span>
           </div>
           <div
@@ -801,12 +1062,12 @@ function MatchingGame({
                   <div
                     data-meaning={choice.id}
                     key={choice.id}
-                    className={`item he ${outcome ? `matched ok c${outcomes.indexOf(outcome) % 4}${remembered(outcome) ? "" : " bad"}` : ""} ${chosen === choice.id ? "sel" : ""} ${hinted === choice.text ? "hint" : ""}`}
+                    className={`item he ${outcome ? `matched ok c${outcomes.indexOf(outcome) % 4}` : ""} ${chosen === choice.id ? (wrong ? "bad fg-shake" : "sel") : ""} ${hinted === choice.text ? "hint" : ""}`}
                     onPointerUp={(event) => onPointerUp(event, choice.id)}
                   >
                     <button
                       className="t"
-                      disabled={!!outcome || busy || !!pending}
+                      disabled={!!outcome || busy || !!pending || wrong}
                       aria-pressed={chosen === choice.id}
                       onClick={() => {
                         setChosen(choice.id);
@@ -834,11 +1095,11 @@ function MatchingGame({
                   <div
                     data-word={exercise.id}
                     key={exercise.id}
-                    className={`item ${outcome ? `matched ok c${outcomes.indexOf(outcome) % 4}${remembered(outcome) ? "" : " bad"}` : ""} ${selected === exercise.id ? "sel" : ""}`}
+                    className={`item ${outcome ? `matched ok c${outcomes.indexOf(outcome) % 4}` : ""} ${selected === exercise.id ? (wrong ? "bad fg-shake" : "sel") : ""}`}
                   >
                     <button
                       className="t"
-                      disabled={!!outcome || busy || !!pending}
+                      disabled={!!outcome || busy || !!pending || wrong}
                       aria-pressed={selected === exercise.id}
                       onPointerDown={(event) => {
                         if (event.button !== 0) return;
@@ -860,6 +1121,7 @@ function MatchingGame({
                       }}
                       onClick={() => {
                         setSelected(exercise.id);
+                        void engine.play(exercise);
                         if (chosen) void resolve(exercise.id, chosen);
                       }}
                     >
@@ -867,7 +1129,14 @@ function MatchingGame({
                         {outcome && <Check size={15} />}
                       </span>
                       <span className="w en" dir="auto">
-                        {exercise.prompt.text}
+                        {audioBoard ? (
+                          <>
+                            <Volume2 size={20} />{" "}
+                            {exercises.indexOf(exercise) + 1}
+                          </>
+                        ) : (
+                          exercise.prompt.text
+                        )}
                       </span>
                     </button>
                     <button
@@ -887,7 +1156,7 @@ function MatchingGame({
                   className="fg-preview-connection"
                   d={`M ${preview.x1} ${preview.y1} C ${(preview.x1 + preview.x2) / 2} ${preview.y1}, ${(preview.x1 + preview.x2) / 2} ${preview.y2}, ${preview.x2} ${preview.y2}`}
                   fill="none"
-                  stroke="#1d6a52"
+                  stroke={wrong ? "#C93A4D" : "#1d6a52"}
                   strokeWidth="3"
                   strokeDasharray="7 6"
                   strokeLinecap="round"
@@ -910,6 +1179,18 @@ function MatchingGame({
         </div>
         <div className="foot">
           <div className="tools">
+            {boardStart > 0 && (
+              <button
+                className="ghost"
+                onClick={() => setAudioBoard((value) => !value)}
+              >
+                {t(
+                  audioBoard
+                    ? "focusGames.cannotListen"
+                    : "focusGames.backToAudio",
+                )}
+              </button>
+            )}
             <button
               className="ghost"
               disabled={!selected || busy || !!pending}
@@ -930,28 +1211,14 @@ function MatchingGame({
           </div>
         </div>
         <div role="status" className="fg-match-feedback">
-          {outcomes.at(-1) && !remembered(outcomes.at(-1)!) && (
-            <span>
-              {t("focusGames.correction")}{" "}
-              <b dir="auto">{outcomes.at(-1)!.expectedAnswer}</b>
-            </span>
-          )}
+          {wrong && <span>{t("focusGames.tryPairAgain")}</span>}
         </div>
         <div role="status" className="sr">
           {outcomes.length
             ? t("focusGames.pairsDone", { count: outcomes.length })
             : ""}
         </div>
-        {outcomes.length === exercises.length && (
-          <button
-            className="fg-primary fg-board-next"
-            disabled={busy}
-            onClick={() => void engine.advance()}
-          >
-            {t("focusGames.continue")}
-            <ArrowLeft />
-          </button>
-        )}
+        {outcomes.length === exercises.length && <Celebration />}
       </div>
     </main>
   );
@@ -976,6 +1243,18 @@ function ClozeGame({
     (card) => card.learningItemId === exercise.learningItemId,
   );
   const choices = exercise.prompt.choices ?? [];
+  const rejected = state!.outcomes
+    .filter(
+      (entry) =>
+        entry.stage === state!.stage &&
+        entry.itemId === exercise.learningItemId &&
+        entry.result === "incorrect",
+    )
+    .flatMap((entry) => (entry.choiceText ? [entry.choiceText] : []));
+  const exampleTranslation = useExampleTranslation(card, true, 14);
+  const [shaking, setShaking] = useState(false);
+  const shakeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(shakeTimer.current), []);
   const correctChoice = choices.find(
     (choice) =>
       choice.text.normalize("NFKC").toLocaleLowerCase() ===
@@ -993,7 +1272,9 @@ function ClozeGame({
               .some((other) => other.id === choice.id),
         )
       : choices;
-  const context = exercise.prompt.context;
+  const context = exercise.prompt.context
+    ? shortContext(exercise.prompt.context, "_____", 14)
+    : undefined;
   const parts = context?.split(/(_{2,}|\[…\]|\[\.\.\.\])/u);
   const gapIndex =
     parts?.findIndex((part) => /^_{2,}$|^\[(?:…|\.\.\.)\]$/u.test(part)) ?? -1;
@@ -1003,14 +1284,25 @@ function ClozeGame({
   >(undefined);
   const suppress = useRef(false);
   const [ghost, setGhost] = useState<{ text: string; x: number; y: number }>();
-  const choose = (choiceId: string) => {
+  const choose = async (choiceId: string) => {
     if (
       !busy &&
       !pending &&
       !outcome &&
-      exercise.prompt.choices?.some((choice) => choice.id === choiceId)
-    )
-      void engine.submit(exercise, { choiceId });
+      exercise.prompt.choices?.some(
+        (choice) => choice.id === choiceId && !rejected.includes(choice.text),
+      )
+    ) {
+      const receipt = await engine.submit(exercise, { choiceId });
+      if (receipt?.attempt.result === "incorrect") {
+        setShaking(true);
+        engine.markDifficult(exercise.learningItemId);
+        hint();
+        shakeTimer.current = setTimeout(() => setShaking(false), 900);
+        await engine.retryExercise(exercise);
+      } else if (receipt && receipt.attempt.result !== "skipped")
+        engine.playSentence();
+    }
   };
   const pointerUp = (event: React.PointerEvent) => {
     const value = drag.current;
@@ -1038,7 +1330,9 @@ function ClozeGame({
         choose(event.dataTransfer.getData("text/plain"));
       }}
     >
-      {outcome?.expectedAnswer ?? <span aria-hidden="true">?</span>}
+      {(outcome && solved(outcome) ? outcome.expectedAnswer : undefined) ?? (
+        <span aria-hidden="true">?</span>
+      )}
     </span>
   );
   return (
@@ -1057,15 +1351,25 @@ function ClozeGame({
           <img
             className="mochi"
             src={art(
-              outcome ? (remembered(outcome) ? "happy" : "oops") : "drag_drop",
+              shaking
+                ? "oops"
+                : outcome && solved(outcome)
+                  ? "happy"
+                  : "drag_drop",
             )}
             alt=""
           />
           <span className="bub">
-            {t(outcome ? "focusGames.correctForm" : "focusGames.dragQuestion")}
+            {t(
+              shaking
+                ? "focusGames.tryWordOther"
+                : outcome && solved(outcome)
+                  ? "focusGames.dragSuccess"
+                  : "focusGames.dragQuestion",
+            )}
           </span>
           <div
-            className={`card ${outcome ? (remembered(outcome) ? "solved" : "bad") : ""}`}
+            className={`card ${shaking ? "bad fg-shake" : outcome && solved(outcome) ? "solved" : ""}`}
           >
             <button
               className="say"
@@ -1095,7 +1399,9 @@ function ClozeGame({
             </p>
             <div className={`heb ${outcome ? "on" : ""}`} dir="auto">
               {outcome ? (
-                (card?.translationText ?? exercise.prompt.text)
+                exampleTranslation ||
+                card?.translationText ||
+                exercise.prompt.text
               ) : (
                 <span className="lock">
                   {t(
@@ -1117,8 +1423,13 @@ function ClozeGame({
             {visibleChoices.map((choice, index) => (
               <button
                 key={choice.id}
-                className={`tile c${index % 4} ${state!.hintIds.includes(exercise.id) && card?.sourceText === choice.text ? "hint" : ""}`}
-                disabled={busy || !!pending || !!outcome}
+                className={`tile c${index % 4} ${(rejected.length >= 2 || (rejected.length === 0 && state!.hintIds.includes(exercise.id))) && card?.sourceText === choice.text ? "hint" : ""} ${rejected.includes(choice.text) ? "off" : ""}`}
+                disabled={
+                  busy ||
+                  !!pending ||
+                  !!outcome ||
+                  rejected.includes(choice.text)
+                }
                 draggable={false}
                 onPointerDown={(event) => {
                   if (busy || pending || outcome) return;
@@ -1178,7 +1489,13 @@ function ClozeGame({
             {t("focusGames.hint")}
           </button>
         </div>
-        {feedback}
+        <div className="fg-inline-feedback" role="status">
+          {shaking
+            ? t("focusGames.wrongWord", { word: rejected.at(-1) })
+            : outcome && solved(outcome)
+              ? feedback
+              : ""}
+        </div>
       </div>
       {ghost &&
         createPortal(
@@ -1430,10 +1747,27 @@ function PronunciationGame({
 }) {
   const { t } = useTranslation();
   const { active, state, busy, pending, recording } = engine;
+  const [permission, setPermission] = useState(false);
+  const [seconds, setSeconds] = useState(0);
   const exercise = active!;
   const outcome = state!.outcomes.find(
     (value) => value.exerciseId === exercise.id,
   );
+  const tries = state!.outcomes.filter(
+    (entry) =>
+      entry.stage === state!.stage &&
+      entry.itemId === card.learningItemId &&
+      entry.result !== "skipped",
+  ).length;
+  useEffect(() => {
+    if (!recording) return;
+    const started = Date.now();
+    const timer = setInterval(
+      () => setSeconds(Math.min(5, (Date.now() - started) / 1000)),
+      100,
+    );
+    return () => clearInterval(timer);
+  }, [recording]);
   const metadata = useResource(
     useCallback(
       () =>
@@ -1476,7 +1810,19 @@ function PronunciationGame({
             <div className="wsub">
               {metadata.data?.item.phoneticText && (
                 <span className="ipa" dir="ltr">
-                  {metadata.data.item.phoneticText}
+                  {metadata.data.item.phoneticText
+                    .split(/(?=[ˈˌ])|[.·]/u)
+                    .map((part, index) => (
+                      <span
+                        key={index}
+                        className={
+                          part.includes("ˈ") ? "fg-stressed-syllable" : ""
+                        }
+                      >
+                        {index > 0 && " · "}
+                        {part}
+                      </span>
+                    ))}
                 </span>
               )}
               <span dir="auto">{card.translationText}</span>
@@ -1509,9 +1855,29 @@ function PronunciationGame({
                 onClick={() =>
                   recording
                     ? engine.stopRecording()
-                    : void engine.record(exercise)
+                    : engine.microphoneConsented
+                      ? (setSeconds(0), void engine.record(exercise))
+                      : setPermission(true)
                 }
               >
+                {recording && (
+                  <svg
+                    className="fg-mic-timer"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="46"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="5"
+                      strokeDasharray="289"
+                      strokeDashoffset={289 * (seconds / 5)}
+                    />
+                  </svg>
+                )}
                 {recording ? <Check size={34} /> : <Mic size={34} />}
               </button>
               <span className="mlbl">
@@ -1525,26 +1891,80 @@ function PronunciationGame({
           </div>
         )}
         {feedback}
+        <div
+          className="fg-speech-tries"
+          aria-label={t("focusGames.tries", { count: Math.max(0, 3 - tries) })}
+        >
+          {[0, 1, 2].map((index) => (
+            <i key={index} className={index < tries ? "gone" : ""} />
+          ))}
+        </div>
+        {outcome && outcome.result !== "skipped" && tries < 3 && (
+          <button
+            className="fg-secondary"
+            disabled={busy || !!pending}
+            onClick={() => void engine.retryExercise()}
+          >
+            {t("focusGames.tryAgain")}
+          </button>
+        )}
+        <p className="fg-pronunciation-tip">
+          {t("focusGames.pronunciationTip")}
+        </p>
+        {engine.error && !pending && !outcome && (
+          <button
+            className="fg-secondary"
+            disabled={busy}
+            onClick={() => void engine.pauseSpeaking()}
+          >
+            {t("focusGames.spokeWithoutAssessment")}
+          </button>
+        )}
       </section>
       <button
         className="skip"
         disabled={busy || !!pending || recording || !!outcome}
-        onClick={() => void engine.submit(exercise, { skipped: true })}
+        onClick={() => void engine.pauseSpeaking()}
       >
         <MicOff size={19} />
         {t("focusGames.cannotSpeak")}
       </button>
+      {permission && (
+        <Modal
+          open
+          title={t("focusGames.micPermissionTitle")}
+          onClose={() => setPermission(false)}
+          size="sm"
+        >
+          <div className="modal-body">
+            <p>{t("focusGames.micPermissionBody")}</p>
+            <button
+              className="fg-primary"
+              onClick={() => {
+                setPermission(false);
+                setSeconds(0);
+                void engine.record(exercise);
+              }}
+            >
+              {t("focusGames.allowMic")}
+            </button>
+            <button
+              className="fg-secondary"
+              onClick={() => {
+                setPermission(false);
+                void engine.pauseSpeaking();
+              }}
+            >
+              {t("focusGames.withoutMic")}
+            </button>
+          </div>
+        </Modal>
+      )}
     </main>
   );
 }
 
-function GameTransition({
-  engine,
-  onExit,
-}: {
-  engine: Engine;
-  onExit: () => void;
-}) {
+function GameTransition({ engine }: { engine: Engine; onExit: () => void }) {
   const { t, i18n } = useTranslation();
   const { state, mode, busy } = engine;
   const value = state!;
@@ -1555,9 +1975,12 @@ function GameTransition({
     0,
     (Date.now() - Date.parse(value.session.startedAt)) / 1000,
   );
-  const mistakes = reviewItems(value.outcomes);
+  const mistakes = [
+    ...new Set([...reviewItems(value.outcomes), ...(value.difficultIds ?? [])]),
+  ];
   const allowReview =
     value.type === "smart" &&
+    !value.reviewStages?.length &&
     value.stage === value.sequence.length - 1 &&
     mistakes.length > 0;
   const heading = useRef<HTMLHeadingElement>(null);
@@ -1566,45 +1989,36 @@ function GameTransition({
   }, []);
   return (
     <main className="fg-transition">
-      <header>
-        <button
-          className="fg-close"
-          aria-label={t("focusGames.saveAndExit")}
-          onClick={onExit}
-        >
-          <X />
-        </button>
-        <div
-          className="fg-segments"
-          aria-label={t("focusGames.gameCount", {
-            current: value.stage + 1,
-            total: value.sequence.length,
-          })}
-        >
-          {value.sequence.map((_, index) => (
-            <i
-              className={
-                index < value.stage
-                  ? "done"
-                  : index === value.stage
-                    ? "current"
-                    : ""
-              }
-              key={index}
-            />
-          ))}
-          <b>
-            {t("focusGames.gameCount", {
-              current: value.stage + 1,
-              total: value.sequence.length,
-            })}
-          </b>
-        </div>
-        <span />
-      </header>
       <div className="fg-transition-center">
         <section className="fg-transition-card">
           <div className="fg-transition-summary">
+            <div
+              className="fg-segments"
+              aria-label={t("focusGames.gameCount", {
+                current: value.stage + 1,
+                total: value.sequence.length,
+              })}
+            >
+              {value.sequence.map((_, index) => (
+                <i
+                  className={
+                    index < value.stage
+                      ? "done"
+                      : index === value.stage
+                        ? "current"
+                        : ""
+                  }
+                  key={index}
+                />
+              ))}
+              <b>
+                {t("focusGames.gameCount", {
+                  current: value.stage + 1,
+                  total: value.sequence.length,
+                })}
+              </b>
+            </div>
+
             <img
               className="fg-transition-confetti"
               src="/assets/focus-games/transition-confetti.svg"
@@ -1622,7 +2036,7 @@ function GameTransition({
                 </span>
                 <h1 tabIndex={-1} ref={heading}>
                   {t(
-                    stats.correct
+                    stats.total > 0 && stats.correct / stats.total >= 0.75
                       ? "focusGames.wellDone"
                       : "focusGames.keepGoing",
                   )}
@@ -1637,7 +2051,22 @@ function GameTransition({
               />
               <SummaryStat
                 icon={<RotateCcw />}
-                value={stats.review}
+                value={
+                  new Set([
+                    ...reviewItems(
+                      value.outcomes.filter(
+                        (outcome) => outcome.stage === value.stage,
+                      ),
+                    ),
+                    ...(value.difficultIds ?? []).filter((id) =>
+                      value.outcomes.some(
+                        (outcome) =>
+                          outcome.stage === value.stage &&
+                          outcome.itemId === id,
+                      ),
+                    ),
+                  ]).size
+                }
                 label={t("focusGames.wordsReview")}
               />
               <SummaryStat
@@ -1679,7 +2108,13 @@ function GameTransition({
               disabled={busy}
               onClick={() => void engine.nextStage()}
             >
-              {t(next ? "focusGames.continue" : "focusGames.finish")}
+              {t(
+                !next
+                  ? "focusGames.toSummary"
+                  : value.stage + 2 === value.sequence.length
+                    ? "focusGames.continueLast"
+                    : "focusGames.continue",
+              )}
               <Arrow />
             </button>
             <button
@@ -1761,39 +2196,78 @@ function SessionEnd({
   const reducedMotion = window.matchMedia?.(
     "(prefers-reduced-motion: reduce)",
   ).matches;
-  const [phase, setPhase] = useState<"eat" | "gift" | "open" | "summary">(() =>
-    reducedMotion ? "summary" : "eat",
-  );
+  const [phase, setPhase] = useState<
+    "eat" | "wow" | "gift" | "open" | "summary"
+  >(() => (reducedMotion ? "summary" : "eat"));
   const [pose, setPose] = useState("open");
   const [taps, setTaps] = useState(0);
+  const [displayXp, setDisplayXp] = useState(0);
+  const [displayStreak, setDisplayStreak] = useState(value.initialStreak);
+  const [swallowed, setSwallowed] = useState(0);
   const unique = [
     ...new Set(
-      value.outcomes.filter(remembered).map((outcome) => outcome.itemId),
+      value.outcomes
+        .filter((outcome) => outcome.result !== "skipped")
+        .map((outcome) => outcome.itemId),
     ),
   ];
   const words = engine.cards.filter((card) =>
     unique.includes(card.learningItemId),
   );
-  const mistakes = reviewItems(value.outcomes);
-  const hard = engine.cards.find((card) =>
-    mistakes.includes(card.learningItemId),
-  );
+  const mistakes = [
+    ...new Set([...reviewItems(value.outcomes), ...(value.difficultIds ?? [])]),
+  ];
+  const hard = engine.cards
+    .filter((card) => mistakes.includes(card.learningItemId))
+    .sort(
+      (a, b) =>
+        value.outcomes.filter(
+          (entry) => entry.itemId === b.learningItemId && !remembered(entry),
+        ).length -
+        value.outcomes.filter(
+          (entry) => entry.itemId === a.learningItemId && !remembered(entry),
+        ).length,
+    )[0];
   useEffect(() => {
     if (phase === "eat") {
+      const blips = Array.from(
+        { length: Math.min(8, words.length) },
+        (_, index) =>
+          setTimeout(
+            () => {
+              focusTone(520 + 40 * index);
+              setSwallowed(index + 1);
+            },
+            900 + 500 + 360 * index,
+          ),
+      );
       const chew = setInterval(
         () => setPose((current) => (current === "open" ? "chew" : "open")),
         380,
       );
       const end = setTimeout(
         () => {
-          setPose("offer");
-          setPhase("gift");
+          setPose("happy");
+          setPhase("wow");
         },
-        Math.min(5200, 1400 + words.length * 360),
+        900 + Math.max(0, Math.min(8, words.length) - 1) * 360 + 500 + 600,
       );
       return () => {
+        blips.forEach(clearTimeout);
         clearInterval(chew);
         clearTimeout(end);
+      };
+    }
+    if (phase === "wow") {
+      focusTone(660);
+      const chime = setTimeout(() => focusTone(880), 180);
+      const timer = setTimeout(() => {
+        setPose("offer");
+        setPhase("gift");
+      }, 1500);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(chime);
       };
     }
     if (phase === "open") {
@@ -1815,12 +2289,49 @@ function SessionEnd({
   const coin = asset("a6601c0e7dc803a950a409cbf6eb05bc.webp"),
     gift = asset("b5ee702ebdb675796fb5e33a2541719c.webp");
   const xp = value.session.xpEarned;
+  const xpBeforeClose = Math.min(
+    xp,
+    (value.baselineXp ?? 0) +
+      value.outcomes
+        .filter(
+          (outcome) => !value.baselineAttemptIds?.includes(outcome.attemptId),
+        )
+        .reduce((sum, outcome) => sum + outcome.xp, 0),
+  );
   const accuracy = value.session.attemptCount
     ? Math.round(
         (value.session.correctCount / value.session.attemptCount) * 100,
       )
     : 0;
   const gamification = dashboard.data?.gamification;
+  const perfect =
+    value.session.attemptCount > 0 &&
+    value.session.correctCount === value.session.attemptCount &&
+    !mistakes.length;
+  const bonus = xp > xpBeforeClose;
+  useEffect(() => {
+    if (phase !== "open") return;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      focusTone(520 + step * 20);
+      setDisplayXp(
+        Math.round(
+          xpBeforeClose + (xp - xpBeforeClose) * Math.min(1, step / 15),
+        ),
+      );
+      if (step >= 15) clearInterval(timer);
+    }, 70);
+    return () => clearInterval(timer);
+  }, [phase, xp, xpBeforeClose]);
+  useEffect(() => {
+    if (phase !== "summary" || !gamification) return;
+    const timer = setTimeout(
+      () => setDisplayStreak(gamification.currentStreakDays),
+      600,
+    );
+    return () => clearTimeout(timer);
+  }, [phase, gamification]);
   return (
     <main className="fg-session-end">
       <header className="bar">
@@ -1840,12 +2351,21 @@ function SessionEnd({
         {gamification && (
           <span className="pill fl">
             <Flame fill="#ff8a4c" size={20} />
-            <b>{gamification.currentStreakDays}</b>
+            <b key={displayStreak}>
+              {displayStreak ?? gamification.currentStreakDays}
+            </b>
           </span>
         )}
         <span className="pill xpp">
           <img src={coin} alt="" />
-          <b className="en">{xp} XP</b>
+          <b className="en" key={phase === "open" ? displayXp : xp}>
+            {phase === "open"
+              ? displayXp
+              : phase === "summary"
+                ? xp
+                : xpBeforeClose}{" "}
+            XP
+          </b>
         </span>
       </header>
       <div className="stage">
@@ -1857,9 +2377,9 @@ function SessionEnd({
         </div>
         <span className="shadow" aria-hidden="true" />
         <div
-          className={`mochi${phase === "eat" ? " gulp" : " idle"}`}
+          className={`mochi${phase === "eat" ? " gulp" : phase === "wow" ? " fg-wow" : " idle"}`}
           style={{
-            transform: `scale(${phase === "gift" || phase === "open" ? 0.82 : 1})`,
+            transform: `scale(${phase === "eat" ? 0.86 + swallowed * 0.025 : phase === "gift" || phase === "open" ? 0.82 : 1})`,
           }}
         >
           <img
@@ -1867,7 +2387,27 @@ function SessionEnd({
             src={asset(poses[phase === "summary" ? "idle" : pose])}
             alt={t("focusGames.mochi")}
           />
+          {(phase === "summary" || phase === "open") && perfect && (
+            <span className="fg-crown" aria-hidden="true">
+              ♛
+            </span>
+          )}
+          {(phase === "summary" || phase === "open") && !perfect && bonus && (
+            <span className="fg-glasses" aria-hidden="true">
+              <i />
+              <i />
+            </span>
+          )}
         </div>
+        {phase === "wow" && (
+          <div className="fg-sparkles" aria-hidden="true">
+            {Array.from({ length: 10 }, (_, index) => (
+              <i key={index} style={{ "--i": index } as CSSProperties}>
+                ✦
+              </i>
+            ))}
+          </div>
+        )}
         {phase === "eat" &&
           words.slice(0, 8).map((card, index) => (
             <span
@@ -1893,6 +2433,7 @@ function SessionEnd({
             aria-label={t("focusGames.openSummary")}
             onClick={() => {
               const count = taps + 1;
+              focusTone(400 + count * 120);
               setTaps(count);
               if (count >= 3) setPhase("open");
             }}
@@ -1902,6 +2443,17 @@ function SessionEnd({
         )}
         {phase === "open" && (
           <>
+            <Celebration />
+            <div className="fg-coins" aria-hidden="true">
+              {Array.from({ length: 10 }, (_, index) => (
+                <img
+                  src={coin}
+                  alt=""
+                  key={index}
+                  style={{ "--i": index } as CSSProperties}
+                />
+              ))}
+            </div>
             <img className="lid" src={gift} alt="" />
             <img
               className="box"
@@ -1910,7 +2462,7 @@ function SessionEnd({
             />
             <div className="xpbig">
               <img src={coin} alt="" />
-              <span className="en">{xp}</span>
+              <span className="en">{displayXp}</span>
             </div>
           </>
         )}
@@ -1920,20 +2472,26 @@ function SessionEnd({
           {t(
             phase === "eat"
               ? "focusGames.sessionComplete"
-              : phase === "gift"
-                ? "focusGames.summaryReady"
-                : phase === "open"
-                  ? "focusGames.earned"
-                  : "focusGames.wellDone",
+              : phase === "wow"
+                ? "focusGames.practiceStronger"
+                : phase === "gift"
+                  ? "focusGames.summaryReady"
+                  : phase === "open"
+                    ? "focusGames.earned"
+                    : accuracy >= 75
+                      ? "focusGames.wellDone"
+                      : "focusGames.keepPracticing",
           )}
         </h1>
         <p>
           {phase === "gift"
             ? t("focusGames.tapGift", { count: 3 - taps })
-            : phase === "eat"
+            : phase === "eat" || phase === "wow"
               ? t("focusGames.practicedWords", { count: unique.length })
               : phase === "open"
-                ? `+${xp} XP`
+                ? xp > 0
+                  ? `+${xp} XP`
+                  : ""
                 : t("focusGames.serverTotals", {
                     correct: value.session.correctCount,
                     count: value.session.attemptCount,
@@ -1983,7 +2541,7 @@ function SessionEnd({
                 </small>
               </>
             )}
-            <span className="earned en">+{xp} XP</span>
+            {xp > 0 && <span className="earned en">+{xp} XP</span>}
           </div>
           <div className="cards">
             <div className="card" style={{ "--d": ".05s" } as CSSProperties}>
@@ -2021,7 +2579,7 @@ function SessionEnd({
                   <b>{accuracy}%</b>
                 </div>
               </div>
-              <small>
+              <small dir="ltr">
                 {value.session.correctCount} / {value.session.attemptCount}
               </small>
             </div>
@@ -2030,9 +2588,20 @@ function SessionEnd({
                 <span className="k">{t("focusGames.streak")}</span>
                 <div className="vis flame">
                   <Flame size={34} fill="#ff8a4c" />
-                  <span className="v">{gamification.currentStreakDays}</span>
+                  <span className="v fg-streak-pop" key={displayStreak}>
+                    {displayStreak ?? gamification.currentStreakDays}
+                  </span>
                 </div>
-                <small>{t("focusGames.keepGoing")}</small>
+                <small>
+                  {t(
+                    gamification.currentStreakDays >
+                      (value.initialStreak ?? gamification.currentStreakDays) &&
+                      gamification.currentStreakDays >=
+                        gamification.longestStreakDays
+                      ? "focusGames.newStreakBest"
+                      : "focusGames.keepGoing",
+                  )}
+                </small>
               </div>
             )}
           </div>
@@ -2046,7 +2615,7 @@ function SessionEnd({
                 <Volume2 size={20} />
               </button>
               <span className="t">
-                {t("focusGames.wordReview")}{" "}
+                {t("focusGames.hardestWord")}{" "}
                 <b className="en" dir="auto">
                   {hard.sourceText}
                 </b>{" "}
@@ -2067,6 +2636,9 @@ function SessionEnd({
             className="replay"
             onClick={() => {
               setTaps(0);
+              setSwallowed(0);
+              setDisplayStreak(value.initialStreak);
+              setDisplayXp(xpBeforeClose);
               setPose("open");
               setPhase(reducedMotion ? "summary" : "eat");
             }}

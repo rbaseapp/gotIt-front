@@ -12,6 +12,7 @@ import {
   intent,
   errorMessage,
   uuid,
+  dashboardSchema,
   type Session,
   type StudyCard,
   type Exercise,
@@ -64,7 +65,15 @@ export function useFocusSession(
   const [cards, setCards] = useState<StudyCard[]>([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
+  const [audioError, setAudioError] = useState("");
+  useEffect(() => {
+    if (!audioError) return;
+    const timer = setTimeout(() => setAudioError(""), 3000);
+    return () => clearTimeout(timer);
+  }, [audioError]);
   const [recording, setRecording] = useState(false);
+  const [microphoneConsented, setMicrophoneConsented] = useState(false);
+  const [listeningSilent, setListeningSilent] = useState(false);
   const [pending, setPending] = useState<Pending>();
   const current = useRef(state);
   current.current = state;
@@ -79,6 +88,18 @@ export function useFocusSession(
   const audio = useRef<HTMLAudioElement | undefined>(undefined);
   const audioUrl = useRef<string | undefined>(undefined);
   const playbackVersion = useRef(0);
+  const audioCache = useRef(new Map<string, Promise<Blob>>());
+  const audioFor = (id: string) => {
+    let cached = audioCache.current.get(id);
+    if (!cached) {
+      cached = api.audio(id).catch((reason) => {
+        audioCache.current.delete(id);
+        throw reason;
+      });
+      audioCache.current.set(id, cached);
+    }
+    return cached;
+  };
   const shownAt = useRef(performance.now());
   const retryAction = useRef<(() => Promise<unknown>) | undefined>(undefined);
   const update = (fn: (value: FocusCheckpoint) => FocusCheckpoint) => {
@@ -126,24 +147,45 @@ export function useFocusSession(
         .filter((outcome) => outcome.stage === value.stage)
         .map((outcome) => outcome.itemId),
     );
-    const remaining =
-      forceIds ?? value.stageItems.filter((id) => !done.has(id));
+    const remaining = forceIds ?? [
+      ...value.stageItems.filter((id) => !done.has(id)),
+      ...(mode === "listening"
+        ? (value.listeningRequeues ?? []).filter(
+            (id) =>
+              value.outcomes.filter(
+                (outcome) =>
+                  outcome.stage === value.stage && outcome.itemId === id,
+              ).length < 2,
+          )
+        : []),
+    ];
     if (!remaining.length) return { ...value, phase: "transition" as const };
     const boardCount =
-      remaining.length === 6 ? 4 : Math.min(5, remaining.length);
+      remaining.length > 4
+        ? remaining.length === 5 || remaining.length === 6
+          ? remaining.length - 3
+          : 4
+        : remaining.length;
     // Issue only the visible question (or visible matching board). Unseen questions
     // remain on the server-selected queue instead of expiring while the learner plays.
     const selected =
       mode === "matching"
         ? remaining.slice(0, boardCount)
         : remaining.slice(0, 1);
+    // A real, owned extra meaning prevents the final pair becoming automatic.
+    // All choices and their opaque ids still come from the exercise issuer.
+    const extra =
+      mode === "matching"
+        ? matchingItemIds(allCards).find((id) => !selected.includes(id))
+        : undefined;
+    const requested = extra ? [...selected, extra] : selected;
     const result = await product(
       z.object({ exercises: z.array(exerciseSchema).min(1) }),
       `practice/sessions/${value.sessionId}/exercises`,
       "POST",
       {
-        count: selected.length,
-        learningItemIds: selected,
+        count: requested.length,
+        learningItemIds: requested,
         exerciseType: exerciseTypeFor(mode),
         kind:
           mode === "matching" || mode === "drag_drop"
@@ -167,6 +209,16 @@ export function useFocusSession(
       )
     )
       throw new Error(t("game.languageMismatch"));
+    const visible = selected
+      .map((id) =>
+        result.exercises.find((exercise) => exercise.learningItemId === id),
+      )
+      .filter((exercise): exercise is Exercise => !!exercise);
+    if (visible.length !== selected.length)
+      throw new Error(t("focusGames.unavailable"));
+    for (const id of remaining.slice(0, selected.length + 1))
+      if (allCards.find((card) => card.learningItemId === id)?.audioUrl)
+        void audioFor(id).catch(() => {});
     return {
       ...value,
       exercises:
@@ -177,10 +229,10 @@ export function useFocusSession(
                   (outcome) => outcome.exerciseId === exercise.id,
                 ),
               ),
-              ...result.exercises,
+              ...visible,
             ]
-          : result.exercises,
-      activeId: result.exercises[0].id,
+          : visible,
+      activeId: visible[0].id,
       phase: "play" as const,
       answer: "",
       flipped: false,
@@ -326,6 +378,15 @@ export function useFocusSession(
       const matchingIds = matchingItemIds(study);
       if (type === "matching" && matchingIds.length < 2)
         throw new Error(t("focusGames.unavailable"));
+      let speakingPaused = false;
+      try {
+        speakingPaused =
+          Number(
+            sessionStorage.getItem(`gotit.focus.speakingPause:${user.id}`) ?? 0,
+          ) > Date.now();
+      } catch {
+        /* Storage is optional. */
+      }
       const sequence =
         cached?.sequence ??
         focusSequence(
@@ -334,8 +395,11 @@ export function useFocusSession(
           capabilities.configured.speech,
           study.length,
           matchingIds.length,
-        );
+        ).filter((mode) => mode !== "pronunciation" || !speakingPaused);
       if (!sequence.length) throw new Error(t("focusGames.unavailable"));
+      // Warm the visible and next item's server audio without blocking entry.
+      for (const card of study.slice(0, 2))
+        if (card.audioUrl) void audioFor(card.learningItemId).catch(() => {});
       let next: FocusCheckpoint = cached
         ? { ...cached, session }
         : {
@@ -357,6 +421,14 @@ export function useFocusSession(
             flipped: false,
             hintIds: [],
           };
+      if (!cached) {
+        const dashboard = await product(
+          dashboardSchema,
+          `dashboard?sourceLanguageCode=${encodeURIComponent(language)}`,
+        ).catch(() => undefined);
+        if (dashboard)
+          next.initialStreak = dashboard.gamification.currentStreakDays;
+      }
       // Recover a receipt committed before a tab interruption, including transient voice requests.
       if (cached && !cached.pending)
         for (const attempt of serverAttempts ?? []) {
@@ -527,13 +599,18 @@ export function useFocusSession(
             ? state.outcomes
             : [
                 ...state.outcomes,
-                outcomeFrom(
-                  receipt,
-                  exercise.id,
-                  state.stage,
-                  state.sequence[state.stage],
-                  state.reviewStages?.includes(state.stage),
-                ),
+                {
+                  ...outcomeFrom(
+                    receipt,
+                    exercise.id,
+                    state.stage,
+                    state.sequence[state.stage],
+                    state.reviewStages?.includes(state.stage),
+                  ),
+                  choiceText: exercise.prompt.choices?.find(
+                    (choice) => choice.id === operation.body.choiceId,
+                  )?.text,
+                },
               ],
         }));
         frozen.current = undefined;
@@ -666,7 +743,12 @@ export function useFocusSession(
           : value.sequence;
       const stage = review ? sequence.length - 1 : value.stage + 1;
       const stageItems = review
-        ? reviewItems(value.outcomes)
+        ? [
+            ...new Set([
+              ...reviewItems(value.outcomes),
+              ...(value.difficultIds ?? []),
+            ]),
+          ]
         : sequence[stage] === "matching"
           ? matchingItemIds(cards)
           : cards.map((card) => card.learningItemId);
@@ -702,14 +784,14 @@ export function useFocusSession(
     if (!exercise) return;
     stopAudio();
     const version = playbackVersion.current;
-    setError("");
+    setAudioError("");
     try {
       if (
         exercise.prompt.audioUrl ||
         cards.find((card) => card.learningItemId === exercise.learningItemId)
           ?.audioUrl
       ) {
-        const blob = await api.audio(exercise.learningItemId);
+        const blob = await audioFor(exercise.learningItemId);
         if (!alive.current || playbackVersion.current !== version) return;
         audioUrl.current = URL.createObjectURL(blob);
         audio.current = new Audio(audioUrl.current);
@@ -725,30 +807,31 @@ export function useFocusSession(
         )
           throw new Error(t("game.speechUnavailable"));
       } else throw new Error(t("game.speechUnavailable"));
-    } catch (reason) {
-      if (alive.current) setError(errorMessage(reason));
+    } catch {
+      if (alive.current) setAudioError(t("game.speechUnavailable"));
     }
   };
   const playCard = async (card: StudyCard) => {
     stopAudio();
-    setError("");
+    setAudioError("");
     const version = playbackVersion.current;
     try {
       if (card.audioUrl) {
-        const blob = await api.audio(card.learningItemId);
+        const blob = await audioFor(card.learningItemId);
         if (!alive.current || playbackVersion.current !== version) return;
         audioUrl.current = URL.createObjectURL(blob);
         audio.current = new Audio(audioUrl.current);
         await audio.current.play();
       } else if (!speak(card.sourceText, card.sourceLanguageCode))
         throw new Error(t("game.speechUnavailable"));
-    } catch (reason) {
+    } catch {
       if (alive.current && playbackVersion.current === version)
-        setError(errorMessage(reason));
+        setAudioError(t("game.speechUnavailable"));
     }
   };
   const record = async (exercise: Exercise) => {
     if (controller.current || lock.current || frozen.current) return;
+    setMicrophoneConsented(true);
     const abort = new AbortController(),
       end = new AbortController();
     controller.current = abort;
@@ -757,7 +840,7 @@ export function useFocusSession(
     setError("");
     stopAudio();
     try {
-      const audioBase64 = await recordVoice(abort.signal, end.signal);
+      const audioBase64 = await recordVoice(abort.signal, end.signal, 5);
       if (alive.current)
         await submit(
           exercise,
@@ -782,20 +865,53 @@ export function useFocusSession(
     } else if (retryAction.current) void retryAction.current();
     else void initialize();
   };
-  const retryExercise = async () => {
-    const value = current.current;
-    if (!value || !active || lock.current || frozen.current) return;
-    retryAction.current = retryExercise;
+  const retryExercise = async (target: Exercise | undefined = active) => {
+    let value = current.current;
+    if (!value || !target || lock.current || frozen.current) return;
+    if (
+      ["matching", "drag_drop"].includes(mode ?? "") &&
+      value.outcomes.some(
+        (outcome) =>
+          outcome.exerciseId === target.id && outcome.result === "incorrect",
+      )
+    ) {
+      value = {
+        ...value,
+        hintIds: [...new Set([...value.hintIds, target.id])],
+        difficultIds: [
+          ...new Set([...(value.difficultIds ?? []), target.learningItemId]),
+        ],
+      };
+    }
+    retryAction.current = () => retryExercise(target);
     lock.current = true;
     setBusy(true);
     setError("");
     try {
-      const next = await issue(value, cards, [active.learningItemId]);
+      // Matching requires at least two cards and new opaque choice ids. Issue a
+      // bounded board, retaining only the replacement for the consumed question.
+      const ids =
+        mode === "matching"
+          ? value.exercises.map((exercise) => exercise.learningItemId)
+          : [target.learningItemId];
+      const next = await issue(value, cards, ids);
+      const replacement = next.exercises.find(
+        (exercise) => exercise.learningItemId === target.learningItemId,
+      )!;
       update(() => ({
         ...next,
-        exercises: [...value.exercises, ...next.exercises],
+        exercises: value.exercises.map((exercise) =>
+          exercise.id === target.id ? replacement : exercise,
+        ),
+        activeId:
+          value.activeId === target.id ? replacement.id : value.activeId,
+        hintIds: [
+          ...value.hintIds,
+          ...(value.hintIds.includes(target.id) ? [replacement.id] : []),
+        ],
       }));
       shownAt.current = performance.now();
+      return replacement;
     } catch (reason) {
       if (alive.current) setError(errorMessage(reason));
     } finally {
@@ -803,6 +919,26 @@ export function useFocusSession(
       if (alive.current) setBusy(false);
     }
   };
+  const recoverWrong = useEffectEvent(() => {
+    const value = current.current;
+    const wrong = value?.exercises.find((exercise) =>
+      value.outcomes.some(
+        (outcome) =>
+          outcome.exerciseId === exercise.id && outcome.result === "incorrect",
+      ),
+    );
+    if (wrong) void retryExercise(wrong);
+  });
+  useEffect(() => {
+    if (
+      state?.phase === "play" &&
+      !busy &&
+      !pending &&
+      !error &&
+      ["matching", "drag_drop"].includes(mode ?? "")
+    )
+      recoverWrong();
+  }, [state, busy, pending, error, mode]);
   const playSentence = () => {
     const card = cards.find(
       (card) => card.learningItemId === active?.learningItemId,
@@ -810,9 +946,36 @@ export function useFocusSession(
     stopAudio();
     if (
       card &&
-      !speak(card.context || card.sourceText, card.sourceLanguageCode)
+      !speak(card.context || card.sourceText, card.sourceLanguageCode, 0.85)
     )
-      setError(t("game.speechUnavailable"));
+      setAudioError(t("game.speechUnavailable"));
+  };
+  const markDifficult = (itemId: string, requeue = false) =>
+    update((value) => ({
+      ...value,
+      difficultIds: [...new Set([...(value.difficultIds ?? []), itemId])],
+      listeningRequeues: requeue
+        ? [...new Set([...(value.listeningRequeues ?? []), itemId])]
+        : value.listeningRequeues,
+    }));
+  const pauseSpeaking = async () => {
+    if (!active || lock.current || frozen.current) return;
+    const receipt = await submit(active, { skipped: true });
+    if (!receipt) return;
+    const until = Date.now() + 15 * 60 * 1000;
+    try {
+      sessionStorage.setItem(
+        `gotit.focus.speakingPause:${user!.id}`,
+        String(until),
+      );
+    } catch {
+      /* Tab storage is optional. */
+    }
+    update((value) => ({
+      ...value,
+      phase: "transition",
+      speakingPausedUntil: until,
+    }));
   };
   return {
     state,
@@ -821,7 +984,11 @@ export function useFocusSession(
     active,
     busy,
     error,
+    audioError,
     recording,
+    microphoneConsented,
+    listeningSilent,
+    setListeningSilent,
     pending,
     update,
     submit,
@@ -834,6 +1001,8 @@ export function useFocusSession(
     record,
     retry,
     retryExercise,
+    markDifficult,
+    pauseSpeaking,
     stopAudio,
     stopRecording: () => release.current?.abort(),
     cancelRecording: () => controller.current?.abort(),

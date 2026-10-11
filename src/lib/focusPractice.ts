@@ -124,8 +124,13 @@ export const focusOutcomeSchema = z.object({
   expectedAnswer: z.string().nullable(),
   xpKnown: z.boolean().optional(),
   pronunciationFeedback: z.string().max(2000).optional(),
+  choiceText: z.string().max(2000).optional(),
 });
 export type FocusOutcome = z.infer<typeof focusOutcomeSchema>;
+/** Completion in the UI is distinct from unassisted learning evidence. */
+export function solved(outcome: Pick<FocusOutcome, "result" | "score">) {
+  return remembered(outcome) || outcome.result === "partially_correct";
+}
 export function remembered(outcome: Pick<FocusOutcome, "result" | "score">) {
   return (
     outcome.result === "correct" ||
@@ -168,9 +173,14 @@ export function reviewItems(outcomes: FocusOutcome[]) {
 }
 export function stageSummary(outcomes: FocusOutcome[], stage: number) {
   const values = outcomes.filter((value) => value.stage === stage);
+  const first = [
+    ...new Map(
+      [...values].reverse().map((value) => [value.itemId, value]),
+    ).values(),
+  ];
   return {
-    total: values.length,
-    correct: values.filter(remembered).length,
+    total: first.length,
+    correct: first.filter(remembered).length,
     review: reviewItems(values).length,
     skipped: values.filter((value) => value.result === "skipped").length,
   };
@@ -185,8 +195,42 @@ export function listeningLetters(card: StudyCard, exerciseId: string) {
     (char) => !/\s/u.test(char),
   );
   if (letters.length > 20) return [];
+  const similar: Record<string, string> = {
+    a: "eou",
+    e: "aiy",
+    i: "eyj",
+    o: "uaw",
+    u: "oaw",
+    b: "pdv",
+    c: "ksq",
+    d: "tbp",
+    f: "vpw",
+    g: "jkq",
+    h: "ywq",
+    j: "giy",
+    k: "cqg",
+    l: "rnw",
+    m: "nbp",
+    n: "mlr",
+    p: "bfv",
+    q: "kcg",
+    r: "lwn",
+    s: "zct",
+    t: "dks",
+    v: "wbf",
+    w: "vur",
+    x: "ksz",
+    y: "iej",
+    z: "scx",
+  };
   const distractors = /^[a-zA-Z\s'-]+$/u.test(card.sourceText)
-    ? ["a", "e", "o"]
+    ? [
+        ...new Set(
+          letters.flatMap((letter) => [
+            ...(similar[letter.toLowerCase()] ?? "aeo"),
+          ]),
+        ),
+      ].slice(0, 3)
     : [];
   const bank = [...letters, ...distractors];
   // Stable across renders/reloads; repeated letters remain separate usable tiles.
@@ -229,6 +273,11 @@ export const focusCheckpointSchema = z.object({
   baselineAttemptIds: z.array(uuid).max(1000).optional(),
   stageStartedAt: z.string().optional(),
   reviewStages: z.array(z.number().int().nonnegative()).optional(),
+  difficultIds: z.array(uuid).max(100).optional(),
+  listeningRequeues: z.array(uuid).max(100).optional(),
+  letterErrors: z.record(z.string(), z.number().int().nonnegative()).optional(),
+  speakingPausedUntil: z.number().optional(),
+  initialStreak: z.number().int().nonnegative().optional(),
 });
 export type FocusCheckpoint = z.infer<typeof focusCheckpointSchema>;
 export const checkpointKey = (userId: string, sessionId: string) =>
