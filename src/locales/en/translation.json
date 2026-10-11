@@ -2448,8 +2448,8 @@
         "description": "Type the word or sentence in {{language}}"
       },
       "drag": {
-        "title": "Drag to translate",
-        "description": "Drag words to the right place in the translation"
+        "title": "Drag and complete",
+        "description": "Drag a word into the gap, or tap it"
       },
       "sentences": {
         "title": "Complete sentences",
@@ -2468,8 +2468,8 @@
         "description": "Choose the word that matches the picture"
       },
       "listening": {
-        "title": "Listening comprehension",
-        "description": "Listen and choose the correct translation"
+        "title": "Listen and write",
+        "description": "Listen and write the word"
       }
     },
     "navPrograms": "My plan",

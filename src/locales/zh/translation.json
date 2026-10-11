@@ -2449,8 +2449,8 @@
         "description": "用{{language}}输入单词或句子"
       },
       "drag": {
-        "title": "拖动翻译",
-        "description": "将单词拖到译文中的正确位置"
+        "title": "拖拽填空",
+        "description": "拖动或点击单词填空"
       },
       "sentences": {
         "title": "补全句子",
@@ -2469,8 +2469,8 @@
         "description": "选择与图片对应的单词"
       },
       "listening": {
-        "title": "听力理解",
-        "description": "听音频并选择正确的翻译"
+        "title": "听音拼写",
+        "description": "听音并拼写单词"
       }
     },
     "navPrograms": "我的计划",

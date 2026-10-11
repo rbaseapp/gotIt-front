@@ -2449,8 +2449,8 @@
         "description": "Escribe la palabra o frase en {{language}}"
       },
       "drag": {
-        "title": "Arrastrar para traducir",
-        "description": "Arrastra las palabras al lugar correcto en la traducción"
+        "title": "Arrastrar y completar",
+        "description": "Arrastra una palabra al hueco o tócala"
       },
       "sentences": {
         "title": "Completar frases",
@@ -2469,8 +2469,8 @@
         "description": "Elige la palabra que corresponde a la imagen"
       },
       "listening": {
-        "title": "Comprensión auditiva",
-        "description": "Escucha y elige la traducción correcta"
+        "title": "Escuchar y escribir",
+        "description": "Escucha y escribe la palabra"
       }
     },
     "navPrograms": "Mi plan",

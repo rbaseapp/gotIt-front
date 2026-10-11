@@ -2449,8 +2449,8 @@
         "description": "Saisissez le mot ou la phrase en {{language}}"
       },
       "drag": {
-        "title": "Glisser pour traduire",
-        "description": "Glissez les mots au bon endroit dans la traduction"
+        "title": "Glisser et compléter",
+        "description": "Glissez un mot dans le blanc ou touchez-le"
       },
       "sentences": {
         "title": "Compléter les phrases",
@@ -2469,8 +2469,8 @@
         "description": "Choisissez le mot qui correspond à l’image"
       },
       "listening": {
-        "title": "Compréhension orale",
-        "description": "Écoutez et choisissez la bonne traduction"
+        "title": "Écoute et écriture",
+        "description": "Écoutez et écrivez le mot"
       }
     },
     "navPrograms": "Mon programme",

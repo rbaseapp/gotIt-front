@@ -2449,8 +2449,8 @@
         "description": "Tippe das Wort oder den Satz in {{language}}"
       },
       "drag": {
-        "title": "Übersetzung ziehen",
-        "description": "Ziehe Wörter an die richtige Stelle der Übersetzung"
+        "title": "Ziehen und ergänzen",
+        "description": "Ziehe ein Wort in die Lücke oder tippe darauf"
       },
       "sentences": {
         "title": "Sätze ergänzen",
@@ -2469,8 +2469,8 @@
         "description": "Wähle das Wort, das zum Bild passt"
       },
       "listening": {
-        "title": "Hörverständnis",
-        "description": "Höre zu und wähle die richtige Übersetzung"
+        "title": "Hören und Schreiben",
+        "description": "Höre zu und schreibe das Wort"
       }
     },
     "navPrograms": "Mein Plan",
