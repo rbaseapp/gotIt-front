@@ -1,0 +1,839 @@
+import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { z } from "zod";
+import { api, ApiError } from "../lib/api";
+import { useApp } from "../context/AppContext";
+import {
+  product,
+  capabilitiesSchema,
+  sessionSchema,
+  studyCardsSchema,
+  exerciseSchema,
+  attemptReceipt,
+  intent,
+  errorMessage,
+  uuid,
+  type Session,
+  type StudyCard,
+  type Exercise,
+  type Intent,
+} from "../lib/product";
+import {
+  checkpointKey,
+  readFocusCheckpoint,
+  focusSequence,
+  exerciseTypeFor,
+  outcomeFrom,
+  reviewItems,
+  focusOutcomeSchema,
+  matchingItemIds,
+  type FocusMode,
+  type FocusCheckpoint,
+} from "../lib/focusPractice";
+import { recordVoice } from "../lib/voice";
+import { speak } from "../lib/utils";
+import { useTranslation } from "react-i18next";
+
+const detailSchema = sessionSchema.extend({
+  attempts: z
+    .array(
+      z.object({
+        id: uuid,
+        learningItemId: uuid,
+        exerciseType: z.string(),
+        result: focusOutcomeSchema.shape.result,
+        score: z.number().nullable(),
+      }),
+    )
+    .optional(),
+});
+type Pending = Omit<Intent, "body"> & {
+  body: Record<string, unknown>;
+  path: string;
+};
+
+export function useFocusSession(
+  type: string,
+  params: URLSearchParams,
+  language: string,
+  onSession: (id: string) => void,
+) {
+  const { user } = useApp();
+  const { t } = useTranslation();
+  const [state, setState] = useState<FocusCheckpoint>();
+  const [cards, setCards] = useState<StudyCard[]>([]);
+  const [busy, setBusy] = useState(true);
+  const [error, setError] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [pending, setPending] = useState<Pending>();
+  const current = useRef(state);
+  current.current = state;
+  const alive = useRef(true);
+  const lock = useRef(false);
+  const booted = useRef(false);
+  const creation = useRef<Intent | undefined>(undefined);
+  const creationCacheKey = useRef<string | undefined>(undefined);
+  const frozen = useRef<Pending | undefined>(undefined);
+  const controller = useRef<AbortController | undefined>(undefined);
+  const release = useRef<AbortController | undefined>(undefined);
+  const audio = useRef<HTMLAudioElement | undefined>(undefined);
+  const audioUrl = useRef<string | undefined>(undefined);
+  const playbackVersion = useRef(0);
+  const shownAt = useRef(performance.now());
+  const retryAction = useRef<(() => Promise<unknown>) | undefined>(undefined);
+  const update = (fn: (value: FocusCheckpoint) => FocusCheckpoint) => {
+    if (!alive.current || !current.current) return;
+    const next = fn(current.current);
+    current.current = next;
+    setState(next);
+    try {
+      sessionStorage.setItem(
+        checkpointKey(user!.id, next.sessionId),
+        JSON.stringify(next),
+      );
+    } catch {
+      /* Practice remains usable without storage. */
+    }
+  };
+  const stopAudio = () => {
+    playbackVersion.current++;
+    audio.current?.pause();
+    if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
+    audioUrl.current = undefined;
+    window.speechSynthesis?.cancel();
+  };
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      controller.current?.abort();
+      stopAudio();
+    };
+  }, []);
+  const active =
+    state?.exercises.find((exercise) => exercise.id === state.activeId) ??
+    state?.exercises[0];
+  const mode = state?.sequence[state.stage];
+
+  const issue = async (
+    value: FocusCheckpoint,
+    allCards: StudyCard[],
+    forceIds?: string[],
+  ) => {
+    const mode = value.sequence[value.stage];
+    const done = new Set(
+      value.outcomes
+        .filter((outcome) => outcome.stage === value.stage)
+        .map((outcome) => outcome.itemId),
+    );
+    const remaining =
+      forceIds ?? value.stageItems.filter((id) => !done.has(id));
+    if (!remaining.length)
+      return { ...value, phase: "transition" as const, exercises: [] };
+    const boardCount =
+      remaining.length === 6 ? 4 : Math.min(5, remaining.length);
+    // Issue only the visible question (or visible matching board). Unseen questions
+    // remain on the server-selected queue instead of expiring while the learner plays.
+    const selected =
+      mode === "matching"
+        ? remaining.slice(0, boardCount)
+        : remaining.slice(0, 1);
+    const result = await product(
+      z.object({ exercises: z.array(exerciseSchema).min(1) }),
+      `practice/sessions/${value.sessionId}/exercises`,
+      "POST",
+      {
+        count: selected.length,
+        learningItemIds: selected,
+        exerciseType: exerciseTypeFor(mode),
+        kind:
+          mode === "matching" || mode === "drag_drop"
+            ? "multiple_choice"
+            : "typed",
+        direction:
+          mode === "matching" ||
+          mode === "flashcards" ||
+          mode === "pronunciation"
+            ? "source_to_translation"
+            : "translation_to_source",
+      },
+    );
+    // All responses are bound to this session's actual selected language/items.
+    if (
+      result.exercises.some(
+        (exercise) =>
+          !allCards.some(
+            (card) => card.learningItemId === exercise.learningItemId,
+          ),
+      )
+    )
+      throw new Error(t("game.languageMismatch"));
+    return {
+      ...value,
+      exercises:
+        mode === "flashcards"
+          ? [
+              ...value.exercises.filter((exercise) =>
+                value.outcomes.some(
+                  (outcome) => outcome.exerciseId === exercise.id,
+                ),
+              ),
+              ...result.exercises,
+            ]
+          : result.exercises,
+      activeId: result.exercises[0].id,
+      phase: "play" as const,
+      answer: "",
+      flipped: false,
+      hintIds: [],
+    };
+  };
+  const initialize = async () => {
+    if (lock.current || !language || !user) return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const resume = params.get("resume");
+      let session: Session;
+      let cached: FocusCheckpoint | undefined;
+      let serverAttempts: z.infer<typeof detailSchema>["attempts"] = [];
+      const capabilities = await product(capabilitiesSchema, "capabilities");
+      const skills =
+        capabilities.learningLanguages.find(
+          (item) => item.languageCode === language,
+        )?.enabledSkills ?? [];
+      if (!capabilities.configured.practice)
+        throw new Error(t("focusGames.unavailable"));
+      if (
+        !focusSequence(type, skills, capabilities.configured.speech, 2).length
+      )
+        throw new Error(t("focusGames.unavailable"));
+      if (resume) {
+        if (!uuid.safeParse(resume).success)
+          throw new Error(t("game.invalidItems"));
+        session = (
+          await product(
+            z.object({ session: detailSchema }),
+            `practice/sessions/${resume}`,
+          )
+        ).session;
+        serverAttempts =
+          (session as z.infer<typeof detailSchema>).attempts ?? [];
+        cached = readFocusCheckpoint(user.id, resume);
+      } else {
+        const items = params.get("items")?.split(",");
+        const pack = params.get("pack");
+        if (
+          (items &&
+            (!items.length ||
+              items.length > 100 ||
+              items.some((id) => !uuid.safeParse(id).success))) ||
+          (pack && !uuid.safeParse(pack).success)
+        )
+          throw new Error(t("game.invalidItems"));
+        const requested = Number(params.get("count") || 10);
+        const count =
+          Number.isInteger(requested) && requested > 0
+            ? Math.min(100, requested)
+            : 10;
+        creation.current ??= intent({
+          sessionType:
+            type === "smart"
+              ? "smart_review"
+              : exerciseTypeFor(type as FocusMode),
+          count,
+          sourceLanguageCode: language,
+          ...(items ? { learningItemIds: items } : {}),
+          ...(pack ? { scope: { type: "pack", id: pack } } : {}),
+          ...(type === "smart"
+            ? {
+                includeNewItems: params.get("includeNew") !== "0",
+                ...(pack ? { curriculumOrder: true } : {}),
+              }
+            : {}),
+        });
+        creationCacheKey.current = `gotit.focus.creation.v1:${user.id}:${type}:${JSON.stringify(creation.current.body)}`;
+        try {
+          const cachedIntent = z
+            .object({ eventId: uuid, body: z.record(z.string(), z.unknown()) })
+            .safeParse(
+              JSON.parse(
+                sessionStorage.getItem(creationCacheKey.current) || "null",
+              ),
+            );
+          if (
+            cachedIntent.success &&
+            JSON.stringify(cachedIntent.data.body) ===
+              JSON.stringify(creation.current.body)
+          )
+            creation.current = cachedIntent.data;
+          sessionStorage.setItem(
+            creationCacheKey.current,
+            JSON.stringify(creation.current),
+          );
+        } catch {
+          /* Keep in-memory intent when storage is unavailable. */
+        }
+        session = (
+          await product(
+            z.object({ session: sessionSchema }),
+            "practice/sessions",
+            "POST",
+            creation.current.body,
+            creation.current.eventId,
+          )
+        ).session;
+      }
+      if (cached && (cached.type !== type || cached.language !== language))
+        throw new Error(t("game.languageMismatch"));
+      if (session.status !== "active") {
+        if (alive.current) {
+          const sequence = cached?.sequence ?? [
+            type === "smart" ? "flashcards" : (type as FocusMode),
+          ];
+          const finished: FocusCheckpoint = cached
+            ? { ...cached, session, phase: "end", pending: undefined }
+            : {
+                version: 1,
+                type,
+                language,
+                sessionId: session.id,
+                session,
+                sequence,
+                stage: 0,
+                phase: "end",
+                exercises: [],
+                outcomes: [],
+                stageItems: [],
+                answer: "",
+                flipped: false,
+                hintIds: [],
+              };
+          current.current = finished;
+          setState(finished);
+          setCards(cached?.studyCards ?? []);
+        }
+        return;
+      }
+      const study = (
+        await product(studyCardsSchema, `practice/sessions/${session.id}/study`)
+      ).cards;
+      if (study.some((card) => card.sourceLanguageCode !== language))
+        throw new Error(t("game.languageMismatch"));
+      const matchingIds = matchingItemIds(study);
+      if (type === "matching" && matchingIds.length < 2)
+        throw new Error(t("focusGames.unavailable"));
+      const sequence =
+        cached?.sequence ??
+        focusSequence(
+          type,
+          skills,
+          capabilities.configured.speech,
+          study.length,
+          matchingIds.length,
+        );
+      if (!sequence.length) throw new Error(t("focusGames.unavailable"));
+      let next: FocusCheckpoint = cached
+        ? { ...cached, session }
+        : {
+            version: 1,
+            type,
+            language,
+            sessionId: session.id,
+            session,
+            sequence,
+            stage: 0,
+            phase: "play",
+            exercises: [],
+            outcomes: [],
+            stageItems:
+              sequence[0] === "matching"
+                ? matchingIds
+                : study.map((card) => card.learningItemId),
+            answer: "",
+            flipped: false,
+            hintIds: [],
+          };
+      // Recover a receipt committed before a tab interruption, including transient voice requests.
+      if (cached && !cached.pending)
+        for (const attempt of serverAttempts ?? []) {
+          if (
+            cached.baselineAttemptIds?.includes(attempt.id) ||
+            next.outcomes.some((outcome) => outcome.attemptId === attempt.id)
+          )
+            continue;
+          const exercise = next.exercises.find(
+            (exercise) =>
+              exercise.learningItemId === attempt.learningItemId &&
+              exercise.exerciseType === attempt.exerciseType &&
+              !next.outcomes.some(
+                (outcome) => outcome.exerciseId === exercise.id,
+              ),
+          );
+          if (exercise)
+            next = {
+              ...next,
+              outcomes: [
+                ...next.outcomes,
+                {
+                  attemptId: attempt.id,
+                  itemId: attempt.learningItemId,
+                  exerciseId: exercise.id,
+                  stage: next.stage,
+                  mode: next.sequence[next.stage],
+                  review: next.reviewStages?.includes(next.stage),
+                  result: attempt.result,
+                  score: attempt.score,
+                  xp: 0,
+                  xpKnown: false,
+                  expectedAnswer:
+                    study.find(
+                      (card) => card.learningItemId === attempt.learningItemId,
+                    )?.[
+                      exercise.direction === "source_to_translation"
+                        ? "translationText"
+                        : "sourceText"
+                    ] ?? null,
+                },
+              ],
+            };
+        }
+      next = {
+        ...next,
+        studyCards: study,
+        baselineXp: session.xpEarned,
+        baselineAttemptIds: [
+          ...new Set([
+            ...(serverAttempts?.map((attempt) => attempt.id) ?? []),
+            ...next.outcomes.map((outcome) => outcome.attemptId),
+          ]),
+        ],
+        stageStartedAt: next.stageStartedAt ?? session.startedAt,
+      };
+      if (
+        next.phase === "play" &&
+        !next.pending &&
+        (!next.exercises.length ||
+          next.exercises.some(
+            (exercise) =>
+              Date.parse(exercise.expiresAt) <= Date.now() &&
+              !next.outcomes.some(
+                (outcome) => outcome.exerciseId === exercise.id,
+              ),
+          ))
+      )
+        next = await issue(
+          { ...next, exercises: [], pending: undefined },
+          study,
+        );
+      if (alive.current) {
+        setCards(study);
+        current.current = next;
+        setState(next);
+        if (next.pending) {
+          frozen.current = next.pending;
+          setPending(next.pending);
+        }
+        try {
+          sessionStorage.setItem(
+            checkpointKey(user.id, session.id),
+            JSON.stringify(next),
+          );
+        } catch {
+          /* Storage is optional. */
+        }
+        if (!resume) {
+          onSession(session.id);
+          try {
+            if (creationCacheKey.current)
+              sessionStorage.removeItem(creationCacheKey.current);
+          } catch {
+            /* Storage is optional. */
+          }
+        }
+      }
+    } catch (reason) {
+      if (alive.current) setError(errorMessage(reason));
+    } finally {
+      lock.current = false;
+      if (alive.current) setBusy(false);
+    }
+  };
+  const boot = useEffectEvent(() => void initialize());
+  useEffect(() => {
+    if (language && !booted.current) {
+      booted.current = true;
+      boot();
+    }
+  }, [language]);
+
+  const submit = async (
+    exercise: Exercise,
+    fields: Record<string, unknown>,
+    path = "practice/attempts",
+  ) => {
+    const value = current.current;
+    if (
+      !value ||
+      lock.current ||
+      value.outcomes.some((outcome) => outcome.exerciseId === exercise.id)
+    )
+      return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    const operation: Pending = frozen.current ?? {
+      ...(intent({
+        exerciseId: exercise.id,
+        ...fields,
+        ...(path === "practice/attempts"
+          ? {
+              hintsUsed: value.hintIds.includes(exercise.id) ? 1 : 0,
+              responseTimeMs: Math.min(
+                3600000,
+                Math.max(0, Math.round(performance.now() - shownAt.current)),
+              ),
+            }
+          : {}),
+      }) as Intent & { body: Record<string, unknown> }),
+      path,
+    };
+    frozen.current = operation;
+    setPending(operation);
+    // Raw microphone audio is transient: never place provider requests in storage.
+    if (operation.path === "practice/attempts")
+      update((state) => ({
+        ...state,
+        pending: { ...operation, path: "practice/attempts" },
+      }));
+    try {
+      const receipt = await product(
+        attemptReceipt,
+        operation.path,
+        "POST",
+        operation.body,
+        operation.eventId,
+      );
+      if (alive.current) {
+        update((state) => ({
+          ...state,
+          pending: undefined,
+          outcomes: state.outcomes.some(
+            (outcome) => outcome.attemptId === receipt.attempt.id,
+          )
+            ? state.outcomes
+            : [
+                ...state.outcomes,
+                outcomeFrom(
+                  receipt,
+                  exercise.id,
+                  state.stage,
+                  state.sequence[state.stage],
+                  state.reviewStages?.includes(state.stage),
+                ),
+              ],
+        }));
+        frozen.current = undefined;
+        setPending(undefined);
+      }
+      return receipt;
+    } catch (reason) {
+      if (alive.current) {
+        if (
+          reason instanceof ApiError &&
+          [
+            "EXERCISE_EXPIRED",
+            "EXERCISE_STALE",
+            "EXERCISE_CONSUMED",
+            "SESSION_CLOSED",
+          ].includes(reason.code)
+        ) {
+          frozen.current = undefined;
+          setPending(undefined);
+          update((state) => ({
+            ...state,
+            pending: undefined,
+            ...(reason.code === "EXERCISE_CONSUMED" ||
+            reason.code === "SESSION_CLOSED"
+              ? {}
+              : { exercises: [] }),
+          }));
+          retryAction.current = initialize;
+        }
+        setError(errorMessage(reason));
+      }
+    } finally {
+      lock.current = false;
+      if (alive.current) setBusy(false);
+    }
+  };
+  const close = async () => {
+    const value = current.current;
+    if (!value || lock.current) return;
+    retryAction.current = close;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    stopAudio();
+    try {
+      const result = await product(
+        z.object({ session: sessionSchema }),
+        `practice/sessions/${value.sessionId}`,
+        "PATCH",
+        { status: "completed" },
+      );
+      update((state) => ({
+        ...state,
+        session: result.session,
+        phase: "end",
+        exercises: [],
+        pending: undefined,
+      }));
+    } catch (reason) {
+      if (alive.current) setError(errorMessage(reason));
+    } finally {
+      lock.current = false;
+      if (alive.current) setBusy(false);
+    }
+  };
+  const advance = async () => {
+    const value = current.current;
+    if (!value || lock.current || frozen.current) return;
+    retryAction.current = advance;
+    stopAudio();
+    if (
+      value.exercises.some(
+        (exercise) =>
+          !value.outcomes.some((outcome) => outcome.exerciseId === exercise.id),
+      )
+    ) {
+      update((state) => ({
+        ...state,
+        activeId: state.exercises.find(
+          (exercise) =>
+            !state.outcomes.some(
+              (outcome) => outcome.exerciseId === exercise.id,
+            ),
+        )?.id,
+        answer: "",
+        flipped: false,
+      }));
+      shownAt.current = performance.now();
+      return;
+    }
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const next = await issue(value, cards);
+      update(() => next);
+      shownAt.current = performance.now();
+    } catch (reason) {
+      if (alive.current) setError(errorMessage(reason));
+    } finally {
+      lock.current = false;
+      if (alive.current) setBusy(false);
+    }
+  };
+  const nextStage = async (replay = false, review = false) => {
+    const value = current.current;
+    if (!value || lock.current || frozen.current) return;
+    if (!replay && !review && value.stage + 1 === value.sequence.length) {
+      await close();
+      return;
+    }
+    retryAction.current = () => nextStage(replay, review);
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      // Replays are real fresh exercises, with new server receipts and normal XP policy.
+      const reviewMode: FocusMode =
+        value.sequence.includes("recall") ||
+        value.sequence.includes("drag_drop")
+          ? "recall"
+          : "flashcards";
+      const sequence = replay
+        ? [
+            ...value.sequence.slice(0, value.stage + 1),
+            value.sequence[value.stage],
+            ...value.sequence.slice(value.stage + 1),
+          ]
+        : review
+          ? [...value.sequence, reviewMode]
+          : value.sequence;
+      const stage = review ? sequence.length - 1 : value.stage + 1;
+      const stageItems = review
+        ? reviewItems(value.outcomes)
+        : sequence[stage] === "matching"
+          ? matchingItemIds(cards)
+          : cards.map((card) => card.learningItemId);
+      const next = await issue(
+        {
+          ...value,
+          sequence,
+          stage,
+          stageItems,
+          reviewStages: review
+            ? [...(value.reviewStages ?? []), stage]
+            : value.reviewStages,
+          stageStartedAt: new Date().toISOString(),
+          exercises: [],
+          answer: "",
+          flipped: false,
+        },
+        cards,
+      );
+      update(() => next);
+      shownAt.current = performance.now();
+    } catch (reason) {
+      if (alive.current) setError(errorMessage(reason));
+    } finally {
+      lock.current = false;
+      if (alive.current) setBusy(false);
+    }
+  };
+  const play = async (
+    exercise: Exercise | undefined = active,
+    slow = false,
+  ) => {
+    if (!exercise) return;
+    stopAudio();
+    const version = playbackVersion.current;
+    setError("");
+    try {
+      if (
+        exercise.prompt.audioUrl ||
+        cards.find((card) => card.learningItemId === exercise.learningItemId)
+          ?.audioUrl
+      ) {
+        const blob = await api.audio(exercise.learningItemId);
+        if (!alive.current || playbackVersion.current !== version) return;
+        audioUrl.current = URL.createObjectURL(blob);
+        audio.current = new Audio(audioUrl.current);
+        audio.current.playbackRate = slow ? 0.65 : 1;
+        await audio.current.play();
+      } else if (exercise.exerciseType !== "listening_spelling") {
+        const card = cards.find(
+          (card) => card.learningItemId === exercise.learningItemId,
+        );
+        if (
+          !card ||
+          !speak(card.sourceText, card.sourceLanguageCode, slow ? 0.6 : 0.9)
+        )
+          throw new Error(t("game.speechUnavailable"));
+      } else throw new Error(t("game.speechUnavailable"));
+    } catch (reason) {
+      if (alive.current) setError(errorMessage(reason));
+    }
+  };
+  const playCard = async (card: StudyCard) => {
+    stopAudio();
+    setError("");
+    const version = playbackVersion.current;
+    try {
+      if (card.audioUrl) {
+        const blob = await api.audio(card.learningItemId);
+        if (!alive.current || playbackVersion.current !== version) return;
+        audioUrl.current = URL.createObjectURL(blob);
+        audio.current = new Audio(audioUrl.current);
+        await audio.current.play();
+      } else if (!speak(card.sourceText, card.sourceLanguageCode))
+        throw new Error(t("game.speechUnavailable"));
+    } catch (reason) {
+      if (alive.current && playbackVersion.current === version)
+        setError(errorMessage(reason));
+    }
+  };
+  const record = async (exercise: Exercise) => {
+    if (controller.current || lock.current || frozen.current) return;
+    const abort = new AbortController(),
+      end = new AbortController();
+    controller.current = abort;
+    release.current = end;
+    setRecording(true);
+    setError("");
+    stopAudio();
+    try {
+      const audioBase64 = await recordVoice(abort.signal, end.signal);
+      if (alive.current)
+        await submit(
+          exercise,
+          { audioBase64, languageCode: language },
+          "pronunciation/assessments",
+        );
+    } catch (reason) {
+      if (alive.current && !abort.signal.aborted)
+        setError(errorMessage(reason));
+    } finally {
+      controller.current = undefined;
+      release.current = undefined;
+      if (alive.current) setRecording(false);
+    }
+  };
+  const retry = () => {
+    if (frozen.current && state) {
+      const exercise = state.exercises.find(
+        (exercise) => exercise.id === frozen.current!.body.exerciseId,
+      );
+      if (exercise) void submit(exercise, {}, frozen.current.path);
+    } else if (retryAction.current) void retryAction.current();
+    else void initialize();
+  };
+  const retryExercise = async () => {
+    const value = current.current;
+    if (!value || !active || lock.current || frozen.current) return;
+    retryAction.current = retryExercise;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const next = await issue(value, cards, [active.learningItemId]);
+      update(() => ({
+        ...next,
+        exercises: [...value.exercises, ...next.exercises],
+      }));
+      shownAt.current = performance.now();
+    } catch (reason) {
+      if (alive.current) setError(errorMessage(reason));
+    } finally {
+      lock.current = false;
+      if (alive.current) setBusy(false);
+    }
+  };
+  const playSentence = () => {
+    const card = cards.find(
+      (card) => card.learningItemId === active?.learningItemId,
+    );
+    stopAudio();
+    if (
+      card &&
+      !speak(card.context || card.sourceText, card.sourceLanguageCode)
+    )
+      setError(t("game.speechUnavailable"));
+  };
+  return {
+    state,
+    cards,
+    mode,
+    active,
+    busy,
+    error,
+    recording,
+    pending,
+    update,
+    submit,
+    advance,
+    nextStage,
+    close,
+    play,
+    playSentence,
+    playCard,
+    record,
+    retry,
+    retryExercise,
+    stopAudio,
+    stopRecording: () => release.current?.abort(),
+    cancelRecording: () => controller.current?.abort(),
+  };
+}

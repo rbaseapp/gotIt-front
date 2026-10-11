@@ -18,6 +18,7 @@ import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { useResource } from "../lib/useResource";
 import { getLanguageOptions } from "../lib/languages";
 import { learningReturn, practiceLink } from "../lib/learningNavigation";
+import { readFocusCheckpoint } from "../lib/focusPractice";
 import {
   practiceCards,
   recentPracticeLink,
@@ -61,6 +62,7 @@ function RecentPractice({
   returnTo: string;
 }) {
   const { t, i18n } = useTranslation();
+  const { user } = useApp();
   const count = useSyncExternalStore(subscribeWidth, visibleCards);
   const [cursor, setCursor] = useState<string>();
   const [history, setHistory] = useState<Array<string | undefined>>([]);
@@ -113,7 +115,14 @@ function RecentPractice({
                 <Link
                   className="ci"
                   key={session.id}
-                  to={recentPracticeLink(session, code, returnTo)}
+                  to={recentPracticeLink(
+                    session,
+                    code,
+                    returnTo,
+                    user
+                      ? readFocusCheckpoint(user.id, session.id)?.type
+                      : undefined,
+                  )}
                 >
                   <img
                     src={art(card?.asset ?? "cards")}

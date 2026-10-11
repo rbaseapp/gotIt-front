@@ -17,7 +17,7 @@ export const practiceCards = [
     skill: "recognition",
   },
   { id: "writing", asset: "keyboard", game: "recall", skill: "recall" },
-  { id: "drag", asset: "translation", game: "drag_drop", skill: "recognition" },
+  { id: "drag", asset: "translation", game: "drag_drop", skill: "recall" },
   { id: "sentences", asset: "puzzle", game: null, skill: "recognition" },
   { id: "mixed", asset: "gamepad", game: "smart", skill: null },
   { id: "dialogue", asset: "chat", game: null, skill: null },
@@ -65,11 +65,12 @@ export function recentPracticeLink(
   },
   language: string,
   returnTo: string,
+  savedType?: string,
 ) {
   const params = new URLSearchParams({ language, return: returnTo });
   if (session.status === "active") params.set("resume", session.id);
   if (session.scope?.type === "pack") params.set("pack", session.scope.id);
   if (session.status !== "active")
     return `/history?${new URLSearchParams({ language })}`;
-  return `/learn/session/${sessionGame(session.sessionType)}?${params}`;
+  return `/learn/session/${savedType ?? sessionGame(session.sessionType)}?${params}`;
 }

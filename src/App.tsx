@@ -67,6 +67,11 @@ const LiveVocabularyPage = lazy(() =>
     default: m.LiveVocabularyPage,
   })),
 );
+const DevFocusGamePage = lazy(() =>
+  import("./pages/DevFocusGamePage").then((m) => ({
+    default: m.DevFocusGamePage,
+  })),
+);
 const LiveGameSessionPage = lazy(() =>
   import("./pages/LiveGameSessionPage").then((m) => ({
     default: m.LiveGameSessionPage,
@@ -186,9 +191,13 @@ export default function App() {
             element={
               mode === "live" ? (
                 <LiveGameAccess>
-                  <LiveGameSessionPage
-                    key={location.pathname + location.search}
-                  />
+                  {practiceDesignEnabled() ? (
+                    <DevFocusGamePage />
+                  ) : (
+                    <LiveGameSessionPage
+                      key={location.pathname + location.search}
+                    />
+                  )}
                 </LiveGameAccess>
               ) : (
                 <GameSessionPage />
