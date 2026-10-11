@@ -62,7 +62,7 @@
   text-decoration: none;
   text-align: center;
 }
-.fg .fg-primary,
+.fg button.fg-primary,
 .fg-exit .fg-primary {
   background: #1d6a52;
   color: #fff;

@@ -73,3 +73,8 @@ Completion retains the final game board as an inert background and opens the ori
 Verification: `npm run check` passed typecheck, lint (zero warnings), 287 unit tests / 50 files, build and 20 gateway/security tests. Final CSS polish was additionally checked by formatting, lint/build and Chrome screenshots. Browser fixtures verified tap, actual pointer connection, a wrong answer, exit/cancel/focus, animated flashcard progression, gift/skip/summary, 320/390px RTL and English LTR. Final cold load: zero console errors/warnings; the earlier optional-metadata fixture 404s and development hot-reload errors were excluded by restarting with a complete local fixture.
 
 Evidence: [captures](corrections-20261011/). The attached video was not available; flashcard motion was recovered from the original local exported source. No live API, database, microphone/provider call, publication or deployment was performed for this correction. Existing production/DEV gates remain unchanged; DEV release is pending.
+
+### Primary button text correction (2026-10-11)
+
+The shared primary-button selector now matches the specificity of each imported game button reset. Continue and Finish session retain white text (#fff) on green in game feedback and transitions. Local Chrome verification confirmed computed rgb(255, 255, 255) for both labels. Production build and 21 focused game tests passed. This is a CSS-only correction with no API or scoring changes.
+
