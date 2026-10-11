@@ -595,6 +595,14 @@ export function DevDashboardPage() {
                           <b>{title}</b>
                           <small dir="auto">{detail}</small>
                         </div>
+                        <span
+                          className="nd-task-xp"
+                          dir="ltr"
+                          title={t("newDashboard.xpHelp")}
+                        >
+                          <Zap size={14} aria-hidden="true" />
+                          XP
+                        </span>
                         <Link to={to}>{t("newDashboard.begin")}</Link>
                       </li>
                     ))}

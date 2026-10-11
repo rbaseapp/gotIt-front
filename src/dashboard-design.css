@@ -21,7 +21,7 @@
   position: relative;
   height: auto;
   min-height: 76px;
-  padding: 12px max(24px, calc((100% - 1132px) / 2));
+  padding: 12px 24px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 24px;
@@ -157,6 +157,7 @@
   color: #fff;
 }
 .nd-strip .nd-wrap {
+  max-width: none;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -693,6 +694,7 @@
 }
 .nd-xp-summary {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   gap: 14px;
   flex: none;
@@ -769,6 +771,18 @@
   display: inline-flex;
   align-items: center;
 }
+.nd-task-xp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #7a5a00;
+  background: #fdf2d3;
+  font-weight: 800;
+  font-size: calc(12px * var(--text-scale, 1));
+}
 .nd-fine-print {
   font-size: calc(12px * var(--text-scale, 1));
   color: var(--nd-muted);
@@ -817,29 +831,48 @@
   color: var(--nd-ink);
   cursor: pointer;
 }
-.nd-next-word {
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  min-height: 44px;
-}
-.nd-choices button:hover {
+.nd-choices button:hover:enabled {
   background: #e5f0eb;
 }
-.nd-answer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 12px;
+.nd-review .nd-word-card.correct {
+  box-shadow:
+    0 0 0 3px #0e7a53,
+    0 14px 20px -22px #22322c;
 }
-.nd-answer.correct {
+.nd-review .nd-word-card.incorrect {
+  animation: nd-answer-shake 0.4s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nd-review .nd-word-card.incorrect {
+    animation: none;
+  }
+}
+@keyframes nd-answer-shake {
+  25%,
+  75% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+.nd-choices button.correct {
   background: #e3f7ee;
+  border-color: #0e7a53;
   color: #0e6747;
 }
-.nd-answer.incorrect {
-  background: #fff0eb;
+.nd-choices button.incorrect {
+  border-color: #c0392b;
+  color: #913600;
+}
+.nd-choices button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.nd-word-card.correct .nd-answer-hint {
+  color: #0e6747;
+}
+.nd-word-card.incorrect .nd-answer-hint {
   color: #913600;
 }
 .nd-article {
@@ -1076,7 +1109,7 @@
   .nd-task-list li {
     flex-wrap: wrap;
   }
-  .nd-task-list a {
+  .nd-task-xp {
     margin-inline-start: auto;
   }
   .nd-task-list li > svg {

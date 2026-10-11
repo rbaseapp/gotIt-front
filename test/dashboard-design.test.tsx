@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+﻿import { StrictMode } from "react";
 import {
   fireEvent,
   render,
@@ -182,7 +182,7 @@ describe("dashboard quick review", () => {
     const alert = await screen.findByRole("alert");
     expect(screen.getByRole("button", { name: "לשכוח" })).toBeDisabled();
     fireEvent.click(within(alert).getByRole("button", { name: "ניסיון נוסף" }));
-    await screen.findByText("נשמרו 3 XP");
+    await screen.findByText(/נשמרו 3 XP/);
     expect(requests).toHaveLength(2);
     expect(requests[1].body).toBe(requests[0].body);
     expect(new Headers(requests[1].headers).get("Idempotency-Key")).toBe(
@@ -194,8 +194,107 @@ describe("dashboard quick review", () => {
       hintsUsed: 0,
     });
     expect(scored).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole("button", { name: "סיום החזרה" }));
-    await waitFor(() => expect(scored).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole("button", { name: "לזכור" })).toHaveClass(
+      "correct",
+    );
+    expect(screen.getByRole("button", { name: "לזכור" })).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "סיום החזרה" }),
+    ).not.toBeInTheDocument();
+    await waitFor(() => expect(scored).toHaveBeenCalledTimes(2), {
+      timeout: 2000,
+    });
+    expect(document.querySelector(".nd-word-card h3")).toBeInTheDocument();
+  });
+  it("keeps choices and inline correction visible, then advances automatically without duplicate scoring", async () => {
+    const attempts: RequestInit[] = [];
+    const second = {
+      ...exercise,
+      id: id(20),
+      prompt: { ...exercise.prompt, text: "write" },
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (String(input).endsWith("practice/sessions"))
+          return json({ session: { ...session, itemCount: 2 } });
+        if (String(input).endsWith("/exercises"))
+          return json({ exercises: [exercise, second] });
+        if (String(input).endsWith("practice/attempts")) {
+          attempts.push(init!);
+          return json({
+            ...receipt,
+            attempt: {
+              ...receipt.attempt,
+              result: "incorrect",
+              score: 0,
+              xpEarned: 0,
+            },
+          });
+        }
+        throw new Error(`Unexpected ${input}`);
+      }),
+    );
+    mount(<DashboardQuickReview language="en" available onScored={vi.fn()} />);
+    fireEvent.click(await screen.findByRole("button", { name: "לשכוח" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "לשכוח" })).toHaveClass(
+        "incorrect",
+      ),
+    );
+    expect(screen.getByRole("button", { name: "לזכור" })).toHaveClass(
+      "correct",
+    );
+    expect(
+      document.querySelector(".nd-word-card .nd-answer-hint"),
+    ).toHaveTextContent("לזכור");
+    expect(
+      screen.queryByRole("button", { name: "למילה הבאה" }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "לשכוח" }));
+    await screen.findByText("write", {}, { timeout: 2000 });
+    expect(attempts).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "לשכוח" })).toBeEnabled();
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "1",
+    );
+  });
+  it("retains the final receipt on close failure and retries closing without submitting another answer", async () => {
+    let answers = 0;
+    let closes = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (init?.method === "PATCH") {
+          closes++;
+          return closes === 1
+            ? json({ error: { code: "TEMPORARY_FAILURE" } }, 503)
+            : json({
+                session: { ...session, status: "completed", xpEarned: 3 },
+              });
+        }
+        if (String(input).endsWith("practice/sessions"))
+          return json({ session });
+        if (String(input).endsWith("/exercises"))
+          return json({ exercises: [exercise] });
+        if (String(input).endsWith("practice/attempts")) {
+          answers++;
+          return json(receipt);
+        }
+        throw new Error(`Unexpected ${input}`);
+      }),
+    );
+    mount(<DashboardQuickReview language="en" available onScored={vi.fn()} />);
+    fireEvent.click(await screen.findByRole("button", { name: "לזכור" }));
+    const alert = await screen.findByRole("alert", {}, { timeout: 2000 });
+    expect(screen.getByRole("button", { name: "לזכור" })).toBeDisabled();
+    fireEvent.click(within(alert).getByRole("button", { name: "ניסיון נוסף" }));
+    await waitFor(() =>
+      expect(document.querySelector(".nd-word-card h3")).toBeInTheDocument(),
+    );
+    expect(answers).toBe(1);
+    expect(closes).toBe(2);
   });
   it("does not create a practice session for an empty vocabulary bank", () => {
     vi.stubGlobal("fetch", vi.fn());
@@ -458,6 +557,17 @@ describe("dashboard context", () => {
     expect(
       screen.getByRole("progressbar", { name: "התקדמות בתוכנית" }),
     ).toHaveAttribute("aria-valuenow", "0");
+    const tasks = screen.getByRole("region", { name: "צעדים קטנים להיום" });
+    expect(within(tasks).getAllByText("XP")).toHaveLength(4);
+    for (const row of within(tasks).getAllByRole("listitem")) {
+      expect(within(row).getByText("XP")).toHaveAttribute(
+        "title",
+        "ההתקדמות וה־XP מתעדכנים לפי הפעילות שביצעת.",
+      );
+      expect(
+        within(row).getByRole("link", { name: "מתחילים" }),
+      ).toBeInTheDocument();
+    }
     fireEvent.change(screen.getByRole("combobox", { name: "שפת המקור" }), {
       target: { value: "fr" },
     });
@@ -506,9 +616,9 @@ describe("dashboard context", () => {
     );
     mount(<DevDashboardPage />);
     fireEvent.click(await screen.findByRole("button", { name: "לזכור" }));
-    await screen.findByText("נשמרו 3 XP");
+    await screen.findByText(/נשמרו 3 XP/);
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "סיום החזרה" })).toBeEnabled(),
+      expect(screen.getByRole("button", { name: "לזכור" })).toBeDisabled(),
     );
     expect(
       screen.queryByRole("button", { name: "מתחילים חזרה קצרה" }),
