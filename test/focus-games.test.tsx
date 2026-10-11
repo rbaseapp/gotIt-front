@@ -1,4 +1,5 @@
 import {
+  act,
   configure,
   fireEvent,
   render,
@@ -26,6 +27,7 @@ import {
   focusUserId,
 } from "./focus-fixtures";
 import i18n from "../src/i18n";
+import * as speech from "../src/lib/utils";
 
 configure({ asyncUtilTimeout: 5000 });
 vi.setConfig({ testTimeout: 30000 });
@@ -38,15 +40,18 @@ vi.mock("../src/lib/useLearningLanguage", () => ({
 }));
 vi.mock("../src/lib/voice", () => ({ recordVoice: vi.fn() }));
 
+const audioPlay = vi.fn(() => Promise.resolve());
+
 async function mount(
   type = "smart",
   options: Parameters<typeof focusFixture>[0] = {},
   resume = false,
+  animate = false,
 ) {
   await i18n.changeLanguage("en");
   vi.stubEnv("VITE_PRACTICE_DESIGN", "true");
   vi.stubGlobal("matchMedia", () => ({
-    matches: true,
+    matches: !animate,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
   }));
@@ -54,9 +59,7 @@ async function mount(
     "Audio",
     class {
       playbackRate = 1;
-      play() {
-        return Promise.resolve();
-      }
+      play = audioPlay;
       pause() {}
     },
   );
@@ -105,6 +108,88 @@ const click = async (name: string | RegExp) => {
 const next = () => click(/^Continue$/);
 
 describe("DEV focus game engine", () => {
+  it("keeps cloze audio silent before a successful receipt, including retries", async () => {
+    const speak = vi.spyOn(speech, "speak").mockReturnValue(true);
+    const { fixture } = await mount("drag_drop");
+    await screen.findByRole("button", { name: "chair", exact: true });
+    const audio = screen.getByRole("button", {
+      name: i18n.t("focusGames.playSentence"),
+    });
+    expect(audio).toBeDisabled();
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 650));
+    });
+    expect(speak).not.toHaveBeenCalled();
+    expect(audioPlay).not.toHaveBeenCalled();
+    expect(
+      fixture.requests.some((request) => request.path.includes("/speech/")),
+    ).toBe(false);
+    await click("book");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "chair", exact: true }),
+      ).toBeEnabled(),
+    );
+    expect(audio).toBeDisabled();
+    expect(speak).not.toHaveBeenCalled();
+    expect(audioPlay).not.toHaveBeenCalled();
+    await click("chair");
+    await waitFor(() =>
+      expect(speak).toHaveBeenCalledWith(focusCards[0].context, "en", 0.85),
+    );
+    expect(audio).toBeEnabled();
+    speak.mockRestore();
+  });
+  it("cracks the gift on each tap, then lands the original accessory after the coin burst", async () => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const { fixture } = await mount("drag_drop", {}, false, true);
+    await click("book");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "chair", exact: true }),
+      ).toBeEnabled(),
+    );
+    await click("chair");
+    await waitFor(() =>
+      expect(document.querySelector(".sen")).toHaveTextContent("I read a"),
+    );
+    await click("book");
+    await screen.findByRole("dialog", { name: "Drag and complete completed" });
+    await click("Session summary");
+    await waitFor(() =>
+      expect(document.querySelectorAll(".mochi .fg-mouth .wf")).toHaveLength(2),
+    );
+    await waitFor(
+      () => expect(document.querySelector(".gift")).toBeInTheDocument(),
+      { timeout: 8000 },
+    );
+    const gift = document.querySelector<HTMLButtonElement>(".gift")!;
+    fireEvent.click(gift);
+    expect(gift.querySelectorAll(".crack path")).toHaveLength(1);
+    fireEvent.click(gift);
+    expect(gift.querySelectorAll(".crack path")).toHaveLength(2);
+    fireEvent.click(gift);
+    expect(document.querySelector(".fg-session-end")).toHaveAttribute(
+      "data-phase",
+      "open",
+    );
+    expect(document.querySelectorAll(".fg-coins img")).toHaveLength(10);
+    expect(document.querySelector(".fg-accessory")).toHaveAttribute(
+      "src",
+      expect.stringContaining("5aec6f179ff28ecaaa5ec7c111184bde.webp"),
+    );
+    await screen.findByRole("region", { name: "Session summary" });
+    expect(document.querySelector(".fg-accessory")).toHaveClass("glasses");
+    expect(document.querySelector(".pill.xpp")).toHaveTextContent(
+      `${fixture.session.xpEarned} XP`,
+    );
+  });
   it("recovers a lost wrong-answer receipt without locking cloze or losing its rejected tile", async () => {
     const { fixture } = await mount("drag_drop", { failAttemptOnce: true });
     await click("book");

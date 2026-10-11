@@ -81,3 +81,6 @@ The shared primary-button selector now matches the specificity of each imported 
 ## Alignment with the owner checklist — 2026-10-12
 
 The current receipt-based behavior supersedes earlier manual Continue, final wrong-answer and bounded completion-dialog descriptions. See the [item-by-item alignment and evidence](alignment-20261012.md). Counts, XP, daily targets and languages remain server-owned by explicit owner decision. Release status is recorded in canonical specification document 37.
+
+
+2026-10-12 session-end video and cloze audio correction: see [behavior and verification](alignment-20261012.md#session-end-video-correction-and-cloze-audio--2026-10-12).

@@ -181,6 +181,7 @@ function FocusGame({ type }: { type: string }) {
       state?.phase !== "play" ||
       exit ||
       outcome ||
+      !["flashcards", "listening", "pronunciation"].includes(mode ?? "") ||
       (mode === "listening" && engine.listeningSilent)
     )
       return;
@@ -1373,7 +1374,7 @@ function ClozeGame({
           >
             <button
               className="say"
-              disabled={!outcome}
+              disabled={!outcome || !solved(outcome)}
               aria-label={t("focusGames.playSentence")}
               onClick={engine.playSentence}
             >
@@ -2204,6 +2205,42 @@ function SessionEnd({
   const [displayXp, setDisplayXp] = useState(0);
   const [displayStreak, setDisplayStreak] = useState(value.initialStreak);
   const [swallowed, setSwallowed] = useState(0);
+  const sceneRef = useRef<HTMLElement>(null);
+  const xpCoinRef = useRef<HTMLImageElement>(null);
+  const coinOriginRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    if (phase !== "open") return;
+    const scene = sceneRef.current;
+    const target = xpCoinRef.current;
+    const origin = coinOriginRef.current;
+    if (!scene || !target || !origin) return;
+    const measure = () => {
+      const root = scene.getBoundingClientRect();
+      const end = target.getBoundingClientRect();
+      const start = origin.getBoundingClientRect();
+      scene.style.setProperty("--coin-x", `${start.left - root.left}px`);
+      scene.style.setProperty("--coin-y", `${start.top - root.top}px`);
+      scene.style.setProperty(
+        "--coin-dx",
+        `${end.left + end.width / 2 - start.left}px`,
+      );
+      scene.style.setProperty(
+        "--coin-dy",
+        `${end.top + end.height / 2 - start.top}px`,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(scene);
+    observer.observe(target);
+    observer.observe(target.parentElement!);
+    observer.observe(origin.parentElement!);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [phase]);
   const unique = [
     ...new Set(
       value.outcomes
@@ -2230,31 +2267,31 @@ function SessionEnd({
     )[0];
   useEffect(() => {
     if (phase === "eat") {
+      // Each word lands at the mouth after its own 500 ms flight. Keep the
+      // mouth open until that arrival, then chew and reopen for the next word.
       const blips = Array.from(
         { length: Math.min(8, words.length) },
-        (_, index) =>
-          setTimeout(
-            () => {
+        (_, index) => {
+          const arrival = 1400 + 360 * index;
+          return [
+            setTimeout(() => {
               focusTone(520 + 40 * index);
               setSwallowed(index + 1);
-            },
-            900 + 500 + 360 * index,
-          ),
-      );
-      const chew = setInterval(
-        () => setPose((current) => (current === "open" ? "chew" : "open")),
-        380,
-      );
+              setPose("chew");
+            }, arrival),
+            setTimeout(() => setPose("open"), arrival + 150),
+          ];
+        },
+      ).flat();
       const end = setTimeout(
         () => {
-          setPose("happy");
+          setPose("jump");
           setPhase("wow");
         },
         900 + Math.max(0, Math.min(8, words.length) - 1) * 360 + 500 + 600,
       );
       return () => {
         blips.forEach(clearTimeout);
-        clearInterval(chew);
         clearTimeout(end);
       };
     }
@@ -2271,15 +2308,20 @@ function SessionEnd({
       };
     }
     if (phase === "open") {
+      const settle = setTimeout(() => setPose("idle"), 1250);
       const timer = setTimeout(() => {
-        setPose("happy");
+        setPose("idle");
         setPhase("summary");
-      }, 2100);
-      return () => clearTimeout(timer);
+      }, 2300);
+      return () => {
+        clearTimeout(settle);
+        clearTimeout(timer);
+      };
     }
   }, [phase, words.length]);
   const poses: Record<string, string> = {
     idle: "8e3e5c5a68d9affb2d505020c26f2d76.webp",
+    jump: "45cbec9a0be1de7087162ca25d3ff35c.webp",
     open: "3995fa955c94b3521848220031ff0b27.webp",
     chew: "6f956f164254522fcbb1984b7d4ea49d.webp",
     happy: "2b2e2ca4c1c96c31d17cc3a233f0ca8c.webp",
@@ -2311,18 +2353,20 @@ function SessionEnd({
   const bonus = xp > xpBeforeClose;
   useEffect(() => {
     if (phase !== "open") return;
-    let step = 0;
-    const timer = setInterval(() => {
-      step++;
-      focusTone(520 + step * 20);
-      setDisplayXp(
-        Math.round(
-          xpBeforeClose + (xp - xpBeforeClose) * Math.min(1, step / 15),
-        ),
-      );
-      if (step >= 15) clearInterval(timer);
-    }, 70);
-    return () => clearInterval(timer);
+    const arrivals = Array.from({ length: 10 }, (_, index) =>
+      setTimeout(
+        () => {
+          focusTone(520 + index * 20);
+          setDisplayXp(
+            Math.round(
+              xpBeforeClose + ((xp - xpBeforeClose) * (index + 1)) / 10,
+            ),
+          );
+        },
+        1250 + index * 60,
+      ),
+    );
+    return () => arrivals.forEach(clearTimeout);
   }, [phase, xp, xpBeforeClose]);
   useEffect(() => {
     if (phase !== "summary" || !gamification) return;
@@ -2333,7 +2377,7 @@ function SessionEnd({
     return () => clearTimeout(timer);
   }, [phase, gamification]);
   return (
-    <main className="fg-session-end">
+    <main className="fg-session-end" data-phase={phase} ref={sceneRef}>
       <header className="bar">
         {phase !== "summary" ? (
           <button
@@ -2357,7 +2401,7 @@ function SessionEnd({
           </span>
         )}
         <span className="pill xpp">
-          <img src={coin} alt="" />
+          <img ref={xpCoinRef} src={coin} alt="" />
           <b className="en" key={phase === "open" ? displayXp : xp}>
             {phase === "open"
               ? displayXp
@@ -2377,7 +2421,7 @@ function SessionEnd({
         </div>
         <span className="shadow" aria-hidden="true" />
         <div
-          className={`mochi${phase === "eat" ? " gulp" : phase === "wow" ? " fg-wow" : " idle"}`}
+          className={`mochi${phase === "eat" ? (pose === "chew" ? " gulp" : "") : phase === "wow" ? " jump" : " idle"}`}
           style={{
             transform: `scale(${phase === "eat" ? 0.86 + swallowed * 0.025 : phase === "gift" || phase === "open" ? 0.82 : 1})`,
           }}
@@ -2387,16 +2431,41 @@ function SessionEnd({
             src={asset(poses[phase === "summary" ? "idle" : pose])}
             alt={t("focusGames.mochi")}
           />
-          {(phase === "summary" || phase === "open") && perfect && (
-            <span className="fg-crown" aria-hidden="true">
-              ♛
-            </span>
+          {(phase === "summary" || phase === "open") && (perfect || bonus) && (
+            <img
+              className={`fg-accessory ${perfect ? "crown" : "glasses"}`}
+              src={asset(
+                perfect
+                  ? "f47465d3ca25defdfd009591bdd3c142.webp"
+                  : "5aec6f179ff28ecaaa5ec7c111184bde.webp",
+              )}
+              alt=""
+              aria-hidden="true"
+            />
           )}
-          {(phase === "summary" || phase === "open") && !perfect && bonus && (
-            <span className="fg-glasses" aria-hidden="true">
-              <i />
-              <i />
-            </span>
+          {phase === "eat" && (
+            <div className="fg-mouth" aria-hidden="true">
+              {words.slice(0, 8).map((card, index) => (
+                <span
+                  className="wf"
+                  key={card.learningItemId}
+                  style={
+                    {
+                      "--sd": index % 2 ? 1 : -1,
+                      "--rw": Math.floor(index / 2) - 1.5,
+                      "--a": `${0.1 + index * 0.07}s`,
+                      "--d": `${0.9 + index * 0.36}s`,
+                      "--bg": ["#fff", "#fdf2d2", "#e3f4ec", "#e8f0fe"][
+                        index % 4
+                      ],
+                    } as CSSProperties
+                  }
+                  dir="auto"
+                >
+                  {card.sourceText}
+                </span>
+              ))}
+            </div>
           )}
         </div>
         {phase === "wow" && (
@@ -2408,25 +2477,11 @@ function SessionEnd({
             ))}
           </div>
         )}
-        {phase === "eat" &&
-          words.slice(0, 8).map((card, index) => (
-            <span
-              className="wf"
-              key={card.learningItemId}
-              style={
-                {
-                  "--sd": index % 2 ? 1 : -1,
-                  "--rw": Math.floor(index / 2) - 1.5,
-                  "--a": `${0.1 + index * 0.07}s`,
-                  "--d": `${0.9 + index * 0.36}s`,
-                  "--bg": ["#fff", "#fdf2d2", "#e3f4ec", "#e8f0fe"][index % 4],
-                } as CSSProperties
-              }
-              dir="auto"
-            >
-              {card.sourceText}
-            </span>
-          ))}
+        <span
+          ref={coinOriginRef}
+          className="fg-coin-origin"
+          aria-hidden="true"
+        />
         {phase === "gift" && (
           <button
             className={`gift wait${taps ? ` h${taps}` : ""}`}
@@ -2435,25 +2490,26 @@ function SessionEnd({
               const count = taps + 1;
               focusTone(400 + count * 120);
               setTaps(count);
-              if (count >= 3) setPhase("open");
+              if (count >= 3) {
+                setDisplayXp(xpBeforeClose);
+                setPhase("open");
+              }
             }}
           >
             <img src={gift} alt="" />
+            {taps > 0 && (
+              <svg className="crack" viewBox="0 0 360 210" aria-hidden="true">
+                <path d="M116 104 133 126 118 142 143 157 130 181 145 209 M133 126 154 119 M143 157 164 166" />
+                {taps > 1 && (
+                  <path d="M260 96 242 121 257 141 232 160 248 183 228 209 M242 121 219 131 M232 160 210 154" />
+                )}
+              </svg>
+            )}
           </button>
         )}
         {phase === "open" && (
           <>
             <Celebration />
-            <div className="fg-coins" aria-hidden="true">
-              {Array.from({ length: 10 }, (_, index) => (
-                <img
-                  src={coin}
-                  alt=""
-                  key={index}
-                  style={{ "--i": index } as CSSProperties}
-                />
-              ))}
-            </div>
             <img className="lid" src={gift} alt="" />
             <img
               className="box"
@@ -2467,6 +2523,24 @@ function SessionEnd({
           </>
         )}
       </div>
+      {phase === "open" && (
+        <div className="fg-coins" aria-hidden="true">
+          {Array.from({ length: 10 }, (_, index) => (
+            <img
+              src={coin}
+              alt=""
+              key={index}
+              style={
+                {
+                  "--i": index,
+                  "--burst-x": `${((index % 5) - 2) * 26}px`,
+                  "--burst-y": `${-65 - (index % 3) * 22}px`,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </div>
+      )}
       <div className="msg" aria-live="polite">
         <h1>
           {t(

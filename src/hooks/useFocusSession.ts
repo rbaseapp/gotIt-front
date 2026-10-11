@@ -26,6 +26,7 @@ import {
   exerciseTypeFor,
   outcomeFrom,
   reviewItems,
+  solved,
   focusOutcomeSchema,
   matchingItemIds,
   type FocusMode,
@@ -782,6 +783,15 @@ export function useFocusSession(
     slow = false,
   ) => {
     if (!exercise) return;
+    // Cloze audio contains the answer. A committed successful receipt is the
+    // only point at which either word or sentence playback becomes available.
+    if (
+      mode === "drag_drop" &&
+      !current.current?.outcomes.some(
+        (entry) => entry.exerciseId === exercise.id && solved(entry),
+      )
+    )
+      return;
     stopAudio();
     const version = playbackVersion.current;
     setAudioError("");
@@ -940,6 +950,13 @@ export function useFocusSession(
       recoverWrong();
   }, [state, busy, pending, error, mode]);
   const playSentence = () => {
+    if (
+      mode === "drag_drop" &&
+      !current.current?.outcomes.some(
+        (entry) => entry.exerciseId === active?.id && solved(entry),
+      )
+    )
+      return;
     const card = cards.find(
       (card) => card.learningItemId === active?.learningItemId,
     );

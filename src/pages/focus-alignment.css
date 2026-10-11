@@ -374,18 +374,6 @@
   font-size: 28px;
   animation: fg-bump 0.7s calc(var(--i) * 0.05s) both;
 }
-.fg-session-end .fg-coins {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.fg-session-end .fg-coins img {
-  position: absolute;
-  left: 50%;
-  top: 70%;
-  width: 36px;
-  animation: fg-coin 1.1s calc(var(--i) * 0.06s) ease-in both;
-}
 .fg-session-end .fg-streak-pop {
   animation: fg-pop 0.4s ease;
 }
@@ -428,12 +416,6 @@
   to {
     opacity: 0;
     transform: translateY(55vh) rotate(330deg);
-  }
-}
-@keyframes fg-coin {
-  to {
-    transform: translate(300px, -350px) scale(0.3);
-    opacity: 0;
   }
 }
 @media (max-height: 740px) and (min-width: 721px) {
@@ -588,35 +570,108 @@
     display: none;
   }
 }
-.fg-session-end .fg-crown {
-  position: absolute;
-  top: -8%;
-  left: 35%;
-  width: 30%;
-  color: #f9c440;
-  font-size: 64px;
-  line-height: 1;
-  text-shadow: 0 3px 0 #8a5d00;
-  transform: rotate(-9deg);
-}
 .fg .fg-stressed-syllable {
   color: var(--green);
   font-weight: 900;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.fg-session-end .fg-glasses {
-  position: absolute;
-  top: 36%;
-  left: 27%;
-  width: 46%;
-  display: flex;
-  gap: 6%;
-  border-top: 5px solid #16213a;
+
+/* The cinematic stage and sprite use the same size at every breakpoint. */
+.fg-completion-modal .fg-session-end:not([data-phase="summary"]) .stage {
+  --ms: clamp(190px, 38dvh, 340px);
+  height: clamp(270px, 52dvh, 460px);
 }
-.fg-session-end .fg-glasses i {
-  width: 47%;
-  height: 22px;
-  background: #16213a;
-  border-radius: 0 0 12px 12px;
+.fg-completion-modal .fg-session-end:not([data-phase="summary"]) .mochi {
+  width: var(--ms);
+  height: var(--ms);
+}
+/* Anchor lives inside the transformed sprite: growth and chewing cannot move
+   the mouth away from a word's destination. Coordinates follow the source art. */
+.fg-session-end .fg-mouth {
+  position: absolute;
+  left: 57.2%;
+  top: 53.5%;
+  width: 0;
+  height: 0;
+  --spread: clamp(105px, calc(50vw - 100px), 350px);
+  --vgap: clamp(36px, 7dvh, 62px);
+  pointer-events: none;
+}
+.fg-session-end .fg-mouth .wf {
+  left: 0;
+  top: 0;
+  --ey: 0px;
+}
+.fg-session-end .mochi.gulp {
+  animation: se-gulp 0.15s ease-in-out;
+}
+.fg-session-end .gift .crack {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #092f29;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(1px 1px 0 #9acbb0);
+}
+.fg-session-end .fg-coin-origin {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--ms) * 0.3);
+  width: 0;
+  height: 0;
+}
+.fg-session-end .fg-coins {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+.fg-session-end .fg-coins img {
+  position: absolute;
+  left: var(--coin-x);
+  top: var(--coin-y);
+  width: 36px;
+  height: 36px;
+  margin: -18px;
+  animation: fg-coin-arrive 1.25s calc(var(--i) * 0.06s)
+    cubic-bezier(0.3, 0.1, 0.4, 1) both;
+}
+@keyframes fg-coin-arrive {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  10% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 1;
+    transform: translate(var(--burst-x), var(--burst-y)) scale(1.1)
+      rotate(160deg);
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--coin-dx), var(--coin-dy)) scale(0.3)
+      rotate(360deg);
+  }
+}
+.fg-session-end .fg-accessory.glasses {
+  left: 30%;
+  top: 34.5%;
+  width: 52%;
+}
+.fg-session-end .fg-accessory {
+  pointer-events: none;
+}
+.fg-session-end[data-phase="open"] .fg-accessory {
+  animation: se-drop 0.6s 1.35s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.fg-session-end[data-phase="summary"] .fg-accessory {
+  animation: none;
 }

@@ -40,3 +40,15 @@ Application source `62597664d6ceddc49736f2bd844ad9e0b9bdfa00` was pushed only to
 Authenticated two-item DEV drag acceptance verified wrong-tile rejection, fresh same-item retry, automatic progression, score-dependent transition (1/2 first try, one difficult word), three-tap gift and fullscreen summary with actual receipts and hardest word. Browser error/warning log was empty. Real listening acceptance verified letter rejection, second-error warning, third-error reveal and queue growth 2?3; translation mode persisted into the queued word, and actual XP updated to +3. A final text-only polish makes the silent-mode bubble prompt writing immediately. Final application source/deployment follows in the maintained specification.
 
 Detailed live evidence: [canonical DEV release record](../../../gotit-project-spec/docs/37_FOCUS_GAMES_DEV.md). No direct database operation, configuration change or backend release was needed. Physical microphone, audible output and provider pronunciation quality were not tested. Server-unavailable self-rating awards and weekly records remain unfabricated.
+
+
+## Session-end video correction and cloze audio ? 2026-10-12
+
+Reference: owner video `WhatsApp Video 2026-10-12 at 01.06.22.mp4` (16.79 seconds). The receipt/XP policies above are unchanged.
+
+- Words terminate at a mouth anchor inside the original sprite, inheriting growth and chewing transforms. Chewing starts at each actual flight arrival; the original jump pose follows the final word.
+- Coins burst from the gift and terminate at the measured center of the header XP coin. ResizeObserver follows stage/header resizing and counter width changes in RTL/LTR. The displayed count follows coin arrivals and remains the actual close receipt total.
+- First and second taps leave cumulative visible fractures on the gift; the third opens it. The original raster sunglasses/crown descend after the coin burst and stay proportionally attached to the mascot in the summary.
+- Drag/cloze has no automatic word playback. Both word/sentence playback paths require a committed successful receipt for the active exercise; a wrong answer or retry cannot unlock audio. The full sentence is spoken after solving.
+
+Verification: full Web check passed 295 unit tests in 50 files plus 20 gateway/security tests; final geometry/count polish received typecheck, zero-warning lint, the 27 focused tests and build. Local Chrome fixtures cover 1366?700 LTR and 390?700 Hebrew RTL, original sunglasses, word mouth anchors, cumulative cracks and measured coin destinations. Fixtures are isolated and do not prove provider output. DEV release and live acceptance are tracked in canonical specification document 37.
