@@ -2417,5 +2417,63 @@
       "travel": "Travel",
       "food": "Food"
     }
+  },
+  "practiceDesign": {
+    "title": "Ready to practice?",
+    "description": "Choose a game or start a mixed session and keep progressing in {{language}}.",
+    "start": "Start a practice session",
+    "startHelp": "Mixes the right games for you",
+    "gamesTitle": "Choose a practice game",
+    "gamesDescription": "Focus on a specific skill. Choose a game and start right away.",
+    "recentTitle": "Pick up where you left off",
+    "recentDescription": "Return to your last game or choose a recent practice session.",
+    "goalTitle": "Daily goal",
+    "goalDescription": "Practice {{value}} {{unit}} today to keep your streak going.",
+    "goalDone": "Daily goal complete. Great consistency!",
+    "continue": "Keep practicing",
+    "today": "{{unit}} today",
+    "heroAlt": "Moohi, the GotIt mascot, running with a pencil between word cards",
+    "goalAlt": "Moohi holding a sign: You can do it!",
+    "comingSoon": "Coming soon",
+    "noRecent": "Your recent practice sessions will appear here.",
+    "moreGames": "More games",
+    "unavailableDescription": "This game is not yet available for your selected words and language. Choose an available game or add words to practice.",
+    "games": {
+      "flashcards": {
+        "title": "Flashcards",
+        "description": "Review your words with smart flashcards"
+      },
+      "writing": {
+        "title": "Writing",
+        "description": "Type the word or sentence in {{language}}"
+      },
+      "drag": {
+        "title": "Drag to translate",
+        "description": "Drag words to the right place in the translation"
+      },
+      "sentences": {
+        "title": "Complete sentences",
+        "description": "Choose the missing word in the sentence"
+      },
+      "mixed": {
+        "title": "Mixed game",
+        "description": "Combine different game types in one session"
+      },
+      "dialogue": {
+        "title": "Dialogue practice",
+        "description": "Short conversations in everyday situations"
+      },
+      "pictures": {
+        "title": "Picture matching",
+        "description": "Choose the word that matches the picture"
+      },
+      "listening": {
+        "title": "Listening comprehension",
+        "description": "Listen and choose the correct translation"
+      }
+    },
+    "navPrograms": "My plan",
+    "navTeacher": "AI teacher",
+    "unavailableTitle": "This game is not available yet"
   }
 }

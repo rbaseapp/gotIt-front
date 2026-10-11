@@ -2418,5 +2418,63 @@
       "travel": "Reisen",
       "food": "Essen"
     }
+  },
+  "practiceDesign": {
+    "title": "Bereit zum Üben?",
+    "description": "Wähle ein Spiel oder starte eine gemischte Sitzung und mache Fortschritte in {{language}}.",
+    "start": "Übungssitzung starten",
+    "startHelp": "Mischt die passenden Spiele für dich",
+    "gamesTitle": "Wähle ein Übungsspiel",
+    "gamesDescription": "Trainiere eine bestimmte Fähigkeit. Wähle ein Spiel und lege direkt los.",
+    "recentTitle": "Mach dort weiter, wo du aufgehört hast",
+    "recentDescription": "Kehre zum letzten Spiel zurück oder wähle eine der letzten Übungen.",
+    "goalTitle": "Tagesziel",
+    "goalDescription": "Übe heute {{value}} {{unit}}, um deine Serie fortzusetzen.",
+    "goalDone": "Tagesziel erreicht. Toll, dass du dranbleibst!",
+    "continue": "Weiter üben",
+    "today": "{{unit}} heute",
+    "heroAlt": "Moohi, das GotIt-Maskottchen, läuft mit einem Stift zwischen Wortkarten",
+    "goalAlt": "Moohi hält ein Schild: You can do it!",
+    "comingSoon": "Demnächst",
+    "noRecent": "Deine letzten Übungssitzungen erscheinen hier.",
+    "moreGames": "Weitere Spiele",
+    "unavailableDescription": "Dieses Spiel ist für die gewählten Wörter und die Sprache noch nicht verfügbar. Wähle ein verfügbares Spiel oder füge Wörter hinzu.",
+    "games": {
+      "flashcards": {
+        "title": "Karteikarten",
+        "description": "Wiederhole deine Wörter mit intelligenten Karten"
+      },
+      "writing": {
+        "title": "Schreiben",
+        "description": "Tippe das Wort oder den Satz in {{language}}"
+      },
+      "drag": {
+        "title": "Übersetzung ziehen",
+        "description": "Ziehe Wörter an die richtige Stelle der Übersetzung"
+      },
+      "sentences": {
+        "title": "Sätze ergänzen",
+        "description": "Wähle das fehlende Wort im Satz"
+      },
+      "mixed": {
+        "title": "Gemischtes Spiel",
+        "description": "Verschiedene Spielarten in einer Sitzung"
+      },
+      "dialogue": {
+        "title": "Dialogübung",
+        "description": "Kurze Gespräche in Alltagssituationen"
+      },
+      "pictures": {
+        "title": "Bilder zuordnen",
+        "description": "Wähle das Wort, das zum Bild passt"
+      },
+      "listening": {
+        "title": "Hörverständnis",
+        "description": "Höre zu und wähle die richtige Übersetzung"
+      }
+    },
+    "navPrograms": "Mein Plan",
+    "navTeacher": "KI-Lehrer",
+    "unavailableTitle": "Dieses Spiel ist noch nicht verfügbar"
   }
 }

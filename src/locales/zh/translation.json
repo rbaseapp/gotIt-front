@@ -2418,5 +2418,63 @@
       "travel": "旅行",
       "food": "美食"
     }
+  },
+  "practiceDesign": {
+    "title": "准备好练习了吗？",
+    "description": "选择一个游戏或开始混合练习，继续提高{{language}}水平。",
+    "start": "开始练习",
+    "startHelp": "为你组合合适的游戏",
+    "gamesTitle": "选择练习游戏",
+    "gamesDescription": "专注训练特定技能。选择游戏，立即开始。",
+    "recentTitle": "继续上次的练习",
+    "recentDescription": "返回上次的游戏，或选择最近的练习。",
+    "goalTitle": "每日目标",
+    "goalDescription": "今天练习 {{value}} {{unit}}，保持连续学习。",
+    "goalDone": "每日目标已完成。坚持得很棒！",
+    "continue": "继续练习",
+    "today": "今天的{{unit}}",
+    "heroAlt": "GotIt 吉祥物 Moohi 拿着铅笔在单词卡之间奔跑",
+    "goalAlt": "Moohi 举着写有 You can do it! 的牌子",
+    "comingSoon": "即将推出",
+    "noRecent": "最近的练习将显示在这里。",
+    "moreGames": "更多游戏",
+    "unavailableDescription": "此游戏暂不支持所选单词和语言。请选择可用游戏或添加练习单词。",
+    "games": {
+      "flashcards": {
+        "title": "记忆卡",
+        "description": "使用智能卡片复习单词"
+      },
+      "writing": {
+        "title": "书写",
+        "description": "用{{language}}输入单词或句子"
+      },
+      "drag": {
+        "title": "拖动翻译",
+        "description": "将单词拖到译文中的正确位置"
+      },
+      "sentences": {
+        "title": "补全句子",
+        "description": "选择句子中缺少的单词"
+      },
+      "mixed": {
+        "title": "混合游戏",
+        "description": "在一次练习中结合不同类型的游戏"
+      },
+      "dialogue": {
+        "title": "对话练习",
+        "description": "日常场景中的简短对话"
+      },
+      "pictures": {
+        "title": "图片匹配",
+        "description": "选择与图片对应的单词"
+      },
+      "listening": {
+        "title": "听力理解",
+        "description": "听音频并选择正确的翻译"
+      }
+    },
+    "navPrograms": "我的计划",
+    "navTeacher": "AI 老师",
+    "unavailableTitle": "此游戏暂不可用"
   }
 }

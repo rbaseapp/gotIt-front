@@ -2418,5 +2418,63 @@
       "travel": "Voyages",
       "food": "Cuisine"
     }
+  },
+  "practiceDesign": {
+    "title": "Prêts à pratiquer ?",
+    "description": "Choisissez un jeu ou lancez une session mixte et progressez en {{language}}.",
+    "start": "Lancer une session",
+    "startHelp": "Combine les jeux adaptés à vos besoins",
+    "gamesTitle": "Choisissez un jeu",
+    "gamesDescription": "Entraînez une compétence précise. Choisissez un jeu et commencez immédiatement.",
+    "recentTitle": "Reprenez où vous en étiez",
+    "recentDescription": "Revenez au dernier jeu ou choisissez une session récente.",
+    "goalTitle": "Objectif quotidien",
+    "goalDescription": "Pratiquez {{value}} {{unit}} aujourd’hui pour maintenir votre série.",
+    "goalDone": "Objectif quotidien atteint. Bravo pour votre régularité !",
+    "continue": "Continuer à pratiquer",
+    "today": "{{unit}} aujourd’hui",
+    "heroAlt": "Moohi, la mascotte de GotIt, court avec un crayon entre des cartes de mots",
+    "goalAlt": "Moohi tient une pancarte : You can do it!",
+    "comingSoon": "Bientôt disponible",
+    "noRecent": "Vos dernières sessions apparaîtront ici.",
+    "moreGames": "Plus de jeux",
+    "unavailableDescription": "Ce jeu n’est pas encore disponible pour les mots et la langue sélectionnés. Choisissez un jeu disponible ou ajoutez des mots.",
+    "games": {
+      "flashcards": {
+        "title": "Cartes mémoire",
+        "description": "Révisez vos mots avec des cartes intelligentes"
+      },
+      "writing": {
+        "title": "Écriture",
+        "description": "Saisissez le mot ou la phrase en {{language}}"
+      },
+      "drag": {
+        "title": "Glisser pour traduire",
+        "description": "Glissez les mots au bon endroit dans la traduction"
+      },
+      "sentences": {
+        "title": "Compléter les phrases",
+        "description": "Choisissez le mot manquant dans la phrase"
+      },
+      "mixed": {
+        "title": "Jeu mixte",
+        "description": "Combinez plusieurs jeux dans une même session"
+      },
+      "dialogue": {
+        "title": "Pratique du dialogue",
+        "description": "De courtes conversations du quotidien"
+      },
+      "pictures": {
+        "title": "Associer aux images",
+        "description": "Choisissez le mot qui correspond à l’image"
+      },
+      "listening": {
+        "title": "Compréhension orale",
+        "description": "Écoutez et choisissez la bonne traduction"
+      }
+    },
+    "navPrograms": "Mon programme",
+    "navTeacher": "Professeur IA",
+    "unavailableTitle": "Ce jeu n’est pas encore disponible"
   }
 }

@@ -39,6 +39,26 @@ import {
 import { getBilingualLanguageOptions } from "../lib/languages";
 import { learningReturn } from "../lib/learningNavigation";
 import { dashboardDesignEnabled } from "../lib/dashboardDesign";
+import { practiceDesignEnabled } from "../lib/practiceDesign";
+
+function PracticeLogo() {
+  return (
+    <Link to="/dashboard" className="practice-logo" aria-label="GotIt">
+      <span>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="#F5C542"
+          aria-hidden="true"
+        >
+          <path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z" />
+        </svg>
+      </span>
+      GotIt
+    </Link>
+  );
+}
 
 function sameBaseLanguage(first: string, second: string) {
   try {
@@ -82,10 +102,15 @@ export function AppShell({
   const { profile, stats, items, mode, user, profileError, retryProfile } =
     useApp();
   const location = useLocation();
-  const dashboardShell =
+  const practiceShell =
     mode === "live" &&
-    location.pathname === "/dashboard" &&
-    dashboardDesignEnabled();
+    location.pathname === "/learn" &&
+    practiceDesignEnabled();
+  const dashboardShell =
+    practiceShell ||
+    (mode === "live" &&
+      location.pathname === "/dashboard" &&
+      dashboardDesignEnabled());
   const focusedLearning =
     /^\/(courses\/[^/]+|homework\/[^/]+)(\/|$)/.test(location.pathname) ||
     location.pathname === "/private-lesson";
@@ -250,7 +275,7 @@ export function AppShell({
 
   return (
     <div
-      className={`app-layout${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}`}
+      className={`app-layout${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}${practiceShell ? " practice-shell" : ""}`}
     >
       <aside
         ref={sidebarRef}
@@ -360,7 +385,7 @@ export function AppShell({
         <header className="topbar">
           {dashboardShell && (
             <div className="nd-desktop-brand">
-              <Logo />
+              {practiceShell ? <PracticeLogo /> : <Logo />}
             </div>
           )}
           {dashboardShell && (
@@ -368,26 +393,41 @@ export function AppShell({
               className="nd-top-navigation"
               aria-label={t("shell.mainNavigation")}
             >
-              {[
-                navItems[0],
-                navItems[1],
-                navItems[4],
-                navItems[3],
-                navItems[2],
-              ].map(({ to, labelKey }) => (
+              {(practiceShell
+                ? [
+                    navItems[0],
+                    navItems[1],
+                    navItems[3],
+                    navItems[2],
+                    navItems[4],
+                  ]
+                : [
+                    navItems[0],
+                    navItems[1],
+                    navItems[4],
+                    navItems[3],
+                    navItems[2],
+                  ]
+              ).map(({ to, labelKey }) => (
                 <NavLink
                   key={to}
                   to={to}
                   className={({ isActive }) => (isActive ? "active" : "")}
                 >
-                  {t(labelKey)}
+                  {t(
+                    practiceShell && to === "/courses"
+                      ? "practiceDesign.navPrograms"
+                      : practiceShell && to.startsWith("/private-lesson")
+                        ? "practiceDesign.navTeacher"
+                        : labelKey,
+                  )}
                 </NavLink>
               ))}
             </nav>
           )}
           <div className="topbar-title">
             <span className="mobile-brand">
-              <Logo />
+              {practiceShell ? <PracticeLogo /> : <Logo />}
             </span>
             <button
               ref={menuRef}
@@ -401,6 +441,11 @@ export function AppShell({
             <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
           </div>
           <div className="topbar-actions">
+            {practiceShell && (
+              <Link className="practice-pro" to="/billing">
+                {t("shell.upgradePro")}
+              </Link>
+            )}
             {focusShell && !dashboardShell && (
               <Link
                 className="button ghost focus-back"

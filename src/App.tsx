@@ -5,6 +5,7 @@ import { useApp } from "./context/AppContext";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { dashboardDesignEnabled } from "./lib/dashboardDesign";
+import { practiceDesignEnabled } from "./lib/practiceDesign";
 import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
@@ -47,6 +48,11 @@ const DevDashboardPage = lazy(() =>
 );
 const LiveLearnPage = lazy(() =>
   import("./pages/LiveLearnPage").then((m) => ({ default: m.LiveLearnPage })),
+);
+const DevPracticePage = lazy(() =>
+  import("./pages/DevPracticePage").then((m) => ({
+    default: m.DevPracticePage,
+  })),
 );
 const AccountPage = lazy(() =>
   import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })),
@@ -217,7 +223,15 @@ export default function App() {
                   <Route
                     path="/learn"
                     element={
-                      mode === "live" ? <LiveLearnPage /> : <LearnPage />
+                      mode === "live" ? (
+                        practiceDesignEnabled() ? (
+                          <DevPracticePage />
+                        ) : (
+                          <LiveLearnPage />
+                        )
+                      ) : (
+                        <LearnPage />
+                      )
                     }
                   />
                   <Route
