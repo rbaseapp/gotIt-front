@@ -858,7 +858,7 @@ export function LiveVocabularyPage() {
     </div>
   );
 }
-function LiveWordDetail({
+export function LiveWordDetail({
   id,
   onChanged,
   tags,
@@ -1288,7 +1288,7 @@ function DetailForm({
     </>
   );
 }
-function TagManager({
+export function TagManager({
   tags,
   reload,
 }: {

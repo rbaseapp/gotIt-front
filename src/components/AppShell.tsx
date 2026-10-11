@@ -1,3 +1,4 @@
+import { myWordsDesignEnabled } from "../lib/myWords";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BarChart3,
@@ -6,6 +7,7 @@ import {
   LibraryBig,
   ChevronDown,
   CreditCard,
+  Crown,
   Flame,
   Gamepad2,
   HelpCircle,
@@ -106,7 +108,12 @@ export function AppShell({
     mode === "live" &&
     location.pathname === "/learn" &&
     practiceDesignEnabled();
+  const myWordsShell =
+    mode === "live" &&
+    location.pathname === "/vocabulary" &&
+    myWordsDesignEnabled();
   const dashboardShell =
+    myWordsShell ||
     practiceShell ||
     (mode === "live" &&
       location.pathname === "/dashboard" &&
@@ -275,7 +282,7 @@ export function AppShell({
 
   return (
     <div
-      className={`app-layout${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}${practiceShell ? " practice-shell" : ""}`}
+      className={`app-layout${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}${practiceShell ? " practice-shell" : ""}${myWordsShell ? " mywords-shell" : ""}`}
     >
       <aside
         ref={sidebarRef}
@@ -385,7 +392,29 @@ export function AppShell({
         <header className="topbar">
           {dashboardShell && (
             <div className="nd-desktop-brand">
-              {practiceShell ? <PracticeLogo /> : <Logo />}
+              {myWordsShell ? (
+                <>
+                  <button
+                    className="mw-header-add"
+                    aria-label={t("vocabulary.newWord")}
+                    onClick={() =>
+                      canWriteVocabulary
+                        ? setAddOpen(true)
+                        : navigate("/billing")
+                    }
+                  >
+                    <Plus size={26} />
+                  </button>
+                  <Link className="mw-logo" to="/dashboard">
+                    GotIt
+                    <i aria-hidden="true" />
+                  </Link>
+                </>
+              ) : practiceShell ? (
+                <PracticeLogo />
+              ) : (
+                <Logo />
+              )}
             </div>
           )}
           {dashboardShell && (
@@ -393,21 +422,29 @@ export function AppShell({
               className="nd-top-navigation"
               aria-label={t("shell.mainNavigation")}
             >
-              {(practiceShell
+              {(myWordsShell
                 ? [
                     navItems[0],
-                    navItems[1],
-                    navItems[3],
                     navItems[2],
-                    navItems[4],
-                  ]
-                : [
-                    navItems[0],
-                    navItems[1],
-                    navItems[4],
                     navItems[3],
-                    navItems[2],
+                    navItems[4],
+                    navItems[1],
                   ]
+                : practiceShell
+                  ? [
+                      navItems[0],
+                      navItems[1],
+                      navItems[3],
+                      navItems[2],
+                      navItems[4],
+                    ]
+                  : [
+                      navItems[0],
+                      navItems[1],
+                      navItems[4],
+                      navItems[3],
+                      navItems[2],
+                    ]
               ).map(({ to, labelKey }) => (
                 <NavLink
                   key={to}
@@ -415,9 +452,12 @@ export function AppShell({
                   className={({ isActive }) => (isActive ? "active" : "")}
                 >
                   {t(
-                    practiceShell && to === "/courses"
-                      ? "practiceDesign.navPrograms"
-                      : practiceShell && to.startsWith("/private-lesson")
+                    (practiceShell || myWordsShell) && to === "/courses"
+                      ? myWordsShell
+                        ? "myWords.navPrograms"
+                        : "practiceDesign.navPrograms"
+                      : (practiceShell || myWordsShell) &&
+                          to.startsWith("/private-lesson")
                         ? "practiceDesign.navTeacher"
                         : labelKey,
                   )}
@@ -427,7 +467,29 @@ export function AppShell({
           )}
           <div className="topbar-title">
             <span className="mobile-brand">
-              {practiceShell ? <PracticeLogo /> : <Logo />}
+              {myWordsShell ? (
+                <>
+                  <button
+                    className="mw-header-add"
+                    aria-label={t("vocabulary.newWord")}
+                    onClick={() =>
+                      canWriteVocabulary
+                        ? setAddOpen(true)
+                        : navigate("/billing")
+                    }
+                  >
+                    <Plus size={26} />
+                  </button>
+                  <Link className="mw-logo" to="/dashboard">
+                    GotIt
+                    <i aria-hidden="true" />
+                  </Link>
+                </>
+              ) : practiceShell ? (
+                <PracticeLogo />
+              ) : (
+                <Logo />
+              )}
             </span>
             <button
               ref={menuRef}
@@ -441,9 +503,16 @@ export function AppShell({
             <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
           </div>
           <div className="topbar-actions">
-            {practiceShell && (
+            {(practiceShell || myWordsShell) && (
               <Link className="practice-pro" to="/billing">
-                {t("shell.upgradePro")}
+                {myWordsShell && <Crown size={18} />}
+                {myWordsShell && status?.tier === "paid"
+                  ? "Pro"
+                  : myWordsShell && status?.tier === "trial"
+                    ? t("myWords.trial", {
+                        count: status.trial?.daysRemaining ?? 0,
+                      })
+                    : t("shell.upgradePro")}
               </Link>
             )}
             {focusShell && !dashboardShell && (

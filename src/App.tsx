@@ -1,4 +1,10 @@
+import { myWordsDesignEnabled } from "./lib/myWords";
 import { lazy, Suspense, useEffect } from "react";
+const DevMyWordsPage = lazy(() =>
+  import("./pages/DevMyWordsPage").then((module) => ({
+    default: module.DevMyWordsPage,
+  })),
+);
 import { LoaderCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "./context/AppContext";
@@ -247,7 +253,11 @@ export default function App() {
                     path="/vocabulary"
                     element={
                       mode === "live" ? (
-                        <LiveVocabularyPage />
+                        myWordsDesignEnabled() ? (
+                          <DevMyWordsPage />
+                        ) : (
+                          <LiveVocabularyPage />
+                        )
                       ) : (
                         <VocabularyPage />
                       )
