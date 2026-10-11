@@ -32,3 +32,11 @@ Not established by local tests: microphone/device recording, audible output, ext
 Final viewport checks: transition width 820px / height 539px in 1366?700; no close button in transition; primary action autofocus. Completion replay action ends at y=674, with all summary actions inside 700px. Local HMR briefly reset Feedback context after editing a shared component; a full reload restored the checkpoint. This is excluded from live acceptance evidence.
 
 Narrow LTR listening at 320?700: width 320, audio-free action bottom y=690; page height 704 accommodates its trailing padding. Review transition counts include difficult items even after corrected retries.
+
+## Live DEV release
+
+Application source `62597664d6ceddc49736f2bd844ad9e0b9bdfa00` was pushed only to `dev` and deployed as `dep-db605ejbc2fs73abclcg` (Live, 55.4s, 2026-10-12 00:42 Asia/Jerusalem). `/ready`, `/learn`, focus JS/CSS returned 200; published focus CSS matched the final local build byte-for-byte. Tracked branch and disabled Auto-Deploy were preserved; production main stayed `778b3be97cd40b13283bcd446ff0697901945120`.
+
+Authenticated two-item DEV drag acceptance verified wrong-tile rejection, fresh same-item retry, automatic progression, score-dependent transition (1/2 first try, one difficult word), three-tap gift and fullscreen summary with actual receipts and hardest word. Browser error/warning log was empty. Real listening acceptance verified letter rejection, second-error warning, third-error reveal and queue growth 2?3; translation mode persisted into the queued word, and actual XP updated to +3. A final text-only polish makes the silent-mode bubble prompt writing immediately. Final application source/deployment follows in the maintained specification.
+
+Detailed live evidence: [canonical DEV release record](../../../gotit-project-spec/docs/37_FOCUS_GAMES_DEV.md). No direct database operation, configuration change or backend release was needed. Physical microphone, audible output and provider pronunciation quality were not tested. Server-unavailable self-rating awards and weekly records remain unfabricated.

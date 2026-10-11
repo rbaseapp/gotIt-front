@@ -134,7 +134,7 @@ export function FocusListeningGame({
         ? "listenSuccess"
         : playing
           ? "listenTogether"
-          : value.answer
+          : value.answer || silent
             ? "listenWrite"
             : "listenCue";
   return (
