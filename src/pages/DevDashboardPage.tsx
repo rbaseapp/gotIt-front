@@ -10,7 +10,7 @@ import {
   Play,
   Sparkles,
   Target,
-  Trophy,
+  Gift,
   Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -39,6 +39,7 @@ import {
   wordPacksSchema,
 } from "../lib/product";
 import moohi from "../assets/ux/dashboard-moohi.png";
+import { DashboardMoohi } from "../components/DashboardMoohi";
 import "../dashboard-design.css";
 
 function Segments({
@@ -506,12 +507,7 @@ export function DevDashboardPage() {
                         : "newDashboard.wordEncouragement",
                   )}
                 </p>
-                <img
-                  src={moohi}
-                  width={520}
-                  height={478}
-                  alt={t("newDashboard.moohi")}
-                />
+                <DashboardMoohi src={moohi} label={t("newDashboard.moohi")} />
                 {inactive && (
                   <Link className="nd-text-link" to="/vocabulary">
                     {t("newDashboard.addWords")}
@@ -560,9 +556,13 @@ export function DevDashboardPage() {
                       className="nd-xp-summary"
                       to="/achievements?return=%2Fdashboard"
                     >
-                      <Trophy size={24} />
-                      <b>{d.gamification.todayXp}</b>
-                      <small>XP</small>
+                      <span className="nd-gift">
+                        <Gift size={24} />
+                      </span>
+                      <span className="nd-xp-value">
+                        <b>{d.gamification.todayXp}</b>
+                        <small>XP</small>
+                      </span>
                     </Link>
                   </header>
                   <ul className="nd-task-list">
@@ -616,7 +616,7 @@ export function DevDashboardPage() {
               <DashboardQuickReview
                 key={`review-${code}`}
                 language={code}
-                available={d.counts.total > d.counts.new}
+                available={d.counts.total > 0}
                 preview={
                   personalWords.find((word) => word.learningStatus !== "new")
                     ?.sourceText

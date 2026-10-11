@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import {
   fireEvent,
   render,
@@ -67,6 +68,8 @@ const exercise = {
     choices: [
       { id: id(4), text: "לזכור" },
       { id: id(5), text: "לשכוח" },
+      { id: id(15), text: "לקרוא" },
+      { id: id(16), text: "לכתוב" },
     ],
   },
   expiresAt: date,
@@ -124,7 +127,7 @@ describe("DEV dashboard rollout", () => {
 });
 
 describe("dashboard quick review", () => {
-  it("starts explicitly, retries the same opaque choice intent, and displays server XP", async () => {
+  it("loads four choices immediately, retries the same answer intent, and displays server XP", async () => {
     const requests: RequestInit[] = [];
     const scored = vi.fn();
     vi.stubGlobal(
@@ -147,15 +150,34 @@ describe("dashboard quick review", () => {
       }),
     );
     mount(
-      <DashboardQuickReview
-        language="en"
-        available
-        preview="remember"
-        onScored={scored}
-      />,
+      <StrictMode>
+        <DashboardQuickReview
+          language="en"
+          available
+          preview="remember"
+          onScored={scored}
+        />
+      </StrictMode>,
     );
-    expect(fetch).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "מתחילים חזרה קצרה" }));
+    await screen.findByRole("button", { name: "לזכור" });
+    expect(screen.getAllByRole("button")).toHaveLength(4);
+    expect(requests).toHaveLength(0);
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.filter(([url]) =>
+          String(url).endsWith("practice/sessions"),
+        ),
+    ).toHaveLength(1);
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.filter(([url]) => String(url).endsWith("/exercises")),
+    ).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "לחזרה המלאה" })).toHaveAttribute(
+      "href",
+      "/learn/smart?language=en&return=%2Fdashboard",
+    );
     fireEvent.click(await screen.findByRole("button", { name: "לזכור" }));
     const alert = await screen.findByRole("alert");
     expect(screen.getByRole("button", { name: "לשכוח" })).toBeDisabled();
@@ -175,6 +197,79 @@ describe("dashboard quick review", () => {
     fireEvent.click(screen.getByRole("button", { name: "סיום החזרה" }));
     await waitFor(() => expect(scored).toHaveBeenCalledTimes(2));
   });
+  it("does not create a practice session for an empty vocabulary bank", () => {
+    vi.stubGlobal("fetch", vi.fn());
+    mount(
+      <DashboardQuickReview
+        language="en"
+        available={false}
+        onScored={vi.fn()}
+      />,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "לחזרה המלאה" })).toHaveAttribute(
+      "href",
+      "/learn/smart?language=en&return=%2Fdashboard",
+    );
+  });
+  it("reuses session creation after an ambiguous failure and keeps full review separate", async () => {
+    const creations: RequestInit[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (String(input).endsWith("/exercises"))
+          return json({ exercises: [exercise] });
+        creations.push(init!);
+        return creations.length === 1
+          ? json({ error: { code: "TEMPORARY_FAILURE" } }, 503)
+          : json({ session });
+      }),
+    );
+    mount(<DashboardQuickReview language="en" available onScored={vi.fn()} />);
+    const alert = await screen.findByRole("alert");
+    fireEvent.click(within(alert).getByRole("button", { name: "ניסיון נוסף" }));
+    await screen.findByRole("button", { name: "לזכור" });
+    expect(creations).toHaveLength(2);
+    expect(creations[1].body).toBe(creations[0].body);
+    expect(new Headers(creations[1].headers).get("Idempotency-Key")).toBe(
+      new Headers(creations[0].headers).get("Idempotency-Key"),
+    );
+    expect(JSON.parse(String(creations[0].body))).toMatchObject({
+      sourceLanguageCode: "en",
+      includeNewItems: true,
+    });
+    expect(screen.getByRole("link", { name: "לחזרה המלאה" })).toHaveAttribute(
+      "href",
+      "/learn/smart?language=en&return=%2Fdashboard",
+    );
+  });
+  it("does not present fewer than four options when the bank lacks distinct meanings", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) =>
+        String(input).endsWith("/exercises")
+          ? json({
+              exercises: [
+                {
+                  ...exercise,
+                  prompt: {
+                    ...exercise.prompt,
+                    choices: exercise.prompt.choices.slice(0, 2),
+                  },
+                },
+              ],
+            })
+          : json({ session }),
+      ),
+    );
+    mount(<DashboardQuickReview language="en" available onScored={vi.fn()} />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "אין מספיק מילים מתאימות לתרגיל בחירה.",
+    );
+    expect(
+      screen.queryByRole("button", { name: "לזכור" }),
+    ).not.toBeInTheDocument();
+  });
   it("rejects exercises from a different language before any answer can be sent", async () => {
     vi.stubGlobal(
       "fetch",
@@ -192,7 +287,6 @@ describe("dashboard quick review", () => {
       ),
     );
     mount(<DashboardQuickReview language="en" available onScored={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "מתחילים חזרה קצרה" }));
     await screen.findByRole("alert");
     expect(
       screen.queryByRole("button", { name: "לזכור" }),
@@ -313,8 +407,15 @@ describe("dashboard context", () => {
     const course = courseWithPlan(true);
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (input: RequestInfo | URL) => {
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = new URL(String(input), "http://localhost");
+        if (
+          init?.method === "POST" &&
+          url.pathname.endsWith("/practice/sessions")
+        )
+          return json({ session });
+        if (url.pathname.endsWith("/exercises"))
+          return json({ exercises: [exercise] });
         if (url.pathname.endsWith("/courses"))
           return json({ courses: [course], homework: [], available: true });
         if (url.pathname.endsWith("/dashboard/languages"))
@@ -367,8 +468,10 @@ describe("dashboard context", () => {
       screen.getByRole("link", { name: "מוסיפים מילה ראשונה" }),
     ).toHaveAttribute("href", "/vocabulary");
     expect(
-      screen.getByRole("button", { name: "מתחילים חזרה קצרה" }),
-    ).toBeDisabled();
+      screen.getByText(
+        "אין כרגע מילים זמינות לחזרה. אפשר להוסיף מילים או לפתוח את התרגול המלא.",
+      ),
+    ).toBeInTheDocument();
   });
   it("shows words-only content when no program has been chosen and does not promise gifts", async () => {
     server();
@@ -401,9 +504,6 @@ describe("dashboard context", () => {
       }),
     );
     mount(<DevDashboardPage />);
-    fireEvent.click(
-      await screen.findByRole("button", { name: "מתחילים חזרה קצרה" }),
-    );
     fireEvent.click(await screen.findByRole("button", { name: "לזכור" }));
     await screen.findByText("נשמרו 3 XP");
     await waitFor(() =>

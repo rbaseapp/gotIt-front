@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Gamepad2, Play } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -39,22 +39,25 @@ export function DashboardQuickReview({
   const [error, setError] = useState("");
   const [pending, setPending] = useState<Intent>();
   const creation = useRef<Intent | undefined>(undefined);
+  const activeSession = useRef<Session | undefined>(undefined);
+  const started = useRef(false);
   const lock = useRef(false);
+  const canPlay = hasEntitlement("practice.play");
   const current = exercises[index];
   const fullReview = `/learn/smart?${new URLSearchParams({ language, return: "/dashboard" })}`;
-  const start = async () => {
+  const start = useCallback(async () => {
     if (lock.current) return;
     lock.current = true;
     setBusy(true);
     setError("");
     try {
-      let active = session;
+      let active = activeSession.current;
       if (!active) {
         creation.current ??= intent({
           sessionType: "recall",
           sourceLanguageCode: language,
           count: 5,
-          includeNewItems: false,
+          includeNewItems: true,
         });
         active = (
           await product(
@@ -65,6 +68,7 @@ export function DashboardQuickReview({
             creation.current.eventId,
           )
         ).session;
+        activeSession.current = active;
         setSession(active);
       }
       const issued = await product(
@@ -89,6 +93,8 @@ export function DashboardQuickReview({
         )
       )
         throw new Error(t("game.languageMismatch"));
+      if (issued.exercises.some((e) => e.prompt.choices?.length !== 4))
+        throw new Error(t("productErrors.INSUFFICIENT_DISTRACTORS"));
       setExercises(issued.exercises);
     } catch (reason) {
       setError(errorMessage(reason));
@@ -96,7 +102,13 @@ export function DashboardQuickReview({
       lock.current = false;
       setBusy(false);
     }
-  };
+  }, [language, t]);
+  useEffect(() => {
+    if (!started.current && available && language && canPlay) {
+      started.current = true;
+      void start();
+    }
+  }, [available, language, canPlay, start]);
   const submit = async (choiceId?: string) => {
     if (!current || receipt || lock.current || (!pending && !choiceId)) return;
     lock.current = true;
@@ -219,24 +231,12 @@ export function DashboardQuickReview({
           ))}
         </div>
       )}
-      {!exercises.length &&
-        (hasEntitlement("practice.play") ? (
-          <button
-            className="nd-button"
-            disabled={busy || !available || !language}
-            onClick={() => void start()}
-          >
-            <Play size={16} />
-            {t("newDashboard.startQuick")}
-          </button>
-        ) : (
-          <Link className="nd-button" to="/billing">
-            {t("shell.upgradePro")}
-          </Link>
-        ))}
+      {!available && !exercises.length && (
+        <p className="nd-fine-print">{t("newDashboard.noReviewWords")}</p>
+      )}
       {receipt && session?.status !== "completed" && (
         <button
-          className="nd-button"
+          className="nd-text-link nd-next-word"
           disabled={busy}
           onClick={() => void next()}
         >
@@ -252,15 +252,9 @@ export function DashboardQuickReview({
         error={error}
         retry={() => void (pending ? submit() : receipt ? next() : start())}
       />
-      <Link
-        className="nd-text-link"
-        to={
-          session?.status === "active"
-            ? `/learn/session/recall?${new URLSearchParams({ resume: session.id, language, return: "/dashboard" })}`
-            : fullReview
-        }
-      >
-        {t("newDashboard.fullReview")}
+      <Link className="nd-button" to={canPlay ? fullReview : "/billing"}>
+        <Play size={16} />
+        {t(canPlay ? "newDashboard.fullReview" : "shell.upgradePro")}
       </Link>
     </section>
   );

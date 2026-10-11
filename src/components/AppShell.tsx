@@ -453,6 +453,9 @@ export function AppShell({
                 onClick={() => setUserOpen((value) => !value)}
               >
                 <span className="avatar">{profile.name.charAt(0)}</span>
+                {dashboardShell && (
+                  <span className="nd-account-label">{t("ux.account")}</span>
+                )}
                 <span className="user-copy">
                   <b>{profile.name}</b>
                   <small>
