@@ -1002,3 +1002,160 @@
 .fg.matching .coach {
   direction: ltr;
 }
+
+.fg-game-surface {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.fg > .fg-error,
+.fg > .fg-pending {
+  position: fixed;
+  top: 72px;
+  inset-inline: 16px;
+  z-index: 45;
+  margin-inline: auto;
+}
+.fg .fg-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow-y: auto;
+}
+.fg.matching .item .t {
+  touch-action: none;
+  user-select: none;
+}
+.fg .fg-preview-connection {
+  opacity: 0.85;
+}
+
+/* The supplied exit artboard has a mascot band, centered title and quiet exit link. */
+.modal.fg-exit-modal {
+  position: relative;
+  width: min(440px, 100%);
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 0 32px 24px;
+  overflow: visible;
+  margin-top: 48px;
+  border-radius: 28px;
+  font-family: Rubik, Assistant, system-ui, sans-serif;
+  color: #24302c;
+  text-align: center;
+}
+.fg-exit-modal .fg-exit {
+  display: contents;
+}
+.fg-exit-modal .fg-exit-hero {
+  order: 0;
+  height: 92px;
+  margin: 0 -32px;
+  border-radius: 28px 28px 0 0;
+  background: #dff1e9;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+.fg-exit-modal .fg-exit-hero img {
+  width: auto;
+  height: 150px;
+  margin-bottom: -28px;
+  filter: drop-shadow(0 10px 14px #134b3a40);
+}
+.fg-exit-modal .modal-header {
+  order: 1;
+  position: static;
+  height: auto;
+  margin-top: 28px;
+  padding: 0;
+  border: 0;
+  justify-content: center;
+  background: transparent;
+  backdrop-filter: none;
+}
+.fg-exit-modal .modal-header h2 {
+  color: #111;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.fg-exit-modal .modal-header button {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  width: 32px;
+  height: 32px;
+}
+.fg-exit-modal .fg-segments {
+  order: 2;
+}
+.fg-exit-modal .fg-exit-progress {
+  order: 3;
+  font-size: 14px;
+  color: #134b3a;
+}
+.fg-exit-modal p {
+  order: 4;
+  align-self: center;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.fg-exit-modal .fg-primary {
+  order: 5;
+  margin-top: 8px;
+  font-size: 20px;
+}
+.fg-exit-modal .fg-primary svg {
+  display: none;
+}
+.fg-exit-modal .fg-secondary {
+  order: 6;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 16px;
+  border: 0;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 520px) {
+  .fg.matching .foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fg.matching .foot .tools {
+    min-width: 0;
+    gap: 10px;
+  }
+  .fg.matching .coach {
+    align-self: flex-start;
+    max-width: 100%;
+  }
+  .fg.matching .coach .bub {
+    max-width: calc(100% - 84px);
+  }
+  .modal.fg-exit-modal {
+    padding-inline: 20px;
+    max-height: calc(100dvh - 76px);
+    overflow-y: auto;
+    margin-top: 36px;
+  }
+  .fg-exit-modal .fg-exit-hero {
+    margin-inline: -20px;
+    height: 116px;
+  }
+  .fg-exit-modal .fg-exit-hero img {
+    height: 126px;
+    margin-bottom: -14px;
+  }
+  .fg-exit-modal .modal-header {
+    margin-top: 12px;
+  }
+  .fg-exit-modal .modal-header h2 {
+    font-size: 24px;
+  }
+}

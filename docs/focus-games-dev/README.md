@@ -59,3 +59,17 @@ See project-root [design-qa.md](../../design-qa.md) and the specification's
 The first release incorrectly treated a library language absent from the profile-only capabilities list as having no enabled skills. The hub allowed entry while the game rejected it before session creation. Both now share skill resolution: an existing language capability entry is authoritative; otherwise the game reads the real profile preferences, retaining the server default only when preferences are absent. Explicitly disabled skills remain disabled; no profile write is made. The hub now exposes all five approved games directly, with writing/mixed practice, replacing three unfinished placeholder cards. Listening requires both listening and spelling plus speech configuration in both entry points.
 
 Regression coverage starts all five games and mixed practice with an omitted language, preserves disabled preferences and verifies every visible game card destination. `npm run check` passed typecheck, lint, 284 unit tests in 50 files, production build and 20 gateway/security tests. Live DEV acceptance is tracked in the canonical specification.
+
+## Owner visual corrections — 2026-10-11 (local working tree)
+
+The exit dialog now follows the original exported flashcard `xq` design: mint mascot band, centered “לצאת באמצע?”, actual stage/card position, “להמשיך לשחק” and an underlined “לצאת, נמשיך אחר כך”. All eight catalogs retain equivalent localized copy; progress remains tab-scoped.
+
+Flashcards now connect the exported 380ms rating exit, colored rating stamp, 420ms incoming deck and previous-card animation to the real engine. Rating starts the motion immediately while the answer is submitted; only an acknowledged receipt advances. Reduced motion bypasses the animation wait. A failed submission restores the visible card and existing stable retry.
+
+Matching shows a dashed connection on selection and stretches it with the pointer, including captured pointer/touch gestures. Pending choices connect immediately; correct/incorrect colors and XP follow the actual server receipt without an added feedback timeout. Latency of a deployed API is unchanged. Preview direction and coordinates follow actual board geometry in RTL/LTR; the small-screen coach/help row wraps within the viewport.
+
+Completion retains the final game board as an inert background and opens the original mascot/gift/summary flow in a bounded, scrollable shared Modal. The close control stays available while scrolling. Modal portals explicitly follow the UI locale's direction. Resume/checkpoint, authoritative totals and the existing completion endpoint remain intact.
+
+Verification: `npm run check` passed typecheck, lint (zero warnings), 287 unit tests / 50 files, build and 20 gateway/security tests. Final CSS polish was additionally checked by formatting, lint/build and Chrome screenshots. Browser fixtures verified tap, actual pointer connection, a wrong answer, exit/cancel/focus, animated flashcard progression, gift/skip/summary, 320/390px RTL and English LTR. Final cold load: zero console errors/warnings; the earlier optional-metadata fixture 404s and development hot-reload errors were excluded by restarting with a complete local fixture.
+
+Evidence: [captures](corrections-20261011/). The attached video was not available; flashcard motion was recovered from the original local exported source. No live API, database, microphone/provider call, publication or deployment was performed for this correction. Existing production/DEV gates remain unchanged; DEV release is pending.

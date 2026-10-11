@@ -109,6 +109,18 @@ function FocusGame({ type }: { type: string }) {
     setParams(next, { replace: true });
   });
   const [exit, setExit] = useState(false);
+  const [cardMotion, setCardMotion] = useState("");
+  const [cardEntry, setCardEntry] = useState("in");
+  const cardLock = useRef(false);
+  const motionTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      clearTimeout(motionTimer.current);
+    };
+  }, []);
   const returnTo = learningReturn(
     params.get("return"),
     params.has("pack") ? "/word-packs" : "/learn",
@@ -136,6 +148,31 @@ function FocusGame({ type }: { type: string }) {
     (card) => card.learningItemId === active?.learningItemId,
   );
   const NextArrow = i18n.dir() === "rtl" ? ArrowLeft : ArrowRight;
+  const rateCard = async (rating: "again" | "hard" | "good") => {
+    if (!active || busy || pending || cardLock.current || outcome) return;
+    cardLock.current = true;
+    const reduced = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    setCardMotion(
+      `out out-${rating === "good" ? "easy" : rating === "hard" ? "mid" : "hard"}`,
+    );
+    // A rating animates immediately; only an acknowledged receipt advances/scores.
+    const animation = reduced
+      ? Promise.resolve()
+      : new Promise<void>((resolve) => {
+          motionTimer.current = setTimeout(resolve, 380);
+        });
+    const receipt = await engine.submit(active, { selfRating: rating });
+    await animation;
+    if (!mounted.current) return;
+    if (receipt) {
+      setCardEntry("in");
+      await engine.advance();
+    }
+    setCardMotion("");
+    cardLock.current = false;
+  };
   const rateShortcut = useEffectEvent((event: KeyboardEvent) => {
     if (
       event.repeat ||
@@ -149,6 +186,7 @@ function FocusGame({ type }: { type: string }) {
       return;
     if (
       mode !== "flashcards" ||
+      state?.phase !== "play" ||
       !state?.flipped ||
       !active ||
       outcome ||
@@ -162,9 +200,7 @@ function FocusGame({ type }: { type: string }) {
     ];
     if (rating) {
       event.preventDefault();
-      void engine.submit(active, { selfRating: rating }).then((receipt) => {
-        if (receipt) void engine.advance();
-      });
+      void rateCard(rating);
     }
   });
   useEffect(() => {
@@ -201,39 +237,208 @@ function FocusGame({ type }: { type: string }) {
     <AnswerFeedback outcome={outcome} engine={engine} />
   );
   return (
-    <div
-      className={`fg fx ${state.phase === "play" ? mode : "fg-interlude"}`}
-      dir={i18n.dir()}
-      aria-busy={busy}
-    >
-      {state.phase === "play" && (
-        <header className="fbar">
-          <button
-            className="x"
-            aria-label={t("focusGames.exit")}
-            onClick={() => setExit(true)}
-          >
-            <X size={24} />
-          </button>
-          <div
-            className="ftrack track"
-            role="progressbar"
-            aria-label={t("focusGames.progress")}
-            aria-valuemin={0}
-            aria-valuemax={total}
-            aria-valuenow={done}
-          >
-            <span style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
-          </div>
-          <span className="cnt" dir="ltr">
-            {Math.min(done + (outcome ? 0 : 1), total)} / {total}
-          </span>
-          <span className="xpp pill2">
-            <Star size={18} fill="currentColor" />
-            <span dir="ltr">{xp} XP</span>
-          </span>
-        </header>
-      )}
+    <div className={`fg fx ${mode}`} dir={i18n.dir()} aria-busy={busy}>
+      <div
+        className="fg-game-surface"
+        inert={state.phase !== "play" || exit}
+        aria-hidden={state.phase !== "play" || exit}
+      >
+        {
+          <header className="fbar">
+            <button
+              className="x"
+              aria-label={t("focusGames.exit")}
+              onClick={() => setExit(true)}
+            >
+              <X size={24} />
+            </button>
+            <div
+              className="ftrack track"
+              role="progressbar"
+              aria-label={t("focusGames.progress")}
+              aria-valuemin={0}
+              aria-valuemax={total}
+              aria-valuenow={done}
+            >
+              <span style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
+            </div>
+            <span className="cnt" dir="ltr">
+              {Math.min(done + (outcome ? 0 : 1), total)} / {total}
+            </span>
+            <span className="xpp pill2">
+              <Star size={18} fill="currentColor" />
+              <span dir="ltr">{xp} XP</span>
+            </span>
+          </header>
+        }
+        {mode === "flashcards" && active && card && (
+          <main className="play">
+            <p className="q">
+              <img src={art("flashcards")} alt="" />
+              {t("focusGames.flashPrompt")}
+            </p>
+            <div className="stage">
+              <button
+                className="round"
+                aria-label={t("focusGames.previousCard")}
+                disabled={
+                  busy ||
+                  !!pending ||
+                  !!cardMotion ||
+                  state.exercises.indexOf(active) === 0
+                }
+                onClick={() => {
+                  setCardEntry("in-prev");
+                  engine.update((value) => ({
+                    ...value,
+                    activeId:
+                      value.exercises[value.exercises.indexOf(active) - 1].id,
+                    flipped: false,
+                  }));
+                }}
+              >
+                <ChevronRight className="fg-direction" />
+              </button>
+              <div
+                key={active.id}
+                className={`deck card3d ${cardMotion ? "busy" : "in"}`}
+              >
+                <span className="stack s1" aria-hidden="true" />
+                <span className="stack s2" aria-hidden="true" />
+                {cardMotion && (
+                  <span className={`stamp ${cardMotion.split("out-")[1]}`}>
+                    {t(
+                      `game.ratings.${cardMotion.endsWith("easy") ? "good" : cardMotion.endsWith("mid") ? "hard" : "again"}`,
+                    )}
+                  </span>
+                )}
+                <div className={`mover ${cardMotion || cardEntry}`}>
+                  <div className={`flipper${state.flipped ? " on" : ""}`}>
+                    <div className="face" aria-hidden={state.flipped}>
+                      <button
+                        className="spk"
+                        tabIndex={state.flipped ? -1 : 0}
+                        aria-label={t("focusGames.play")}
+                        onClick={() => void engine.play()}
+                      >
+                        <Volume2 size={22} />
+                      </button>
+                      <div
+                        className="word"
+                        dir="auto"
+                        lang={card.sourceLanguageCode}
+                      >
+                        {card.sourceText}
+                      </div>
+                    </div>
+                    <div className="face back" aria-hidden={!state.flipped}>
+                      <span className="bdg">{t("focusGames.translation")}</span>
+                      <button
+                        className="spk"
+                        tabIndex={state.flipped ? 0 : -1}
+                        aria-label={t("focusGames.play")}
+                        onClick={() => void engine.play()}
+                      >
+                        <Volume2 size={22} />
+                      </button>
+                      <div
+                        className="heb"
+                        dir="auto"
+                        lang={card.translationLanguageCode}
+                      >
+                        {card.translationText}
+                      </div>
+                      <FlashcardMetadata itemId={card.learningItemId} />
+                      {card.context && (
+                        <div
+                          className="bex"
+                          dir="auto"
+                          lang={card.sourceLanguageCode}
+                        >
+                          {card.context}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  className="btn primary flipbtn"
+                  disabled={busy || !!pending || !!cardMotion}
+                  onClick={() =>
+                    engine.update((value) => ({
+                      ...value,
+                      flipped: !value.flipped,
+                    }))
+                  }
+                >
+                  <RotateCcw size={22} />
+                  {t(
+                    state.flipped
+                      ? "focusGames.showWord"
+                      : "focusGames.showTranslation",
+                  )}
+                </button>
+              </div>
+              <span className="round ghostr" aria-hidden="true" />
+            </div>
+            {!state.flipped && !outcome && (
+              <div className="rate-wait" role="note">
+                <Lightbulb />
+                {t("focusGames.rememberFirst")}
+              </div>
+            )}
+            {state.flipped && !outcome && (
+              <div className="rate">
+                {(["again", "hard", "good"] as const).map((rating, index) => (
+                  <button
+                    key={rating}
+                    className={`rating r${index}`}
+                    aria-keyshortcuts={String(index + 1)}
+                    disabled={busy || !!pending || !!cardMotion}
+                    onClick={() => void rateCard(rating)}
+                  >
+                    <span>{t(`game.ratings.${rating}`)}</span>
+                    <small>{index + 1}</small>
+                  </button>
+                ))}
+              </div>
+            )}
+            {!cardMotion && feedback}
+          </main>
+        )}
+        {mode === "matching" && (
+          <MatchingGame
+            key={state.exercises.map((value) => value.id).join(",")}
+            engine={engine}
+            hint={hint}
+          />
+        )}
+        {mode === "drag_drop" && active && (
+          <ClozeGame
+            key={active.id}
+            engine={engine}
+            hint={() => hint()}
+            feedback={feedback}
+          />
+        )}
+        {(mode === "listening" || mode === "recall") && active && card && (
+          <WritingGame
+            key={active.id}
+            engine={engine}
+            card={card}
+            hint={() => hint()}
+            feedback={feedback}
+          />
+        )}
+        {mode === "pronunciation" && active && card && (
+          <PronunciationGame
+            key={active.id}
+            engine={engine}
+            card={card}
+            feedback={feedback}
+          />
+        )}
+      </div>
       {error && (
         <div className="fg-error" role="alert">
           <span>{error}</span>
@@ -252,188 +457,36 @@ function FocusGame({ type }: { type: string }) {
         <GameTransition engine={engine} onExit={() => setExit(true)} />
       )}
       {state.phase === "end" && (
-        <SessionEnd
-          engine={engine}
-          returnTo={returnTo}
-          restart={() => {
-            const next = new URLSearchParams(params);
-            next.delete("resume");
-            window.location.assign(`/learn/session/${type}?${next}`);
-          }}
-        />
-      )}
-      {state.phase === "play" && mode === "flashcards" && active && card && (
-        <main className="play">
-          <p className="q">
-            <img src={art("flashcards")} alt="" />
-            {t("focusGames.flashPrompt")}
-          </p>
-          <div className="stage">
-            <button
-              className="round"
-              aria-label={t("focusGames.previousCard")}
-              disabled={
-                busy || !!pending || state.exercises.indexOf(active) === 0
-              }
-              onClick={() =>
-                engine.update((value) => ({
-                  ...value,
-                  activeId:
-                    value.exercises[value.exercises.indexOf(active) - 1].id,
-                  flipped: false,
-                }))
-              }
-            >
-              <ChevronRight className="fg-direction" />
-            </button>
-            <div className="deck card3d">
-              <span className="stack s1" aria-hidden="true" />
-              <span className="stack s2" aria-hidden="true" />
-              <div className="mover">
-                <div className={`flipper${state.flipped ? " on" : ""}`}>
-                  <div className="face" aria-hidden={state.flipped}>
-                    <button
-                      className="spk"
-                      tabIndex={state.flipped ? -1 : 0}
-                      aria-label={t("focusGames.play")}
-                      onClick={() => void engine.play()}
-                    >
-                      <Volume2 size={22} />
-                    </button>
-                    <div
-                      className="word"
-                      dir="auto"
-                      lang={card.sourceLanguageCode}
-                    >
-                      {card.sourceText}
-                    </div>
-                  </div>
-                  <div className="face back" aria-hidden={!state.flipped}>
-                    <span className="bdg">{t("focusGames.translation")}</span>
-                    <button
-                      className="spk"
-                      tabIndex={state.flipped ? 0 : -1}
-                      aria-label={t("focusGames.play")}
-                      onClick={() => void engine.play()}
-                    >
-                      <Volume2 size={22} />
-                    </button>
-                    <div
-                      className="heb"
-                      dir="auto"
-                      lang={card.translationLanguageCode}
-                    >
-                      {card.translationText}
-                    </div>
-                    <FlashcardMetadata itemId={card.learningItemId} />
-                    {card.context && (
-                      <div
-                        className="bex"
-                        dir="auto"
-                        lang={card.sourceLanguageCode}
-                      >
-                        {card.context}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <button
-                className="btn primary flipbtn"
-                disabled={busy || !!pending}
-                onClick={() =>
-                  engine.update((value) => ({
-                    ...value,
-                    flipped: !value.flipped,
-                  }))
-                }
-              >
-                <RotateCcw size={22} />
-                {t(
-                  state.flipped
-                    ? "focusGames.showWord"
-                    : "focusGames.showTranslation",
-                )}
-              </button>
-            </div>
-            <span className="round ghostr" aria-hidden="true" />
-          </div>
-          {!state.flipped && !outcome && (
-            <div className="rate-wait" role="note">
-              <Lightbulb />
-              {t("focusGames.rememberFirst")}
-            </div>
-          )}
-          {state.flipped && !outcome && (
-            <div className="rate">
-              {(["again", "hard", "good"] as const).map((rating, index) => (
-                <button
-                  key={rating}
-                  className={`rating r${index}`}
-                  aria-keyshortcuts={String(index + 1)}
-                  disabled={busy || !!pending}
-                  onClick={async () => {
-                    const receipt = await engine.submit(active, {
-                      selfRating: rating,
-                    });
-                    if (receipt) await engine.advance();
-                  }}
-                >
-                  <span>{t(`game.ratings.${rating}`)}</span>
-                  <small>{index + 1}</small>
-                </button>
-              ))}
-            </div>
-          )}
-          {feedback}
-        </main>
-      )}
-      {state.phase === "play" && mode === "matching" && (
-        <MatchingGame
-          key={state.exercises.map((value) => value.id).join(",")}
-          engine={engine}
-          hint={hint}
-        />
-      )}
-      {state.phase === "play" && mode === "drag_drop" && active && (
-        <ClozeGame
-          key={active.id}
-          engine={engine}
-          hint={() => hint()}
-          feedback={feedback}
-        />
-      )}
-      {state.phase === "play" &&
-        (mode === "listening" || mode === "recall") &&
-        active &&
-        card && (
-          <WritingGame
-            key={active.id}
+        <Modal
+          open
+          title={t("focusGames.summary")}
+          className="fg-completion-modal"
+          size="lg"
+          onClose={() => navigate(returnTo)}
+        >
+          <SessionEnd
             engine={engine}
-            card={card}
-            hint={() => hint()}
-            feedback={feedback}
+            returnTo={returnTo}
+            restart={() => {
+              const next = new URLSearchParams(params);
+              next.delete("resume");
+              window.location.assign(`/learn/session/${type}?${next}`);
+            }}
           />
-        )}
-      {state.phase === "play" && mode === "pronunciation" && active && card && (
-        <PronunciationGame
-          key={active.id}
-          engine={engine}
-          card={card}
-          feedback={feedback}
-        />
+        </Modal>
       )}
       {exit && (
         <Modal
           open
           title={t("focusGames.leaveTitle")}
+          className="fg-exit-modal"
+          size="sm"
           onClose={() => setExit(false)}
         >
           <div className="fg-exit">
-            <img src={art("goodbye")} alt="" />
-            <p>
-              {t(pending ? "focusGames.pendingExit" : "focusGames.savedExit")}
-            </p>
+            <div className="fg-exit-hero">
+              <img src={art("goodbye")} alt="" />
+            </div>
             <div className="fg-segments" aria-hidden="true">
               {state.sequence.map((_, index) => (
                 <i
@@ -448,6 +501,20 @@ function FocusGame({ type }: { type: string }) {
                 />
               ))}
             </div>
+            <b className="fg-exit-progress">
+              {t("focusGames.exitProgress", {
+                current: state.stage + 1,
+                total: state.sequence.length,
+                game: t(`focusGames.names.${mode}`),
+              })}
+            </b>
+            <p>
+              {t("focusGames.exitRemaining", {
+                current: Math.min(done + 1, total),
+                total,
+              })}{" "}
+              {t(pending ? "focusGames.pendingExit" : "focusGames.savedExit")}
+            </p>
             <button className="fg-primary" onClick={() => setExit(false)}>
               {t("focusGames.keepPlaying")}
               <NextArrow />
@@ -548,6 +615,13 @@ function MatchingGame({
   const { state, busy, pending } = engine;
   const [selected, setSelected] = useState<string>();
   const [chosen, setChosen] = useState<string>();
+  const [cursor, setCursor] = useState<{ x: number; y: number }>();
+  const [preview, setPreview] = useState<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }>();
   const board = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<
     Array<{ id: string; x1: number; y1: number; x2: number; y2: number }>
@@ -565,10 +639,32 @@ function MatchingGame({
         choice.text.normalize("NFKC").toLocaleLowerCase() ===
         outcome.expectedAnswer?.normalize("NFKC").toLocaleLowerCase(),
     );
+  const receiptIds = outcomes.map((outcome) => outcome.attemptId).join(",");
   useLayoutEffect(() => {
     const measure = () => {
       if (!board.current) return;
       const rect = board.current.getBoundingClientRect();
+      const source =
+        selected &&
+        board.current.querySelector(`[data-word="${selected}"] .dot`);
+      const target =
+        chosen &&
+        board.current.querySelector(`[data-meaning="${chosen}"] .dot`);
+      const origin = source || target;
+      if (origin && !(selected && resolved(selected))) {
+        const a = origin.getBoundingClientRect();
+        const b = source && target ? target.getBoundingClientRect() : undefined;
+        const x1 = a.left + a.width / 2 - rect.left;
+        const y1 = a.top + a.height / 2 - rect.top;
+        setPreview({
+          x1,
+          y1,
+          x2: b
+            ? b.left + b.width / 2 - rect.left
+            : (cursor?.x ?? x1 + (x1 < rect.width / 2 ? 64 : -64)),
+          y2: b ? b.top + b.height / 2 - rect.top : (cursor?.y ?? y1),
+        });
+      } else setPreview(undefined);
       setLines(
         outcomes.flatMap((outcome) => {
           const choice = choiceFor(outcome);
@@ -600,11 +696,17 @@ function MatchingGame({
     return () => observer.disconnect();
     // Receipt ids are stable and represent the acknowledged pairs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [outcomes.map((outcome) => outcome.attemptId).join(",")]);
+  }, [receiptIds, selected, chosen, cursor]);
   const resolve = async (exerciseId: string, choiceId: string) => {
     if (busy || pending) return;
     const exercise = exercises.find((exercise) => exercise.id === exerciseId);
-    if (!exercise || resolved(exerciseId)) return;
+    if (
+      !exercise ||
+      resolved(exerciseId) ||
+      outcomes.some((outcome) => choiceFor(outcome)?.id === choiceId)
+    )
+      return;
+    setCursor(undefined);
     setSelected(exerciseId);
     setChosen(choiceId);
     const receipt = await engine.submit(exercise, { choiceId });
@@ -617,6 +719,7 @@ function MatchingGame({
   const onPointerUp = (event: React.PointerEvent, meaningId?: string) => {
     const source = pointer.current;
     pointer.current = undefined;
+    setCursor(undefined);
     if (!source) return;
     const hit = document
       .elementFromPoint(event.clientX, event.clientY)
@@ -673,7 +776,22 @@ function MatchingGame({
               {languageName(sourceCode)}
             </span>
           </div>
-          <div className="board" ref={board}>
+          <div
+            className="board"
+            ref={board}
+            onPointerMove={(event) => {
+              if ((!selected && !chosen) || busy || pending || !board.current)
+                return;
+              const rect = board.current.getBoundingClientRect();
+              setCursor({
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+              });
+            }}
+            onPointerLeave={() => {
+              if (!pointer.current) setCursor(undefined);
+            }}
+          >
             <div className="col">
               {choices.map((choice) => {
                 const outcome = outcomes.find(
@@ -723,7 +841,10 @@ function MatchingGame({
                       disabled={!!outcome || busy || !!pending}
                       aria-pressed={selected === exercise.id}
                       onPointerDown={(event) => {
+                        if (event.button !== 0) return;
                         pointer.current = exercise.id;
+                        setSelected(exercise.id);
+                        setCursor(undefined);
                         event.currentTarget.setPointerCapture?.(
                           event.pointerId,
                         );
@@ -731,6 +852,8 @@ function MatchingGame({
                       onPointerUp={onPointerUp}
                       onPointerCancel={() => {
                         pointer.current = undefined;
+                        setSelected(undefined);
+                        setCursor(undefined);
                       }}
                       onLostPointerCapture={() => {
                         pointer.current = undefined;
@@ -759,6 +882,17 @@ function MatchingGame({
               })}
             </div>
             <svg className="fg-connections" aria-hidden="true">
+              {preview && (
+                <path
+                  className="fg-preview-connection"
+                  d={`M ${preview.x1} ${preview.y1} C ${(preview.x1 + preview.x2) / 2} ${preview.y1}, ${(preview.x1 + preview.x2) / 2} ${preview.y2}, ${preview.x2} ${preview.y2}`}
+                  fill="none"
+                  stroke="#1d6a52"
+                  strokeWidth="3"
+                  strokeDasharray="7 6"
+                  strokeLinecap="round"
+                />
+              )}
               {lines.map((line, index) => (
                 <path
                   key={line.id}
@@ -1690,9 +1824,6 @@ function SessionEnd({
   return (
     <main className="fg-session-end">
       <header className="bar">
-        <Link className="x" to={returnTo} aria-label={t("focusGames.back")}>
-          <X size={22} />
-        </Link>
         {phase !== "summary" ? (
           <button
             className="skip"

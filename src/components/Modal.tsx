@@ -18,7 +18,7 @@ export function Modal({
   size?: "sm" | "md" | "lg";
   className?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const ref = useRef<HTMLElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -73,6 +73,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        dir={i18n.dir()}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="modal-header">

@@ -41,3 +41,15 @@ P3: icon strokes and source-only stress/IPA presentation vary where actual metad
 Final cold-load browser error/warning count: 0. Final focused suite: 11 passed; lint and production build passed. No actionable P0/P1/P2 difference remains after the recorded fixes.
 
 final result: passed
+
+## Owner correction pass — 2026-10-11, local working tree
+
+Compared the supplied target exit screenshot and the original exported flashcard source with the corrected browser renders. Restored the mascot band, centered title, stage/card copy, primary action and secondary text link. Reconnected the original card-out/in/previous/rating-stamp animations; the supplied video is unavailable, so video-level fidelity is unverified.
+
+Matching now renders a dashed preview before assessment and follows actual pointer movement; acknowledged results show immediately without a client feedback delay. Corrected its initial direction from actual geometry (source cards occupy different sides in RTL/LTR). At 320px the coach/help row wraps without clipping the mascot or extending the document width.
+
+The end gift and full summary now render in the shared modal over the retained, inert game board. Narrow summaries scroll internally; the close control remains sticky. The portal carries explicit RTL/LTR. Checked actual tap and drag, wrong-answer correction, keyboard/focus return, gift/skip/summary and authoritative displayed totals using an isolated local fixture.
+
+Captures: `docs/focus-games-dev/corrections-20261011/`, including final RTL/LTR desktop completion, 320px completion controls, 320px matching and English exit. Final cold-load console: zero errors/warnings. Full local check: 287 unit tests / 50 files and 20 gateway/security tests; typecheck, lint and build passed. Existing source CSS minification and bundle-size warnings remain. No live/provider/deployment acceptance is claimed.
+
+final result: passed

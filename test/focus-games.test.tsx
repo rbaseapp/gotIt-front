@@ -84,6 +84,79 @@ const click = async (name: string | RegExp) => {
 const next = () => click(/^Continue$/);
 
 describe("DEV focus game engine", () => {
+  it("keeps the compact exit dialog over the game and restores focus on continue", async () => {
+    const { fixture } = await mount("flashcards");
+    await screen.findByText("What does this word mean?");
+    const exit = screen.getByRole("button", { name: "Save and leave" });
+    exit.focus();
+    await click("Save and leave");
+    expect(screen.getByRole("dialog", { name: "Leave midway?" })).toHaveClass(
+      "fg-exit-modal",
+    );
+    expect(screen.getByText("Game 1 of 1 · Flashcards")).toBeInTheDocument();
+    expect(document.querySelector(".fg-game-surface")).toHaveAttribute("inert");
+    await click("Keep playing");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(exit).toHaveFocus();
+    expect(fixture.attempts).toHaveLength(0);
+  });
+
+  it("shows a dashed connection before grading and waits for the actual matching receipt", async () => {
+    await mount("matching");
+    await click("chair");
+    expect(document.querySelector(".fg-preview-connection")).toHaveAttribute(
+      "stroke-dasharray",
+      "7 6",
+    );
+    const original = vi.mocked(fetch).getMockImplementation()!;
+    let release!: () => void;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string, init?: RequestInit) => {
+        if (url.endsWith("practice/attempts"))
+          return new Promise<Response>((resolve) => {
+            release = () => {
+              void original(url, init).then(resolve);
+            };
+          });
+        return original(url, init);
+      }),
+    );
+    await click(focusCards[0].translationText);
+    expect(
+      document.querySelector(".fg-preview-connection"),
+    ).toBeInTheDocument();
+    expect(
+      document.querySelector("[data-word].matched"),
+    ).not.toBeInTheDocument();
+    release();
+    await waitFor(() =>
+      expect(document.querySelector("[data-word].matched")).toBeInTheDocument(),
+    );
+    expect(
+      document.querySelector(".fg-preview-connection"),
+    ).not.toBeInTheDocument();
+    expect(document.querySelectorAll(".fg-connections path")).toHaveLength(1);
+  });
+
+  it("animates a rated card out and brings the next card up with a fresh front face", async () => {
+    const { fixture } = await mount("flashcards");
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    await click("Show translation");
+    await click(/Remembered/i);
+    expect(document.querySelector(".mover.out-easy")).toBeInTheDocument();
+    await waitFor(() => expect(fixture.attempts).toHaveLength(1));
+    await waitFor(() =>
+      expect(document.querySelector(".mover.in .word")).toHaveTextContent(
+        "book",
+      ),
+    );
+    expect(document.querySelector(".flipper")).not.toHaveClass("on");
+    expect(
+      screen.getByRole("button", { name: "Show translation" }),
+    ).toBeEnabled();
+  });
+
   it.each([
     "flashcards",
     "matching",
@@ -181,6 +254,11 @@ describe("DEV focus game engine", () => {
     await next();
     await click("Finish session");
     await screen.findByRole("region", { name: "Session summary" });
+    expect(screen.getByRole("dialog", { name: "Session summary" })).toHaveClass(
+      "fg-completion-modal",
+    );
+    expect(document.querySelector(".fg-game-surface")).toHaveAttribute("inert");
+    expect(document.querySelector(".fg-game-surface main")).toBeInTheDocument();
     expect(fixture.session.status).toBe("completed");
     expect(fixture.attempts).toHaveLength(11);
     expect(

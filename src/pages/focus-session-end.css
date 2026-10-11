@@ -983,3 +983,78 @@
 .fg-session-end .bar {
   background: transparent;
 }
+
+/* Completion stays over the last game board, within a bounded scrollable dialog. */
+.modal.fg-completion-modal {
+  position: relative;
+  width: min(900px, 100%);
+  max-width: 900px;
+  max-height: calc(100dvh - 40px);
+  border-radius: 28px;
+}
+.fg-completion-modal > .modal-header {
+  position: sticky;
+  top: 8px;
+  margin: 8px 8px -52px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+  justify-content: flex-end;
+  z-index: 10;
+  pointer-events: none;
+}
+.fg-completion-modal > .modal-header button {
+  pointer-events: auto;
+}
+.fg-completion-modal > .modal-header h2 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.fg-completion-modal .fg-session-end {
+  min-height: 0;
+  padding-bottom: 24px;
+}
+.fg-completion-modal .fg-session-end .bar {
+  padding: 16px 24px 0;
+  padding-inline-end: 60px;
+}
+.fg-completion-modal .fg-session-end .stage {
+  height: 290px;
+  flex: none;
+}
+.fg-completion-modal .fg-session-end .mochi {
+  width: 240px;
+  height: 240px;
+}
+.fg-completion-modal .fg-session-end .halo {
+  width: 300px;
+  height: 300px;
+  margin-left: -150px;
+  bottom: 0;
+}
+.fg-completion-modal .fg-session-end .sum {
+  margin-top: 16px;
+}
+@media (max-width: 640px) {
+  .modal.fg-completion-modal {
+    max-height: calc(100dvh - 32px);
+    border-radius: 24px;
+  }
+  .fg-completion-modal .fg-session-end .stage {
+    height: 230px;
+  }
+  .fg-completion-modal .fg-session-end .mochi {
+    width: 200px;
+    height: 200px;
+  }
+  .fg-completion-modal .fg-session-end .bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-inline: 12px 52px;
+  }
+}

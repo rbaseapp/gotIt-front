@@ -128,8 +128,7 @@ export function useFocusSession(
     );
     const remaining =
       forceIds ?? value.stageItems.filter((id) => !done.has(id));
-    if (!remaining.length)
-      return { ...value, phase: "transition" as const, exercises: [] };
+    if (!remaining.length) return { ...value, phase: "transition" as const };
     const boardCount =
       remaining.length === 6 ? 4 : Math.min(5, remaining.length);
     // Issue only the visible question (or visible matching board). Unseen questions
@@ -590,7 +589,6 @@ export function useFocusSession(
         ...state,
         session: result.session,
         phase: "end",
-        exercises: [],
         pending: undefined,
       }));
     } catch (reason) {
