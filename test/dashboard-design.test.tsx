@@ -180,9 +180,18 @@ describe("dashboard quick review", () => {
     );
     fireEvent.click(await screen.findByRole("button", { name: "לזכור" }));
     const alert = await screen.findByRole("alert");
+    expect(document.querySelector(".nd-answer-toast")).not.toBeInTheDocument();
+    expect(
+      document.querySelector(".nd-answer-confetti"),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "לשכוח" })).toBeDisabled();
     fireEvent.click(within(alert).getByRole("button", { name: "ניסיון נוסף" }));
     await screen.findByText(/נשמרו 3 XP/);
+    expect(document.querySelector(".nd-answer-toast.success")).toHaveAttribute(
+      "role",
+      "status",
+    );
+    expect(document.querySelector(".nd-answer-confetti")).toBeInTheDocument();
     expect(requests).toHaveLength(2);
     expect(requests[1].body).toBe(requests[0].body);
     expect(new Headers(requests[1].headers).get("Idempotency-Key")).toBe(
@@ -206,7 +215,7 @@ describe("dashboard quick review", () => {
     });
     expect(document.querySelector(".nd-word-card h3")).toBeInTheDocument();
   });
-  it("keeps choices and inline correction visible, then advances automatically without duplicate scoring", async () => {
+  it("keeps the red correction toast visible after automatic advance without celebrating or duplicate scoring", async () => {
     const attempts: RequestInit[] = [];
     const second = {
       ...exercise,
@@ -245,14 +254,22 @@ describe("dashboard quick review", () => {
     expect(screen.getByRole("button", { name: "לזכור" })).toHaveClass(
       "correct",
     );
+    expect(document.querySelector(".nd-answer-toast.error")).toHaveTextContent(
+      "לזכור",
+    );
     expect(
-      document.querySelector(".nd-word-card .nd-answer-hint"),
-    ).toHaveTextContent("לזכור");
+      document.querySelector(".nd-answer-confetti"),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "למילה הבאה" }),
     ).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "לשכוח" }));
     await screen.findByText("write", {}, { timeout: 2000 });
+    expect(document.querySelector(".nd-answer-toast.error")).toHaveTextContent(
+      "לזכור",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "סגירת ההודעה" }));
+    expect(document.querySelector(".nd-answer-toast")).not.toBeInTheDocument();
     expect(attempts).toHaveLength(1);
     expect(screen.getByRole("button", { name: "לשכוח" })).toBeEnabled();
     expect(screen.getByRole("progressbar")).toHaveAttribute(
@@ -500,6 +517,11 @@ describe("dashboard context", () => {
       currentStreakDays: 1,
       longestStreakDays: 2,
       lastActivityDate: "2026-10-11",
+      dailyTaskRewards: {
+        lesson: { xp: 100, completed: false },
+        conversation: { xp: 75, completed: true },
+        reading: { xp: 50, completed: false },
+      },
     },
     weeklyActivity: { timezone: "Asia/Jerusalem", days: [] },
   };
@@ -558,12 +580,11 @@ describe("dashboard context", () => {
       screen.getByRole("progressbar", { name: "התקדמות בתוכנית" }),
     ).toHaveAttribute("aria-valuenow", "0");
     const tasks = screen.getByRole("region", { name: "צעדים קטנים להיום" });
-    expect(within(tasks).getAllByText("XP")).toHaveLength(4);
+    expect(within(tasks).getByText("+100 XP")).toBeInTheDocument();
+    expect(within(tasks).getByText("75 XP")).toHaveClass("completed");
+    expect(within(tasks).getByText("+50 XP")).toBeInTheDocument();
     for (const row of within(tasks).getAllByRole("listitem")) {
-      expect(within(row).getByText("XP")).toHaveAttribute(
-        "title",
-        "ההתקדמות וה־XP מתעדכנים לפי הפעילות שביצעת.",
-      );
+      expect(within(row).getByText(/\d+ XP/)).toHaveAttribute("title");
       expect(
         within(row).getByRole("link", { name: "מתחילים" }),
       ).toBeInTheDocument();

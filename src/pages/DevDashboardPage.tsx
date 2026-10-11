@@ -575,20 +575,23 @@ export function DevDashboardPage() {
                           t("ux.openMap"),
                         to: lesson,
                         Icon: Play,
+                        reward: d.gamification.dailyTaskRewards?.lesson,
                       },
                       {
                         title: t("newDashboard.talkToTeacher"),
                         detail: t("newDashboard.teacherHelp"),
                         to: `/private-lesson?${new URLSearchParams({ practice: "free", language: code, return: "/dashboard" })}`,
                         Icon: MessageCircle,
+                        reward: d.gamification.dailyTaskRewards?.conversation,
                       },
                       {
                         title: t("newDashboard.readArticle"),
                         detail: t("newDashboard.articleHelp"),
                         to: `/reading?${new URLSearchParams({ language: code })}`,
                         Icon: BookOpenText,
+                        reward: d.gamification.dailyTaskRewards?.reading,
                       },
-                    ].map(({ title, detail, to, Icon }) => (
+                    ].map(({ title, detail, to, Icon, reward }) => (
                       <li key={title}>
                         <Icon size={20} />
                         <div>
@@ -596,12 +599,22 @@ export function DevDashboardPage() {
                           <small dir="auto">{detail}</small>
                         </div>
                         <span
-                          className="nd-task-xp"
+                          className={`nd-task-xp${reward?.completed ? " completed" : ""}`}
                           dir="ltr"
-                          title={t("newDashboard.xpHelp")}
+                          title={t(
+                            reward?.completed
+                              ? "newDashboard.taskRewardClaimed"
+                              : "newDashboard.xpHelp",
+                          )}
                         >
-                          <Zap size={14} aria-hidden="true" />
-                          XP
+                          {reward?.completed ? (
+                            <Check size={14} aria-hidden="true" />
+                          ) : (
+                            <Zap size={14} aria-hidden="true" />
+                          )}
+                          {reward
+                            ? `${reward.completed ? "" : "+"}${reward.xp} XP`
+                            : "XP"}
                         </span>
                         <Link to={to}>{t("newDashboard.begin")}</Link>
                       </li>

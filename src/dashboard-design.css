@@ -771,6 +771,97 @@
   display: inline-flex;
   align-items: center;
 }
+.nd-answer-toast {
+  position: fixed;
+  z-index: 300;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(400px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid;
+  border-radius: 18px;
+  box-shadow: 0 12px 36px #12372930;
+  text-align: start;
+}
+.nd-answer-toast.success {
+  color: #145c37;
+  background: #e6f8eb;
+  border-color: #54b67a;
+}
+.nd-answer-toast.error {
+  color: #962e29;
+  background: #fff0ed;
+  border-color: #dc7c72;
+}
+.nd-answer-toast > svg {
+  flex-shrink: 0;
+}
+.nd-answer-toast > div:not(.nd-answer-confetti) {
+  flex: 1;
+  min-width: 0;
+}
+.nd-answer-toast p {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+.nd-answer-toast button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: transparent;
+  color: inherit;
+  border-radius: 10px;
+}
+.nd-answer-toast button:hover {
+  background: #ffffff80;
+}
+.nd-answer-confetti {
+  position: absolute;
+  inset: -160px -8px 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.nd-answer-confetti i {
+  position: absolute;
+  bottom: 35px;
+  left: 50%;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--color);
+  opacity: 0;
+  animation: nd-confetti 1.6s ease-out var(--delay) both;
+}
+@keyframes nd-confetti {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(var(--x), -145px) rotate(var(--rotation));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), 30px) rotate(var(--rotation));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nd-answer-confetti {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .nd-answer-toast {
+    bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+}
 .nd-task-xp {
   display: inline-flex;
   align-items: center;
@@ -782,6 +873,10 @@
   background: #fdf2d3;
   font-weight: 800;
   font-size: calc(12px * var(--text-scale, 1));
+}
+.nd-task-xp.completed {
+  background: #e6f8eb;
+  color: #145c37;
 }
 .nd-fine-print {
   font-size: calc(12px * var(--text-scale, 1));

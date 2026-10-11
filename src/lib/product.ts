@@ -513,6 +513,13 @@ export const dashboardSchema = z.object({
     currentStreakDays: count,
     longestStreakDays: count,
     lastActivityDate: z.string().nullable(),
+    dailyTaskRewards: z
+      .object({
+        lesson: z.object({ xp: count, completed: z.boolean() }),
+        conversation: z.object({ xp: count, completed: z.boolean() }),
+        reading: z.object({ xp: count, completed: z.boolean() }),
+      })
+      .optional(),
   }),
   weeklyActivity: z.object({
     timezone: z.string(),

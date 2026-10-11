@@ -1,6 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Play } from "lucide-react";
+import { CheckCircle2, CircleAlert, Gamepad2, Play, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { useSubscription } from "../context/SubscriptionContext";
@@ -35,6 +41,7 @@ export function DashboardQuickReview({
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [index, setIndex] = useState(0);
   const [receipt, setReceipt] = useState<AttemptReceipt>();
+  const [feedback, setFeedback] = useState<AttemptReceipt>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState<Intent>();
@@ -131,6 +138,7 @@ export function DashboardQuickReview({
         submission.eventId,
       );
       setReceipt(result);
+      setFeedback(result);
       setPending(undefined);
       scored.current();
     } catch (reason) {
@@ -174,7 +182,13 @@ export function DashboardQuickReview({
     const timer = window.setTimeout(() => void next(), 900);
     return () => window.clearTimeout(timer);
   }, [receipt, session?.status, next]);
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = window.setTimeout(() => setFeedback(undefined), 4000);
+    return () => window.clearTimeout(timer);
+  }, [feedback]);
   const result = receipt?.attempt.result;
+  const correct = feedback?.attempt.result === "correct";
   return (
     <section className="nd-review nd-card" aria-labelledby="nd-review-title">
       <header className="nd-card-heading">
@@ -219,21 +233,7 @@ export function DashboardQuickReview({
             <strong dir="auto">
               {current?.prompt.text ?? preview ?? t("newDashboard.yourWords")}
             </strong>
-            <p className={receipt ? "nd-answer-hint" : undefined}>
-              {receipt ? (
-                <>
-                  <b>{t(`labels.${receipt.attempt.result}`)}</b>
-                  {" · "}
-                  {result === "correct" ? (
-                    t("newDashboard.savedXp", { xp: receipt.attempt.xpEarned })
-                  ) : (
-                    <bdi>{receipt.attempt.expectedAnswer}</bdi>
-                  )}
-                </>
-              ) : (
-                t("newDashboard.meaningQuestion")
-              )}
-            </p>
+            <p>{t("newDashboard.meaningQuestion")}</p>
           </>
         )}
       </div>
@@ -273,6 +273,56 @@ export function DashboardQuickReview({
         <Play size={16} />
         {t(canPlay ? "newDashboard.fullReview" : "shell.upgradePro")}
       </Link>
+      {feedback && (
+        <div
+          key={feedback.attempt.id}
+          className={`nd-answer-toast ${correct ? "success" : "error"}`}
+          role={correct ? "status" : "alert"}
+          aria-atomic="true"
+        >
+          {correct && (
+            <div className="nd-answer-confetti" aria-hidden="true">
+              {Array.from({ length: 28 }, (_, i) => (
+                <i
+                  key={i}
+                  style={
+                    {
+                      "--x": `${((i * 47) % 280) - 140}px`,
+                      "--delay": `${(i % 7) * 35}ms`,
+                      "--rotation": `${(i * 67) % 720}deg`,
+                      "--color": ["#35b879", "#f5bf42", "#71b7e8", "#e78db6"][
+                        i % 4
+                      ],
+                    } as CSSProperties
+                  }
+                />
+              ))}
+            </div>
+          )}
+          {correct ? <CheckCircle2 size={25} /> : <CircleAlert size={25} />}
+          <div>
+            <b>{t(`labels.${feedback.attempt.result}`)}</b>
+            <p>
+              {correct ? (
+                t("newDashboard.savedXp", { xp: feedback.attempt.xpEarned })
+              ) : (
+                <bdi>
+                  {t("game.expectedAnswer", {
+                    answer: feedback.attempt.expectedAnswer,
+                  })}
+                </bdi>
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label={t("feedback.closeNotification")}
+            onClick={() => setFeedback(undefined)}
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
     </section>
   );
 }
