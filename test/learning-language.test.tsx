@@ -25,6 +25,7 @@ describe("learning language persistence", () => {
     expect(first.result.current.loading).toBe(true);
     expect(first.result.current.code).toBe("en");
     expect(localStorage.getItem("gotit.learningLanguage")).toBe("en");
+    await waitFor(() => expect(resolve).toBeTypeOf("function"));
     first.unmount();
 
     const second = renderHook(useLearningLanguage);

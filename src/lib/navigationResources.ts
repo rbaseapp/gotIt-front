@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { courseApi } from "./courses";
+import { languageListSchema } from "./learningLanguages";
 import { wordCardSchema } from "./myWords";
 import {
   dashboardSchema,
@@ -17,9 +18,6 @@ import {
 } from "./resourceCache";
 import { courseArtworkRevision } from "./programs";
 
-export const languageListSchema = z.object({
-  languages: z.array(z.object({ code: z.string(), count: z.number() })),
-});
 export const wordCardsSchema = page(wordCardSchema).extend({
   summary: z.object({
     total: z.number(),

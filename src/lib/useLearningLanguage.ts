@@ -3,7 +3,7 @@ import { useApp } from "../context/AppContext";
 import { product } from "./product";
 import { useCachedResource } from "./useCachedResource";
 import { resourceKey } from "./resourceCache";
-import { languageListSchema } from "./navigationResources";
+import { languageListSchema } from "./learningLanguages";
 
 const storageKey = "gotit.learningLanguage";
 const selectionEvent = "gotit:learning-language-changed";
