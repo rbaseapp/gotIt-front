@@ -1,4 +1,4 @@
-import { LearningStatusBar } from "../components/LearningStatusBar";
+import { LearningStatusSource } from "../components/LearningStatusSource";
 import { Fragment, useCallback, useState, useSyncExternalStore } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Check, ChevronLeft, ChevronRight, Play, Target } from "lucide-react";
@@ -291,7 +291,7 @@ export function DevPracticePage() {
   };
   return (
     <div className="p3">
-      <LearningStatusBar
+      <LearningStatusSource
         goal={goal}
         streakDays={d?.gamification.currentStreakDays}
         language={{

@@ -1,12 +1,9 @@
-import { useContext } from "react";
-import { createPortal } from "react-dom";
-import { LearningStatusTarget } from "../context/LearningStatusTarget";
 import { Flame, Globe2, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getLanguageOptions } from "../lib/languages";
 import "./LearningStatusBar.css";
 
-type LearningStatusBarProps = {
+export type LearningStatusBarProps = {
   goal?: {
     type: "items" | "minutes" | "attempts";
     current: number;
@@ -22,7 +19,7 @@ type LearningStatusBarProps = {
   };
 };
 
-/** Controlled UI only: pages retain request, language-scope and navigation ownership. */
+/** Controlled display only; the application shell owns its mounted instance. */
 export function LearningStatusBar({
   goal,
   streakDays,
@@ -34,9 +31,10 @@ export function LearningStatusBar({
   const unit = goal
     ? t(`settings.${goal.type === "items" ? "uniqueWords" : goal.type}`)
     : "";
-  const options = [...new Set(language.options)].filter(Boolean);
-  const target = useContext(LearningStatusTarget);
-  const bar = (
+  const options = [...new Set([language.value, ...language.options])].filter(
+    Boolean,
+  );
+  return (
     <div className="learning-status-bar">
       <div className="learning-status-inner">
         {goal && (
@@ -95,5 +93,4 @@ export function LearningStatusBar({
       </div>
     </div>
   );
-  return target ? createPortal(bar, target) : bar;
 }

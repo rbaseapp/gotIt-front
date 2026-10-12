@@ -1,4 +1,4 @@
-import { LearningStatusBar } from "../components/LearningStatusBar";
+import { LearningStatusSource } from "../components/LearningStatusSource";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -163,11 +163,13 @@ export function DevMyWordsPage() {
   );
   const dashboard = useResource(
     useCallback(
-      () =>
-        product(
+      async () => ({
+        ...(await product(
           dashboardSchema,
           `dashboard${query({ sourceLanguageCode: language.code || undefined })}`,
-        ),
+        )),
+        language: language.code,
+      }),
       [language.code],
     ),
   );
@@ -374,12 +376,14 @@ export function DevMyWordsPage() {
     filters.userStatus !== "all" ? filters.userStatus : "",
   ].filter(Boolean).length;
   const count = data?.summary;
-  const goal = dashboard.data?.dailyGoal;
+  const dashboardData =
+    dashboard.data?.language === language.code ? dashboard.data : undefined;
+  const goal = dashboardData?.dailyGoal;
   return (
     <div className="mw">
-      <LearningStatusBar
+      <LearningStatusSource
         goal={goal}
-        streakDays={dashboard.data?.gamification.currentStreakDays}
+        streakDays={dashboardData?.gamification.currentStreakDays}
         language={{
           value: language.code,
           options: language.languages.map((l) => l.code),

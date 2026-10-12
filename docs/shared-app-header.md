@@ -13,10 +13,16 @@ existing rollout boundary; full-screen learning sessions retain session controls
   capture modal state; Add word remains available in the common account menu.
 - `TopbarAccountMenu.tsx` owns keyboard focus, Escape/outside dismissal and logout.
 - `LearningStatusBar.tsx` and `.css` own one controlled goal/streak/language UI.
-- `AppShell` owns the status host immediately below the topbar, before page content
-  and notices. `LearningStatusTarget` lets a page render its controlled bar into
-  that host through a React portal, preserving page data/callback ownership while
-  keeping page styles and padding out of the header.
+- `AppShell` owns one `PersistentLearningStatusBar` immediately below the topbar,
+  before page content and notices. `LearningStatusProvider` is keyed by auth mode,
+  application and user. Its in-memory snapshot survives route controller handoffs.
+- `LearningStatusSource` publishes page-owned data and actions through a stable
+  context; it never mounts a separate visible bar inside the shell. Pending/failed
+  same-language requests retain the last server goal/streak. Successful values,
+  including zero, update the existing DOM nodes. A language change clears previous
+  metrics until scoped data arrives; no data is retained across authenticated owners.
+  A controller gap disables the select without removing the display or invoking
+  an unmounted page callback. No persistent metric cache or extra request is added.
 - Dashboard, practice and My Words supply their existing live data and callbacks.
   Other shell routes use `DefaultLearningStatusBar` to read existing dashboard
   projections. No duplicate fallback is mounted on the three page-owned routes.
@@ -26,12 +32,12 @@ existing rollout boundary; full-screen learning sessions retain session controls
 ## Reuse
 
 New shell screens inherit the fixed topbar and default status bar automatically.
-A page that needs a scoped status controller can render the same controlled UI
+A page that needs a scoped status controller can publish the same controlled data
 and opt out of the default controller in `AppShell`. Do not add route-specific
 header markup, CSS or visual variants.
 
 ```tsx
-<LearningStatusBar
+<LearningStatusSource
   goal={dashboard.data?.dailyGoal}
   streakDays={dashboard.data?.gamification.currentStreakDays}
   language={{
@@ -44,18 +50,27 @@ header markup, CSS or visual variants.
 />
 ```
 
-Outside the shell host, the component renders in place, making it reusable in
+Outside the shell provider, the source renders the controlled UI in place, making it reusable in
 standalone previews and tests. It performs no API/storage/navigation actions;
 callers own these. Missing goal/streak values stay absent, zero remains visible,
 progress is bounded and language labels follow UI locale and RTL/LTR direction.
+
+The earlier portal design (`a3a3065`) still remounted each page's visible bar and
+briefly omitted its unloaded metrics. Lifecycle regression tests now navigate
+between distinct route controllers, assert DOM identity and inspect mutation
+records for removals during loading, controller gaps and metric refresh. They also
+cover zero values, language isolation and owner reset. A local browser fixture
+delays dashboard reads by two seconds to inspect the header while the next page
+is still loading; final DEV acceptance is recorded in the canonical specification.
 
 ## Verification
 
 The owner corrected the initial `bf55d86` refactor: sharing source while retaining
 page-specific visual variants did not satisfy the fixed-header requirement.
 The replacement removes these variants and page overrides. Local typecheck,
-ESLint, production build, 314 unit tests (52 files, fork workers) and 20 gateway
-checks passed. Focused header/language checks passed again after final CSS changes.
+ESLint, production build, 317 unit tests (53 files, fork workers) and 20 gateway
+checks passed for the lifecycle correction. The 22 focused header/language checks
+passed again after the selected-language option safeguard.
 
 Local browser fixtures compare dashboard, practice, My Words and programs at
 1440px Hebrew, 320px Hebrew and 390px English. All 12 cases have exactly one bar,

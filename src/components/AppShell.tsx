@@ -15,7 +15,10 @@ import { LiveCaptureModal } from "./LiveCaptureModal";
 import { SubscriptionBanner } from "./SubscriptionBanner";
 import { Topbar, LearningBackLink } from "./Topbar";
 import { DefaultLearningStatusBar } from "./DefaultLearningStatusBar";
-import { LearningStatusTarget } from "../context/LearningStatusTarget";
+import {
+  LearningStatusProvider,
+  PersistentLearningStatusBar,
+} from "./LearningStatusProvider";
 
 const rootNavItems = navItems.slice(0, 4);
 
@@ -30,7 +33,6 @@ export function AppShell({
   const { items, mode, user, profileError, retryProfile } = useApp();
   const location = useLocation();
   const sharedHeader = mode === "live" && dashboardDesignEnabled();
-  const [statusTarget, setStatusTarget] = useState<HTMLDivElement | null>(null);
   const practiceShell =
     mode === "live" &&
     location.pathname === "/learn" &&
@@ -121,7 +123,10 @@ export function AppShell({
     canWriteVocabulary ? setAddOpen(true) : navigate("/billing");
 
   return (
-    <LearningStatusTarget.Provider value={sharedHeader ? statusTarget : null}>
+    <LearningStatusProvider
+      key={`${mode}:${user?.applicationId}:${user?.id}`}
+      enabled={sharedHeader}
+    >
       <div
         className={`app-layout${sharedHeader ? " shared-header-shell" : ""}${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}${practiceShell ? " practice-shell" : ""}${myWordsShell ? " mywords-shell" : ""}`}
       >
@@ -239,7 +244,9 @@ export function AppShell({
             onAddWord={openAddWord}
           />
           {sharedHeader && (
-            <div className="app-learning-status" ref={setStatusTarget} />
+            <div className="app-learning-status">
+              <PersistentLearningStatusBar />
+            </div>
           )}
           {sharedHeader && !dashboardShell && <DefaultLearningStatusBar />}
           <div className="page-content">
@@ -309,6 +316,6 @@ export function AppShell({
           <AddWordModal open={addOpen} onClose={() => setAddOpen(false)} />
         )}
       </div>
-    </LearningStatusTarget.Provider>
+    </LearningStatusProvider>
   );
 }

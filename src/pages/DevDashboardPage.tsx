@@ -1,4 +1,4 @@
-import { LearningStatusBar } from "../components/LearningStatusBar";
+import { LearningStatusSource } from "../components/LearningStatusSource";
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -275,7 +275,7 @@ export function DevDashboardPage() {
     <div
       className={`nd-dashboard${isProgram ? " nd-with-program" : " nd-words-only"}`}
     >
-      <LearningStatusBar
+      <LearningStatusSource
         goal={d?.dailyGoal}
         streakDays={d?.gamification.currentStreakDays}
         language={{

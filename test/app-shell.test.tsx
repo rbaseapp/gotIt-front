@@ -5,9 +5,9 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
-import { LearningStatusBar } from "../src/components/LearningStatusBar";
+import { LearningStatusSource } from "../src/components/LearningStatusSource";
 import { AppShell } from "../src/components/AppShell";
 import { seedProfile } from "../src/data/seed";
 import i18n from "../src/i18n";
@@ -52,7 +52,7 @@ vi.mock("../src/components/AddWordModal", () => ({
 
 vi.mock("../src/components/DefaultLearningStatusBar", () => ({
   DefaultLearningStatusBar: () => (
-    <LearningStatusBar
+    <LearningStatusSource
       goal={{ type: "items", current: 3, value: 20 }}
       streakDays={2}
       language={{
@@ -188,7 +188,7 @@ it("retains the safe return destination in focus screens", () => {
   );
 });
 
-it("keeps the header mounted while navigating and places status outside page styles", () => {
+it("keeps the bar and metrics mounted while route controllers unmount and reload", () => {
   vi.stubEnv("VITE_DASHBOARD_DESIGN", "true");
   vi.stubEnv("VITE_PRACTICE_DESIGN", "true");
   vi.stubEnv("VITE_MYWORDS_DESIGN", "true");
@@ -196,23 +196,46 @@ it("keeps the header mounted while navigating and places status outside page sty
   render(
     <MemoryRouter initialEntries={["/dashboard"]}>
       <AppShell onLogout={vi.fn()}>
-        <div className="page-specific-styles">
-          <LearningStatusBar
-            goal={{ type: "items", current: 3, value: 20 }}
-            streakDays={2}
-            language={{
-              value: "en",
-              options: ["en", "ar"],
-              translationCode: "he",
-              onChange,
-            }}
+        <Routes>
+          <Route
+            path="/dashboard"
+            element={
+              <div className="page-specific-styles">
+                <LearningStatusSource
+                  goal={{ type: "items", current: 3, value: 20 }}
+                  streakDays={2}
+                  language={{
+                    value: "en",
+                    options: ["en", "ar"],
+                    translationCode: "he",
+                    onChange,
+                  }}
+                />
+              </div>
+            }
           />
-        </div>
+          <Route
+            path="/learn"
+            element={
+              <LearningStatusSource
+                language={{
+                  value: "en",
+                  options: ["en", "ar"],
+                  translationCode: "he",
+                  onChange,
+                }}
+              />
+            }
+          />
+          <Route path="/courses" element={<h1>Programs</h1>} />
+        </Routes>
       </AppShell>
     </MemoryRouter>,
   );
   const header = document.querySelector(".app-topbar");
   const status = document.querySelector(".learning-status-bar");
+  const goal = screen.getByRole("progressbar");
+  const streak = document.querySelector(".learning-status-streak");
   expect(status?.parentElement).toBe(
     document.querySelector(".app-learning-status"),
   );
@@ -222,7 +245,15 @@ it("keeps the header mounted while navigating and places status outside page sty
   const nav = within(document.querySelector(".app-top-navigation")!);
   fireEvent.click(nav.getByRole("link", { name: i18n.t("ux.practice") }));
   expect(document.querySelector(".app-topbar")).toBe(header);
+  expect(document.querySelector(".learning-status-bar")).toBe(status);
+  expect(screen.getByRole("progressbar")).toBe(goal);
+  expect(goal).toHaveAttribute("value", "3");
+  expect(document.querySelector(".learning-status-streak")).toBe(streak);
+  expect(streak).toHaveTextContent("2");
   expect(document.querySelectorAll(".learning-status-bar")).toHaveLength(1);
   fireEvent.change(screen.getByRole("combobox"), { target: { value: "ar" } });
   expect(onChange).toHaveBeenCalledWith("ar");
+  fireEvent.click(nav.getByRole("link", { name: i18n.t("ux.programs") }));
+  expect(document.querySelector(".learning-status-bar")).toBe(status);
+  expect(screen.getByRole("progressbar")).toBe(goal);
 });

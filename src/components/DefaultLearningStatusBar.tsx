@@ -3,7 +3,7 @@ import { useApp } from "../context/AppContext";
 import { dashboardSchema, product, query } from "../lib/product";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { useResource } from "../lib/useResource";
-import { LearningStatusBar } from "./LearningStatusBar";
+import { LearningStatusSource } from "./LearningStatusSource";
 
 /** Supplies header data on shell routes without their own dashboard controller. */
 export function DefaultLearningStatusBar() {
@@ -24,7 +24,7 @@ export function DefaultLearningStatusBar() {
   );
   const data = dashboard.data?.language === code ? dashboard.data : undefined;
   return (
-    <LearningStatusBar
+    <LearningStatusSource
       goal={data?.dailyGoal}
       streakDays={data?.gamification.currentStreakDays}
       language={{
