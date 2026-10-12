@@ -1240,17 +1240,6 @@
 body:has(.mywords-shell) {
   min-width: 0;
 }
-.app-layout.mywords-shell .user-menu-wrap {
-  display: block;
-}
-.app-layout.mywords-shell > .main-column > .topbar {
-  height: auto;
-  min-height: 74px;
-  padding: 12px 32px;
-}
-.mywords-shell .topbar-title .mobile-brand {
-  display: none;
-}
 .mw {
   line-height: normal;
 }
@@ -1262,77 +1251,10 @@ body:has(.mywords-shell) {
   background: #ffffff40;
   border-radius: 999px;
 }
-.mywords-shell .practice-pro {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.mywords-shell .topbar-actions {
-  gap: 12px;
-}
 .mywords-shell {
   --nd-bg: #f8f7f2;
   --nd-brand: #22705b;
   --nd-dark: #174f40;
-}
-.mywords-shell .nd-desktop-brand {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-.mywords-shell .mw-header-add {
-  width: 80px;
-  height: 50px;
-  border: 0;
-  border-radius: 999px;
-  background: #22705b;
-  color: #fff;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 4px 12px -4px #174f4080;
-  cursor: pointer;
-}
-.mywords-shell .mw-logo {
-  font:
-    800 1.9rem "Rubik",
-    sans-serif;
-  color: #1f2b27;
-  text-decoration: none;
-  position: relative;
-  padding-inline-end: 8px;
-  direction: ltr;
-}
-.mywords-shell .mw-logo i {
-  position: absolute;
-  top: 2px;
-  inset-inline-end: 0;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #f5a623;
-}
-.mywords-shell .topbar {
-  max-width: 1440px;
-  margin: auto;
-}
-.mywords-shell .nd-top-navigation a.active {
-  background: #174f40;
-}
-.mywords-shell .nd-top-navigation a {
-  font-size: 1.08rem;
-}
-.mywords-shell .practice-pro {
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: #fdf1d2;
-  border: 1px solid #f0d58a;
-  color: #7a5a00;
-  text-decoration: none;
-  white-space: nowrap;
-  font-weight: 800;
-}
-.mywords-shell .nd-account-label {
-  display: none;
 }
 .mw .mw-main {
   display: flex;
@@ -1474,42 +1396,6 @@ body:has(.mywords-shell) {
   cursor: default;
   opacity: 0.55;
 }
-@media (max-width: 860px) {
-  .mywords-shell .nd-desktop-brand {
-    display: none;
-  }
-  .mywords-shell .topbar-title .mobile-brand {
-    display: inline-flex;
-  }
-  .app-layout.mywords-shell > .main-column > .topbar {
-    min-height: 64px;
-    padding: 10px 16px;
-    gap: 8px;
-  }
-  .mywords-shell .practice-pro {
-    font-size: 0.85rem;
-    padding: 8px;
-  }
-  .mywords-shell .practice-pro svg {
-    display: none;
-  }
-  .mywords-shell .topbar-actions {
-    gap: 6px;
-  }
-  .mywords-shell .user-button {
-    padding: 0;
-    border: 0;
-  }
-  .mywords-shell .user-button > svg {
-    display: none;
-  }
-  .mywords-shell .topbar-title {
-    gap: 6px;
-  }
-  .mywords-shell .mobile-tabs {
-    display: none;
-  }
-}
 @media (max-width: 1100px) {
   .mw .hero {
     align-items: center;
@@ -1617,12 +1503,6 @@ body:has(.mywords-shell) {
     border: 1px solid #e4e8e1;
     background: #fff;
     border-radius: 12px;
-  }
-  .mywords-shell .mw-header-add {
-    display: none;
-  }
-  .mywords-shell .mw-logo {
-    font-size: 1.5rem;
   }
 }
 @media (max-width: 430px) {

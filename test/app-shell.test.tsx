@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
+import { LearningStatusBar } from "../src/components/LearningStatusBar";
 import { AppShell } from "../src/components/AppShell";
 import { seedProfile } from "../src/data/seed";
 import i18n from "../src/i18n";
@@ -47,6 +48,21 @@ vi.mock("../src/components/LiveCaptureModal", () => ({
 }));
 vi.mock("../src/components/AddWordModal", () => ({
   AddWordModal: () => null,
+}));
+
+vi.mock("../src/components/DefaultLearningStatusBar", () => ({
+  DefaultLearningStatusBar: () => (
+    <LearningStatusBar
+      goal={{ type: "items", current: 3, value: 20 }}
+      streakDays={2}
+      language={{
+        value: "en",
+        options: ["en", "ar"],
+        translationCode: "he",
+        onChange: vi.fn(),
+      }}
+    />
+  ),
 }));
 
 function show(entry = "/dashboard", onLogout = vi.fn()) {
@@ -105,48 +121,39 @@ it("keeps the Free read-only notice and the demo notice", () => {
 });
 
 it.each([
-  [
-    "/dashboard",
-    [
-      "/dashboard",
-      "/courses",
-      "/private-lesson?practice=free",
-      "/learn",
-      "/vocabulary",
-    ],
-  ],
-  [
-    "/learn",
-    [
-      "/dashboard",
-      "/courses",
-      "/learn",
-      "/vocabulary",
-      "/private-lesson?practice=free",
-    ],
-  ],
-  [
-    "/vocabulary",
-    [
-      "/dashboard",
-      "/vocabulary",
-      "/learn",
-      "/private-lesson?practice=free",
-      "/courses",
-    ],
-  ],
-])("preserves navigation order and active route for %s", (entry, routes) => {
+  "/dashboard",
+  "/learn",
+  "/vocabulary",
+  "/courses",
+  "/private-lesson",
+  "/account",
+])("uses the same header navigation and labels on %s", (entry) => {
   vi.stubEnv("VITE_DASHBOARD_DESIGN", "true");
   vi.stubEnv("VITE_PRACTICE_DESIGN", "true");
   vi.stubEnv("VITE_MYWORDS_DESIGN", "true");
-  show(entry as string);
-  const nav = document.querySelector(".nd-top-navigation")!;
+  show(entry);
+  const nav = document.querySelector(".app-top-navigation")!;
   expect(
     within(nav)
       .getAllByRole("link")
-      .map((link) => link.getAttribute("href")),
-  ).toEqual(routes);
-  expect(nav.querySelector(".active")).toHaveAttribute("href", entry);
+      .map((link) => ({
+        href: link.getAttribute("href"),
+        text: link.textContent,
+      })),
+  ).toEqual([
+    { href: "/dashboard", text: i18n.t("ux.today") },
+    { href: "/courses", text: i18n.t("ux.programs") },
+    { href: "/private-lesson?practice=free", text: i18n.t("ux.freeChat") },
+    { href: "/learn", text: i18n.t("ux.practice") },
+    { href: "/vocabulary", text: i18n.t("ux.words") },
+  ]);
+  if (entry !== "/account")
+    expect(nav.querySelector(".active")).toHaveAttribute(
+      "href",
+      entry === "/private-lesson" ? "/private-lesson?practice=free" : entry,
+    );
+  expect(document.querySelectorAll(".app-topbar")).toHaveLength(1);
+  expect(document.querySelector(".topbar")).toBeNull();
 });
 
 it("keeps account-menu focus, Escape, outside dismissal and logout after extraction", async () => {
@@ -179,4 +186,43 @@ it("retains the safe return destination in focus screens", () => {
     "href",
     "/vocabulary?library.page=2",
   );
+});
+
+it("keeps the header mounted while navigating and places status outside page styles", () => {
+  vi.stubEnv("VITE_DASHBOARD_DESIGN", "true");
+  vi.stubEnv("VITE_PRACTICE_DESIGN", "true");
+  vi.stubEnv("VITE_MYWORDS_DESIGN", "true");
+  const onChange = vi.fn();
+  render(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <AppShell onLogout={vi.fn()}>
+        <div className="page-specific-styles">
+          <LearningStatusBar
+            goal={{ type: "items", current: 3, value: 20 }}
+            streakDays={2}
+            language={{
+              value: "en",
+              options: ["en", "ar"],
+              translationCode: "he",
+              onChange,
+            }}
+          />
+        </div>
+      </AppShell>
+    </MemoryRouter>,
+  );
+  const header = document.querySelector(".app-topbar");
+  const status = document.querySelector(".learning-status-bar");
+  expect(status?.parentElement).toBe(
+    document.querySelector(".app-learning-status"),
+  );
+  expect(
+    document.querySelector(".page-content .learning-status-bar"),
+  ).toBeNull();
+  const nav = within(document.querySelector(".app-top-navigation")!);
+  fireEvent.click(nav.getByRole("link", { name: i18n.t("ux.practice") }));
+  expect(document.querySelector(".app-topbar")).toBe(header);
+  expect(document.querySelectorAll(".learning-status-bar")).toHaveLength(1);
+  fireEvent.change(screen.getByRole("combobox"), { target: { value: "ar" } });
+  expect(onChange).toHaveBeenCalledWith("ar");
 });

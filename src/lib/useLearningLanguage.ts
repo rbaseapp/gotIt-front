@@ -8,6 +8,7 @@ const languageList = z.object({
   languages: z.array(z.object({ code: z.string(), count: z.number() })),
 });
 const storageKey = "gotit.learningLanguage";
+const selectionEvent = "gotit:learning-language-changed";
 
 export function useLearningLanguage() {
   const { profile } = useApp();
@@ -18,6 +19,16 @@ export function useLearningLanguage() {
       return "";
     }
   });
+  useEffect(() => {
+    const changed = (event: Event) =>
+      setChosen((event as CustomEvent<string>).detail);
+    window.addEventListener(selectionEvent, changed);
+    return () => window.removeEventListener(selectionEvent, changed);
+  }, []);
+  const setCode = useCallback((code: string) => {
+    setChosen(code);
+    window.dispatchEvent(new CustomEvent(selectionEvent, { detail: code }));
+  }, []);
   const resource = useResource(
     useCallback(() => product(languageList, "dashboard/languages"), []),
   );
@@ -49,7 +60,7 @@ export function useLearningLanguage() {
   return {
     code,
     languages,
-    setCode: setChosen,
+    setCode,
     loading: resource.loading,
     error: resource.error,
     reload: reloadLanguages,

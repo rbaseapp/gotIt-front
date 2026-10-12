@@ -9,8 +9,6 @@ import {
   Settings,
 } from "lucide-react";
 
-export type TopbarVariant = "standard" | "dashboard" | "practice" | "mywords";
-
 export const navItems = [
   { to: "/dashboard", labelKey: "ux.today", icon: House },
   { to: "/courses", labelKey: "ux.programs", icon: BookOpen, liveOnly: true },
@@ -27,44 +25,15 @@ export const navItems = [
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
+// One order and one set of labels throughout the application header.
 const byRoute = new Map(navItems.map((item) => [item.to, item]));
-const headerOrder = {
-  dashboard: [
-    "/dashboard",
-    "/courses",
-    "/private-lesson?practice=free",
-    "/learn",
-    "/vocabulary",
-  ],
-  practice: [
-    "/dashboard",
-    "/courses",
-    "/learn",
-    "/vocabulary",
-    "/private-lesson?practice=free",
-  ],
-  mywords: [
-    "/dashboard",
-    "/vocabulary",
-    "/learn",
-    "/private-lesson?practice=free",
-    "/courses",
-  ],
-} satisfies Record<Exclude<TopbarVariant, "standard">, string[]>;
-
-export function topbarNavigation(variant: TopbarVariant) {
-  if (variant === "standard") return [];
-  return headerOrder[variant].flatMap((route) => {
-    const item = byRoute.get(route);
-    if (!item) return [];
-    const labelKey =
-      variant !== "dashboard" && route === "/courses"
-        ? variant === "mywords"
-          ? "myWords.navPrograms"
-          : "practiceDesign.navPrograms"
-        : variant !== "dashboard" && route.startsWith("/private-lesson")
-          ? "practiceDesign.navTeacher"
-          : item.labelKey;
-    return [{ to: item.to, labelKey }];
-  });
-}
+export const topbarNavigation = [
+  "/dashboard",
+  "/courses",
+  "/private-lesson?practice=free",
+  "/learn",
+  "/vocabulary",
+].flatMap((route) => {
+  const item = byRoute.get(route);
+  return item ? [item] : [];
+});

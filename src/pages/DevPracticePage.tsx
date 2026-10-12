@@ -292,7 +292,6 @@ export function DevPracticePage() {
   return (
     <div className="p3">
       <LearningStatusBar
-        variant="practice"
         goal={goal}
         streakDays={d?.gamification.currentStreakDays}
         language={{

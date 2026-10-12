@@ -7,6 +7,7 @@ import {
   History,
   LibraryBig,
   LogOut,
+  Plus,
   Settings,
   UserRound,
 } from "lucide-react";
@@ -19,9 +20,11 @@ import { levelFromXp } from "../lib/utils";
 export function TopbarAccountMenu({
   showAccountLink,
   onLogout,
+  onAddWord,
 }: {
   showAccountLink: boolean;
   onLogout: () => void;
+  onAddWord?: () => void;
 }) {
   const { t } = useTranslation();
   const { profile, stats, mode, user } = useApp();
@@ -82,6 +85,17 @@ export function TopbarAccountMenu({
       </button>
       {userOpen && (
         <div className="user-popover">
+          {onAddWord && (
+            <button
+              onClick={() => {
+                setUserOpen(false);
+                onAddWord();
+              }}
+            >
+              <Plus size={18} />
+              {t("vocabulary.newWord")}
+            </button>
+          )}
           {showAccountLink && (
             <Link to="/account" onClick={() => setUserOpen(false)}>
               <UserRound size={18} />

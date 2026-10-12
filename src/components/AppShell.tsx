@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { useSubscription } from "../context/SubscriptionContext";
 import { isDue } from "../lib/utils";
-import { navItems, type TopbarVariant } from "../lib/appNavigation";
+import { navItems } from "../lib/appNavigation";
 import { dashboardDesignEnabled } from "../lib/dashboardDesign";
 import { practiceDesignEnabled } from "../lib/practiceDesign";
 import { myWordsDesignEnabled } from "../lib/myWords";
@@ -13,7 +13,9 @@ import { AddWordModal } from "./AddWordModal";
 import { Logo } from "./Logo";
 import { LiveCaptureModal } from "./LiveCaptureModal";
 import { SubscriptionBanner } from "./SubscriptionBanner";
-import { Topbar } from "./Topbar";
+import { Topbar, LearningBackLink } from "./Topbar";
+import { DefaultLearningStatusBar } from "./DefaultLearningStatusBar";
+import { LearningStatusTarget } from "../context/LearningStatusTarget";
 
 const rootNavItems = navItems.slice(0, 4);
 
@@ -27,6 +29,8 @@ export function AppShell({
   const { t } = useTranslation();
   const { items, mode, user, profileError, retryProfile } = useApp();
   const location = useLocation();
+  const sharedHeader = mode === "live" && dashboardDesignEnabled();
+  const [statusTarget, setStatusTarget] = useState<HTMLDivElement | null>(null);
   const practiceShell =
     mode === "live" &&
     location.pathname === "/learn" &&
@@ -45,6 +49,7 @@ export function AppShell({
     /^\/(courses\/[^/]+|homework\/[^/]+)(\/|$)/.test(location.pathname) ||
     location.pathname === "/private-lesson";
   const focusShell =
+    sharedHeader ||
     dashboardShell ||
     location.pathname === "/private-lesson" ||
     location.pathname === "/achievements";
@@ -112,194 +117,198 @@ export function AppShell({
     : navItems.find((item) =>
         location.pathname.startsWith(item.to.split("?")[0]),
       )?.labelKey;
-  const topbarVariant: TopbarVariant = myWordsShell
-    ? "mywords"
-    : practiceShell
-      ? "practice"
-      : dashboardShell
-        ? "dashboard"
-        : "standard";
   const openAddWord = () =>
     canWriteVocabulary ? setAddOpen(true) : navigate("/billing");
 
   return (
-    <div
-      className={`app-layout${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}${practiceShell ? " practice-shell" : ""}${myWordsShell ? " mywords-shell" : ""}`}
-    >
-      <aside
-        ref={sidebarRef}
-        className={`sidebar ${mobileOpen ? "mobile-open" : ""}`}
-        inert={((narrow || focusShell) && !mobileOpen) || undefined}
-        aria-hidden={((narrow || focusShell) && !mobileOpen) || undefined}
-        role={(narrow || focusShell) && mobileOpen ? "dialog" : undefined}
-        aria-modal={((narrow || focusShell) && mobileOpen) || undefined}
-        aria-label={t("shell.mainNavigation")}
+    <LearningStatusTarget.Provider value={sharedHeader ? statusTarget : null}>
+      <div
+        className={`app-layout${sharedHeader ? " shared-header-shell" : ""}${focusShell ? " focus-shell" : ""}${dashboardShell ? " nd-shell" : ""}${practiceShell ? " practice-shell" : ""}${myWordsShell ? " mywords-shell" : ""}`}
       >
-        <div className="sidebar-top">
-          <Logo onClick={() => setMobileOpen(false)} />
+        <aside
+          ref={sidebarRef}
+          className={`sidebar ${mobileOpen ? "mobile-open" : ""}`}
+          inert={((narrow || focusShell) && !mobileOpen) || undefined}
+          aria-hidden={((narrow || focusShell) && !mobileOpen) || undefined}
+          role={(narrow || focusShell) && mobileOpen ? "dialog" : undefined}
+          aria-modal={((narrow || focusShell) && mobileOpen) || undefined}
+          aria-label={t("shell.mainNavigation")}
+        >
+          <div className="sidebar-top">
+            <Logo onClick={() => setMobileOpen(false)} />
+            <button
+              className="mobile-close icon-button"
+              aria-label={t("shell.closeMenu")}
+              onClick={() => setMobileOpen(false)}
+            >
+              <X size={20} />
+            </button>
+          </div>
           <button
-            className="mobile-close icon-button"
-            aria-label={t("shell.closeMenu")}
+            className="button primary add-word-button"
+            onClick={openAddWord}
+          >
+            <Plus size={19} />
+            {mode === "live" && !canWriteVocabulary
+              ? t("shell.upgradePro")
+              : t("shell.newWord")}
+          </button>
+          <nav className="sidebar-nav" aria-label={t("shell.mainNavigation")}>
+            {navItems
+              .filter((item) => !item.liveOnly || mode === "live")
+              .map(({ to, labelKey, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    isActive ||
+                    (to === "/courses" &&
+                      location.pathname === "/english-learning")
+                      ? "nav-link active"
+                      : "nav-link"
+                  }
+                >
+                  <Icon size={20} />
+                  <span>{t(labelKey)}</span>
+                  {to === "/learn" && mode === "demo" && (
+                    <span className="nav-count">
+                      {items.filter(isDue).length}
+                    </span>
+                  )}
+                </NavLink>
+              ))}
+          </nav>
+          <div className="sidebar-tip" hidden>
+            <span className="tip-icon">
+              <Zap size={18} />
+            </span>
+            <div>
+              <strong>{t("shell.tipTitle")}</strong>
+              <p>{t("shell.tipBody")}</p>
+            </div>
+          </div>
+          <NavLink
+            to="/help"
+            className="help-link"
             onClick={() => setMobileOpen(false)}
           >
-            <X size={20} />
+            <HelpCircle size={19} />
+            {t("shell.helpCenter")}
+          </NavLink>
+          <button
+            className="button ghost sidebar-account"
+            type="button"
+            onClick={() => {
+              setMobileOpen(false);
+              navigate("/account");
+            }}
+          >
+            <UserRound size={20} />
+            {t("ux.account")}
           </button>
-        </div>
-        <button
-          className="button primary add-word-button"
-          onClick={openAddWord}
+          <nav
+            className="sidebar-legal-links"
+            aria-label={t("shell.legalNavigation")}
+          >
+            <Link to="/terms-of-service">{t("shell.terms")}</Link>
+            <Link to="/privacy-policy">{t("shell.privacy")}</Link>
+            <Link to="/refund-policy">{t("shell.refunds")}</Link>
+          </nav>
+        </aside>
+
+        {mobileOpen && (
+          <button
+            className="sidebar-scrim"
+            onClick={() => setMobileOpen(false)}
+            aria-label={t("shell.closeMenu")}
+          />
+        )}
+        <main
+          className="main-column"
+          inert={((sharedHeader || dashboardShell) && mobileOpen) || undefined}
         >
-          <Plus size={19} />
-          {mode === "live" && !canWriteVocabulary
-            ? t("shell.upgradePro")
-            : t("shell.newWord")}
-        </button>
-        <nav className="sidebar-nav" aria-label={t("shell.mainNavigation")}>
-          {navItems
+          <Topbar
+            redesigned={sharedHeader}
+            title={pageTitle ? t(pageTitle) : "GotIt"}
+            showBack={focusShell && !dashboardShell}
+            mobileOpen={mobileOpen}
+            menuRef={menuRef}
+            onOpenMenu={() => setMobileOpen(true)}
+            onLogout={onLogout}
+            onAddWord={openAddWord}
+          />
+          {sharedHeader && (
+            <div className="app-learning-status" ref={setStatusTarget} />
+          )}
+          {sharedHeader && !dashboardShell && <DefaultLearningStatusBar />}
+          <div className="page-content">
+            {sharedHeader &&
+              ["/private-lesson", "/achievements"].includes(
+                location.pathname,
+              ) && <LearningBackLink />}
+
+            {mode === "live" &&
+              user?.role !== "admin" &&
+              /^\/(?:transfer)(?:\/|$)/u.test(location.pathname) && (
+                <SubscriptionBanner />
+              )}
+            {(!focusedLearning || mode === "demo") &&
+              (mode === "demo" ||
+                (user?.role !== "admin" && status?.tier === "free")) && (
+                <div
+                  className={
+                    mode === "demo" ? "mode-banner demo" : "mode-banner live"
+                  }
+                >
+                  {mode === "demo"
+                    ? t("shell.demoBanner")
+                    : t("shell.readOnlyBanner")}
+                </div>
+              )}
+            {profileError && (
+              <div className="form-error" role="alert">
+                {profileError}
+                <button
+                  className="button ghost"
+                  onClick={() => void retryProfile()}
+                >
+                  {t("shell.reload")}
+                </button>
+              </div>
+            )}
+            {children}
+          </div>
+        </main>
+        <nav
+          className="mobile-tabs"
+          aria-label={t("ux.rootNavigation")}
+          inert={((sharedHeader || dashboardShell) && mobileOpen) || undefined}
+        >
+          {rootNavItems
             .filter((item) => !item.liveOnly || mode === "live")
             .map(({ to, labelKey, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
-                onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  isActive ||
-                  (to === "/courses" &&
-                    location.pathname === "/english-learning")
-                    ? "nav-link active"
-                    : "nav-link"
+                  `mobile-tab${isActive || (to === "/courses" && location.pathname === "/english-learning") ? " active" : ""}`
                 }
               >
-                <Icon size={20} />
+                <Icon size={24} aria-hidden="true" />
                 <span>{t(labelKey)}</span>
-                {to === "/learn" && mode === "demo" && (
-                  <span className="nav-count">
-                    {items.filter(isDue).length}
-                  </span>
-                )}
               </NavLink>
             ))}
         </nav>
-        <div className="sidebar-tip" hidden>
-          <span className="tip-icon">
-            <Zap size={18} />
-          </span>
-          <div>
-            <strong>{t("shell.tipTitle")}</strong>
-            <p>{t("shell.tipBody")}</p>
-          </div>
-        </div>
-        <NavLink
-          to="/help"
-          className="help-link"
-          onClick={() => setMobileOpen(false)}
-        >
-          <HelpCircle size={19} />
-          {t("shell.helpCenter")}
-        </NavLink>
-        <button
-          className="button ghost sidebar-account"
-          type="button"
-          onClick={() => {
-            setMobileOpen(false);
-            navigate("/account");
-          }}
-        >
-          <UserRound size={20} />
-          {t("ux.account")}
-        </button>
-        <nav
-          className="sidebar-legal-links"
-          aria-label={t("shell.legalNavigation")}
-        >
-          <Link to="/terms-of-service">{t("shell.terms")}</Link>
-          <Link to="/privacy-policy">{t("shell.privacy")}</Link>
-          <Link to="/refund-policy">{t("shell.refunds")}</Link>
-        </nav>
-      </aside>
-
-      {mobileOpen && (
-        <button
-          className="sidebar-scrim"
-          onClick={() => setMobileOpen(false)}
-          aria-label={t("shell.closeMenu")}
-        />
-      )}
-      <main
-        className="main-column"
-        inert={(dashboardShell && mobileOpen) || undefined}
-      >
-        <Topbar
-          variant={topbarVariant}
-          title={pageTitle ? t(pageTitle) : "GotIt"}
-          showBack={focusShell && !dashboardShell}
-          mobileOpen={mobileOpen}
-          menuRef={menuRef}
-          onOpenMenu={() => setMobileOpen(true)}
-          onAddWord={openAddWord}
-          onLogout={onLogout}
-        />
-        <div className="page-content">
-          {mode === "live" &&
-            user?.role !== "admin" &&
-            /^\/(?:transfer)(?:\/|$)/u.test(location.pathname) && (
-              <SubscriptionBanner />
-            )}
-          {(!focusedLearning || mode === "demo") &&
-            (mode === "demo" ||
-              (user?.role !== "admin" && status?.tier === "free")) && (
-              <div
-                className={
-                  mode === "demo" ? "mode-banner demo" : "mode-banner live"
-                }
-              >
-                {mode === "demo"
-                  ? t("shell.demoBanner")
-                  : t("shell.readOnlyBanner")}
-              </div>
-            )}
-          {profileError && (
-            <div className="form-error" role="alert">
-              {profileError}
-              <button
-                className="button ghost"
-                onClick={() => void retryProfile()}
-              >
-                {t("shell.reload")}
-              </button>
-            </div>
-          )}
-          {children}
-        </div>
-      </main>
-      <nav
-        className="mobile-tabs"
-        aria-label={t("ux.rootNavigation")}
-        inert={(dashboardShell && mobileOpen) || undefined}
-      >
-        {rootNavItems
-          .filter((item) => !item.liveOnly || mode === "live")
-          .map(({ to, labelKey, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `mobile-tab${isActive || (to === "/courses" && location.pathname === "/english-learning") ? " active" : ""}`
-              }
-            >
-              <Icon size={24} aria-hidden="true" />
-              <span>{t(labelKey)}</span>
-            </NavLink>
-          ))}
-      </nav>
-      {mode === "live" ? (
-        <LiveCaptureModal
-          open={addOpen && canWriteVocabulary}
-          onClose={() => setAddOpen(false)}
-        />
-      ) : (
-        <AddWordModal open={addOpen} onClose={() => setAddOpen(false)} />
-      )}
-    </div>
+        {mode === "live" ? (
+          <LiveCaptureModal
+            open={addOpen && canWriteVocabulary}
+            onClose={() => setAddOpen(false)}
+          />
+        ) : (
+          <AddWordModal open={addOpen} onClose={() => setAddOpen(false)} />
+        )}
+      </div>
+    </LearningStatusTarget.Provider>
   );
 }

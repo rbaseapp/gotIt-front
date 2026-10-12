@@ -276,7 +276,6 @@ export function DevDashboardPage() {
       className={`nd-dashboard${isProgram ? " nd-with-program" : " nd-words-only"}`}
     >
       <LearningStatusBar
-        variant="dashboard"
         goal={d?.dailyGoal}
         streakDays={d?.gamification.currentStreakDays}
         language={{

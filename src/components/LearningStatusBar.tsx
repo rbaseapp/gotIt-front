@@ -1,10 +1,12 @@
+import { useContext } from "react";
+import { createPortal } from "react-dom";
+import { LearningStatusTarget } from "../context/LearningStatusTarget";
 import { Flame, Globe2, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getLanguageOptions } from "../lib/languages";
 import "./LearningStatusBar.css";
 
 type LearningStatusBarProps = {
-  variant: "dashboard" | "practice" | "mywords";
   goal?: {
     type: "items" | "minutes" | "attempts";
     current: number;
@@ -22,7 +24,6 @@ type LearningStatusBarProps = {
 
 /** Controlled UI only: pages retain request, language-scope and navigation ownership. */
 export function LearningStatusBar({
-  variant,
   goal,
   streakDays,
   language,
@@ -34,34 +35,19 @@ export function LearningStatusBar({
     ? t(`settings.${goal.type === "items" ? "uniqueWords" : goal.type}`)
     : "";
   const options = [...new Set(language.options)].filter(Boolean);
-  const isWords = variant === "mywords";
-  return (
-    <div className="learning-status-bar" data-variant={variant}>
+  const target = useContext(LearningStatusTarget);
+  const bar = (
+    <div className="learning-status-bar">
       <div className="learning-status-inner">
         {goal && (
           <span className="learning-status-chip">
-            {variant === "dashboard" && <Target size={16} aria-hidden="true" />}
+            <Target size={16} aria-hidden="true" />
             <span>
-              {variant === "dashboard" ? (
-                t("newDashboard.goal", {
-                  current: goal.current,
-                  value: goal.value,
-                  unit,
-                })
-              ) : (
-                <>
-                  <b
-                    className={isWords ? undefined : "en"}
-                    dir={isWords ? undefined : "ltr"}
-                  >
-                    {isWords ? goal.current : `${goal.current} / ${goal.value}`}
-                  </b>
-                  {isWords && ` / ${goal.value}`}{" "}
-                  {isWords
-                    ? t(`myWords.${goal.type}`)
-                    : t("practiceDesign.today", { unit })}
-                </>
-              )}
+              {t("newDashboard.goal", {
+                current: goal.current,
+                value: goal.value,
+                unit,
+              })}
             </span>
             <progress
               className="learning-status-progress"
@@ -79,33 +65,19 @@ export function LearningStatusBar({
           <span className="learning-status-chip learning-status-streak">
             <Flame
               className="learning-status-flame"
-              size={isWords ? 20 : 16}
-              fill={variant === "dashboard" ? "none" : "currentColor"}
+              size={16}
               aria-hidden="true"
             />
-            <span>
-              {isWords ? (
-                <>
-                  <b>{streakDays}</b> {t("myWords.streak")}
-                </>
-              ) : (
-                t("newDashboard.streak", { count: streakDays })
-              )}
-            </span>
+            <span>{t("newDashboard.streak", { count: streakDays })}</span>
           </span>
         )}
         <div className="learning-status-language">
-          <Globe2
-            size={isWords ? 20 : variant === "dashboard" ? 17 : 18}
-            aria-hidden="true"
-          />
+          <Globe2 size={17} aria-hidden="true" />
           <label>
-            {!isWords && (
-              <span>
-                {languageName(language.translationCode)}{" "}
-                {i18n.dir() === "rtl" ? "←" : "→"}
-              </span>
-            )}
+            <span>
+              {languageName(language.translationCode)}{" "}
+              {i18n.dir() === "rtl" ? "←" : "→"}
+            </span>
             <select
               aria-label={t("vocabulary.sourceLanguage")}
               value={language.value}
@@ -115,7 +87,6 @@ export function LearningStatusBar({
               {options.map((code) => (
                 <option key={code} value={code}>
                   {languageName(code)}
-                  {isWords && ` — ${languageName(language.translationCode)}`}
                 </option>
               ))}
             </select>
@@ -124,4 +95,5 @@ export function LearningStatusBar({
       </div>
     </div>
   );
+  return target ? createPortal(bar, target) : bar;
 }

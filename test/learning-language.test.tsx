@@ -60,3 +60,19 @@ describe("learning language persistence", () => {
     expect(localStorage.getItem("gotit.learningLanguage")).toBe("ar");
   });
 });
+
+it("synchronizes the header selection with another mounted language consumer", async () => {
+  localStorage.setItem("gotit.learningLanguage", "en");
+  vi.mocked(product).mockResolvedValue({
+    languages: [
+      { code: "en", count: 2 },
+      { code: "ar", count: 10 },
+    ],
+  });
+  const header = renderHook(useLearningLanguage);
+  const page = renderHook(useLearningLanguage);
+  await waitFor(() => expect(page.result.current.loading).toBe(false));
+  act(() => header.result.current.setCode("ar"));
+  expect(page.result.current.code).toBe("ar");
+  expect(localStorage.getItem("gotit.learningLanguage")).toBe("ar");
+});

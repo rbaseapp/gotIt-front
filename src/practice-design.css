@@ -688,36 +688,6 @@
     display: none;
   }
 }
-@media (max-width: 1100px) {
-  [data-text-scale="large"]
-    .app-layout.practice-shell
-    > .main-column
-    > .topbar {
-    display: flex;
-    justify-content: space-between;
-  }
-  [data-text-scale="large"] .practice-shell .nd-desktop-brand,
-  [data-text-scale="large"] .practice-shell .nd-top-navigation {
-    display: none;
-  }
-  [data-text-scale="large"] .practice-shell .topbar-title {
-    display: flex;
-    margin: 0;
-  }
-  [data-text-scale="large"]
-    .practice-shell
-    .topbar-title
-    > span:not(.mobile-brand) {
-    display: none;
-  }
-  [data-text-scale="large"] .practice-shell .mobile-brand,
-  [data-text-scale="large"] .practice-shell .mobile-menu {
-    display: inline-flex;
-  }
-  [data-text-scale="large"] .practice-shell .mobile-tabs {
-    display: none;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .p3 * {
     animation: none !important;
@@ -818,98 +788,11 @@
   --nd-ink: #1f2b27;
   --nd-line: #ecefea;
 }
-.app-layout.practice-shell > .main-column > .topbar {
-  gap: 20px;
-  min-height: 71px;
-  padding-block: 12px;
-}
-.practice-shell .nd-top-navigation {
-  gap: 4px;
-  flex-wrap: nowrap;
-}
-.practice-shell .nd-top-navigation a {
-  padding: 10px 18px;
-}
-.practice-shell .nd-account-label {
-  display: none;
-}
-.practice-shell .user-button {
-  height: 44px;
-  gap: 6px;
-  padding: 4px 10px 4px 4px;
-}
-.practice-shell .topbar-actions {
-  gap: 10px;
-}
-.practice-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #1f2b27;
-  text-decoration: none;
-  font-family: Rubik, Assistant, system-ui, sans-serif;
-  font-weight: 800;
-  font-size: calc(1.65rem * var(--text-scale, 1));
-  letter-spacing: -0.02em;
-}
-.practice-logo span {
-  width: 66px;
-  height: 46px;
-  border-radius: 999px;
-  background: #2b6e58;
-  display: grid;
-  place-items: center;
-}
-.practice-pro {
-  display: inline-flex;
-  align-items: center;
-  background: #f5c542;
-  border: 0;
-  font-weight: 800;
-  padding: 0 20px;
-  border-radius: 999px;
-  min-height: 44px;
-  color: #1f2b27;
-  text-decoration: none;
-  white-space: nowrap;
-}
 [data-reduce-motion="true"] .p3 * {
   animation: none !important;
   transition: none !important;
 }
-@media (min-width: 861px) and (max-width: 1000px) {
-  .practice-shell .nd-top-navigation a {
-    padding: 10px 12px;
-  }
-}
-@media (max-width: 860px) {
-  .app-layout.practice-shell > .main-column > .topbar {
-    display: flex;
-    justify-content: space-between;
-  }
-  .practice-shell .nd-desktop-brand,
-  .practice-shell .nd-top-navigation {
-    display: none;
-  }
-  .practice-shell .topbar-title {
-    display: flex;
-    margin: 0;
-  }
-  .practice-shell .topbar-title > span:not(.mobile-brand) {
-    display: none;
-  }
-  .practice-shell .mobile-brand,
-  .practice-shell .mobile-menu {
-    display: inline-flex;
-  }
-  .practice-shell .mobile-tabs {
-    display: none;
-  }
-}
 @media (max-width: 560px) {
-  .practice-pro {
-    display: none;
-  }
   .p3 .hero h1 {
     flex-wrap: wrap;
   }

@@ -378,7 +378,6 @@ export function DevMyWordsPage() {
   return (
     <div className="mw">
       <LearningStatusBar
-        variant="mywords"
         goal={goal}
         streakDays={dashboard.data?.gamification.currentStreakDays}
         language={{
