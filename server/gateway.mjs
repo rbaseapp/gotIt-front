@@ -103,7 +103,9 @@ export function upstreamTimeoutMs(prefix, apiPath) {
   return prefix === "/gotit-api" &&
     /^\/api\/v1\/courses\/homework\/[0-9a-f-]+\/prepare$/i.test(apiPath)
     ? 220000
-    : 80000;
+    : prefix === "/gotit-api" && apiPath === "/api/v1/courses/artwork/generate"
+      ? 110000
+      : 80000;
 }
 function replayableHomeworkPreparation(prefix, apiPath, method, body) {
   if (

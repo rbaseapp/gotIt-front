@@ -12,6 +12,8 @@ import { product, wordPacksSchema, errorMessage } from "../lib/product";
 import { englishPathLevels, completedEnglishUnit } from "../lib/englishPath";
 import { getLanguageOptions } from "../lib/languages";
 import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
+import { programsDesignEnabled } from "../lib/programs";
+import { DevProgramsView } from "./DevProgramsView";
 
 export function ProgramsPage() {
   const { t, i18n } = useTranslation();
@@ -215,6 +217,23 @@ export function ProgramsPage() {
           </Link>
         </div>
       </div>
+    );
+  if (programsDesignEnabled())
+    return (
+      <DevProgramsView
+        courses={courses.data?.courses ?? []}
+        homework={courses.data?.homework ?? []}
+        packs={packs.data?.packs ?? []}
+        coursesLoading={courses.loading}
+        packsLoading={packs.loading}
+        coursesError={courses.error}
+        packsError={packs.error}
+        retryCourses={() => void courses.reload()}
+        retryPacks={() => void packs.reload()}
+        busy={busy}
+        onRemove={remove}
+        onNew={() => setNewOpen(true)}
+      />
     );
   return (
     <div className="ux-page programs-page page-enter">

@@ -9,6 +9,7 @@ import { navItems } from "../lib/appNavigation";
 import { dashboardDesignEnabled } from "../lib/dashboardDesign";
 import { practiceDesignEnabled } from "../lib/practiceDesign";
 import { myWordsDesignEnabled } from "../lib/myWords";
+import { programsDesignEnabled } from "../lib/programs";
 import { AddWordModal } from "./AddWordModal";
 import { Logo } from "./Logo";
 import { LiveCaptureModal } from "./LiveCaptureModal";
@@ -42,6 +43,11 @@ export function AppShell({
     location.pathname === "/vocabulary" &&
     myWordsDesignEnabled();
   const dashboardShell =
+    (mode === "live" &&
+      location.pathname === "/courses" &&
+      !location.search.includes("choose=1") &&
+      !location.search.includes("new=1") &&
+      programsDesignEnabled()) ||
     myWordsShell ||
     practiceShell ||
     (mode === "live" &&

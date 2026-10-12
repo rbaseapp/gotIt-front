@@ -21,6 +21,21 @@ it("allows long homework preparation without extending unrelated requests", () =
   );
 });
 
+it("allows bounded artwork generation without extending cache lookups", () => {
+  assert.equal(
+    upstreamTimeoutMs("/gotit-api", "/api/v1/courses/artwork/generate"),
+    110000,
+  );
+  assert.equal(
+    upstreamTimeoutMs("/gotit-api", "/api/v1/courses/artwork/lookup"),
+    80000,
+  );
+  assert.equal(
+    upstreamTimeoutMs("/core-api", "/api/v1/courses/artwork/generate"),
+    80000,
+  );
+});
+
 let upstream;
 let gateway;
 let upstreamOrigin;
