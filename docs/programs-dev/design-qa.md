@@ -14,3 +14,5 @@ Reference: user-supplied `התוכניות שלי · גרסה ה (מוחי עם 
 Validation: frontend 324 tests, typecheck, lint, production build; gateway 21 tests. Backend 262 fast tests, typecheck/build, one real PostgreSQL ownership/cache integration; dependency audit has no high findings.
 
 Live deployment acceptance is recorded in the project specification release note.
+
+Live acceptance follow-up: Web level label corrected in `9020e93`. Backend visual acceptance caught an incorrect English flag in the initial AI response; `941f59e` supplies explicit language/region-derived flag metadata and a new mascot subject policy to bypass that cache. All 262 Backend cases and the PostgreSQL integration pass again; changed-file formatting passes (the repository-wide formatting gate reports 218 unchanged baseline files). Real covers, active selection, reload reuse, empty filter, creation chooser and overview navigation were exercised on authenticated DEV. Evidence is canonical in specification document 39.
