@@ -1,15 +1,13 @@
+import { LearningStatusBar } from "../components/LearningStatusBar";
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpenText,
   Check,
   ChevronLeft,
-  Flame,
-  Globe2,
   MessageCircle,
   Play,
   Sparkles,
-  Target,
   Gift,
   Zap,
 } from "lucide-react";
@@ -29,7 +27,6 @@ import {
   selectedProgram,
 } from "../lib/learningNavigation";
 import { captureIsInactive } from "../lib/dashboardDesign";
-import { getLanguageOptions } from "../lib/languages";
 import {
   dashboardSchema,
   itemSchema,
@@ -83,7 +80,7 @@ function Segments({
 }
 
 export function DevDashboardPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { profile, user } = useApp();
   const language = useLearningLanguage();
   const [chosen, setChosen] = useState(() => homeLanguage(user));
@@ -235,7 +232,6 @@ export function DevDashboardPage() {
     : d?.counts.total
       ? smart
       : "/vocabulary";
-  const names = new Map(getLanguageOptions(i18n.resolvedLanguage || "en"));
   const languages = new Set(
     [
       code,
@@ -279,60 +275,23 @@ export function DevDashboardPage() {
     <div
       className={`nd-dashboard${isProgram ? " nd-with-program" : " nd-words-only"}`}
     >
-      <div className="nd-strip">
-        <div className="nd-wrap">
-          {d && (
-            <>
-              <span className="nd-chip">
-                <Target size={16} />
-                {t("newDashboard.goal", {
-                  current: d.dailyGoal.current,
-                  value: d.dailyGoal.value,
-                  unit,
-                })}
-                <span className="nd-mini-track">
-                  <i
-                    style={{
-                      width: `${Math.min(100, (d.dailyGoal.current / Math.max(1, d.dailyGoal.value)) * 100)}%`,
-                    }}
-                  />
-                </span>
-              </span>
-              <span className="nd-chip">
-                <Flame size={16} />
-                {t("newDashboard.streak", {
-                  count: d.gamification.currentStreakDays,
-                })}
-              </span>
-            </>
-          )}
-          <label className="nd-language">
-            <Globe2 size={17} />
-            <span>
-              {names.get(profile.defaultTranslationLanguage || "he") ||
-                profile.defaultTranslationLanguage}{" "}
-              ←
-            </span>
-            <select
-              aria-label={t("vocabulary.sourceLanguage")}
-              value={code}
-              disabled={language.loading}
-              onChange={(event) => {
-                setChosen(event.target.value);
-                language.setCode(event.target.value);
-                chooseHomeLanguage(event.target.value, user);
-                setRecentPage(1);
-              }}
-            >
-              {[...languages].map((value) => (
-                <option key={value} value={value}>
-                  {names.get(value) || value}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </div>
+      <LearningStatusBar
+        variant="dashboard"
+        goal={d?.dailyGoal}
+        streakDays={d?.gamification.currentStreakDays}
+        language={{
+          value: code,
+          options: [...languages],
+          translationCode: profile.defaultTranslationLanguage || "he",
+          disabled: language.loading,
+          onChange: (code) => {
+            setChosen(code);
+            language.setCode(code);
+            chooseHomeLanguage(code, user);
+            setRecentPage(1);
+          },
+        }}
+      />
       <div className="nd-wrap nd-content">
         <RemoteState
           loading={

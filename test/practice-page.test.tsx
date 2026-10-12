@@ -204,10 +204,9 @@ describe("DEV practice live behavior", () => {
     expect(
       await screen.findByRole("progressbar", { name: "מטרה יומית" }),
     ).toHaveAttribute("aria-valuenow", "7");
-    expect(screen.getByRole("progressbar")).toHaveAttribute(
-      "aria-valuemax",
-      "20",
-    );
+    expect(
+      screen.getByRole("progressbar", { name: "מטרה יומית" }),
+    ).toHaveAttribute("aria-valuemax", "20");
     expect(calls.every((call) => call.method === "GET")).toBe(true);
     const recent = screen.getByRole("region", { name: "המשך מאיפה שהפסקת" });
     const links = await within(recent).findAllByRole("link");

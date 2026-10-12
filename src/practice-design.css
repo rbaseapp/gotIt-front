@@ -132,64 +132,6 @@
 }
 
 /* strip */
-.p3 .strip {
-  background: var(--brand);
-  color: #fff;
-}
-.p3 .strip .wrap {
-  display: flex;
-  gap: 10px;
-  padding-block: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.p3 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 7px 16px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: calc(0.95rem * var(--text-scale, 1));
-  white-space: nowrap;
-  color: #fff;
-}
-.p3 .chip b {
-  font-weight: 800;
-}
-.p3 .chip .mini {
-  width: 52px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.25);
-  overflow: hidden;
-}
-.p3 .chip .mini span {
-  display: block;
-  height: 100%;
-  background: var(--gold);
-}
-.p3 .chip .fl {
-  color: #ff8a4c;
-}
-.p3 .lpair {
-  margin-inline-start: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: transparent;
-  color: #fff;
-  padding: 0 16px;
-  border-radius: 999px;
-  font-weight: 600;
-  min-height: 38px;
-}
-.p3 .lpair b {
-  color: var(--gold);
-}
 
 .p3 .p3m {
   display: flex;
@@ -707,9 +649,6 @@
   .p3 .sub {
     max-width: none;
   }
-  .p3 .lpair {
-    margin-inline-start: 0;
-  }
 }
 @media (max-width: 560px) {
   .p3 .wrap {
@@ -826,24 +765,6 @@
   cursor: wait;
 }
 .p3 .nav-btn:disabled {
-  cursor: default;
-}
-.p3 .lpair select {
-  font: inherit;
-  color: var(--gold);
-  font-weight: 800;
-  background: transparent;
-  border: 0;
-  max-width: 170px;
-  min-height: 38px;
-  cursor: pointer;
-}
-.p3 .lpair select option {
-  color: var(--ink);
-  background: white;
-}
-.p3 .lpair select:disabled {
-  opacity: 1;
   cursor: default;
 }
 .p3 .reverse {
@@ -984,16 +905,10 @@
   .practice-shell .mobile-tabs {
     display: none;
   }
-  .p3 .lpair {
-    margin-inline-start: auto;
-  }
 }
 @media (max-width: 560px) {
   .practice-pro {
     display: none;
-  }
-  .p3 .lpair {
-    margin-inline-start: 0;
   }
   .p3 .hero h1 {
     flex-wrap: wrap;

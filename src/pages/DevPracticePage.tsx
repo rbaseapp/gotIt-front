@@ -1,14 +1,7 @@
+import { LearningStatusBar } from "../components/LearningStatusBar";
 import { Fragment, useCallback, useState, useSyncExternalStore } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Flame,
-  Globe2,
-  Play,
-  Target,
-} from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Play, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { useSubscription } from "../context/SubscriptionContext";
@@ -298,64 +291,27 @@ export function DevPracticePage() {
   };
   return (
     <div className="p3">
-      <div className="strip">
-        <div className="wrap">
-          {goal && (
-            <span className="chip">
-              <span>
-                <b className="en" dir="ltr">
-                  {goal.current} / {goal.value}
-                </b>{" "}
-                {t("practiceDesign.today", { unit })}
-              </span>
-              <span className="mini" aria-hidden="true">
-                <span style={{ width: `${progress * 100}%` }} />
-              </span>
-            </span>
-          )}
-          {d && (
-            <span className="chip">
-              <Flame size={16} className="fl" fill="currentColor" />
-              {t("newDashboard.streak", {
-                count: d.gamification.currentStreakDays,
-              })}
-            </span>
-          )}
-          <label className="lpair">
-            <Globe2 size={18} />
-            <span>
-              {names.get(profile.defaultTranslationLanguage || "he") ||
-                profile.defaultTranslationLanguage}{" "}
-              {i18n.dir() === "rtl" ? "←" : "→"}
-            </span>
-            <select
-              aria-label={t("vocabulary.sourceLanguage")}
-              value={code}
-              disabled={language.loading || scoped}
-              onChange={(e) => {
-                language.setCode(e.target.value);
-                const next = new URLSearchParams(params);
-                next.set("language", e.target.value);
-                navigate(`/learn?${next}`);
-              }}
-            >
-              {[
-                ...new Set([
-                  code,
-                  ...language.languages.map((l) => l.code),
-                  ...profile.languages.map((l) => l.languageCode),
-                ]),
-              ]
-                .filter(Boolean)
-                .map((c) => (
-                  <option value={c} key={c}>
-                    {names.get(c) || c}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-      </div>
+      <LearningStatusBar
+        variant="practice"
+        goal={goal}
+        streakDays={d?.gamification.currentStreakDays}
+        language={{
+          value: code,
+          options: [
+            code,
+            ...language.languages.map((l) => l.code),
+            ...profile.languages.map((l) => l.languageCode),
+          ],
+          translationCode: profile.defaultTranslationLanguage || "he",
+          disabled: language.loading || scoped,
+          onChange: (code) => {
+            language.setCode(code);
+            const next = new URLSearchParams(params);
+            next.set("language", code);
+            navigate(`/learn?${next}`);
+          },
+        }}
+      />
       <div className="wrap p3m">
         <RemoteState
           loading={

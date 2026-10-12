@@ -1,95 +1,19 @@
-import { myWordsDesignEnabled } from "../lib/myWords";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  BarChart3,
-  BookOpen,
-  BookOpenText,
-  LibraryBig,
-  ChevronDown,
-  CreditCard,
-  Crown,
-  Flame,
-  Gamepad2,
-  HelpCircle,
-  LogOut,
-  Menu,
-  Plus,
-  Settings,
-  X,
-  Zap,
-  House,
-  Bookmark,
-  MessageCircle,
-  History,
-  UserRound,
-} from "lucide-react";
+import { HelpCircle, Plus, X, Zap, UserRound } from "lucide-react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
-import { isDue, levelFromXp } from "../lib/utils";
+import { useSubscription } from "../context/SubscriptionContext";
+import { isDue } from "../lib/utils";
+import { navItems, type TopbarVariant } from "../lib/appNavigation";
+import { dashboardDesignEnabled } from "../lib/dashboardDesign";
+import { practiceDesignEnabled } from "../lib/practiceDesign";
+import { myWordsDesignEnabled } from "../lib/myWords";
 import { AddWordModal } from "./AddWordModal";
 import { Logo } from "./Logo";
 import { LiveCaptureModal } from "./LiveCaptureModal";
 import { SubscriptionBanner } from "./SubscriptionBanner";
-import { useSubscription } from "../context/SubscriptionContext";
-import { useTranslation } from "react-i18next";
-import {
-  getSavedPrivateLessonLanguage,
-  listPrivateLessons,
-  PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
-  type SavedPrivateLesson,
-} from "../lib/privateLesson";
-import { getBilingualLanguageOptions } from "../lib/languages";
-import { learningReturn } from "../lib/learningNavigation";
-import { dashboardDesignEnabled } from "../lib/dashboardDesign";
-import { practiceDesignEnabled } from "../lib/practiceDesign";
-
-function PracticeLogo() {
-  return (
-    <Link to="/dashboard" className="practice-logo" aria-label="GotIt">
-      <span>
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="#F5C542"
-          aria-hidden="true"
-        >
-          <path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z" />
-        </svg>
-      </span>
-      GotIt
-    </Link>
-  );
-}
-
-function sameBaseLanguage(first: string, second: string) {
-  try {
-    return (
-      new Intl.Locale(first).language.toLowerCase() ===
-      new Intl.Locale(second).language.toLowerCase()
-    );
-  } catch {
-    return (
-      first.toLowerCase().split("-")[0] === second.toLowerCase().split("-")[0]
-    );
-  }
-}
-
-const navItems = [
-  { to: "/dashboard", labelKey: "ux.today", icon: House },
-  { to: "/courses", labelKey: "ux.programs", icon: BookOpen, liveOnly: true },
-  { to: "/vocabulary", labelKey: "ux.words", icon: Bookmark },
-  { to: "/learn", labelKey: "ux.practice", icon: Gamepad2 },
-  {
-    to: "/private-lesson?practice=free",
-    labelKey: "ux.freeChat",
-    icon: MessageCircle,
-    liveOnly: true,
-  },
-  { to: "/reading", labelKey: "ux.reading", icon: BookOpenText },
-  { to: "/history", labelKey: "ux.history", icon: History, liveOnly: true },
-  { to: "/settings", labelKey: "nav.settings", icon: Settings },
-];
+import { Topbar } from "./Topbar";
 
 const rootNavItems = navItems.slice(0, 4);
 
@@ -101,8 +25,7 @@ export function AppShell({
   onLogout: () => void;
 }) {
   const { t } = useTranslation();
-  const { profile, stats, items, mode, user, profileError, retryProfile } =
-    useApp();
+  const { items, mode, user, profileError, retryProfile } = useApp();
   const location = useLocation();
   const practiceShell =
     mode === "live" &&
@@ -128,17 +51,13 @@ export function AppShell({
   const navigate = useNavigate();
   const { hasEntitlement, status } = useSubscription();
   const canWriteVocabulary = hasEntitlement("vocabulary.write");
-  const defaultLessonLanguage =
-    profile.languages[0]?.languageCode || profile.defaultSourceLanguage || "en";
   const [addOpen, setAddOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [userOpen, setUserOpen] = useState(false);
   const [narrow, setNarrow] = useState(
     () => window.matchMedia?.("(max-width: 860px)").matches ?? false,
   );
   const sidebarRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
-  const accountRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const media = window.matchMedia?.("(max-width: 860px)");
     if (!media) return;
@@ -184,101 +103,24 @@ export function AppShell({
     };
   }, [narrow, focusShell, mobileOpen]);
   useEffect(() => {
-    if (!userOpen) return;
-    accountRef.current
-      ?.querySelector<HTMLAnchorElement>(".user-popover a")
-      ?.focus();
-    const dismiss = (event: PointerEvent) => {
-      if (!accountRef.current?.contains(event.target as Node))
-        setUserOpen(false);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setUserOpen(false);
-        accountRef.current
-          ?.querySelector<HTMLButtonElement>(".user-button")
-          ?.focus();
-      }
-    };
-    document.addEventListener("pointerdown", dismiss);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", dismiss);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [userOpen]);
-  const [latestLessonAssessment, setLatestLessonAssessment] =
-    useState<SavedPrivateLesson>();
-  const [assessmentLanguage, setAssessmentLanguage] = useState(() =>
-    getSavedPrivateLessonLanguage(defaultLessonLanguage),
-  );
-  useEffect(() => {
     const openSidebar = () => setMobileOpen(true);
     window.addEventListener("gotit:open-sidebar", openSidebar);
     return () => window.removeEventListener("gotit:open-sidebar", openSidebar);
   }, []);
-  useEffect(() => {
-    if (mode !== "live") {
-      setLatestLessonAssessment(undefined);
-      return;
-    }
-    let active = true;
-    const loadAssessment = () => {
-      const selectedLanguage = getSavedPrivateLessonLanguage(
-        defaultLessonLanguage,
-      );
-      setAssessmentLanguage(selectedLanguage);
-      void listPrivateLessons(50)
-        .then((lessons) => {
-          if (!active) return;
-          setLatestLessonAssessment(
-            lessons.find(
-              (lesson) =>
-                lesson.status === "completed" &&
-                lesson.report?.assessment &&
-                sameBaseLanguage(lesson.targetLanguageCode, selectedLanguage),
-            ),
-          );
-        })
-        .catch(() => {
-          // The assessment stays hidden when this account cannot access private lessons.
-        });
-    };
-    loadAssessment();
-    window.addEventListener("gotit:lesson-assessment-updated", loadAssessment);
-    window.addEventListener(
-      PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
-      loadAssessment,
-    );
-    return () => {
-      active = false;
-      window.removeEventListener(
-        "gotit:lesson-assessment-updated",
-        loadAssessment,
-      );
-      window.removeEventListener(
-        PRIVATE_LESSON_LANGUAGE_CHANGED_EVENT,
-        loadAssessment,
-      );
-    };
-  }, [defaultLessonLanguage, mode]);
   const pageTitle = focusedLearning
     ? "nav.privateLesson"
     : navItems.find((item) =>
         location.pathname.startsWith(item.to.split("?")[0]),
       )?.labelKey;
-  const latestAssessment = latestLessonAssessment?.report?.assessment;
-  const latestLevelLabel = latestAssessment?.overallLevel
-    ? latestAssessment.overallLevel
-    : latestAssessment?.levelRange
-      ? latestAssessment.levelRange.from === latestAssessment.levelRange.to
-        ? latestAssessment.levelRange.from
-        : `${latestAssessment.levelRange.from}–${latestAssessment.levelRange.to}`
-      : t("privateLesson.assessment.collecting");
-  const assessmentLanguageLabel =
-    getBilingualLanguageOptions().find(([code]) =>
-      sameBaseLanguage(code, assessmentLanguage),
-    )?.[1] ?? assessmentLanguage;
+  const topbarVariant: TopbarVariant = myWordsShell
+    ? "mywords"
+    : practiceShell
+      ? "practice"
+      : dashboardShell
+        ? "dashboard"
+        : "standard";
+  const openAddWord = () =>
+    canWriteVocabulary ? setAddOpen(true) : navigate("/billing");
 
   return (
     <div
@@ -305,9 +147,7 @@ export function AppShell({
         </div>
         <button
           className="button primary add-word-button"
-          onClick={() =>
-            canWriteVocabulary ? setAddOpen(true) : navigate("/billing")
-          }
+          onClick={openAddWord}
         >
           <Plus size={19} />
           {mode === "live" && !canWriteVocabulary
@@ -389,256 +229,16 @@ export function AppShell({
         className="main-column"
         inert={(dashboardShell && mobileOpen) || undefined}
       >
-        <header className="topbar">
-          {dashboardShell && (
-            <div className="nd-desktop-brand">
-              {myWordsShell ? (
-                <>
-                  <button
-                    className="mw-header-add"
-                    aria-label={t("vocabulary.newWord")}
-                    onClick={() =>
-                      canWriteVocabulary
-                        ? setAddOpen(true)
-                        : navigate("/billing")
-                    }
-                  >
-                    <Plus size={26} />
-                  </button>
-                  <Link className="mw-logo" to="/dashboard">
-                    GotIt
-                    <i aria-hidden="true" />
-                  </Link>
-                </>
-              ) : practiceShell ? (
-                <PracticeLogo />
-              ) : (
-                <Logo />
-              )}
-            </div>
-          )}
-          {dashboardShell && (
-            <nav
-              className="nd-top-navigation"
-              aria-label={t("shell.mainNavigation")}
-            >
-              {(myWordsShell
-                ? [
-                    navItems[0],
-                    navItems[2],
-                    navItems[3],
-                    navItems[4],
-                    navItems[1],
-                  ]
-                : practiceShell
-                  ? [
-                      navItems[0],
-                      navItems[1],
-                      navItems[3],
-                      navItems[2],
-                      navItems[4],
-                    ]
-                  : [
-                      navItems[0],
-                      navItems[1],
-                      navItems[4],
-                      navItems[3],
-                      navItems[2],
-                    ]
-              ).map(({ to, labelKey }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={({ isActive }) => (isActive ? "active" : "")}
-                >
-                  {t(
-                    (practiceShell || myWordsShell) && to === "/courses"
-                      ? myWordsShell
-                        ? "myWords.navPrograms"
-                        : "practiceDesign.navPrograms"
-                      : (practiceShell || myWordsShell) &&
-                          to.startsWith("/private-lesson")
-                        ? "practiceDesign.navTeacher"
-                        : labelKey,
-                  )}
-                </NavLink>
-              ))}
-            </nav>
-          )}
-          <div className="topbar-title">
-            <span className="mobile-brand">
-              {myWordsShell ? (
-                <>
-                  <button
-                    className="mw-header-add"
-                    aria-label={t("vocabulary.newWord")}
-                    onClick={() =>
-                      canWriteVocabulary
-                        ? setAddOpen(true)
-                        : navigate("/billing")
-                    }
-                  >
-                    <Plus size={26} />
-                  </button>
-                  <Link className="mw-logo" to="/dashboard">
-                    GotIt
-                    <i aria-hidden="true" />
-                  </Link>
-                </>
-              ) : practiceShell ? (
-                <PracticeLogo />
-              ) : (
-                <Logo />
-              )}
-            </span>
-            <button
-              ref={menuRef}
-              className="mobile-menu icon-button"
-              aria-label={t("shell.openMenu")}
-              aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen(true)}
-            >
-              <Menu size={22} />
-            </button>
-            <span>{pageTitle ? t(pageTitle) : "GotIt"}</span>
-          </div>
-          <div className="topbar-actions">
-            {(practiceShell || myWordsShell) && (
-              <Link className="practice-pro" to="/billing">
-                {myWordsShell && <Crown size={18} />}
-                {myWordsShell && status?.tier === "paid"
-                  ? "Pro"
-                  : myWordsShell && status?.tier === "trial"
-                    ? t("myWords.trial", {
-                        count: status.trial?.daysRemaining ?? 0,
-                      })
-                    : t("shell.upgradePro")}
-              </Link>
-            )}
-            {focusShell && !dashboardShell && (
-              <Link
-                className="button ghost focus-back"
-                to={
-                  location.pathname === "/achievements"
-                    ? "/account"
-                    : learningReturn(
-                        new URLSearchParams(location.search).get("return"),
-                        "/courses",
-                      )
-                }
-              >
-                {t(
-                  new URLSearchParams(location.search).has("pack")
-                    ? "common.back"
-                    : "ux.backHome",
-                )}
-              </Link>
-            )}
-            {!dashboardShell && latestLessonAssessment?.report && (
-              <Link
-                to="/private-lesson?view=level"
-                className="topbar-level-assessment"
-                title={`${t("shell.levelAssessment")} · ${assessmentLanguageLabel}`}
-              >
-                <BarChart3 size={16} />
-                <span>{assessmentLanguageLabel}</span>
-                <b>{latestLevelLabel}</b>
-              </Link>
-            )}
-            {mode === "demo" && (
-              <>
-                <div className="compact-stat streak">
-                  <Flame size={18} fill="currentColor" />
-                  <b>{stats.streak}</b>
-                  <span>{t("shell.days")}</span>
-                </div>
-                <div className="compact-stat xp">
-                  <Zap size={17} fill="currentColor" />
-                  <b>{stats.xp.toLocaleString()}</b>
-                  <span>{t("shell.demoXp")}</span>
-                </div>
-              </>
-            )}
-            <div className="user-menu-wrap" ref={accountRef}>
-              <button
-                className="user-button"
-                aria-expanded={userOpen}
-                aria-label={t("shell.accountMenu")}
-                onClick={() => setUserOpen((value) => !value)}
-              >
-                <span className="avatar">{profile.name.charAt(0)}</span>
-                {dashboardShell && (
-                  <span className="nd-account-label">{t("ux.account")}</span>
-                )}
-                <span className="user-copy">
-                  <b>{profile.name}</b>
-                  <small>
-                    {user?.role === "admin"
-                      ? "Admin"
-                      : mode === "demo"
-                        ? t("shell.demoLevel", { level: levelFromXp(stats.xp) })
-                        : status?.tier === "paid"
-                          ? t("shell.proUser")
-                          : status?.tier === "trial"
-                            ? t("shell.trial")
-                            : t("shell.freeAccount")}
-                  </small>
-                </span>
-                <ChevronDown size={16} />
-              </button>
-              {userOpen && (
-                <div className="user-popover">
-                  {dashboardShell && (
-                    <Link to="/account" onClick={() => setUserOpen(false)}>
-                      <UserRound size={18} />
-                      {t("ux.account")}
-                    </Link>
-                  )}
-                  {status && (
-                    <p className="account-plan">
-                      {t(
-                        status.tier === "paid"
-                          ? "subscription.proUser"
-                          : status.tier === "trial"
-                            ? "subscription.trialDays"
-                            : "subscription.trialEnded",
-                        { count: status.trial?.daysRemaining ?? 0 },
-                      )}
-                    </p>
-                  )}
-                  <Link to="/settings" onClick={() => setUserOpen(false)}>
-                    <Settings size={18} />
-                    {t("nav.settings")}
-                  </Link>
-                  <Link to="/history" onClick={() => setUserOpen(false)}>
-                    <History size={18} />
-                    {t("ux.history")}
-                  </Link>
-                  <Link to="/billing" onClick={() => setUserOpen(false)}>
-                    <CreditCard size={18} />
-                    {t("nav.billing")}
-                  </Link>
-                  <Link to="/transfer" onClick={() => setUserOpen(false)}>
-                    <BookOpen size={18} />
-                    {t("nav.transfer")}
-                  </Link>
-                  <Link to="/word-packs" onClick={() => setUserOpen(false)}>
-                    <LibraryBig size={18} />
-                    {t("nav.wordPacks")}
-                  </Link>
-                  <Link to="/help" onClick={() => setUserOpen(false)}>
-                    <HelpCircle size={18} />
-                    {t("shell.helpCenter")}
-                  </Link>
-                  <button onClick={onLogout}>
-                    <LogOut size={17} />
-                    {t("shell.logout")}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
+        <Topbar
+          variant={topbarVariant}
+          title={pageTitle ? t(pageTitle) : "GotIt"}
+          showBack={focusShell && !dashboardShell}
+          mobileOpen={mobileOpen}
+          menuRef={menuRef}
+          onOpenMenu={() => setMobileOpen(true)}
+          onAddWord={openAddWord}
+          onLogout={onLogout}
+        />
         <div className="page-content">
           {mode === "live" &&
             user?.role !== "admin" &&

@@ -1,3 +1,4 @@
+import { LearningStatusBar } from "../components/LearningStatusBar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -9,8 +10,6 @@ import {
   Check,
   ChevronDown,
   Filter,
-  Flame,
-  Globe2,
   GraduationCap,
   Grid2X2,
   List,
@@ -28,7 +27,6 @@ import { useFeedback } from "../components/Feedback";
 import { Modal } from "../components/Modal";
 import { RemoteState } from "../components/RemoteState";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
-import { getLanguageOptions } from "../lib/languages";
 import { LiveWordDetail, TagManager } from "./LiveVocabularyPage";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { useResource } from "../lib/useResource";
@@ -106,7 +104,7 @@ function ContextSentence({ text, word }: { text: string; word: string }) {
 }
 
 export function DevMyWordsPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { profile } = useApp();
   const { hasEntitlement } = useSubscription();
   const { confirm, toast } = useFeedback();
@@ -376,60 +374,25 @@ export function DevMyWordsPage() {
     filters.userStatus !== "all" ? filters.userStatus : "",
   ].filter(Boolean).length;
   const count = data?.summary;
-  const languageNames = new Map(
-    getLanguageOptions(i18n.resolvedLanguage || "en"),
-  );
   const goal = dashboard.data?.dailyGoal;
   return (
     <div className="mw">
-      <div className="strip">
-        <div className="wrap">
-          {goal && (
-            <span className="chip">
-              <span>
-                <b>{goal.current}</b> / {goal.value} {t(`myWords.${goal.type}`)}
-              </span>
-              <progress
-                max={Math.max(1, goal.value)}
-                value={goal.current}
-                aria-label={t("dashboard.dailyGoal")}
-              />
-            </span>
-          )}
-          {dashboard.data && (
-            <span className="chip">
-              <b>{dashboard.data.gamification.currentStreakDays}</b>
-              {t("myWords.streak")}
-              <Flame size={20} className="flame" fill="currentColor" />
-            </span>
-          )}
-          <div className="mw-language">
-            <Globe2 size={20} />
-            <label>
-              <span className="sr-only">{t("vocabulary.sourceLanguage")}</span>
-              <select
-                value={language.code}
-                onChange={(event) => {
-                  const code = event.target.value;
-                  language.setCode(code);
-                  setPageNumber(1);
-                  setSelected([]);
-                  setFilters((f) => ({ ...f, packIds: "" }));
-                }}
-              >
-                {language.languages.map((lang) => (
-                  <option key={lang.code} value={lang.code}>
-                    {languageNames.get(lang.code) || lang.code} —{" "}
-                    {languageNames.get(
-                      profile.defaultTranslationLanguage || "he",
-                    ) || profile.defaultTranslationLanguage}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-      </div>
+      <LearningStatusBar
+        variant="mywords"
+        goal={goal}
+        streakDays={dashboard.data?.gamification.currentStreakDays}
+        language={{
+          value: language.code,
+          options: language.languages.map((l) => l.code),
+          translationCode: profile.defaultTranslationLanguage || "he",
+          onChange: (code) => {
+            language.setCode(code);
+            setPageNumber(1);
+            setSelected([]);
+            setFilters((f) => ({ ...f, packIds: "" }));
+          },
+        }}
+      />
       <div className="wrap mw-main">
         <section className="hero" aria-labelledby="mw-h">
           <div className="ttl">
