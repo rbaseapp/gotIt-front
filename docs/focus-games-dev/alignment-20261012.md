@@ -52,3 +52,8 @@ Reference: owner video `WhatsApp Video 2026-10-12 at 01.06.22.mp4` (16.79 second
 - Drag/cloze has no automatic word playback. Both word/sentence playback paths require a committed successful receipt for the active exercise; a wrong answer or retry cannot unlock audio. The full sentence is spoken after solving.
 
 Verification: full Web check passed 295 unit tests in 50 files plus 20 gateway/security tests; final geometry/count polish received typecheck, zero-warning lint, the 27 focused tests and build. Local Chrome fixtures cover 1366?700 LTR and 390?700 Hebrew RTL, original sunglasses, word mouth anchors, cumulative cracks and measured coin destinations. Fixtures are isolated and do not prove provider output. DEV release and live acceptance are tracked in canonical specification document 37.
+
+
+### Owner clarification: central reward destination (2026-10-12)
+
+The annotated screenshot identifies the large XP reward pill above Mohi as the intended coin destination. It supersedes the previous header-icon destination. The measured target now belongs to `.xpbig img`; its entrance animation completion and counting-width changes refresh the endpoint. The header counter and receipt-derived totals remain unchanged. DEV release evidence is recorded in canonical document 37.

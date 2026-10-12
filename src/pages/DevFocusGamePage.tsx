@@ -2206,12 +2206,12 @@ function SessionEnd({
   const [displayStreak, setDisplayStreak] = useState(value.initialStreak);
   const [swallowed, setSwallowed] = useState(0);
   const sceneRef = useRef<HTMLElement>(null);
-  const xpCoinRef = useRef<HTMLImageElement>(null);
+  const rewardCoinRef = useRef<HTMLImageElement>(null);
   const coinOriginRef = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     if (phase !== "open") return;
     const scene = sceneRef.current;
-    const target = xpCoinRef.current;
+    const target = rewardCoinRef.current;
     const origin = coinOriginRef.current;
     if (!scene || !target || !origin) return;
     const measure = () => {
@@ -2235,9 +2235,14 @@ function SessionEnd({
     observer.observe(target);
     observer.observe(target.parentElement!);
     observer.observe(origin.parentElement!);
+    // The central reward pill scales in before the coins arrive. Re-measure
+    // its settled icon as well as layout changes from the counting label.
+    const reward = target.parentElement!;
+    reward.addEventListener("animationend", measure);
     window.addEventListener("resize", measure);
     return () => {
       observer.disconnect();
+      reward.removeEventListener("animationend", measure);
       window.removeEventListener("resize", measure);
     };
   }, [phase]);
@@ -2401,7 +2406,7 @@ function SessionEnd({
           </span>
         )}
         <span className="pill xpp">
-          <img ref={xpCoinRef} src={coin} alt="" />
+          <img src={coin} alt="" />
           <b className="en" key={phase === "open" ? displayXp : xp}>
             {phase === "open"
               ? displayXp
@@ -2517,7 +2522,7 @@ function SessionEnd({
               alt=""
             />
             <div className="xpbig">
-              <img src={coin} alt="" />
+              <img ref={rewardCoinRef} src={coin} alt="" />
               <span className="en">{displayXp}</span>
             </div>
           </>
