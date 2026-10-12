@@ -675,3 +675,16 @@
 .fg-session-end[data-phase="summary"] .fg-accessory {
   animation: none;
 }
+
+/* Keep the destination geometry stable while the reward appears. */
+.fg-session-end .xpbig {
+  animation: fg-reward-in 0.45s ease-out both;
+}
+@keyframes fg-reward-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

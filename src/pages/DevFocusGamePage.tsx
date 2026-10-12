@@ -2235,14 +2235,9 @@ function SessionEnd({
     observer.observe(target);
     observer.observe(target.parentElement!);
     observer.observe(origin.parentElement!);
-    // The central reward pill scales in before the coins arrive. Re-measure
-    // its settled icon as well as layout changes from the counting label.
-    const reward = target.parentElement!;
-    reward.addEventListener("animationend", measure);
     window.addEventListener("resize", measure);
     return () => {
       observer.disconnect();
-      reward.removeEventListener("animationend", measure);
       window.removeEventListener("resize", measure);
     };
   }, [phase]);

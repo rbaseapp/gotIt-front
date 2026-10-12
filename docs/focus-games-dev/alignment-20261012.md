@@ -57,3 +57,5 @@ Verification: full Web check passed 295 unit tests in 50 files plus 20 gateway/s
 ### Owner clarification: central reward destination (2026-10-12)
 
 The annotated screenshot identifies the large XP reward pill above Mohi as the intended coin destination. It supersedes the previous header-icon destination. The measured target now belongs to `.xpbig img`; its entrance animation completion and counting-width changes refresh the endpoint. The header counter and receipt-derived totals remain unchanged. DEV release evidence is recorded in canonical document 37.
+
+The central reward fades in with stable geometry so its entrance cannot shift the measured coin destination. ResizeObserver still follows counter width and responsive layout.
