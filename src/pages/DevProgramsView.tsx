@@ -224,7 +224,7 @@ export function DevProgramsView({
                   {["beginner", "intermediate", "advanced"].includes(
                     active.level,
                   )
-                    ? t(`wordPacks.levels.${active.level}`, {
+                    ? t(`packs.levels.${active.level}`, {
                         defaultValue: active.level,
                       })
                     : active.level}
