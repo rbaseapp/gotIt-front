@@ -1,59 +1,13 @@
 import { useEffect, useState } from "react";
 import { ImageOff, LoaderCircle, RotateCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
-import { product } from "../lib/product";
 import { useApp } from "../context/AppContext";
-
-type Artwork =
-  | { kind: "course"; courseId: string }
-  | { kind: "mascot"; languageCode: string }
-  | { kind: "path" };
-const response = z.object({
-  image: z
-    .object({
-      dataUrl: z
-        .string()
-        .max(4_100_000)
-        .regex(/^data:image\/webp;base64,[A-Za-z0-9+/]+=*$/u),
-      fingerprint: z.string(),
-    })
-    .nullable(),
-});
-// Resolve cached images concurrently, serialize only paid misses, and coalesce hero/card
-// requests. Account scope prevents a shared browser session from reusing private art.
-let generationQueue: Promise<unknown> = Promise.resolve();
-const pending = new Map<string, Promise<string>>();
-const images = new Map<string, string>();
-function loadArtwork(key: string, input: Artwork) {
-  const cached = images.get(key);
-  if (cached) return Promise.resolve(cached);
-  const current = pending.get(key);
-  if (current) return current;
-  const load = product(response, "courses/artwork/lookup", "POST", input)
-    .then((result) => {
-      if (result.image) return result.image;
-      const generation = generationQueue
-        .catch(() => undefined)
-        .then(() =>
-          product(response, "courses/artwork/generate", "POST", input),
-        )
-        .then((result) => {
-          if (!result.image) throw new Error("Unavailable");
-          return result.image;
-        });
-      generationQueue = generation;
-      return generation;
-    })
-    .then((image) => {
-      if (images.size >= 100) images.delete(images.keys().next().value!);
-      images.set(key, image.dataUrl);
-      return image.dataUrl;
-    })
-    .finally(() => pending.delete(key));
-  pending.set(key, load);
-  return load;
-}
+import {
+  artworkKey,
+  cachedArtwork,
+  loadArtwork,
+  type Artwork,
+} from "../lib/programArtwork";
 export function ProgramArtwork({
   input,
   revision = "",
@@ -68,7 +22,7 @@ export function ProgramArtwork({
   const { t } = useTranslation();
   const { user } = useApp();
   const serialized = JSON.stringify(input);
-  const key = `${user?.applicationId}:${user?.id}:${serialized}:${revision}`;
+  const key = artworkKey(user, input, revision);
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<{
     key: string;
@@ -89,7 +43,8 @@ export function ProgramArtwork({
       current = false;
     };
   }, [key, serialized, attempt]);
-  const visible = state?.key === key ? state : undefined;
+  const visible =
+    state?.key === key ? state : { src: cachedArtwork(key), failed: false };
   return (
     <div className={`pg-art ${className}`}>
       {visible?.src ? (

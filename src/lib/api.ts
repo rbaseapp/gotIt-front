@@ -7,6 +7,7 @@ import {
 } from "./contracts";
 import type { AuthTokens, AuthUser, ProfilePatch } from "../types";
 import i18n from "../i18n";
+import { invalidateResourceCache } from "./resourceCache";
 
 const coreUrl = (import.meta.env.VITE_CORE_API_URL || "/core-api").replace(
   /\/$/,
@@ -204,6 +205,7 @@ export function setTokens(value: AuthTokens) {
   }
 }
 export function clearTokens() {
+  invalidateResourceCache(true);
   generation++;
   tokens = null;
   expiresAt = 0;
@@ -397,7 +399,24 @@ export const api = {
     eventId?: string,
   ): Promise<unknown> {
     try {
-      return await this.authorized(productUrl, path, method, body, eventId);
+      const result = await this.authorized(
+        productUrl,
+        path,
+        method,
+        body,
+        eventId,
+      );
+      if (
+        method !== "GET" &&
+        !path.startsWith("courses/artwork/") &&
+        !(
+          method === "POST" &&
+          (path === "practice/sessions" ||
+            /^practice\/sessions\/[^/]+\/exercises$/u.test(path))
+        )
+      )
+        invalidateResourceCache();
+      return result;
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         clearTokens();
@@ -458,7 +477,7 @@ export const api = {
     return checked(parseProfile, await this.authorized(productUrl, "profile"));
   },
   async saveProfile(profile: ProfilePatch): Promise<ProfilePatch> {
-    return checked(
+    const result = checked(
       parseProfile,
       await this.authorized(
         productUrl,
@@ -467,6 +486,8 @@ export const api = {
         profilePayload(profile),
       ),
     );
+    invalidateResourceCache();
+    return result;
   },
   async logout() {
     const refreshToken = storedRefresh() || tokens?.refreshToken;

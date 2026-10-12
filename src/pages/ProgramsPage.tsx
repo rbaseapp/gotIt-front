@@ -8,6 +8,8 @@ import { LanguageCombobox } from "../components/LanguageCombobox";
 import { useFeedback } from "../components/Feedback";
 import { courseApi, type Course } from "../lib/courses";
 import { useResource } from "../lib/useResource";
+import { useCachedResource } from "../lib/useCachedResource";
+import { resourceKey } from "../lib/resourceCache";
 import { product, wordPacksSchema, errorMessage } from "../lib/product";
 import { englishPathLevels, completedEnglishUnit } from "../lib/englishPath";
 import { getLanguageOptions } from "../lib/languages";
@@ -33,9 +35,13 @@ export function ProgramsPage() {
     "he";
   const [completedOpen, setCompletedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const courses = useResource(useCallback(() => courseApi.list(), []));
-  const packs = useResource(
+  const courses = useCachedResource(
+    useCallback(() => courseApi.list(), []),
+    resourceKey(user, "courses"),
+  );
+  const packs = useCachedResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
+    resourceKey(user, "word-packs"),
   );
   const prepared = useResource(
     useCallback(

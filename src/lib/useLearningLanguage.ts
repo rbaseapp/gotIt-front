@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { z } from "zod";
 import { useApp } from "../context/AppContext";
 import { product } from "./product";
-import { useResource } from "./useResource";
+import { useCachedResource } from "./useCachedResource";
+import { resourceKey } from "./resourceCache";
+import { languageListSchema } from "./navigationResources";
 
-const languageList = z.object({
-  languages: z.array(z.object({ code: z.string(), count: z.number() })),
-});
 const storageKey = "gotit.learningLanguage";
 const selectionEvent = "gotit:learning-language-changed";
 
 export function useLearningLanguage() {
-  const { profile } = useApp();
+  const { profile, user } = useApp();
   const [chosen, setChosen] = useState(() => {
     try {
       return window.localStorage.getItem(storageKey) || "";
@@ -29,8 +27,9 @@ export function useLearningLanguage() {
     setChosen(code);
     window.dispatchEvent(new CustomEvent(selectionEvent, { detail: code }));
   }, []);
-  const resource = useResource(
-    useCallback(() => product(languageList, "dashboard/languages"), []),
+  const resource = useCachedResource(
+    useCallback(() => product(languageListSchema, "dashboard/languages"), []),
+    resourceKey(user, "dashboard/languages"),
   );
   const reloadLanguages = resource.reload;
   useEffect(() => {

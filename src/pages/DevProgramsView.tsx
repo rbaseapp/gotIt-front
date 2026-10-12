@@ -26,12 +26,14 @@ import { getLanguageOptions } from "../lib/languages";
 import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
 import {
   courseProgram,
+  courseArtworkRevision,
   pathProgram,
   programPercent,
   type Program,
 } from "../lib/programs";
 import { dashboardSchema, product, query, type WordPack } from "../lib/product";
-import { useResource } from "../lib/useResource";
+import { useCachedResource } from "../lib/useCachedResource";
+import { resourceKey } from "../lib/resourceCache";
 import { ProgramArtwork } from "../components/ProgramArtwork";
 import { LearningStatusSource } from "../components/LearningStatusSource";
 import { RemoteState } from "../components/RemoteState";
@@ -52,27 +54,20 @@ function artwork(program: Program) {
 }
 function artRevision(program: Program) {
   const course = program.course;
-  return course
-    ? JSON.stringify([
-        course.activeVersion,
-        course.draftVersion,
-        course.preferences.goal,
-        course.preferences.path,
-      ])
-    : "";
+  return course ? courseArtworkRevision(course) : "";
 }
 function useProgramDashboard(code: string) {
-  return useResource(
+  const { user } = useApp();
+  const path = `dashboard${query({ sourceLanguageCode: code })}`;
+  return useCachedResource(
     useCallback(
       async () => ({
+        ...(await product(dashboardSchema, path)),
         language: code,
-        data: await product(
-          dashboardSchema,
-          `dashboard${query({ sourceLanguageCode: code })}`,
-        ),
       }),
-      [code],
+      [code, path],
     ),
+    resourceKey(user, path),
   );
 }
 
@@ -128,7 +123,7 @@ export function DevProgramsView({
   const code = active?.language ?? profile.defaultSourceLanguage ?? "en";
   const dashboard = useProgramDashboard(code);
   const metrics =
-    dashboard.data?.language === code ? dashboard.data.data : undefined;
+    dashboard.data?.language === code ? dashboard.data : undefined;
   const select = (program: Program) => {
     chooseProgram(program.id, user, program.language);
     setSelection(program.id);

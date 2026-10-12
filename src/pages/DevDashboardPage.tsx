@@ -18,6 +18,8 @@ import { DashboardArticle } from "../components/DashboardArticle";
 import { DashboardQuickReview } from "../components/DashboardQuickReview";
 import { RemoteState } from "../components/RemoteState";
 import { useResource } from "../lib/useResource";
+import { useCachedResource } from "../lib/useCachedResource";
+import { resourceKey } from "../lib/resourceCache";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { courseApi, lessonLink } from "../lib/courses";
 import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
@@ -87,7 +89,10 @@ export function DevDashboardPage() {
   const code = chosen || language.code;
   const selected = selectedProgram(user, code);
   const [recentPage, setRecentPage] = useState(1);
-  const courses = useResource(useCallback(() => courseApi.list(), []));
+  const courses = useCachedResource(
+    useCallback(() => courseApi.list(), []),
+    resourceKey(user, "courses"),
+  );
   const dashboard = useResource(
     useCallback(
       async () => ({

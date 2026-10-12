@@ -156,3 +156,11 @@ export const programPercent = (
         Math.max(0, Math.round((program.completed / program.total) * 100)),
       )
     : 0;
+export function courseArtworkRevision(course: Course) {
+  return JSON.stringify([
+    course.activeVersion,
+    course.draftVersion,
+    course.preferences.goal,
+    course.preferences.path,
+  ]);
+}

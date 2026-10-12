@@ -10,6 +10,7 @@ import { dashboardDesignEnabled } from "../lib/dashboardDesign";
 import { practiceDesignEnabled } from "../lib/practiceDesign";
 import { myWordsDesignEnabled } from "../lib/myWords";
 import { programsDesignEnabled } from "../lib/programs";
+import { warmNavigationResources } from "../lib/navigationResources";
 import { AddWordModal } from "./AddWordModal";
 import { Logo } from "./Logo";
 import { LiveCaptureModal } from "./LiveCaptureModal";
@@ -31,7 +32,32 @@ export function AppShell({
   onLogout: () => void;
 }) {
   const { t } = useTranslation();
-  const { items, mode, user, profileError, retryProfile } = useApp();
+  const { items, mode, user, profile, profileError, retryProfile } = useApp();
+  useEffect(() => {
+    if (mode !== "live" || !user || profileError || !programsDesignEnabled())
+      return;
+    // Start route downloads and independent reads while the learner is on the
+    // current screen, instead of waiting for the next navigation click.
+    void import("../pages/ProgramsPage").catch(() => undefined);
+    void import("../pages/DevMyWordsPage").catch(() => undefined);
+    let code = profile.defaultSourceLanguage || "";
+    try {
+      code = localStorage.getItem("gotit.learningLanguage") || code;
+    } catch {
+      /* Memory-only browsing. */
+    }
+    void warmNavigationResources(
+      user,
+      code,
+      profile.defaultTranslationLanguage || "",
+    ).catch(() => undefined);
+  }, [
+    mode,
+    user,
+    profileError,
+    profile.defaultSourceLanguage,
+    profile.defaultTranslationLanguage,
+  ]);
   const location = useLocation();
   const sharedHeader = mode === "live" && dashboardDesignEnabled();
   const practiceShell =

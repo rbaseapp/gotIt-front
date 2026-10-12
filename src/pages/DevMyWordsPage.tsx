@@ -29,11 +29,15 @@ import { RemoteState } from "../components/RemoteState";
 import { LiveCaptureModal } from "../components/LiveCaptureModal";
 import { LiveWordDetail, TagManager } from "./LiveVocabularyPage";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
-import { useResource } from "../lib/useResource";
+import { useCachedResource } from "../lib/useCachedResource";
+import { resourceKey } from "../lib/resourceCache";
+import {
+  wordCardsSchema as listSchema,
+  wordCardsPath,
+} from "../lib/navigationResources";
 import {
   dashboardSchema,
   errorMessage,
-  page,
   product,
   query,
   tagSchema,
@@ -47,7 +51,6 @@ import {
   shortPartOfSpeech,
   sourceHost,
   sourceLink,
-  wordCardSchema,
   type WordCard,
 } from "../lib/myWords";
 import { speak } from "../lib/utils";
@@ -56,16 +59,6 @@ import wave from "../assets/mywords/card-wave.svg";
 import "../dashboard-design.css";
 import "../mywords-design.css";
 
-const listSchema = page(wordCardSchema).extend({
-  summary: z.object({
-    total: z.number(),
-    new: z.number(),
-    mastered: z.number(),
-    due: z.number(),
-    tags: z.record(z.string(), z.number()),
-    topics: z.record(z.string(), z.number()),
-  }),
-});
 const receipt = z.object({ ids: z.array(uuid), action: z.string() });
 const origins = ["chrome_extension", "web_manual", "program"];
 const statuses = ["new", "learning", "reviewing", "mastered"];
@@ -105,7 +98,7 @@ function ContextSentence({ text, word }: { text: string; word: string }) {
 
 export function DevMyWordsPage() {
   const { t } = useTranslation();
-  const { profile } = useApp();
+  const { profile, user } = useApp();
   const { hasEntitlement } = useSubscription();
   const { confirm, toast } = useFeedback();
   const canWrite = hasEntitlement("vocabulary.write");
@@ -154,14 +147,15 @@ export function DevMyWordsPage() {
     const timer = window.setTimeout(() => change("search", search.trim()), 250);
     return () => window.clearTimeout(timer);
   }, [search, change, filters.search]);
-  const key = `learning-items${query({ ...filters, sourceLanguageCode: language.code || undefined, view: "cards", limit: "9", page: String(pageNumber) })}`;
-  const library = useResource(
+  const key = wordCardsPath(language.code, filters, pageNumber);
+  const library = useCachedResource(
     useCallback(
       async () => ({ ...(await product(listSchema, key)), key }),
       [key],
     ),
+    resourceKey(user, key),
   );
-  const dashboard = useResource(
+  const dashboard = useCachedResource(
     useCallback(
       async () => ({
         ...(await product(
@@ -172,8 +166,12 @@ export function DevMyWordsPage() {
       }),
       [language.code],
     ),
+    resourceKey(
+      user,
+      `dashboard${query({ sourceLanguageCode: language.code || undefined })}`,
+    ),
   );
-  const tags = useResource(
+  const tags = useCachedResource(
     useCallback(
       () =>
         product(
@@ -185,8 +183,9 @@ export function DevMyWordsPage() {
         ),
       [tagCursor],
     ),
+    resourceKey(user, `tags${query({ limit: "100", cursor: tagCursor })}`),
   );
-  const packs = useResource(
+  const packs = useCachedResource(
     useCallback(
       () =>
         product(
@@ -194,6 +193,10 @@ export function DevMyWordsPage() {
           `word-packs${query({ sourceLanguageCode: language.code || undefined, translationLanguageCode: profile.defaultTranslationLanguage || undefined })}`,
         ),
       [language.code, profile.defaultTranslationLanguage],
+    ),
+    resourceKey(
+      user,
+      `word-packs${query({ sourceLanguageCode: language.code || undefined, translationLanguageCode: profile.defaultTranslationLanguage || undefined })}`,
     ),
   );
   const [extra, setExtra] = useState<{
