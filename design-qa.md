@@ -23,13 +23,36 @@ DEV implementation; artwork is recreated rather than extracted from the screensh
 the accessible back action and actual availability/loading/error states remain.
 P3: headline Sparkles icons differ from the source's small yellow rays.
 
-Final screenshot persistence, a comparison after the last CSS refinement, 320px
-RTL/LTR, keyboard browser acceptance and authenticated deployed checks could not
-be completed: the follow-up turn has no connected browsers. No screenshot path is
-claimed. Component/state regression coverage passed; it does not replace browser QA.
+## Reconnected QA — 2026-10-13
 
-Implementation checklist: reconnect browser, capture final desktop and 320px RTL/LTR,
-confirm no overflow/focus issues, manually deploy the exact Web commit to DEV,
-verify both navigation paths without creating a course merely to test the chooser.
+Final desktop screenshot: `docs/program-chooser/evidence/desktop.png` at the
+1536×1024 CSS viewport. Compared again with the conversation reference after the
+last CSS refinement: two-card geometry, typography, CTA placement and feature
+wrapping are acceptable. Shared header differences and regenerated artwork are
+intentional; yellow headline Sparkles remain P3. No unresolved P0/P1/P2 finding.
 
-final result: blocked
+Focused comparisons: books and Mohi art, language controls and card headings/CTAs
+were checked in the full-resolution desktop image; important text is readable.
+The reference raster is 1536×1024; the saved desktop transport raster is
+1521×1014. Mobile transport outputs are 138×897 (RTL full-page overview) and
+305×858 (LTR viewport). Chrome's screenshot transport can downsample and omit the
+reserved scrollbar edge. DOM geometry at the stated CSS sizes, rather than these
+transport raster dimensions, verifies responsive layout. No pixel identity claim.
+
+320×900 CSS checks in Hebrew/RTL and English/LTR both report document client and
+scroll width 305px (15px reserved scrollbar), with no horizontal overflow.
+`evidence/mobile-rtl.png` and `evidence/mobile-ltr.png` preserve viewport captures.
+Both illustrations load. Shared combobox keyboard ArrowDown opens the list and
+Escape closes it. Component tests separately verify core navigation/error states.
+
+Remaining acceptance: actual DEV release and authenticated navigation are recorded
+in the release evidence after deployment. Full browser automation and physical
+devices are outside these focused checks.
+
+Follow-up: live testing at an effective 480 CSS pixels exposed 10px overflow
+from the scaled Mohi raster. `06b1764` clips artwork only at the mobile breakpoint.
+Fresh 320×900 browser contexts in both locales confirm client/scroll width 305px;
+`evidence/mobile-rtl-final.png` and `mobile-ltr-final.png` record the corrected UI.
+The build passed again. This CSS correction does not change any interaction.
+
+final result: passed

@@ -42,9 +42,10 @@ Artwork was visually inspected. Dynamic program data is never baked into images.
 - Twelve chooser regression cases cover both production and DEV views: pending
   catalog, unavailable pair, changed pair, verified navigation, save/API failures,
   retry, and selected-language propagation into personal setup.
-- Desktop browser comparison at 1536×1024 was performed before the final small
-  spacing/feature-text refinement. Mobile/LTR browser QA and final DEV acceptance
-  remain unverified because the browser connection disappeared on the follow-up turn.
+- Final desktop browser comparison at 1536×1024 and 320px Hebrew/RTL and
+  English/LTR checks passed after reconnecting the browser. Document scroll width
+  equals client width in both mobile locales. Keyboard ArrowDown/Escape passed.
+  Screenshots are under `evidence/`; root `design-qa.md` records transport sizes.
 - Existing main-chunk size and third-party Rollup annotation warnings remain.
 
 ## Release
@@ -52,5 +53,17 @@ Artwork was visually inspected. Dynamic program data is never baked into images.
 Base: `81798c0c8ce5bea0844d9f700d82e490fa85fe1b` (remote DEV and live DEV Web).
 Only Web changes; no API/schema/migration/provider configuration changes.
 DEV service: `srv-dar6dng473hc73a0ns1g`; auto-deploy is disabled. Publishing `dev`
-does not deploy that service. Manual exact-commit deployment and browser acceptance
-are pending. Rollback is the preceding DEV Web commit above. No production release.
+does not deploy that service. Web commit `9734604b4acc5bac365d8163f21a9f65616382a2`
+was manually deployed as `dep-db70u90u01pc73bt9f10` on 2026-10-13; Render reports
+Deploy succeeded / Live. Authenticated DEV shows the new chooser and both raster
+illustrations. The personal action opens the existing intake form with en/he;
+the prepared action uses the published catalog and opens the existing map.
+No course was created and no lesson was begun for acceptance. Rollback is the
+preceding DEV Web commit above. No production release.
+
+Mobile follow-up: `06b1764883f8cef69d9dcac08713e3fa2699a868` clips the scaled
+mascot within its mobile artwork slot. The build passed again; fresh local 320px
+RTL/LTR checks passed. This commit is Live as `dep-db7114vf3r2c73crbv40` (57.8s).
+Authenticated final DEV check at 319 CSS pixels confirms `overflow: clip`,
+client/scroll width 297px, the new heading and loaded illustrations. The browser
+profile's page zoom means physical viewport settings differ from CSS dimensions.

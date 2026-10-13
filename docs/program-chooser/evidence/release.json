@@ -1,0 +1,20 @@
+{
+    "date":  "2026-10-13",
+    "service":  "srv-dar6dng473hc73a0ns1g",
+    "commit":  "06b1764883f8cef69d9dcac08713e3fa2699a868",
+    "deployment":  "dep-db7114vf3r2c73crbv40",
+    "status":  "Live",
+    "url":  "https://gotit-dev.rbaseapp.com/courses?choose=1",
+    "vitest":  341,
+    "gateway":  21,
+    "typecheck":  "passed",
+    "lint":  "passed",
+    "build":  "passed",
+    "desktopVisual":  "passed",
+    "localMobileRtlLtr":  "passed, 320 CSS pixels, no horizontal overflow",
+    "personalNavigation":  "passed",
+    "preparedNavigation":  "passed",
+    "browserErrorWarningLogs":  0,
+    "productionDeployed":  false,
+    "liveMobile":  "319 CSS pixels; client/scroll=297; clipped art verified"
+}
