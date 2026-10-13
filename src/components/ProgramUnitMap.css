@@ -1,4 +1,4 @@
-.page-content:has(.dev-program-map) {
+.app-layout > .main-column > .page-content:has(.dev-program-map) {
   max-width: 1448px;
   padding: 20px 36px;
 }
@@ -587,7 +587,7 @@
   }
 }
 @media (max-width: 760px) {
-  .page-content:has(.dev-program-map) {
+  .app-layout > .main-column > .page-content:has(.dev-program-map) {
     padding: 12px;
   }
   .english-path-page.dev-program-map {

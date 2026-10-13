@@ -12,6 +12,9 @@ import i18n from "../../../src/i18n";
 import "../../../src/styles.css";
 import "../../../src/production.css";
 import "../../../src/ux.css";
+import "../../../src/figma-review.css";
+import "../../../src/path-review.css";
+import "../../../src/learning-map.css";
 await i18n.changeLanguage(
   new URLSearchParams(location.search).get("locale") || "he",
 );
@@ -37,7 +40,7 @@ function Fixture() {
     })),
   };
   return (
-    <div className="app-layout shared-header-shell">
+    <div className="app-layout shared-header-shell focus-shell">
       <main className="main-column">
         <Topbar
           redesigned
@@ -60,7 +63,7 @@ function Fixture() {
           }}
         />
         <div className="page-content">
-          <div className="english-path-page dev-program-map">
+          <div className="english-path-page live-page path-view-map dev-program-map">
             <ProgramUnitMap
               current={pack}
               packs={[
