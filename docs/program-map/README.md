@@ -54,4 +54,20 @@ quality 88 without changing composition or alpha. No runtime image-generation
 request/quota. Prompt: `public/assets/program-map/hero.prompt.txt`.
 
 DEV release and authenticated acceptance are recorded in `evidence/release.json`
-once observed. Rollback source: previous live Web `06b1764883f8cef69d9dcac08713e3fa2699a868`.
+with the observed final Live release. Rollback source: previous live Web `06b1764883f8cef69d9dcac08713e3fa2699a868`.
+
+Final live-acceptance fixes: null homework duration is omitted (regression covered);
+map-scoped container selector wins over legacy shell width. The preview now includes
+all actual global styles and focus/path classes. See exact DEV release evidence.
+
+Known live data limitation: selecting Unit 2 returned a response rejected by the
+unchanged strict unit-path parser, including after explicit read retry. The map
+shows its localized error/retry state and no fabricated progress. Unit 1 map,
+word-browser navigation and return passed; no provider or homework preparation
+was triggered. This task does not weaken the shared contract to hide invalid data.
+
+Final DEV Web source: `edfdb63c3d64a6684cf09891fd980815940e2b0d`, Render deployment
+`dep-db75pess728c73dhlo9g`, Deploy succeeded / Live in 1m03s. Final authenticated
+unit-1 desktop and 320px smoke passed; zero console error/warning logs. `/ready`
+returned 200. See the known Unit 2 contract-validation limitation above. No lesson,
+provider, score, reward, migration or production action was performed.

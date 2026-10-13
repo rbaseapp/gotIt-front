@@ -66,4 +66,21 @@ ESLint and production build passed. Full responsive suite and physical-device
 acceptance were not run. Existing bundle-size warning remains unchanged.
 
 Implementation checklist: completed. Preserve DEV gate and server authority.
+Live acceptance follow-up:
+- Real pending homework returned estimatedMinutes:null. The time chip now renders
+  only a positive server estimate; its regression case passes. No invented default.
+- Actual shell CSS had higher specificity than the isolated fixture. Scoped parent
+  selector now outranks the legacy 1253px rule. Fixture imports the real global
+  styles and focus-shell/path-view-map classes; final desktop capture was repeated.
+- Real account reveals historical non-contiguous word/meeting evidence. The map
+  preserves it, highlights actual pending homework and does not award new progress.
+- Final DEV source is edfdb63c3d64a6684cf09891fd980815940e2b0d; release status and
+  authenticated screenshots are recorded separately in evidence/release.json.
+
+Known live data limitation: Unit 2 response fails the pre-existing strict map
+contract on selection and retry. Its error view is truthful; no fabricated stages
+or progress. Unit 1 real next-homework links, words/return, disclosures, nullable
+estimate suppression and 320px/1448px layouts passed. Full-catalog live acceptance
+is therefore not claimed. Loading/retry now use actual shared locale keys.
+
 final result: passed
