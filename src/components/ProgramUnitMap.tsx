@@ -282,10 +282,10 @@ export function ProgramUnitMap({
             </>
           ) : (
             <div className="pm-load" role={pathError ? "alert" : "status"}>
-              <p>{pathError || t("common.loading")}</p>
+              <p>{pathError || t("common.loadingFromServer")}</p>
               {pathError && (
                 <button className="button secondary" onClick={onRetryPath}>
-                  {t("common.retry")}
+                  {t("common.tryAgain")}
                 </button>
               )}
             </div>
@@ -313,7 +313,7 @@ export function ProgramUnitMap({
             <p role="status">
               {pathError
                 ? t("programMap.pathUnavailable")
-                : t("common.loading")}
+                : t("common.loadingFromServer")}
             </p>
           ) : !model?.steps.length ? (
             <p>{t("programMap.noStages")}</p>

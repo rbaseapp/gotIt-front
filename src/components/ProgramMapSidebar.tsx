@@ -48,7 +48,7 @@ export function ProgramMapSidebar({
         ) : (
           <p role="status">
             {pathLoading
-              ? t("common.loading")
+              ? t("common.loadingFromServer")
               : pathError
                 ? t("programMap.pathUnavailable")
                 : t("unitMap.noStageWords")}
@@ -67,7 +67,7 @@ export function ProgramMapSidebar({
               {ready
                 ? t("programMap.remainingShort", { count: remaining })
                 : t(
-                    pathError ? "programMap.pathUnavailable" : "common.loading",
+                    pathError ? "programMap.pathUnavailable" : "common.loadingFromServer",
                   )}
             </p>
           </div>

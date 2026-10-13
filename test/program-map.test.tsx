@@ -114,9 +114,10 @@ describe("dynamic DEV program map", () => {
         screen.queryByRole("link", { name: /המשך/ }),
       ).not.toBeInTheDocument();
       expect(document.querySelector(".pm-progress")).not.toBeInTheDocument();
+    expect(screen.queryByText(/common\./)).not.toBeInTheDocument();
       if (state === "error") {
         fireEvent.click(
-          screen.getByRole("button", { name: i18n.t("common.retry") }),
+          screen.getByRole("button", { name: i18n.t("common.tryAgain") }),
         );
         expect(props.onRetryPath).toHaveBeenCalledTimes(1);
       }
