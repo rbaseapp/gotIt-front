@@ -2767,5 +2767,31 @@
     "artUnavailable": "插图暂时不可用",
     "mascotAlt": "Mohi 手持旗帜并用{{language}}问候",
     "programAlt": "{{title}} 的插图"
+  },
+  "programChooser": {
+    "title": "这次想怎样学习？",
+    "subtitle": "选择适合你的学习路线。以后随时可以创建更多课程。",
+    "languages": "课程语言",
+    "target": "我想学习的语言",
+    "support": "讲解和界面语言",
+    "personalTitle": "与 AI 老师一起制定专属课程",
+    "personalDescription": "Mohi 会了解你的目标、水平和兴趣，为你制定结构清晰的个性化学习路线。",
+    "foundationTitle": "从基础开始",
+    "foundationDescription": "现成的系统课程，循序渐进，从基础到自信地使用{{language}}交流。",
+    "recommended": "推荐初学者选择",
+    "goal": "目标",
+    "interests": "兴趣",
+    "level": "水平",
+    "time": "空闲时间",
+    "adapts": "随学习进度调整",
+    "includes": "包含课程、练习和对话",
+    "tailored": "符合你的专属目标",
+    "instant": "无需额外设置，即刻开始学习",
+    "progress": "清晰准确地跟踪进度",
+    "structured": "由易到难的系统课程",
+    "personalAction": "制定我的课程",
+    "foundationAction": "开始学习基础",
+    "help": "还不确定？可以先学习基础，以后再创建专属课程。",
+    "languageNameLocale": "zh"
   }
 }

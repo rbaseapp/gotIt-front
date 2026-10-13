@@ -16,6 +16,7 @@ import { getLanguageOptions } from "../lib/languages";
 import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
 import { programsDesignEnabled } from "../lib/programs";
 import { DevProgramsView } from "./DevProgramsView";
+import { ProgramChooser } from "../components/ProgramChooser";
 
 export function ProgramsPage() {
   const { t, i18n } = useTranslation();
@@ -142,6 +143,22 @@ export function ProgramsPage() {
       setBusy(false);
     }
   };
+  if (newOpen && programsDesignEnabled())
+    return (
+      <ProgramChooser
+        target={target}
+        support={support}
+        onTarget={setTarget}
+        onSupport={setSupport}
+        busy={busy}
+        loading={prepared.loading}
+        error={prepared.error}
+        available={pairAvailable}
+        onRetry={() => void prepared.reload()}
+        onPrepared={() => void openPrepared()}
+        onBack={() => setNewOpen(false)}
+      />
+    );
   if (newOpen)
     return (
       <div

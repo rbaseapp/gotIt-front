@@ -1,0 +1,445 @@
+/* Scoped to the DEV chooser; shared navigation and production stay independent. */
+.shared-header-shell:has(.pc-page) > .main-column > .page-content {
+  max-width: none;
+  padding: 0;
+  background: #fafbf8;
+}
+.pc-page {
+  --pc-ink: #092c38;
+  --pc-muted: #36586b;
+  --pc-green: #006c58;
+  color: var(--pc-ink);
+  font-family: "Rubik", "Assistant", system-ui, sans-serif;
+  max-width: 1536px;
+  margin: 0 auto;
+  padding: 15px 5.2% 20px;
+  text-align: center;
+}
+.pc-heading h1 {
+  font-family: "Rubik", sans-serif;
+  font-size: clamp(32px, 3.5vw, 54px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+}
+.pc-heading h1 > svg {
+  color: #f5c63d;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+.pc-heading p {
+  font-size: 21px;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--pc-muted);
+}
+.pc-languages {
+  display: flex;
+  width: min(736px, 100%);
+  margin: 16px auto 22px;
+  background: #fff;
+  border-radius: 30px;
+  padding: 12px 32px 11px;
+  box-shadow: 0 10px 30px rgb(20 60 50 / 4%);
+  gap: 42px;
+}
+.pc-language {
+  flex: 1;
+  min-width: 0;
+  text-align: start;
+  font-size: 16px;
+  color: var(--pc-muted);
+}
+.pc-language > span {
+  display: block;
+  margin: 0 14px 3px;
+}
+.pc-language + .pc-language {
+  border-inline-start: 1px solid #e7e9e8;
+  padding-inline-start: 42px;
+}
+.pc-language-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pc-language-control > .pg-flag {
+  position: absolute;
+  width: 32px;
+  height: 28px;
+  inset-inline-start: 17px;
+  z-index: 1;
+  pointer-events: none;
+}
+.pc-language-control > svg:last-child {
+  position: absolute;
+  inset-inline-end: 17px;
+  pointer-events: none;
+}
+.pc-language .language-combobox {
+  width: 100%;
+  min-width: 0;
+}
+.pc-language .language-combobox input {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 28px;
+  border: 2px solid #edefed;
+  background: #fff;
+  padding: 8px 57px;
+  text-align: start;
+  direction: inherit;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--pc-ink);
+}
+.pc-language .language-combobox-list {
+  z-index: 20;
+  text-align: start;
+  font-size: 17px;
+}
+.pc-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.pc-card {
+  position: relative;
+  border-radius: 27px;
+  padding: 0 22px 18px;
+  border: 2px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  box-shadow: 0 12px 26px rgb(32 65 54 / 3%);
+}
+.pc-foundation {
+  background: #f0fbf5;
+  border-color: #bde8d9;
+}
+.pc-personal {
+  background: #fffbef;
+  border-color: #f8f0ce;
+}
+.pc-recommended {
+  position: absolute;
+  inset-inline-end: 12px;
+  top: -16px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 19px;
+  background: var(--pc-green);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  z-index: 2;
+  box-shadow: 0 5px 12px rgb(0 108 88 / 10%);
+}
+.pc-recommended svg {
+  color: #ffcc35;
+}
+.pc-art {
+  height: 220px;
+  position: relative;
+  margin: 0 -12px;
+}
+.pc-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.pc-personal-art img {
+  transform: scale(1.15);
+}
+.pc-chip {
+  position: absolute;
+  background: #dcf8ef;
+  border-radius: 24px;
+  padding: 9px 22px;
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.pc-chip-goal {
+  top: 9px;
+  inset-inline-start: 14%;
+  transform: rotate(4deg);
+}
+.pc-chip-interests {
+  top: 69px;
+  inset-inline-start: 3%;
+  transform: rotate(-6deg);
+}
+.pc-chip-level {
+  top: 139px;
+  inset-inline-start: 12%;
+  transform: rotate(6deg);
+}
+.pc-chip-time {
+  top: 150px;
+  inset-inline-end: 7%;
+  transform: rotate(-10deg);
+}
+.pc-card h2 {
+  font-family: "Rubik", sans-serif;
+  font-size: clamp(23px, 2.15vw, 32px);
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 1px 0 7px;
+}
+.pc-description {
+  color: var(--pc-muted);
+  font-size: 22px;
+  line-height: 1.28;
+  max-width: 530px;
+  margin: 0 auto 15px;
+  text-wrap: pretty;
+}
+.pc-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  gap: 16px;
+  padding: 0;
+  margin: auto 0 19px;
+}
+.pc-features li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 18px;
+  color: var(--pc-muted);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.pc-features li > span:last-child {
+  max-width: 170px;
+}
+.pc-feature-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #d9f7ed;
+  color: #00856c;
+}
+.pc-feature-icon svg {
+  width: 27px;
+  height: 27px;
+  stroke-width: 2.5;
+}
+.pc-blue {
+  background: #def4ff;
+  color: #0589e4;
+}
+.pc-purple {
+  background: #f0e7ff;
+  color: #964cea;
+}
+.pc-cta {
+  width: 100%;
+  min-height: 61px;
+  border-radius: 25px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+  font-family: "Rubik", sans-serif;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.25;
+  transition: filter 150ms;
+}
+.pc-cta:hover:not(:disabled):not([aria-disabled]) {
+  filter: brightness(0.96);
+}
+.pc-cta svg {
+  flex-shrink: 0;
+  width: 25px;
+  height: 25px;
+}
+[dir="rtl"] .pc-cta {
+  flex-direction: row-reverse;
+}
+.pc-green {
+  background: var(--pc-green);
+  color: #fff;
+}
+.pc-yellow {
+  background: #ffc533;
+  color: #163b37;
+}
+.pc-cta:disabled,
+.pc-cta[aria-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.pc-catalog-state:empty {
+  display: none;
+}
+.pc-catalog-state {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.pc-catalog-state p {
+  margin-bottom: 6px;
+}
+.pc-help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  background: #fff;
+  border-radius: 24px;
+  margin: 14px auto 0;
+  padding: 12px 24px;
+  font-size: 17px;
+  color: var(--pc-muted);
+  box-shadow: 0 5px 20px rgb(20 60 50 / 3%);
+}
+.pc-help svg {
+  flex-shrink: 0;
+  color: #efb51d;
+}
+.pc-back {
+  display: block;
+  margin: 8px auto 0;
+  background: transparent;
+  color: var(--pc-muted);
+  min-height: 44px;
+  padding: 8px 18px;
+  text-decoration: underline;
+}
+@media (max-width: 1000px) {
+  .pc-page {
+    padding-inline: 24px;
+  }
+  .pc-card {
+    padding-inline: 16px;
+  }
+  .pc-description {
+    font-size: 20px;
+  }
+  .pc-features li {
+    font-size: 17px;
+  }
+  .pc-cta {
+    font-size: 20px;
+  }
+  .pc-chip {
+    font-size: 17px;
+    padding: 8px 14px;
+  }
+}
+@media (max-width: 760px) {
+  .pc-page {
+    padding: 26px 16px 20px;
+  }
+  .pc-heading p {
+    font-size: 19px;
+  }
+  .pc-languages {
+    gap: 16px;
+    padding: 14px 18px;
+    margin-bottom: 30px;
+  }
+  .pc-language + .pc-language {
+    padding-inline-start: 16px;
+  }
+  .pc-language > span {
+    font-size: 14px;
+    margin-inline: 0;
+  }
+  .pc-language .language-combobox input {
+    padding-inline: 40px 26px;
+    font-size: 17px;
+  }
+  .pc-language-control > .pg-flag {
+    width: 24px;
+    inset-inline-start: 9px;
+  }
+  .pc-language-control > svg:last-child {
+    width: 16px;
+    inset-inline-end: 7px;
+  }
+  .pc-options {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .pc-foundation {
+    grid-row: 1;
+  }
+  .pc-card h2 {
+    font-size: 26px;
+  }
+  .pc-art {
+    height: 210px;
+  }
+}
+@media (max-width: 380px) {
+  .pc-languages {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pc-language + .pc-language {
+    border: 0;
+    padding: 0;
+  }
+  .pc-heading h1 {
+    font-size: 31px;
+  }
+  .pc-heading h1 > svg {
+    width: 19px;
+    height: 19px;
+  }
+  .pc-heading h1 {
+    gap: 5px;
+  }
+  .pc-art {
+    height: 170px;
+  }
+  .pc-chip-goal {
+    top: 4px;
+  }
+  .pc-chip-interests {
+    top: 48px;
+  }
+  .pc-chip-level {
+    top: 105px;
+  }
+  .pc-chip-time {
+    top: 120px;
+  }
+  .pc-card h2 {
+    font-size: 23px;
+  }
+  .pc-features {
+    gap: 7px;
+  }
+  .pc-features li {
+    font-size: 16px;
+  }
+  .pc-cta {
+    font-size: 18px;
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-cta {
+    transition: none;
+  }
+}

@@ -2767,5 +2767,31 @@
     "artUnavailable": "Illustration derzeit nicht verfügbar",
     "mascotAlt": "Mohi mit Flagge und Grüßen auf {{language}}",
     "programAlt": "Illustration für {{title}}"
+  },
+  "programChooser": {
+    "title": "Wie lernen wir diesmal?",
+    "subtitle": "Wähle den passenden Lernweg. Du kannst später jederzeit ein weiteres Programm erstellen.",
+    "languages": "Programmsprachen",
+    "target": "Die Sprache, die ich lernen möchte",
+    "support": "Sprache der Erklärungen und Oberfläche",
+    "personalTitle": "Erstelle dein Programm mit einer KI-Lehrkraft",
+    "personalDescription": "Mohi fragt nach deinen Zielen, deinem Niveau und deinen Interessen und erstellt einen strukturierten Lernweg für dich.",
+    "foundationTitle": "Mit den Grundlagen beginnen",
+    "foundationDescription": "Ein fertiges Programm mit geordneten Lektionen, Schritt für Schritt von den Grundlagen bis zu sicheren Gesprächen auf {{language}}.",
+    "recommended": "Für Anfänger empfohlen",
+    "goal": "Ziel",
+    "interests": "Interessen",
+    "level": "Niveau",
+    "time": "Freizeit",
+    "adapts": "Passt sich deinem Fortschritt an",
+    "includes": "Lektionen, Übungen und Gespräche",
+    "tailored": "Auf deine Ziele abgestimmt",
+    "instant": "Sofort lernen, ohne weitere Einrichtung",
+    "progress": "Klarer, genauer Lernfortschritt",
+    "structured": "Lektionen von einfach bis fortgeschritten",
+    "personalAction": "Mein Programm erstellen",
+    "foundationAction": "Die Grundlagen lernen",
+    "help": "Unsicher? Beginne mit den Grundlagen und erstelle später ein persönliches Programm.",
+    "languageNameLocale": "de"
   }
 }

@@ -2767,5 +2767,31 @@
     "artUnavailable": "Illustration indisponible",
     "mascotAlt": "Mohi avec un drapeau et des salutations en {{language}}",
     "programAlt": "Illustration de {{title}}"
+  },
+  "programChooser": {
+    "title": "Comment apprendre cette fois-ci ?",
+    "subtitle": "Choisissez le parcours qui vous convient. Vous pourrez créer un autre programme plus tard.",
+    "languages": "Langues du programme",
+    "target": "La langue que je veux apprendre",
+    "support": "Langue des explications et de l’interface",
+    "personalTitle": "Créez un programme personnel avec un professeur IA",
+    "personalDescription": "Mohi vous interrogera sur vos objectifs, votre niveau et vos intérêts pour créer un parcours structuré adapté à vous.",
+    "foundationTitle": "Commencez par les bases",
+    "foundationDescription": "Un programme prêt à l’emploi, avec des leçons organisées, des bases à une conversation assurée en {{language}}.",
+    "recommended": "Recommandé aux débutants",
+    "goal": "Objectif",
+    "interests": "Intérêts",
+    "level": "Niveau",
+    "time": "Temps libre",
+    "adapts": "Évolue avec vos progrès",
+    "includes": "Leçons, exercices et conversations",
+    "tailored": "Adapté à vos objectifs",
+    "instant": "Apprenez immédiatement, sans autre configuration",
+    "progress": "Suivi clair et précis des progrès",
+    "structured": "Des leçons du plus simple au plus avancé",
+    "personalAction": "Créons mon programme",
+    "foundationAction": "Apprendre les bases",
+    "help": "Vous hésitez ? Commencez par les bases et créez un programme personnel plus tard.",
+    "languageNameLocale": "fr"
   }
 }
