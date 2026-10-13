@@ -388,6 +388,7 @@
   }
   .pc-art {
     height: 210px;
+    overflow: clip;
   }
 }
 @media (max-width: 380px) {
