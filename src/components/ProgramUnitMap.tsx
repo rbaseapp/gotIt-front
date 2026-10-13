@@ -174,12 +174,15 @@ export function ProgramUnitMap({
               )}
               {step.kind === "homework" && step.station.homework && (
                 <>
-                  <span>
-                    <Clock3 size={19} />
-                    {t("unitMap.practiceMinutes", {
-                      count: step.station.homework.estimatedMinutes,
-                    })}
-                  </span>
+                  {step.station.homework.estimatedMinutes !== null &&
+                    step.station.homework.estimatedMinutes > 0 && (
+                      <span>
+                        <Clock3 size={19} />
+                        {t("unitMap.practiceMinutes", {
+                          count: step.station.homework.estimatedMinutes,
+                        })}
+                      </span>
+                    )}
                   {step.station.homework.taskCount > 0 && (
                     <span>
                       <List size={19} />

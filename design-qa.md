@@ -1,4 +1,4 @@
-# Program map design QA ? 2026-10-13
+# Program map design QA - 2026-10-13
 
 Source visual truth: user-attached Hebrew program-map screenshot in this task,
 1448 x 1086 pixels. The original attachment remains the source reference; it is
@@ -6,10 +6,11 @@ not a project asset. Implementation: docs/program-map/evidence/desktop-final.png
 and mobile-rtl.png / mobile-ltr.png. Browser: existing Chrome profile, because the
 in-app browser is not available and authenticated DEV inspection requires it.
 Desktop CSS viewport 1448 x 1086, DPR 1; 15px stable scrollbar gutter. Mobile CSS
-viewport 320 x 900, DPR 1; document client/scroll width 305px. Screenshots exclude
-the browser controls. Compare app-owned body regions below the shared header.
+viewport 320 x 900, DPR 1; document client/scroll width 305px. Desktop capture is 1433 x 1075 pixels and mobile captures are 305 x 858
+pixels after browser screenshot-surface cropping. CSS/DPR dimensions are stated
+above; screenshots exclude browser controls. Compare app-owned body regions below the shared header.
 
-State: same first-unit layout, prefix 1?4 collapsed, step 5 current, two future
+State: same first-unit layout, prefix 1-4 collapsed, step 5 current, two future
 steps visible, more steps collapsed. Real current server policy has nine stages
 rather than the mock's 20. Fixture 4/9 = 44%; mock 14/20 = 70%. No fake progress
 or mock lesson content enters the live app. The current fixture is a teacher

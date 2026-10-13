@@ -80,6 +80,7 @@ describe("dynamic DEV program map", () => {
         courseId: null,
         station: "midpoint",
         status: "pending",
+        estimatedMinutes: null,
         tasks: [],
         taskCount: 0,
       },
@@ -98,6 +99,9 @@ describe("dynamic DEV program map", () => {
       new URL(href, "https://example.test").searchParams.get("return"),
     ).toBe(`/english-learning?unit=${mapPack.id}`);
     expect(programMapModel(mapPack, path).completed).toBe(5);
+    expect(
+      document.querySelector(".pm-step.is-current .lucide-clock-3"),
+    ).toBeNull();
   });
   it.each(["loading", "error"])(
     "withholds progress and actions for %s map responses",
