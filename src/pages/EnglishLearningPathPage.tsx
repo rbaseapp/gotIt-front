@@ -13,6 +13,8 @@ import { UnitWordBrowser } from "../components/UnitWordBrowser";
 import { UnitActivities } from "../components/UnitActivities";
 import { UnitLevels } from "../components/UnitLevels";
 import { EnglishUnitMap } from "../components/EnglishUnitMap";
+import { ProgramUnitMap } from "../components/ProgramUnitMap";
+import { programsDesignEnabled } from "../lib/programs";
 import { PathArtwork } from "../components/PathArtwork";
 import { Modal } from "../components/Modal";
 import { RemoteState } from "../components/RemoteState";
@@ -57,6 +59,8 @@ export function EnglishLearningPathPage() {
   );
   const tab = params.get("tab") || "map";
   const showLevels = params.get("all") === "1";
+  const redesignedMap = programsDesignEnabled() && tab === "map" && !showLevels;
+  const UnitMap = redesignedMap ? ProgramUnitMap : EnglishUnitMap;
   const [bulkOpen, setBulkOpen] = useState(false);
   const resource = useResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
@@ -431,45 +435,48 @@ export function EnglishLearningPathPage() {
     );
   return (
     <div
-      className={`english-path-page live-page page-enter path-view-${showLevels ? "levels" : tab}`}
+      className={`english-path-page live-page page-enter path-view-${showLevels ? "levels" : tab}${redesignedMap ? " dev-program-map" : ""}`}
     >
-      <header className="path-page-header">
-        {(showLevels || tab !== "map") && (
-          <button
-            className="button ghost path-back"
-            onClick={() => changeTab("map")}
-          >
-            <PathArtwork name="levels-ChevronLeft" />
-            {t("pathUi.backToMap")}
-          </button>
-        )}
-        <Link className="button secondary path-program" to="/courses">
-          {t("pathUi.programTitle")}
-          <PathArtwork
-            name={showLevels ? "levels-ChevronDown" : "map-ChevronDown"}
-          />
-        </Link>
-        <h1>{title}</h1>
-        {tab !== "map" && !showLevels && <p dir="auto">{current?.title}</p>}
-        {showLevels && <p>{t("pathUi.chooseLevel")}</p>}
-        {tab === "words" && current && (
-          <button
-            className="button primary path-practice"
-            disabled={
-              busy ||
-              detailLoading ||
-              !preview ||
-              preview.entries.every((entry) => entry.known)
-            }
-            onClick={() => void startUnit()}
-          >
-            {t("dashboard.smartPractice")}
-          </button>
-        )}
-        {tab === "words" && preview?.entries.every((entry) => entry.known) && (
-          <p role="status">{t("unitStudy.allKnown")}</p>
-        )}
-      </header>
+      {(!redesignedMap || !current) && (
+        <header className="path-page-header">
+          {(showLevels || tab !== "map") && (
+            <button
+              className="button ghost path-back"
+              onClick={() => changeTab("map")}
+            >
+              <PathArtwork name="levels-ChevronLeft" />
+              {t("pathUi.backToMap")}
+            </button>
+          )}
+          <Link className="button secondary path-program" to="/courses">
+            {t("pathUi.programTitle")}
+            <PathArtwork
+              name={showLevels ? "levels-ChevronDown" : "map-ChevronDown"}
+            />
+          </Link>
+          <h1>{title}</h1>
+          {tab !== "map" && !showLevels && <p dir="auto">{current?.title}</p>}
+          {showLevels && <p>{t("pathUi.chooseLevel")}</p>}
+          {tab === "words" && current && (
+            <button
+              className="button primary path-practice"
+              disabled={
+                busy ||
+                detailLoading ||
+                !preview ||
+                preview.entries.every((entry) => entry.known)
+              }
+              onClick={() => void startUnit()}
+            >
+              {t("dashboard.smartPractice")}
+            </button>
+          )}
+          {tab === "words" &&
+            preview?.entries.every((entry) => entry.known) && (
+              <p role="status">{t("unitStudy.allKnown")}</p>
+            )}
+        </header>
+      )}
       <RemoteState
         loading={resource.loading}
         error={resource.error}
@@ -483,7 +490,7 @@ export function EnglishLearningPathPage() {
       )}
       {available && (
         <>
-          {!showLevels && (
+          {!showLevels && !redesignedMap && (
             <nav
               className="unit-map-tabs"
               aria-label={t("structuredUi.sections")}
@@ -513,7 +520,7 @@ export function EnglishLearningPathPage() {
           ) : (
             <>
               {current && tab === "map" && (
-                <EnglishUnitMap
+                <UnitMap
                   key={current.id}
                   path={pathForCurrent}
                   pathLoading={
