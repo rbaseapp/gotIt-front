@@ -49,3 +49,12 @@ The local harness under `output/settings-preview.*` is excluded from release.
 The full historical Playwright sweep, physical devices and live provider/identity
 mutations were not run. The existing large main-bundle warning remains. Live DEV
 release acceptance is recorded separately after deployment.
+
+DEV release: exact Web `71dba25204f3dbed69ab00296590b566731c831f` is Live on
+`srv-dar6dng473hc73a0ns1g` as `dep-db7o6fu7bikc73biu66g` (1m03s). `/ready` is 200.
+Authenticated profile, learning, notifications and teacher preferences load;
+both remote preference editors enable save after successful reads. Email
+availability dialog, nine navigation categories, all four page images and no
+document overflow/errors were checked. No live preference/provider/identity
+mutation was performed. Auto-deploy remains disabled; configured service branch
+and all production services are unchanged. `evidence/release.json` owns details.
