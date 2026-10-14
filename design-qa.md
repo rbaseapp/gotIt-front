@@ -1,86 +1,57 @@
-# Program map design QA - 2026-10-13
+﻿# Settings design QA - 2026-10-14
 
-Source visual truth: user-attached Hebrew program-map screenshot in this task,
-1448 x 1086 pixels. The original attachment remains the source reference; it is
-not a project asset. Implementation: docs/program-map/evidence/desktop-final.png
-and mobile-rtl.png / mobile-ltr.png. Browser: existing Chrome profile, because the
-in-app browser is not available and authenticated DEV inspection requires it.
-Desktop CSS viewport 1448 x 1086, DPR 1; 15px stable scrollbar gutter. Mobile CSS
-viewport 320 x 900, DPR 1; document client/scroll width 305px. Desktop capture is 1433 x 1075 pixels and mobile captures are 305 x 858
-pixels after browser screenshot-surface cropping. CSS/DPR dimensions are stated
-above; screenshots exclude browser controls. Compare app-owned body regions below the shared header.
+Source visual truth: owner-supplied conversation attachment Image 1 (2560x2260
+source pixels, displayed at 1667x1472). Implementation:
+docs/settings/evidence/desktop-he.jpg, 1667x1472 browser/CSS pixels, density 1.
+The browser's 15px scrollbar gutter is excluded when judging content alignment.
+Profile default state; actual/demo identity intentionally differs from Shay.
+The supplied source and rendered implementation were reviewed for full composition
+and profile/connection/sidebar detail. Focused evidence: profile-detail.jpg in the
+same evidence directory, cropped from the actual browser screenshot. This is not
+a constructed mock. Mobile: mobile-he.jpg and mobile-en.jpg, 320x780 CSS pixels,
+client/scroll 305/305. No source mobile artboard was supplied.
 
-State: same first-unit layout, prefix 1-4 collapsed, step 5 current, two future
-steps visible, more steps collapsed. Real current server policy has nine stages
-rather than the mock's 20. Fixture 4/9 = 44%; mock 14/20 = 70%. No fake progress
-or mock lesson content enters the live app. The current fixture is a teacher
-meeting, while the reference labels its illustrative current step as a lesson.
+Findings and iteration history:
+- P1 resolved: legacy shell max-width reduced sidebar/content proportions. Scoped
+  selector specificity now removes that limit for settings only. Final sidebar
+  starts at x20, content x372, roughly 20/80 columns, 30px gap.
+- P2 resolved: LTR email collided with RTL pencil. Field direction now follows
+  its container and editing affordance remains separate.
+- P2 resolved: generic provider symbols replaced with actual Google identity and
+  Simple Icons Apple assets, bundled locally.
+- P2 resolved: separate local-name note inflated the card. Small inline note now
+  preserves accurate tab-local scope and the intended field-row density.
+- P2 resolved: category-resource failure/loading exposed misleading save. Save
+  is now blocked until initial read succeeds; read failure offers retry.
+Post-fix desktop and profile-detail evidence is saved above. No actionable
+P0/P1/P2 finding remains within the owner-approved supported-settings scope.
 
-Full-view comparison: the supplied source and rendered inline browser captures
-were reviewed together for the hero, title/progress/actions, two-column layout,
-completed/current/future path and sidebar. Focused comparison inspected the
-current-row borders, marker alignment, word tiles, subtitle direction and goal
-ring, plus the narrow mobile timeline capture.
+Required fidelity surfaces:
+- Typography: Assistant, 40px heading, 21px navigation/fields, 16-18px supporting
+  copy; heavy labels, mobile scaling and localized wrapping inspected.
+- Layout: cream full-width surface, green left sidebar, 26px cards, 60px controls,
+  circular field icons, profile/avatar/connection order and geometry match.
+  Existing canonical shared header is retained; its height differs from the mock.
+- Tokens: #faf8ef page, #fffefa cards, #105c49 green, #132e50 headings,
+  #e0f2e9 icon circles, #e3e7dc borders.
+- Assets: existing GotIt logo/Mohi, actual provider brands, existing Lucide UI
+  icons. No rasterized UI, custom icon drawings or placeholder assets.
+- Copy/data: actual profile/email/timezone; all supported settings categories.
+  Owner selected explicit unavailability for missing email/avatar/linking APIs.
+  Display name stays tab-local; help opens existing help, not a fictional chatbot.
 
-Comparison history:
-- P2: inherited 1300px page limit reduced the roadmap/sidebar widths; fixed with
-  map-scoped 1448px page container and 36px desktop inset. No shared header edit.
-- P2: duplicate outer page padding shifted body down; map now owns one 20px inset.
-- P2: original English subtitle aligned left in Hebrew; fixed explicit locale
-  alignment. Native progress fill direction is LTR, as in the source.
-- P2: numeric word ranges reversed in RTL; fixed Unicode directional isolation.
-- P2: extra sidebar word link increased its card height; moved the explicit word
-  action into the existing map navigation tools. Future rows compacted to 82px.
-- Post-fix desktop and 320px RTL/LTR browser captures confirm these corrections.
+Interactions: local actual-component/demo timezone unlock/focus, UTC change,
+explicit save/success announcement; category navigation/current item; shared
+modal Escape/close. Hebrew RTL and English LTR at 320px have no document overflow.
+Final browser console: no error/warning entries. Eight focused regressions cover
+rollout, hashes, locale content, profile failure, retries and save isolation.
+Full historical browser sweep, physical devices and live provider/identity writes
+were not performed.
 
-Fidelity surfaces:
-- Fonts: existing Assistant 400/600/700/800; 43px desktop title, 28px section
-  headings, 25px step titles; responsive mobile title 30px. Long translations wrap.
-- Layout: hero copy/art split, 2.36:1 roadmap/sidebar grid, 16px card radii,
-  completed disclosure, yellow current row and vertical numbered markers match
-  the reference composition. Shared canonical header deliberately remains intact.
-- Colors: navy #090f35, teal #008b70, yellow #ffca3d, pale mint/cream states and
-  neutral word tiles. Current-row border #f7bf2e. Existing shell colors retained.
-- Image: generated 3D teal brain/books/leaves/cards, actual alpha, WebP 190,612
-  bytes, 1774x887. No CSS/SVG substitute for the hero. Ring is a dynamic progress
-  chart using the existing Circle icon and accessible native progress value.
-- Copy: UI localized in all eight catalogs; unit description, words, counts,
-  durations, homework identifiers and stage availability come from real data.
-  First-unit translated title corresponds to the reference; other titles fallback
-  to server content. No fabricated lesson titles or benefits specific to an
-  unrepresented curriculum are asserted.
-
-Functional checks: completed disclosure via Space; show more/less; word click;
-unit selector callback; correct station/homework/return/review URLs; server locks;
-loading/error/retry and full-completion model cases. Clean final browser load has
-zero error/warning logs. Earlier development-only HMR context errors disappeared
-on a full reload and were checked in a fresh tab. No live provider was started.
-
-Findings: no unresolved actionable P0/P1/P2 body-layout issue. Expected constraints:
-shared shell design and dynamic counts/content differ from illustrative mock.
-P3: generated leaf/face details differ slightly; native scrollbar gutter reduces
-capture width by 15px. Neither affects functionality or composition.
-
-Verification: 350 Vitest cases/57 files; 21 gateway/security cases; typecheck,
-ESLint and production build passed. Full responsive suite and physical-device
-acceptance were not run. Existing bundle-size warning remains unchanged.
-
-Implementation checklist: completed. Preserve DEV gate and server authority.
-Live acceptance follow-up:
-- Real pending homework returned estimatedMinutes:null. The time chip now renders
-  only a positive server estimate; its regression case passes. No invented default.
-- Actual shell CSS had higher specificity than the isolated fixture. Scoped parent
-  selector now outranks the legacy 1253px rule. Fixture imports the real global
-  styles and focus-shell/path-view-map classes; final desktop capture was repeated.
-- Real account reveals historical non-contiguous word/meeting evidence. The map
-  preserves it, highlights actual pending homework and does not award new progress.
-- Final DEV source is edfdb63c3d64a6684cf09891fd980815940e2b0d; release status and
-  authenticated screenshots are recorded separately in evidence/release.json.
-
-Known live data limitation: Unit 2 response fails the pre-existing strict map
-contract on selection and retry. Its error view is truthful; no fabricated stages
-or progress. Unit 1 real next-homework links, words/return, disclosures, nullable
-estimate suppression and 320px/1448px layouts passed. Full-catalog live acceptance
-is therefore not claimed. Loading/retry now use actual shared locale keys.
+P3 follow-up: retained repository logo and Mohi artwork differ from the source's
+small brand-art details (wand/book versus bulb). Canonical shared header is the
+existing project design. Exact source artwork would allow verbatim replacement.
+No source image file is archived locally; selected source remains the user's
+conversation attachment. No claim of a side-by-side comparison file is made.
 
 final result: passed
