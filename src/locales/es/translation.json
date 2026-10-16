@@ -1678,6 +1678,8 @@
     "loadBeforeSave": "Carga el perfil antes de guardar cambios"
   },
   "courses": {
+    "sharedPrograms": "Programas de aprendizaje compartidos",
+    "useTemplate": "Usar este programa",
     "eyebrow": "TU PROFESOR PARTICULAR",
     "title": "Un camino claro, a tu ritmo",
     "allCourses": "Mis cursos",

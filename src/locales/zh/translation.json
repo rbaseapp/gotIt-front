@@ -1678,6 +1678,8 @@
     "retry": "重试"
   },
   "courses": {
+    "sharedPrograms": "共享学习计划",
+    "useTemplate": "使用此计划",
     "eyebrow": "你的私人老师",
     "title": "清晰的学习路径，适合你的节奏",
     "allCourses": "我的课程",

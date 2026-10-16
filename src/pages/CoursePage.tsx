@@ -39,6 +39,10 @@ export function CoursePage() {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]),
     [homework, setHomework] = useState<HomeworkSummary[]>([]);
+  const [templates, setTemplates] = useState<
+    Awaited<ReturnType<typeof courseApi.list>>["templates"]
+  >([]);
+  const templateOperations = useRef(new Map<string, string>());
   const [course, setCourse] = useState<Course | null>(null),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
@@ -93,6 +97,7 @@ export function CoursePage() {
         if (live) {
           setCourses(list.courses);
           setHomework(list.homework);
+          setTemplates(list.templates ?? []);
           setAvailable(list.available);
           setCourse(selected?.course ?? null);
           setCreating(false);
@@ -153,6 +158,18 @@ export function CoursePage() {
         supportLanguageCode: support,
         eventId: eventId(`start:${target}:${support}`),
       });
+      navigate(`/courses/${result.course.id}`);
+    });
+  }
+  function startTemplate(id: string) {
+    void run(async () => {
+      let operationId = templateOperations.current.get(id);
+      if (!operationId) {
+        operationId = crypto.randomUUID();
+        templateOperations.current.set(id, operationId);
+      }
+      const result = await courseApi.useTemplate(id, operationId);
+      templateOperations.current.delete(id);
       navigate(`/courses/${result.course.id}`);
     });
   }
@@ -271,7 +288,10 @@ export function CoursePage() {
                   {t("courses.newCourse")}
                 </button>
               )}
-              <Link className="course-text-link" to="/private-lesson?practice=free">
+              <Link
+                className="course-text-link"
+                to="/private-lesson?practice=free"
+              >
                 {t("courses.freePractice")}
               </Link>
             </>
@@ -290,6 +310,40 @@ export function CoursePage() {
         </div>
       )}
       {!available && <p className="course-note">{t("courses.unavailable")}</p>}
+      {!course && templates.length > 0 && (
+        <section
+          className="course-language-group"
+          aria-label={t("courses.sharedPrograms")}
+        >
+          <div className="course-language-heading">
+            <h2>{t("courses.sharedPrograms")}</h2>
+          </div>
+          <div className="course-list">
+            {templates.map((template) => (
+              <div key={template.id} className="course-list-row">
+                <div className="course-template-card">
+                  <BookOpen size={20} aria-hidden="true" />
+                  <span className="course-list-card-main">
+                    <strong dir="auto">{template.title}</strong>
+                    <small>
+                      {languageName(template.preferences.targetLanguageCode)} ·{" "}
+                      {languageName(template.preferences.supportLanguageCode)}
+                    </small>
+                  </span>
+                  <button
+                    type="button"
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() => startTemplate(template.id)}
+                  >
+                    {t("courses.useTemplate")}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {!course && !creating && courses.length ? (
         <>
           <div className="course-language-groups">

@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -12,6 +18,7 @@ import {
 } from "./course-fixtures";
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
+  useTemplate: vi.fn(),
   get: vi.fn(),
   delete: vi.fn(),
   command: vi.fn(),
@@ -78,6 +85,63 @@ beforeEach(() => {
 });
 
 describe("personal course experience", () => {
+  it("shows published programs and opens an owned copy using the returned course ID", async () => {
+    mocks.list.mockResolvedValue({
+      courses: [],
+      homework: [],
+      available: false,
+      templates: [
+        {
+          id: "shared-program",
+          title: "Shared beginner program",
+          preferences: fixtureCourse.preferences,
+        },
+      ],
+    });
+    mocks.useTemplate.mockResolvedValue({ course: fixtureCourse });
+    renderRoute("/courses");
+    expect(await screen.findByText("Shared beginner program")).toBeVisible();
+    await userEvent.click(
+      screen.getByRole("button", { name: "התחל תוכנית זו" }),
+    );
+    await waitFor(() =>
+      expect(mocks.get).toHaveBeenCalledWith(fixtureCourse.id),
+    );
+    expect(mocks.useTemplate).toHaveBeenCalledWith(
+      "shared-program",
+      expect.any(String),
+    );
+  });
+  it("reuses the template operation after an ambiguous failure", async () => {
+    mocks.list.mockResolvedValue({
+      courses: [],
+      homework: [],
+      available: true,
+      templates: [
+        {
+          id: "shared-program",
+          title: "Shared beginner program",
+          preferences: fixtureCourse.preferences,
+        },
+      ],
+    });
+    mocks.useTemplate
+      .mockRejectedValueOnce(new Error("Connection lost"))
+      .mockResolvedValueOnce({ course: fixtureCourse });
+    renderRoute("/courses");
+    await screen.findByText("Shared beginner program");
+    await userEvent.click(
+      screen.getByRole("button", { name: "התחל תוכנית זו" }),
+    );
+    await screen.findByRole("alert");
+    await userEvent.click(
+      screen.getByRole("button", { name: "התחל תוכנית זו" }),
+    );
+    await waitFor(() => expect(mocks.useTemplate).toHaveBeenCalledTimes(2));
+    expect(mocks.useTemplate.mock.calls[0]).toEqual(
+      mocks.useTemplate.mock.calls[1],
+    );
+  });
   it("runs a hands-free interview, saves speech as a voice turn, and plays the server reply", async () => {
     const intake = {
       ...structuredClone(fixtureCourse),
@@ -519,9 +583,13 @@ describe("personal course experience", () => {
     vi.mocked(recordVoice).mockImplementation(
       (cancel, release) =>
         new Promise<string>((resolve, reject) => {
-          cancel.addEventListener("abort", () => reject(new Error("cancelled")), {
-            once: true,
-          });
+          cancel.addEventListener(
+            "abort",
+            () => reject(new Error("cancelled")),
+            {
+              once: true,
+            },
+          );
           release.addEventListener("abort", () => resolve("recorded-wav"), {
             once: true,
           });

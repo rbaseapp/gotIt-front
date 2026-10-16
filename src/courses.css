@@ -1041,3 +1041,23 @@
     scroll-behavior: auto !important;
   }
 }
+.course-template-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.course-template-card .course-list-card-main {
+  flex: 1 1 160px;
+  overflow-wrap: anywhere;
+}
+.course-template-card > button {
+  max-width: 100%;
+  white-space: normal;
+}

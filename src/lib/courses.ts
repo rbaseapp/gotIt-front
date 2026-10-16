@@ -193,10 +193,23 @@ export const courseApi = {
         courses: z.array(courseSchema),
         homework: z.array(homeworkSummarySchema),
         available: z.boolean(),
+        templates: z
+          .array(
+            z.object({
+              id: uuid,
+              key: z.string(),
+              title: z.string(),
+              version: z.number().int(),
+              preferences: coursePreferencesSchema,
+            }),
+          )
+          .default([]),
       }),
       "courses",
     ),
   get: (id: string) => product(courseResponse, `courses/${id}`),
+  useTemplate: (id: string, eventId: string) =>
+    product(courseResponse, `courses/templates/${id}/use`, "POST", { eventId }),
   delete: (id: string) => product(z.undefined(), `courses/${id}`, "DELETE"),
   realtimeSession: (id: string) =>
     product(realtimeResponse, `courses/${id}/realtime-session`, "POST"),

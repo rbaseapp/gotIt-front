@@ -1678,6 +1678,8 @@
     "loadBeforeSave": "Lade das Profil, bevor du Änderungen speicherst"
   },
   "courses": {
+    "sharedPrograms": "Gemeinsame Lernprogramme",
+    "useTemplate": "Dieses Programm starten",
     "eyebrow": "DEIN PRIVATLEHRER",
     "title": "Ein klarer Lernweg in deinem Tempo",
     "allCourses": "Meine Kurse",
