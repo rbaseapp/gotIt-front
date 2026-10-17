@@ -720,6 +720,88 @@ export function CoursePage() {
           {displayed && !reviewing && (
             <>
               <section className="course-hero course-plan-overview">
+                <div className="course-plan-content">
+                  <span className="course-kicker">
+                    {t(
+                      draft
+                        ? "courses.previewKicker"
+                        : course.nextLesson
+                          ? "courses.nextLesson"
+                          : "courses.courseComplete",
+                    )}
+                  </span>
+                  <h2 dir="auto">
+                    {draft
+                      ? displayed.plan.outcome
+                      : (course.nextLesson?.title ?? displayed.plan.outcome)}
+                  </h2>
+                  <p dir="auto">
+                    {draft
+                      ? t("courses.previewBody", {
+                          count: displayed.plan.units.length,
+                        })
+                      : (course.nextLesson?.objective ??
+                        t("courses.completeBody"))}
+                  </p>
+                  {draft ? (
+                    <button
+                      className="button primary"
+                      disabled={busy}
+                      onClick={() =>
+                        void run(async () => {
+                          await command("activate", { version: draft.version });
+                        })
+                      }
+                    >
+                      <CheckCheck size={18} />
+                      {t("courses.approvePlan")}
+                    </button>
+                  ) : (
+                    course.nextLesson && (
+                      <Link className="button primary" to={lessonLink(course)}>
+                        {t("courses.startNextLesson")}
+                        <ArrowRight size={18} className="directional-arrow" />
+                      </Link>
+                    )
+                  )}
+                  {!draft && course.nextLesson && (
+                    <ReadAloud
+                      text={course.nextLesson.objective}
+                      language={course.preferences.targetLanguageCode}
+                      label={t("courses.readAloud")}
+                      className="button secondary personal-map-listen"
+                      showLabel
+                    />
+                  )}
+                  <button
+                    className="course-text-link"
+                    disabled={busy}
+                    onClick={() => setEditingPlan((value) => !value)}
+                  >
+                    <Pencil size={15} />
+                    {t("courses.requestChanges")}
+                  </button>
+                  {!draft && (
+                    <details className="course-progress">
+                      <summary>
+                        {t("courses.progressLabel", {
+                          count: course.progress.demonstrated,
+                          total: displayed.plan.units.reduce(
+                            (sum, unit) => sum + unit.lessons.length,
+                            0,
+                          ),
+                        })}
+                      </summary>
+                      <p>
+                        {t("courses.progressDetail", {
+                          covered: course.progress.covered,
+                          demonstrated: course.progress.demonstrated,
+                        })}
+                      </p>
+                      <p>{t("courses.retentionNote")}</p>
+                    </details>
+                  )}
+                </div>
                 {!draft && (
                   <div
                     className="personal-map-word-preview"
@@ -734,86 +816,6 @@ export function CoursePage() {
                     </strong>
                     <small>{t("ux.unitWords")}</small>
                   </div>
-                )}
-                <span className="course-kicker">
-                  {t(
-                    draft
-                      ? "courses.previewKicker"
-                      : course.nextLesson
-                        ? "courses.nextLesson"
-                        : "courses.courseComplete",
-                  )}
-                </span>
-                <h2 dir="auto">
-                  {draft
-                    ? displayed.plan.outcome
-                    : (course.nextLesson?.title ?? displayed.plan.outcome)}
-                </h2>
-                <p dir="auto">
-                  {draft
-                    ? t("courses.previewBody", {
-                        count: displayed.plan.units.length,
-                      })
-                    : (course.nextLesson?.objective ??
-                      t("courses.completeBody"))}
-                </p>
-                {draft ? (
-                  <button
-                    className="button primary"
-                    disabled={busy}
-                    onClick={() =>
-                      void run(async () => {
-                        await command("activate", { version: draft.version });
-                      })
-                    }
-                  >
-                    <CheckCheck size={18} />
-                    {t("courses.approvePlan")}
-                  </button>
-                ) : (
-                  course.nextLesson && (
-                    <Link className="button primary" to={lessonLink(course)}>
-                      {t("courses.startNextLesson")}
-                      <ArrowRight size={18} className="directional-arrow" />
-                    </Link>
-                  )
-                )}
-                {!draft && course.nextLesson && (
-                  <ReadAloud
-                    text={course.nextLesson.objective}
-                    language={course.preferences.targetLanguageCode}
-                    label={t("courses.readAloud")}
-                    className="button secondary personal-map-listen"
-                    showLabel
-                  />
-                )}
-                <button
-                  className="course-text-link"
-                  disabled={busy}
-                  onClick={() => setEditingPlan((value) => !value)}
-                >
-                  <Pencil size={15} />
-                  {t("courses.requestChanges")}
-                </button>
-                {!draft && (
-                  <details className="course-progress">
-                    <summary>
-                      {t("courses.progressLabel", {
-                        count: course.progress.demonstrated,
-                        total: displayed.plan.units.reduce(
-                          (sum, unit) => sum + unit.lessons.length,
-                          0,
-                        ),
-                      })}
-                    </summary>
-                    <p>
-                      {t("courses.progressDetail", {
-                        covered: course.progress.covered,
-                        demonstrated: course.progress.demonstrated,
-                      })}
-                    </p>
-                    <p>{t("courses.retentionNote")}</p>
-                  </details>
                 )}
               </section>
               {draft && displayed.version > 1 && (

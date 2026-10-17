@@ -60,7 +60,8 @@
 .course-hero {
   background: linear-gradient(130deg, var(--surface) 38%, var(--green-soft));
 }
-.course-hero > p {
+.course-hero > p,
+.course-plan-content > p {
   max-width: 640px;
   color: var(--muted);
 }
@@ -71,7 +72,8 @@
   color: var(--green);
   margin-block-end: 14px;
 }
-.course-hero > h2 {
+.course-hero > h2,
+.course-plan-content > h2 {
   margin-block-end: 12px;
 }
 .course-welcome {
@@ -140,7 +142,7 @@
 .course-text-link:hover {
   text-decoration: underline;
 }
-.course-plan-overview > .course-text-link {
+.course-plan-content > .course-text-link {
   margin-inline-start: 22px;
 }
 .course-icon-button {
@@ -1037,7 +1039,7 @@
     padding: 23px 18px;
     border-radius: 18px;
   }
-  .course-plan-overview > .course-text-link {
+  .course-plan-content > .course-text-link {
     margin: 12px 0 0;
     display: flex;
   }
