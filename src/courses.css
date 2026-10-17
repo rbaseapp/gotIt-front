@@ -387,7 +387,7 @@
 }
 .course-preferences > div:not(.course-inline-edit) {
   display: grid;
-  grid-template-columns: 110px 1fr auto;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
   padding: 16px 0;
@@ -401,6 +401,22 @@
 }
 .course-preferences strong {
   font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.course-preference-hint {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.course-preference-notes-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.course-preference-notes-heading h3 {
+  margin: 0;
 }
 .course-preference-notes {
   margin-block: 22px;
@@ -416,18 +432,48 @@
   margin-block-end: 7px;
 }
 .course-inline-edit {
-  display: flex;
-  gap: 8px;
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
   padding-block: 10px;
 }
-.course-inline-edit input {
+.course-inline-edit fieldset {
+  display: grid;
+  gap: 14px;
   min-width: 0;
-  flex: 1;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.course-inline-edit input:not([type="checkbox"]),
+.course-inline-edit select,
+.course-inline-edit textarea {
+  width: 100%;
+  min-width: 0;
   padding: 10px;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
   border-radius: 10px;
+}
+.course-inline-edit textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+.course-preference-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  gap: 14px;
+}
+.course-preference-checkbox,
+.course-preference-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.course-preference-actions .button {
+  min-height: 44px;
 }
 .course-note {
   color: var(--muted);
@@ -1007,7 +1053,7 @@
     gap: 15px;
   }
   .course-preferences > div:not(.course-inline-edit) {
-    grid-template-columns: 80px 1fr auto;
+    grid-template-columns: 80px minmax(0, 1fr) auto;
     gap: 10px;
     font-size: 13px;
   }

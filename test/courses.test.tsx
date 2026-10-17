@@ -11,6 +11,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { CoursePage } from "../src/pages/CoursePage";
 import { HomeworkPage } from "../src/pages/HomeworkPage";
 import { recordVoice } from "../src/lib/voice";
+import { ApiError } from "../src/lib/api";
 import {
   fixtureCourse,
   fixtureHomework,
@@ -84,6 +85,50 @@ beforeEach(() => {
 });
 
 describe("personal course experience", () => {
+  it("retains an inline edit after a failed PUT, reuses its receipt on retry and blocks approval until saved", async () => {
+    const user = userEvent.setup();
+    const course = structuredClone(fixtureCourse);
+    mocks.command.mockRejectedValueOnce(
+      new ApiError(503, "COURSE_AI_UNAVAILABLE", "Unavailable"),
+    );
+    renderRoute(`/courses/${course.id}`);
+    await user.click(
+      await screen.findByRole("button", { name: "עריכת הקצב שלך" }),
+    );
+    const approval = screen.getByRole("button", {
+      name: "ההעדפות מתאימות — נבנה תוכנית",
+    });
+    expect(approval).toBeDisabled();
+    await user.selectOptions(screen.getByLabelText("דקות לשיעור"), "15");
+    await user.click(
+      screen.getByRole("button", { name: "שמירה", exact: true }),
+    );
+    await screen.findByRole("alert");
+    expect(screen.getByLabelText("דקות לשיעור")).toHaveValue("15");
+    mocks.command.mockImplementation(async (_id, _path, input) => ({
+      course: {
+        ...course,
+        revision: course.revision + 1,
+        preferences: input.preferences,
+      },
+    }));
+    await user.click(
+      screen.getByRole("button", { name: "שמירה", exact: true }),
+    );
+    await waitFor(() => expect(approval).toBeEnabled());
+    expect(mocks.command).toHaveBeenLastCalledWith(
+      course.id,
+      "preferences",
+      expect.objectContaining({
+        revision: course.revision,
+        preferences: { ...course.preferences, minutesPerLesson: 15 },
+        eventId: mocks.command.mock.calls[0][2].eventId,
+      }),
+      "PUT",
+    );
+    expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    expect(screen.getByText("15 דקות · 3 ימים בשבוע")).toBeInTheDocument();
+  });
   it("runs a hands-free interview, saves speech as a voice turn, and plays the server reply", async () => {
     const intake = {
       ...structuredClone(fixtureCourse),

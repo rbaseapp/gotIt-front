@@ -29,11 +29,11 @@ import {
   courseApi,
   lessonLink,
   type Course,
-  type CoursePreferences,
   type HomeworkSummary,
 } from "../lib/courses";
 import { getBilingualLanguageOptions } from "../lib/languages";
 import { LanguageCombobox } from "../components/LanguageCombobox";
+import { PreferenceReview } from "../components/PreferenceReview";
 import { errorMessage } from "../lib/product";
 import { ApiError } from "../lib/api";
 import { chooseProgram } from "../lib/learningNavigation";
@@ -58,6 +58,7 @@ export function CoursePage() {
     [resumeConversation, setResumeConversation] = useState(false),
     [editingPlan, setEditingPlan] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
+  const [preferenceEditing, setPreferenceEditing] = useState(false);
   const [showIntakeHistory, setShowIntakeHistory] = useState(false);
   const [fullPlan, setFullPlan] = useState(false);
   const [unitWords, setUnitWords] = useState<{
@@ -133,13 +134,14 @@ export function CoursePage() {
     };
   }, [courseId, newCourse]);
   async function run(action: () => Promise<void>) {
-    if (lock.current) return;
+    if (lock.current) return false;
     lock.current = true;
     setBusy(true);
     setError("");
     try {
       await action();
       pending.current = null;
+      return true;
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 409
@@ -150,6 +152,7 @@ export function CoursePage() {
         const fresh = await courseApi.get(courseId).catch(() => null);
         if (fresh) setCourse(fresh.course);
       }
+      return false;
     } finally {
       lock.current = false;
       setBusy(false);
@@ -637,7 +640,7 @@ export function CoursePage() {
                 <button
                   type="button"
                   className="course-text-link"
-                  disabled={busy}
+                  disabled={busy || preferenceEditing}
                   onClick={() => setResumeConversation(true)}
                 >
                   <MessageCircle size={16} />
@@ -647,8 +650,9 @@ export function CoursePage() {
               <PreferenceReview
                 course={course}
                 disabled={busy}
+                onEditingChange={setPreferenceEditing}
                 onSave={(preferences) =>
-                  void run(async () => {
+                  run(async () => {
                     const key = JSON.stringify([
                       course.id,
                       course.revision,
@@ -671,7 +675,7 @@ export function CoursePage() {
               <p className="course-note">{t("courses.provisionalLevel")}</p>
               <button
                 className="button primary"
-                disabled={busy || !available}
+                disabled={busy || preferenceEditing || !available}
                 onClick={() =>
                   void run(async () => {
                     const approved = course.approvedPreferences
@@ -708,7 +712,7 @@ export function CoursePage() {
                   onChange={setMessage}
                   onSubmit={send}
                   language={course.preferences.supportLanguageCode}
-                  disabled={busy}
+                  disabled={busy || preferenceEditing}
                 />
               </details>
             </section>
@@ -1086,7 +1090,8 @@ export function CoursePage() {
                 <PreferenceReview
                   course={{ ...course, preferences: displayed.preferences }}
                   disabled
-                  onSave={() => {}}
+                  readOnly
+                  onSave={() => false}
                 />
                 <button
                   className="course-text-link"
@@ -1144,127 +1149,6 @@ export function CoursePage() {
   );
 }
 
-function PreferenceReview({
-  course,
-  disabled,
-  onSave,
-}: {
-  course: Course;
-  disabled: boolean;
-  onSave: (preferences: CoursePreferences) => void;
-}) {
-  const { t } = useTranslation();
-  const [editing, setEditing] = useState(false);
-  const [goal, setGoal] = useState(course.preferences.goal);
-  const p = course.preferences;
-  const languageOptions = getBilingualLanguageOptions();
-  const languageName = (code: string) =>
-    languageOptions.find(([value]) => value === code)?.[1] ?? code;
-  return (
-    <>
-      <div className="course-preferences">
-        <div>
-          <span>{t("courses.targetLanguage")}</span>
-          <strong>{languageName(p.targetLanguageCode)}</strong>
-        </div>
-        <div>
-          <span>{t("courses.supportLanguage")}</span>
-          <strong>{languageName(p.supportLanguageCode)}</strong>
-        </div>
-        <div>
-          <span>{t("courses.goal")}</span>
-          <strong dir="auto">{p.goal}</strong>
-          {!disabled && (
-            <button
-              className="course-icon-button"
-              aria-label={t("courses.editGoal")}
-              onClick={() => {
-                setGoal(p.goal);
-                setEditing((value) => !value);
-              }}
-            >
-              <Pencil size={15} />
-            </button>
-          )}
-        </div>
-        {editing && (
-          <form
-            className="course-inline-edit"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (goal.trim()) {
-                onSave({ ...p, goal: goal.trim() });
-                setEditing(false);
-              }
-            }}
-          >
-            <input
-              aria-label={t("courses.goal")}
-              value={goal}
-              maxLength={500}
-              onChange={(event) => setGoal(event.target.value)}
-            />
-            <button className="button secondary" type="submit">
-              {t("courses.save")}
-            </button>
-          </form>
-        )}
-        <div>
-          <span>{t("courses.path")}</span>
-          <strong>{t(`courses.paths.${p.path}`)}</strong>
-        </div>
-        <div>
-          <span>{t("courses.pace")}</span>
-          <strong dir="auto">
-            {!disabled && course.reportedAvailability
-              ? course.reportedAvailability
-              : t("courses.paceValue", {
-                  minutes: p.minutesPerLesson,
-                  days: p.daysPerWeek,
-                })}
-          </strong>
-        </div>
-        <div>
-          <span>{t("courses.experience")}</span>
-          <strong dir="auto">{p.experience}</strong>
-        </div>
-        <div>
-          <span>{t("courses.learningStyle")}</span>
-          <strong>
-            {t(`courses.age.${p.ageGroup}`)} ·{" "}
-            {t(`courses.literacy.${p.literacy}`)}
-          </strong>
-        </div>
-        {p.interests.length > 0 && (
-          <div>
-            <span>{t("courses.interests")}</span>
-            <strong dir="auto">{p.interests.join(" · ")}</strong>
-          </div>
-        )}
-      </div>
-      {p.statedNeeds.length > 0 && (
-        <div className="course-preference-notes">
-          <h3>{t("courses.youSaid")}</h3>
-          {p.statedNeeds.map((value) => (
-            <p key={value} dir="auto">
-              {value}
-            </p>
-          ))}
-        </div>
-      )}
-      {p.recommendations.length > 0 && (
-        <div className="course-preference-notes">
-          <h3>{t("courses.teacherSuggests")}</h3>
-          {p.recommendations.map((value) => (
-            <p key={value} dir="auto">
-              {value}
-            </p>
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
 export function HomeworkLinks({ items }: { items: HomeworkSummary[] }) {
   const { t } = useTranslation();
   if (!items.length) return null;
