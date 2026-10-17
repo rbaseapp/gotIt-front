@@ -41,25 +41,6 @@ import { learningReturn } from "../lib/learningNavigation";
 import { dashboardDesignEnabled } from "../lib/dashboardDesign";
 import { practiceDesignEnabled } from "../lib/practiceDesign";
 
-function PracticeLogo() {
-  return (
-    <Link to="/dashboard" className="practice-logo" aria-label="GotIt">
-      <span>
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="#F5C542"
-          aria-hidden="true"
-        >
-          <path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z" />
-        </svg>
-      </span>
-      GotIt
-    </Link>
-  );
-}
-
 function sameBaseLanguage(first: string, second: string) {
   try {
     return (
@@ -385,7 +366,7 @@ export function AppShell({
         <header className="topbar">
           {dashboardShell && (
             <div className="nd-desktop-brand">
-              {practiceShell ? <PracticeLogo /> : <Logo />}
+              <Logo />
             </div>
           )}
           {dashboardShell && (
@@ -427,7 +408,7 @@ export function AppShell({
           )}
           <div className="topbar-title">
             <span className="mobile-brand">
-              {practiceShell ? <PracticeLogo /> : <Logo />}
+              <Logo />
             </span>
             <button
               ref={menuRef}

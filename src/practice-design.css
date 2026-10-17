@@ -920,25 +920,6 @@
 .practice-shell .topbar-actions {
   gap: 10px;
 }
-.practice-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #1f2b27;
-  text-decoration: none;
-  font-family: Rubik, Assistant, system-ui, sans-serif;
-  font-weight: 800;
-  font-size: calc(1.65rem * var(--text-scale, 1));
-  letter-spacing: -0.02em;
-}
-.practice-logo span {
-  width: 66px;
-  height: 46px;
-  border-radius: 999px;
-  background: #2b6e58;
-  display: grid;
-  place-items: center;
-}
 .practice-pro {
   display: inline-flex;
   align-items: center;
