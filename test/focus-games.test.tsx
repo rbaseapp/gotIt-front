@@ -108,6 +108,67 @@ const click = async (name: string | RegExp) => {
 const next = () => click(/^Continue$/);
 
 describe("DEV focus game engine", () => {
+  it.each(["en", "he"])(
+    "keeps source words visible on the final matching board and after resume (%s)",
+    async (locale) => {
+      const view = await mount("matching", { count: 5, locale });
+      await screen.findByRole("button", { name: "chair", exact: true });
+      await act(() => i18n.changeLanguage(locale));
+      for (const card of focusCards.slice(0, 2)) {
+        await click(card.sourceText);
+        await click(card.translationText);
+        await waitFor(() =>
+          expect(
+            screen.getByRole("button", { name: card.sourceText, exact: true }),
+          ).toBeDisabled(),
+        );
+      }
+      const assertFinalBoard = async () => {
+        for (const card of focusCards.slice(2)) {
+          expect(
+            await screen.findByRole("button", {
+              name: card.sourceText,
+              exact: true,
+            }),
+          ).toBeVisible();
+        }
+        expect(
+          [...document.querySelectorAll("[data-word] .w")].map(
+            (word) => word.textContent,
+          ),
+        ).toEqual(focusCards.slice(2).map((card) => card.sourceText));
+        expect(
+          screen.queryByRole("button", {
+            name: i18n.t("focusGames.backToAudio"),
+          }),
+        ).not.toBeInTheDocument();
+      };
+      await assertFinalBoard();
+      const played = audioPlay.mock.calls.length;
+      await click(`${i18n.t("focusGames.play")} water`);
+      await waitFor(() => expect(audioPlay.mock.calls.length).toBe(played + 1));
+      expect(view.fixture.attempts).toHaveLength(2);
+
+      view.rerender(
+        <MemoryRouter
+          key="resume-final-board"
+          initialEntries={[
+            `/learn/session/matching?language=en&resume=${focusSessionId}`,
+          ]}
+        >
+          <Routes>
+            <Route path="/learn/session/:type" element={<DevFocusGamePage />} />
+          </Routes>
+        </MemoryRouter>,
+      );
+      await assertFinalBoard();
+      await click("water");
+      await click(focusCards[2].translationText);
+      await waitFor(() => expect(view.fixture.attempts).toHaveLength(3));
+      expect(view.fixture.attempts[2].result).toBe("correct");
+    },
+  );
+
   it("keeps cloze audio silent before a successful receipt, including retries", async () => {
     const speak = vi.spyOn(speech, "speak").mockReturnValue(true);
     const { fixture } = await mount("drag_drop");
