@@ -853,12 +853,6 @@ function MatchingGame({
   >([]);
   const exercises = state!.exercises;
   const boardStart = state!.stageItems.indexOf(exercises[0]?.learningItemId);
-  const [audioBoard, setAudioBoard] = useState(
-    () =>
-      boardStart > 0 &&
-      boardStart + exercises.length === state!.stageItems.length &&
-      engine.cards.some((card) => !!card.audioUrl),
-  );
   const choices = useRef(exercises[0]?.prompt.choices ?? []).current;
   const outcomes = state!.outcomes.filter(
     (outcome) =>
@@ -1033,9 +1027,7 @@ function MatchingGame({
             <span />
             <span className="lab en">
               <i>{sourceCode === "he" ? "א" : sourceCode?.toUpperCase()}</i>
-              {audioBoard
-                ? t("focusGames.audioBoard")
-                : languageName(sourceCode)}
+              {languageName(sourceCode)}
             </span>
           </div>
           <div
@@ -1130,14 +1122,7 @@ function MatchingGame({
                         {outcome && <Check size={15} />}
                       </span>
                       <span className="w en" dir="auto">
-                        {audioBoard ? (
-                          <>
-                            <Volume2 size={20} />{" "}
-                            {exercises.indexOf(exercise) + 1}
-                          </>
-                        ) : (
-                          exercise.prompt.text
-                        )}
+                        {exercise.prompt.text}
                       </span>
                     </button>
                     <button
@@ -1180,18 +1165,6 @@ function MatchingGame({
         </div>
         <div className="foot">
           <div className="tools">
-            {boardStart > 0 && (
-              <button
-                className="ghost"
-                onClick={() => setAudioBoard((value) => !value)}
-              >
-                {t(
-                  audioBoard
-                    ? "focusGames.cannotListen"
-                    : "focusGames.backToAudio",
-                )}
-              </button>
-            )}
             <button
               className="ghost"
               disabled={!selected || busy || !!pending}
