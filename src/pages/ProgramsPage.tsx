@@ -18,6 +18,7 @@ import { programsDesignEnabled } from "../lib/programs";
 import { DevProgramsView } from "./DevProgramsView";
 import { ProgramChooser } from "../components/ProgramChooser";
 import { curriculumApi, structuredProgram } from "../lib/structuredEnglish";
+import { curriculumDisplayPacks } from "../lib/structuredEnglishPresentation";
 
 export function ProgramsPage() {
   const { t, i18n } = useTranslation();
@@ -101,7 +102,7 @@ export function ProgramsPage() {
           defaultTranslationLanguage: support,
         });
       if (structuredPair) {
-        open("/english-zero-c1", "english-zero-c1", target);
+        open("/english-learning", "english-zero-c1", target);
         return;
       }
       const catalog = await product(wordPacksSchema, "word-packs");
@@ -114,9 +115,11 @@ export function ProgramsPage() {
       setBusy(false);
     }
   };
-  const path = englishPathLevels(packs.data?.packs ?? []).flatMap(
-    (level) => level.packs,
-  );
+  const path = structured.data
+    ? curriculumDisplayPacks(structured.data)
+    : englishPathLevels(packs.data?.packs ?? []).flatMap(
+        (level) => level.packs,
+      );
   const next = path.find((pack) => !completedEnglishUnit(pack));
   const groups = new Map<string, Course[]>();
   for (const course of courses.data?.courses ?? []) {
@@ -294,19 +297,6 @@ export function ProgramsPage() {
         error={courses.error}
         retry={() => void courses.reload()}
       />
-      {structured.data && !completedOpen && (
-        <article className="program-card structured">
-          <BookOpen size={28} />
-          <h2>{structured.data.program.title}</h2>
-          <p>{t("c1.subtitle")}</p>
-          <button
-            className="button primary"
-            onClick={() => open("/english-zero-c1", "english-zero-c1", "en")}
-          >
-            {t("ux.openMap")}
-          </button>
-        </article>
-      )}
       <RemoteState
         loading={packs.loading}
         error={packs.error}

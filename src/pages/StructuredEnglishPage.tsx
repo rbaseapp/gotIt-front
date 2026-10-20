@@ -1,15 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  BookOpen,
-  Check,
-  Headphones,
-  Mic,
-  Pause,
-  Save,
-  Volume2,
-} from "lucide-react";
+import { BookOpen, Headphones, Mic, Pause, Save, Volume2 } from "lucide-react";
 import { RemoteState } from "../components/RemoteState";
 import { CurriculumPicture } from "../components/CurriculumPicture";
 import { useResource } from "../lib/useResource";
@@ -25,7 +17,16 @@ import { errorMessage } from "../lib/product";
 import { chooseProgram } from "../lib/learningNavigation";
 import { useApp } from "../context/AppContext";
 import { recordVoice } from "../lib/voice";
-import "../structured-english.css";
+import { ProgramUnitMap } from "../components/ProgramUnitMap";
+import { UnitLevels } from "../components/UnitLevels";
+import { UnitWordBrowser } from "../components/UnitWordBrowser";
+import { PathArtwork } from "../components/PathArtwork";
+import {
+  curriculumDisplayPacks,
+  curriculumDisplayEntries,
+  curriculumRoadmap,
+} from "../lib/structuredEnglishPresentation";
+import "../courses.css";
 
 const bands = ["Pre-A1", "A1", "A2", "B1", "B2", "C1"];
 const games = ["recognition", "matching", "recall", "listening", "context"];
@@ -37,11 +38,19 @@ export function StructuredEnglishPage() {
   const resource = useResource(useCallback(() => curriculumApi.get(), []));
   const data = resource.data;
   const [params, setParams] = useSearchParams();
-  const view = params.get("view") ?? "map",
+  const navigate = useNavigate();
+  const view =
+      params.get("view") ??
+      (params.get("all") === "1" ? "levels" : params.get("tab")) ??
+      "map",
     unitId =
-      params.get("unit") === "C1E" && view !== "words"
-        ? (data?.currentUnit ?? "P01")
-        : (params.get("unit") ?? data?.currentUnit ?? "P01");
+      params.get("unit") === "C1E"
+        ? view === "words"
+          ? "C1E"
+          : (data?.currentUnit ?? "P01")
+        : (data?.units.find((item) => item.id === params.get("unit"))?.id ??
+          data?.currentUnit ??
+          "P01");
   const [unit, setUnit] = useState<CurriculumUnit>();
   const [teacher, setTeacher] = useState<CurriculumTeacher>();
   const [phonics, setPhonics] = useState<PhonicsSession>();
@@ -297,7 +306,6 @@ export function StructuredEnglishPage() {
     }
   };
   const showDone = (id: string) => Boolean(data?.completed[id]);
-  const stateLabel = (status: string) => t(`c1.wordState.${status}`);
   const selectedUnit = data?.units.find((item) => item.id === unitId);
   const saveDraft = () =>
     run(async () => {
@@ -339,7 +347,7 @@ export function StructuredEnglishPage() {
     }
   };
   const settings = (enrolled = false) => (
-    <div className="c1-settings">
+    <div className="unit-lesson-preferences">
       <label>
         {t("c1.dailyTime")}
         <select
@@ -382,23 +390,122 @@ export function StructuredEnglishPage() {
       )}
     </div>
   );
+  const displayPacks = data ? curriculumDisplayPacks(data) : [];
+  const displayPack = displayPacks.find((pack) => pack.id === unitId);
+  const displayEntries = unit ? curriculumDisplayEntries(unit) : [];
+  const suppliedContent = useMemo(
+    () => ({
+      knownLabel: t("c1.introduceWord"),
+      knownHelp: t("c1.wordInstructions"),
+    }),
+    [t],
+  );
+  const openActivity = (id: string, batch?: number) => {
+    const [kind, target, game] = id.split(":");
+    if (kind === "words" && !game) {
+      go({ view: "words", unit: target });
+      setWordBatch(batch ?? 0);
+    } else if (kind === "teacher") {
+      const minutes = data?.settings?.minutes ?? 20;
+      navigate(
+        `/private-lesson?curriculum=${encodeURIComponent(target)}&language=en&minutes=${minutes === 10 ? 5 : minutes === 20 ? 10 : minutes === 45 ? 15 : 20}&return=${encodeURIComponent(`/english-learning?unit=${unitId}`)}`,
+      );
+    } else if (["phonics", "unseen", "text"].includes(kind)) {
+      go({
+        view: kind,
+        unit: unitId,
+        [kind === "text" ? "unit" : kind]: target,
+      });
+    } else void start(id);
+  };
+  const mapReady = data?.enrolled && unit?.id === unitId && displayPack;
+  const showMap = view === "map" && data?.enrolled;
+  const mapModel =
+    data && unit
+      ? curriculumRoadmap(
+          data,
+          unit,
+          (key, values) => String(t(key, values)),
+          openActivity,
+        )
+      : undefined;
+  const displayTitle =
+    view === "map"
+      ? t("structuredUi.mapTitle")
+      : view === "levels"
+        ? t("structuredUi.allUnits")
+        : view === "activities"
+          ? t("structuredUi.activities")
+          : view === "words"
+            ? t("structuredUi.words")
+            : view === "attempt"
+              ? t("courses.homework")
+              : view === "teacher"
+                ? t("c1.teacher")
+                : view === "settings"
+                  ? t("lessonPrep.preferences")
+                  : t(`c1.tabs.${view}`, { defaultValue: t("c1.unitReading") });
   return (
-    <main className="c1-page ux-page page-enter" dir="rtl" aria-busy={busy}>
-      <header className="c1-header">
-        <div>
-          <Link to="/programs">{t("ux.programsTitle")}</Link>
-          <h1>{t("c1.title")}</h1>
-          <p>{t("c1.subtitle")}</p>
-        </div>
-        {data?.enrolled && settings(true)}
-      </header>
+    <div
+      className={
+        view === "attempt"
+          ? "course-page homework-page"
+          : `english-path-page live-page page-enter path-view-${view}${showMap ? " dev-program-map" : ""}`
+      }
+      dir="rtl"
+      aria-busy={busy}
+    >
+      {view === "attempt" && (
+        <header className="course-page-heading">
+          <div>
+            <p className="eyebrow">{t("courses.homework")}</p>
+            <h1>{selectedUnit?.title}</h1>
+          </div>
+          <button
+            className="course-text-link"
+            onClick={() => go({ view: "map", unit: unitId })}
+          >
+            {t("pathUi.backToMap")}
+          </button>
+        </header>
+      )}
+      {!showMap && view !== "attempt" && (
+        <header className="path-page-header">
+          <button
+            className="button ghost path-back"
+            onClick={() => go({ view: "map", unit: unitId })}
+          >
+            <PathArtwork name="levels-ChevronLeft" />
+            {t("pathUi.backToMap")}
+          </button>
+          <Link className="button secondary path-program" to="/courses">
+            {t("pathUi.programTitle")}
+            <PathArtwork name="map-ChevronDown" />
+          </Link>
+          <h1>{displayTitle}</h1>
+          <p dir="auto">{selectedUnit?.title ?? unit?.title}</p>
+          {view === "words" && unit && (
+            <button
+              className="button primary path-practice"
+              disabled={busy || !unit.games.some((game) => game.eligible > 0)}
+              onClick={() =>
+                void start(
+                  `words:${unitId}:${(data?.nextAction?.kind === "words" && data.nextAction.id === unitId ? data.nextAction.game : undefined) ?? unit.games.find((game) => game.eligible > 0)?.mode ?? "recognition"}`,
+                )
+              }
+            >
+              {t("dashboard.smartPractice")}
+            </button>
+          )}
+        </header>
+      )}
       <RemoteState
         loading={resource.loading && !data}
         error={resource.error}
         retry={() => void resource.reload()}
       />
       {error && (
-        <div className="c1-error" role="alert">
+        <div className="course-error" role="alert">
           {error}
           <button className="button ghost" onClick={() => void run(fresh)}>
             {t("common.tryAgain")}
@@ -406,19 +513,18 @@ export function StructuredEnglishPage() {
         </div>
       )}
       {busy && (
-        <p className="c1-feedback" role="status">
+        <p className="course-note" role="status">
           {t("c1.working")}
         </p>
       )}
       {feedback && (
-        <p className="c1-feedback" role="status">
+        <p className="homework-feedback correct" role="status">
           {feedback}
         </p>
       )}
       {data && !data.enrolled && (
-        <section className="ux-card c1-welcome">
-          <BookOpen size={32} />
-          <h2>{t("c1.welcome")}</h2>
+        <section className="ux-card">
+          <h2>{data.program.title}</h2>
           <p>{t("c1.welcomeBody")}</p>
           {settings()}
           <button
@@ -437,97 +543,154 @@ export function StructuredEnglishPage() {
           >
             {t("c1.begin")}
           </button>
-          <p>{t("c1.placementIntro")}</p>
         </section>
       )}
       {data?.enrolled && (
         <>
-          <nav className="c1-nav" aria-label={t("c1.navigation")}>
-            {["map", "words", "phonics", "placement", "sources"].map((name) => (
-              <button
-                key={name}
-                className={`button ${view === name ? "primary" : "ghost"}`}
-                aria-current={view === name ? "page" : undefined}
-                disabled={busy || recording}
-                onClick={() =>
-                  go({
-                    view: name,
-                    unit: unitId,
-                    phonics:
-                      data.phonics.find(
-                        (item) =>
-                          item.unlocked && !showDone(`phonics:${item.id}`),
-                      )?.id ?? "F24",
-                  })
-                }
-              >
-                {t(`c1.tabs.${name}`)}
-              </button>
+          {["words", "activities"].includes(view) && (
+            <nav
+              className="unit-map-tabs"
+              aria-label={t("structuredUi.sections")}
+            >
+              {["map", "words", "activities"].map((name) => (
+                <button
+                  key={name}
+                  className={view === name ? "active" : ""}
+                  aria-current={view === name ? "page" : undefined}
+                  disabled={busy || recording}
+                  onClick={() => go({ view: name, unit: unitId })}
+                >
+                  <BookOpen size={22} />
+                  {t(`structuredUi.${name}`)}
+                </button>
+              ))}
+            </nav>
+          )}
+          {showMap &&
+            (!mapReady || !mapModel ? (
+              <RemoteState
+                loading={!error}
+                error={error}
+                retry={() => void fresh()}
+              />
+            ) : (
+              <ProgramUnitMap
+                key={unitId}
+                current={displayPack}
+                packs={displayPacks}
+                completedActivities={mapModel.completed}
+                pathLoading={false}
+                pathError=""
+                onRetryPath={() => void fresh()}
+                onSelect={(pack) => go({ view: "map", unit: pack.id })}
+                onWords={() => go({ view: "words", unit: unitId })}
+                onAll={() => go({ view: "levels", unit: unitId })}
+                onActivities={() => go({ view: "activities", unit: unitId })}
+                stationUrl={() => ""}
+                presentation={{
+                  model: mapModel,
+                  packs: displayPacks,
+                  words: unit.words.map((word) => ({ sourceText: word.en })),
+                  canSelect: (id) =>
+                    Boolean(
+                      data.units.find((item) => item.id === id)?.unlocked,
+                    ),
+                  tools: (
+                    <>
+                      <button
+                        onClick={() => go({ view: "placement", unit: unitId })}
+                      >
+                        {t("c1.tabs.placement")}
+                      </button>
+                      <button
+                        onClick={() => go({ view: "settings", unit: unitId })}
+                      >
+                        {t("lessonPrep.preferences")}
+                      </button>
+                      <button
+                        onClick={() => go({ view: "sources", unit: unitId })}
+                      >
+                        {t("c1.tabs.sources")}
+                      </button>
+                    </>
+                  ),
+                }}
+              />
             ))}
-          </nav>
-          {view === "map" && (
-            <>
-              <div className="c1-stats">
-                {(
-                  ["introduced", "usable", "retained", "maintenance"] as const
-                ).map((name) => (
-                  <div className="ux-card" key={name}>
-                    <strong>{data.review[name]}</strong>
-                    <span>{t(`c1.wordState.${name}`)}</span>
-                  </div>
-                ))}
-              </div>
-              <section className="ux-card c1-today">
-                <div>
-                  <h2 ref={focusRef} tabIndex={-1}>
-                    {t("c1.today")}
-                  </h2>
-                  <p>
-                    {data.dailyPlan
-                      .map(
-                        (part) =>
-                          `${t(`c1.plan.${part.kind}`)}  ${t("c1.minutes", { count: part.minutes })}`,
-                      )
-                      .join("  ")}
-                  </p>
-                </div>
-                {data.nextAction && data.nextAction.kind !== "complete" && (
-                  <button
-                    className="button primary"
-                    disabled={busy}
-                    onClick={continuePath}
-                  >
-                    {t("c1.nextActivity")}{" "}
-                    {data.nextAction.game
-                      ? t(`c1.games.${data.nextAction.game}`)
-                      : t("c1.practice")}
-                  </button>
-                )}
+          {view === "levels" && (
+            <UnitLevels
+              packs={displayPacks}
+              current={displayPack}
+              onOpen={(pack) => go({ view: "map", unit: pack.id })}
+              onWords={(pack) => go({ view: "words", unit: pack.id })}
+              canOpen={(pack) =>
+                Boolean(
+                  data.units.find((item) => item.id === pack.id)?.unlocked,
+                )
+              }
+            />
+          )}
+          {view === "settings" && (
+            <section className="ux-card unit-lesson-preferences">
+              {settings(true)}
+              <p>
+                {data.dailyPlan
+                  .map(
+                    (part) =>
+                      `${t(`c1.plan.${part.kind}`)} ${t("c1.minutes", { count: part.minutes })}`,
+                  )
+                  .join(" · ")}
+              </p>
+            </section>
+          )}
+          {view === "activities" && (
+            <div className="unit-browser unit-activity-browser">
+              <section className="unit-activity-list ux-card">
+                <h2>{t("structuredUi.activities")}</h2>
                 {Object.entries(data.activeAttempts).map(([activity, id]) => (
                   <button
+                    className="unit-activity-row"
                     key={id}
-                    className="button secondary"
-                    disabled={busy}
                     onClick={() =>
                       go({ view: "attempt", attempt: id, unit: unitId })
                     }
                   >
-                    {t("c1.resume")}{" "}
                     <span>
-                      {data.units.find((item) => activity.includes(item.id))
-                        ?.title ?? t("c1.practice")}
+                      <strong>{t("c1.resume")}</strong>
+                      <small>
+                        {data.units.find((item) => activity.includes(item.id))
+                          ?.title ?? t("c1.practice")}
+                      </small>
                     </span>
                   </button>
                 ))}
+                {data.nextAction && (
+                  <button
+                    className="button primary"
+                    onClick={continuePath}
+                    disabled={busy}
+                  >
+                    {t("c1.nextActivity")}
+                  </button>
+                )}
                 <button
-                  className="button primary"
+                  className="button secondary"
                   disabled={busy || !data.review.due}
                   onClick={() => void start("review:due")}
                 >
                   {t("c1.reviewDue", { count: data.review.due })}
                 </button>
+              </section>
+              <aside className="unit-activity-detail ux-card">
+                <h2>{t("c1.unitReading")}</h2>
+                <p>
+                  {t("c1.readingCadence", {
+                    targets: data.reading.remainingTargets,
+                    minutes: data.reading.remainingMinutes,
+                  })}
+                </p>
                 <button
-                  className="button secondary"
+                  className="button primary"
                   disabled={busy || !data.reading.eligible}
                   onClick={() =>
                     void run(async () => {
@@ -544,15 +707,9 @@ export function StructuredEnglishPage() {
                 >
                   {t("c1.newReading")}
                 </button>
-                <p>
-                  {t("c1.readingCadence", {
-                    targets: data.reading.remainingTargets,
-                    minutes: data.reading.remainingMinutes,
-                  })}
-                </p>
                 {data.articleJob && (
                   <button
-                    className="button ghost"
+                    className="button secondary"
                     onClick={() =>
                       go({
                         view: "article",
@@ -564,141 +721,30 @@ export function StructuredEnglishPage() {
                     {t("c1.openReading")}
                   </button>
                 )}
-              </section>
-              <section className="ux-card">
-                <h2>{t("c1.finalAssessment")}</h2>
-                <p>
-                  {t(
-                    data.graduation.complete
-                      ? "c1.finalComplete"
-                      : "c1.finalBody",
-                  )}
-                </p>
-                <div className="c1-actions">
-                  {data.graduation.skills.map((skill) => (
-                    <button
-                      key={skill}
-                      className="button secondary"
-                      disabled={busy || !data.graduation.ready}
-                      onClick={() => void start(`exit:${skill}`)}
-                    >
-                      {showDone(`exit:${skill}`) && <Check size={16} />}{" "}
-                      {t(`c1.skills.${skill}`)}
-                    </button>
-                  ))}
-                </div>
-              </section>
-              <section className="ux-card c1-current">
-                <p className="pill" dir="ltr">
-                  {selectedUnit?.band} {unitId}
-                </p>
-                <h2>{selectedUnit?.title}</h2>
-                <p>{selectedUnit?.goal}</p>
-                <div className="c1-actions">
-                  <button
-                    className="button primary"
-                    onClick={() => go({ view: "words", unit: unitId })}
-                  >
-                    {t("c1.studyWords")}
-                  </button>
-                  {selectedUnit?.lessons.map((lesson) => (
-                    <div key={lesson.id} className="c1-stage">
-                      <h3>{lesson.title}</h3>
-                      <span>{t("c1.minutes", { count: lesson.minutes })}</span>
-                      <button
-                        className="button secondary"
-                        onClick={() =>
-                          go({
-                            view: "teacher",
-                            unit: unitId,
-                            lesson: lesson.id,
-                          })
-                        }
-                      >
-                        {showDone(`teacher:${lesson.id}`) && (
-                          <Check size={16} />
-                        )}{" "}
-                        {t("c1.teacher")}
-                      </button>
-                      <button
-                        className="button ghost"
-                        disabled={busy || !showDone(`teacher:${lesson.id}`)}
-                        onClick={() => void start(`post:${lesson.id}`)}
-                      >
-                        {showDone(`post:${lesson.id}`) && <Check size={16} />}{" "}
-                        {t("c1.postlesson")}
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    className="button secondary"
-                    onClick={() => go({ view: "text", unit: unitId })}
-                  >
-                    {t("c1.unitReading")}
-                  </button>
-                  <button
-                    className="button primary"
-                    disabled={busy}
-                    onClick={() => void start(`gate:${unitId}`)}
-                  >
-                    {t("c1.checkpoint")}
-                  </button>
-                  {selectedUnit?.unseen && (
-                    <button
-                      className="button secondary"
-                      disabled={!showDone(`gate:${unitId}`)}
-                      onClick={() =>
-                        go({
-                          view: "unseen",
-                          unseen: selectedUnit.unseen!,
-                          unit: unitId,
-                        })
-                      }
-                    >
-                      {t("c1.unseen")}
-                    </button>
-                  )}
-                </div>
-              </section>
-              {bands.map((level) => (
-                <section key={level} className="c1-band">
-                  <h2 dir="ltr">{level}</h2>
-                  <div className="c1-unit-grid">
-                    {data.units
-                      .filter((item) => item.band === level)
-                      .map((item) => (
-                        <button
-                          key={item.id}
-                          className={`ux-card c1-unit ${item.id === unitId ? "selected" : ""}`}
-                          disabled={!item.unlocked}
-                          aria-current={item.id === unitId ? "step" : undefined}
-                          onClick={() => go({ view: "map", unit: item.id })}
-                        >
-                          <span dir="ltr">
-                            {item.id}
-                            {showDone(`gate:${item.id}`) && <Check size={16} />}
-                          </span>
-                          <strong>{item.title}</strong>
-                          {item.waived && (
-                            <small>{t("c1.placementWaiver")}</small>
-                          )}
-                          <span>
-                            {item.words} {t("c1.words")}
-                          </span>
-                        </button>
-                      ))}
-                  </div>
-                </section>
-              ))}
-            </>
+              </aside>
+            </div>
           )}
           {view === "words" && unit?.id === unitId && (
-            <section className="ux-card">
-              <h2 ref={focusRef} tabIndex={-1}>
-                {unit.title} {t("c1.studyWords")}
-              </h2>
-              <p>{t("c1.wordInstructions")}</p>
-              <div className="c1-actions">
+            <>
+              <UnitWordBrowser
+                key={`${unit.id}:${wordBatch}`}
+                packId={unit.id}
+                entries={displayEntries.slice(wordBatch * 6, wordBatch * 6 + 6)}
+                language="en"
+                supportLanguage="he"
+                busy={busy}
+                suppliedContent={suppliedContent}
+                onKnown={(entry) =>
+                  void run(async () => {
+                    const { revision, eventId } = await commandFor(
+                      `expose:${entry.id}`,
+                    );
+                    await curriculumApi.expose(revision, [entry.id], eventId);
+                    await fresh();
+                  })
+                }
+              />
+              <div className="path-word-tools">
                 <button
                   className="button ghost"
                   disabled={wordBatch === 0}
@@ -717,7 +763,7 @@ export function StructuredEnglishPage() {
                   {t("c1.nextGroup")}
                 </button>
                 <button
-                  className="button primary"
+                  className="button secondary"
                   disabled={busy}
                   onClick={() =>
                     void run(async () => {
@@ -734,8 +780,6 @@ export function StructuredEnglishPage() {
                 >
                   {t("c1.introduceGroup")}
                 </button>
-              </div>
-              <div className="c1-actions">
                 {games.map((game) => (
                   <button
                     key={game}
@@ -755,66 +799,10 @@ export function StructuredEnglishPage() {
                   </button>
                 ))}
               </div>
-              <div className="c1-word-grid">
-                {unit.words
-                  .slice(wordBatch * 6, wordBatch * 6 + 6)
-                  .map((word) => (
-                    <article className="c1-word" key={word.id}>
-                      <strong lang="en" dir="ltr">
-                        {word.en}
-                      </strong>
-                      <span>{word.he}</span>
-                      <small>
-                        {word.evidence
-                          ? stateLabel(word.evidence.status)
-                          : t("c1.newWord")}
-                      </small>
-                      <button
-                        className="button ghost"
-                        disabled={busy}
-                        aria-label={`${t("c1.listen")}: ${word.en}`}
-                        onClick={() =>
-                          void run(async () => {
-                            await play(
-                              await curriculumApi.teachingAudio(
-                                "target",
-                                word.id,
-                              ),
-                            );
-                          })
-                        }
-                      >
-                        <Volume2 size={18} />
-                        {t("c1.listen")}
-                      </button>
-                      <button
-                        className="button secondary"
-                        disabled={busy}
-                        onClick={() =>
-                          void run(async () => {
-                            const { revision, eventId } = await commandFor(
-                              `expose:${word.id}`,
-                            );
-                            await curriculumApi.expose(
-                              revision,
-                              [word.id],
-                              eventId,
-                            );
-                            await fresh();
-                          })
-                        }
-                      >
-                        {word.evidence
-                          ? t("c1.reviewWord")
-                          : t("c1.introduceWord")}
-                      </button>
-                    </article>
-                  ))}
-              </div>
-            </section>
+            </>
           )}
           {view === "teacher" && teacher?.id === lessonId && (
-            <section className="ux-card c1-learning">
+            <section className="homework-task-card">
               <h2 ref={focusRef} tabIndex={-1}>
                 {teacher.title}
               </h2>
@@ -824,32 +812,30 @@ export function StructuredEnglishPage() {
               {!teacher.complete && (
                 <Link
                   className="button secondary"
-                  to={`/private-lesson?curriculum=${lessonId}&language=en&minutes=${data.settings?.minutes === 10 ? 5 : data.settings?.minutes === 20 ? 10 : data.settings?.minutes === 45 ? 15 : 20}&return=${encodeURIComponent(`/english-zero-c1?view=teacher&lesson=${lessonId}&unit=${unitId}`)}`}
+                  to={`/private-lesson?curriculum=${lessonId}&language=en&minutes=${data.settings?.minutes === 10 ? 5 : data.settings?.minutes === 20 ? 10 : data.settings?.minutes === 45 ? 15 : 20}&return=${encodeURIComponent(`/english-learning?view=teacher&lesson=${lessonId}&unit=${unitId}`)}`}
                 >
                   <Mic size={18} />
                   {t("c1.voiceTeacher")}
                 </Link>
               )}
               {teacher.complete ? (
-                <p className="c1-success">{t("c1.lessonComplete")}</p>
+                <p className="course-note">{t("c1.lessonComplete")}</p>
               ) : (
                 teacher.phase && (
                   <>
-                    <p className="c1-teacher-instruction">
-                      {teacher.phase.instruction}
-                    </p>
+                    <p className="course-note">{teacher.phase.instruction}</p>
                     {teacher.phase.english && (
-                      <p className="c1-english" lang="en" dir="ltr">
+                      <p className="unit-sentence" lang="en" dir="ltr">
                         {teacher.phase.english}
                       </p>
                     )}
                     {teacher.phase.contrast && (
-                      <p className="c1-english" lang="en" dir="ltr">
+                      <p className="unit-sentence" lang="en" dir="ltr">
                         {teacher.phase.contrast}
                       </p>
                     )}
                     {teacher.phase.turns?.map((turn, index) => (
-                      <div className="c1-dialogue" key={index}>
+                      <div className="course-chat-bubble assistant" key={index}>
                         <p lang="en" dir="ltr">
                           {turn.text_en}
                         </p>
@@ -865,7 +851,7 @@ export function StructuredEnglishPage() {
                       </details>
                     )}
                     {teacher.phase.passage && (
-                      <p className="c1-passage" lang="en" dir="ltr">
+                      <p className="unit-sentence" lang="en" dir="ltr">
                         {teacher.phase.passage}
                       </p>
                     )}
@@ -879,7 +865,7 @@ export function StructuredEnglishPage() {
                         dir="auto"
                       />
                     </label>
-                    <div className="c1-actions">
+                    <div className="homework-support-actions">
                       <button
                         className="button primary"
                         disabled={busy}
@@ -936,9 +922,9 @@ export function StructuredEnglishPage() {
             </section>
           )}
           {view === "phonics" && (
-            <div className="c1-phonics-layout">
+            <div className="unit-browser">
               <nav
-                className="c1-phonics-list"
+                className="unit-browser-list ux-card"
                 aria-label={t("c1.tabs.phonics")}
               >
                 {data.phonics.map((item) => (
@@ -956,14 +942,14 @@ export function StructuredEnglishPage() {
                 ))}
               </nav>
               {phonics?.id === phonicsId && (
-                <section className="ux-card c1-learning">
+                <section className="homework-task-card">
                   <h2 ref={focusRef} tabIndex={-1}>
                     {phonics.title}
                   </h2>
-                  <div className="c1-sounds">
+                  <div className="homework-choices">
                     {phonics.mappings.map((mapping, index) => (
                       <button
-                        className="c1-sound"
+                        className="button secondary"
                         key={`${mapping.grapheme}:${index}`}
                         disabled={busy}
                         onClick={() =>
@@ -989,7 +975,7 @@ export function StructuredEnglishPage() {
                   {phonics.script.map((line, index) => (
                     <p key={index}>{line}</p>
                   ))}
-                  <p className="c1-english" lang="en" dir="ltr">
+                  <p className="unit-sentence" lang="en" dir="ltr">
                     {phonics.sentence}
                   </p>
                   <button
@@ -1010,7 +996,7 @@ export function StructuredEnglishPage() {
                     <Headphones size={18} />
                     {t("c1.listenModel")}
                   </button>
-                  <div className="c1-actions">
+                  <div className="homework-support-actions">
                     <button
                       className="button primary"
                       disabled={busy}
@@ -1024,11 +1010,11 @@ export function StructuredEnglishPage() {
             </div>
           )}
           {view === "text" && unit?.id === unitId && (
-            <section className="ux-card c1-learning">
+            <section className="homework-task-card">
               <h2 ref={focusRef} tabIndex={-1}>
                 {unit.title}
               </h2>
-              <p className="c1-passage" dir="ltr" lang="en">
+              <p className="unit-sentence" dir="ltr" lang="en">
                 {unit.passage}
               </p>
               <button
@@ -1041,7 +1027,7 @@ export function StructuredEnglishPage() {
             </section>
           )}
           {view === "unseen" && unseen?.id === params.get("unseen") && (
-            <section className="ux-card c1-learning">
+            <section className="homework-task-card">
               <h2 ref={focusRef} tabIndex={-1}>
                 {unseen.title}
               </h2>
@@ -1051,7 +1037,7 @@ export function StructuredEnglishPage() {
                   : t("c1.freshText")}
               </p>
               {!unseen.previouslyAttempted && (
-                <p className="c1-passage" dir="ltr" lang="en">
+                <p className="unit-sentence" dir="ltr" lang="en">
                   {unseen.passage}
                 </p>
               )}
@@ -1065,7 +1051,7 @@ export function StructuredEnglishPage() {
             </section>
           )}
           {view === "article" && article?.id === params.get("article") && (
-            <section className="ux-card c1-learning">
+            <section className="homework-task-card">
               <h2 ref={focusRef} tabIndex={-1}>
                 {article.title ?? t("c1.newReading")}
               </h2>
@@ -1079,7 +1065,7 @@ export function StructuredEnglishPage() {
                         : "c1.guidedReading",
                     )}
                   </p>
-                  <p className="c1-passage" dir="ltr" lang="en">
+                  <p className="unit-sentence" dir="ltr" lang="en">
                     {article.text}
                   </p>
                   <details>
@@ -1088,7 +1074,7 @@ export function StructuredEnglishPage() {
                       {article.supportWords.join("  ")}
                     </p>
                   </details>
-                  <div className="c1-actions">
+                  <div className="homework-support-actions">
                     {Array.from(
                       { length: article.attempt?.question?.audioParts ?? 0 },
                       (_, part) => (
@@ -1147,7 +1133,7 @@ export function StructuredEnglishPage() {
             </section>
           )}
           {view === "attempt" && attempt?.id === params.get("attempt") && (
-            <section className="ux-card c1-learning">
+            <section className="homework-task-card">
               <h2 ref={focusRef} tabIndex={-1}>
                 {t("c1.practice")} {Math.min(attempt.cursor + 1, attempt.total)}{" "}
                 / {attempt.total}
@@ -1159,7 +1145,7 @@ export function StructuredEnglishPage() {
               />
               {attempt.feedback && (
                 <div
-                  className={`c1-feedback ${attempt.feedback.correct ? "correct" : "repair"}`}
+                  className={`homework-feedback ${attempt.feedback.correct ? "correct" : "repair"}`}
                   role="status"
                 >
                   <strong>
@@ -1206,7 +1192,7 @@ export function StructuredEnglishPage() {
                 attempt.question && (
                   <>
                     {attempt.question.passage && (
-                      <p className="c1-passage" lang="en" dir="ltr">
+                      <p className="unit-sentence" lang="en" dir="ltr">
                         {attempt.question.passage}
                       </p>
                     )}
@@ -1226,7 +1212,7 @@ export function StructuredEnglishPage() {
                       <p>{t("c1.readingAudioSupport")}</p>
                     )}
                     {attempt.question.hasAudio && (
-                      <div className="c1-actions">
+                      <div className="homework-support-actions">
                         {Array.from(
                           { length: attempt.question.audioParts },
                           (_, part) => (
@@ -1257,12 +1243,12 @@ export function StructuredEnglishPage() {
                       </div>
                     )}
                     {hint && (
-                      <p className="c1-hint" role="status">
+                      <p className="homework-hint" role="status">
                         {hint}
                       </p>
                     )}
                     {attempt.question.choices ? (
-                      <div className="c1-choices">
+                      <div className="homework-choices">
                         {attempt.question.choices.map((choice) => (
                           <button
                             className="button secondary"
@@ -1297,7 +1283,7 @@ export function StructuredEnglishPage() {
                             }}
                           />
                         </label>
-                        <div className="c1-actions">
+                        <div className="homework-support-actions">
                           <button
                             className="button primary"
                             disabled={busy || recording || !answer.trim()}
@@ -1355,7 +1341,7 @@ export function StructuredEnglishPage() {
             </section>
           )}
           {view === "placement" && (
-            <section className="ux-card c1-learning">
+            <section className="homework-task-card">
               <h2 ref={focusRef} tabIndex={-1}>
                 {t("c1.tabs.placement")}
               </h2>
@@ -1371,7 +1357,7 @@ export function StructuredEnglishPage() {
                   ))}
                 </select>
               </label>
-              <div className="c1-actions">
+              <div className="homework-support-actions">
                 {[
                   "decoding",
                   "vocabulary",
@@ -1397,7 +1383,7 @@ export function StructuredEnglishPage() {
             </section>
           )}
           {view === "sources" && (
-            <section className="ux-card c1-learning">
+            <section className="homework-task-card">
               <h2 ref={focusRef} tabIndex={-1}>
                 {t("c1.tabs.sources")}
               </h2>
@@ -1452,6 +1438,6 @@ export function StructuredEnglishPage() {
           )}
         </>
       )}
-    </main>
+    </div>
   );
 }

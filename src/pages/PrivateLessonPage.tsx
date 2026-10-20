@@ -46,7 +46,6 @@ import { speak } from "../lib/utils";
 import { readLessonDraft, saveLessonDraft } from "../lib/lessonDraft";
 import { courseApi, type Course } from "../lib/courses";
 import { LessonSummary } from "../components/LessonSummary";
-import { RemoteState } from "../components/RemoteState";
 import { curriculumApi } from "../lib/structuredEnglish";
 import { learningReturn } from "../lib/learningNavigation";
 import { LessonHomeworkCard } from "./HomeworkPage";
@@ -133,12 +132,16 @@ export function PrivateLessonPage() {
   );
   const packId = searchParams.get("pack");
   useLayoutEffect(() => {
-    if (packId) window.scrollTo({ top: 0, behavior: "instant" });
-  }, [packId]);
+    if (packId || curriculumLessonId)
+      window.scrollTo({ top: 0, behavior: "instant" });
+  }, [packId, curriculumLessonId]);
   const minuteBalance = useResource(
     useCallback(
-      () => (packId ? billing.minutes() : Promise.resolve(null)),
-      [packId],
+      () =>
+        packId || curriculumLessonId
+          ? billing.minutes()
+          : Promise.resolve(null),
+      [packId, curriculumLessonId],
     ),
   );
   const [unit, setUnit] = useState<LessonUnit>();
@@ -196,6 +199,42 @@ export function PrivateLessonPage() {
       step.station ===
       (searchParams.get("station") || unit?.station || "supported"),
   );
+  const curriculumWords = useResource(
+    useCallback(
+      () =>
+        curriculumLessonId
+          ? curriculumApi.unit(curriculumLessonId.split("-L")[0])
+          : Promise.resolve(null),
+      [curriculumLessonId],
+    ),
+  );
+  const prepUnit = curriculumLessonId
+    ? curriculumPreview.data
+      ? {
+          title: curriculumPreview.data.title,
+          moduleNumber: Number(curriculumLessonId.match(/\d+/)?.[0] ?? 1),
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          words: (curriculumWords.data?.unit.words ?? [])
+            .slice(
+              curriculumLessonId.endsWith("L2") ? 6 : 0,
+              curriculumLessonId.endsWith("L2") ? 12 : 6,
+            )
+            .map((word) => ({ sourceText: word.en, translationText: word.he })),
+          introduced: 0,
+        }
+      : undefined
+    : unit;
+  const prepStation = curriculumLessonId
+    ? {
+        available: Boolean(
+          curriculumPreview.data && !curriculumPreview.data.complete,
+        ),
+        lockReason: null,
+        requiredWords: 0,
+      }
+    : selectedUnitStation;
+  const prepError = curriculumLessonId ? curriculumPreview.error : unitError;
   const plannedMinutes = packId
     ? (selectedUnitStation?.durationMinutes ?? 5)
     : lessonDurationMinutes;
@@ -1378,12 +1417,17 @@ export function PrivateLessonPage() {
       prep: "warmup",
     });
     if (courseId) back.set("course", courseId);
+    else if (curriculumLessonId) back.set("curriculum", curriculumLessonId);
     else if (packId) back.set("pack", packId);
     else back.set("practice", "free");
     const returnTo = encodeURIComponent("/private-lesson?" + back);
     if (courseId && courseData?.nextLesson) {
       navigate(
         `/courses/${courseId}/units/${encodeURIComponent(courseData.nextLesson.unitKey)}/words?return=${returnTo}`,
+      );
+    } else if (curriculumLessonId) {
+      navigate(
+        `/english-learning?unit=${encodeURIComponent(curriculumLessonId.split("-L")[0])}&tab=words&return=${returnTo}`,
       );
     } else if (packId) {
       navigate(
@@ -1400,9 +1444,11 @@ export function PrivateLessonPage() {
     searchParams.get("return"),
     courseId
       ? "/courses/" + courseId
-      : packId
-        ? "/english-learning?unit=" + packId
-        : "/dashboard",
+      : curriculumLessonId
+        ? "/english-learning?unit=" + curriculumLessonId.split("-L")[0]
+        : packId
+          ? "/english-learning?unit=" + packId
+          : "/dashboard",
   );
   if (phase === "ended" && reportRequested && completedLesson?.report)
     return (
@@ -1467,9 +1513,9 @@ export function PrivateLessonPage() {
 
   return (
     <div
-      className={`private-lesson-page live-page page-enter${packId ? " unit-prep-page" : ""}${sessionFullscreen ? " session-fullscreen" : ""}`}
+      className={`private-lesson-page live-page page-enter${packId || curriculumLessonId ? " unit-prep-page" : ""}${sessionFullscreen ? " session-fullscreen" : ""}`}
     >
-      {!packId && (
+      {!packId && !curriculumLessonId && (
         <section className="page-heading-row private-lesson-heading">
           <div>
             <p className="eyebrow">{t("privateLesson.eyebrow")}</p>
@@ -1503,101 +1549,7 @@ export function PrivateLessonPage() {
 
       {phase === "setup" || phase === "preparing" ? (
         <>
-          {curriculumLessonId ? (
-            <form
-              className="unit-lesson-prep canonical-page"
-              onSubmit={(event) => void startLesson(event)}
-            >
-              <RemoteState
-                loading={curriculumPreview.loading}
-                error={curriculumPreview.error}
-                retry={() => void curriculumPreview.reload()}
-              />
-              <section className="ux-card mint">
-                <h2>{curriculumPreview.data?.title}</h2>
-                <p>{t("c1.splitLesson")}</p>
-                <p>{curriculumPreview.data?.phase?.instruction}</p>
-                <button
-                  className="button primary"
-                  type="submit"
-                  disabled={
-                    !curriculumPreview.data ||
-                    curriculumPreview.data.complete ||
-                    phase === "preparing"
-                  }
-                >
-                  {phase === "preparing" && (
-                    <LoaderCircle size={18} className="spin" />
-                  )}
-                  {t("privateLesson.start")}
-                </button>
-              </section>
-              <section className="ux-card unit-lesson-preferences">
-                <label className="field">
-                  <span>{t("ux.chooseTeacher")}</span>
-                  <select
-                    value={teacherVoice}
-                    onChange={(event) =>
-                      setTeacherVoice(event.target.value as TeacherVoice)
-                    }
-                  >
-                    {(["female", "male"] as const).map((value) => (
-                      <option key={value} value={value}>
-                        {t(`privateLesson.voiceOptions.${value}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  <span>{t("privateLesson.speechRate")}</span>
-                  <select
-                    value={speechRate}
-                    onChange={(event) =>
-                      setSpeechRate(
-                        event.target.value as PrivateLessonSpeechRate,
-                      )
-                    }
-                  >
-                    {privateLessonSpeechRates.map((value) => (
-                      <option value={value} key={value}>
-                        {t(`privateLesson.speedOptions.${value}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  <span>{t("c1.dailyTime")}</span>
-                  <select
-                    value={lessonDurationMinutes}
-                    onChange={(event) =>
-                      setLessonDurationMinutes(
-                        Number(
-                          event.target.value,
-                        ) as PrivateLessonDurationMinutes,
-                      )
-                    }
-                  >
-                    {[5, 10, 15, 20].map((value) => (
-                      <option key={value} value={value}>
-                        {t("c1.minutes", { count: value })}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </section>
-              {error && (
-                <p className="form-error" role="alert">
-                  {error}
-                </p>
-              )}
-              <Link
-                className="button ghost"
-                to={`/english-zero-c1?view=teacher&lesson=${curriculumLessonId}&unit=${curriculumLessonId.split("-L")[0]}`}
-              >
-                {t("c1.returnMap")}
-              </Link>
-            </form>
-          ) : packId ? (
+          {packId || curriculumLessonId ? (
             <div
               className="unit-lesson-prep canonical-page"
               data-figma-desktop="43:6205"
@@ -1612,12 +1564,14 @@ export function PrivateLessonPage() {
                     }).of(lessonTargetLanguage),
                   })}{" "}
                   ·{" "}
-                  {t("englishPath.unit", { number: unit?.moduleNumber ?? "…" })}{" "}
+                  {t("englishPath.unit", {
+                    number: prepUnit?.moduleNumber ?? "…",
+                  })}{" "}
                   · {t("lessonPrep.aiTeacher")}
                 </p>
               </header>
               <section className="ux-card mint">
-                <h2 dir="auto">{unit?.title}</h2>
+                <h2 dir="auto">{prepUnit?.title}</h2>
                 <p>
                   {t("privateLesson.durationMinutes", {
                     count: plannedMinutes,
@@ -1636,32 +1590,32 @@ export function PrivateLessonPage() {
                   <br />
                   <span
                     className="unit-lesson-word-preview"
-                    lang={unit?.targetLanguageCode}
+                    lang={prepUnit?.targetLanguageCode}
                     dir="auto"
                   >
-                    {unit?.words
+                    {prepUnit?.words
                       .slice(0, 5)
                       .map((word) => word.sourceText)
                       .join(" · ")}
                   </span>
                 </p>
-                {unitError && (
+                {prepError && (
                   <p role="alert" className="form-error">
-                    {unitError}
+                    {prepError}
                   </p>
                 )}
-                {!unit && !unitError && (
+                {!prepUnit && !prepError && (
                   <p role="status">{t("common.loading")}</p>
                 )}
-                {selectedUnitStation && !selectedUnitStation.available && (
+                {prepStation && !prepStation.available && (
                   <p role="status">
-                    {selectedUnitStation.lockReason === "previous_preparation"
+                    {prepStation.lockReason === "previous_preparation"
                       ? t("unitMap.previousPreparation")
                       : t("pathUi.remaining", {
                           count: Math.max(
                             0,
-                            selectedUnitStation.requiredWords -
-                              (unit?.introduced ?? 0),
+                            prepStation.requiredWords -
+                              (prepUnit?.introduced ?? 0),
                           ),
                         })}
                   </p>
@@ -1671,8 +1625,8 @@ export function PrivateLessonPage() {
                     className="button primary"
                     type="submit"
                     disabled={
-                      !unit ||
-                      !selectedUnitStation?.available ||
+                      !prepUnit ||
+                      !prepStation?.available ||
                       phase === "preparing" ||
                       setupLoading
                     }
@@ -1688,7 +1642,7 @@ export function PrivateLessonPage() {
                   className="button secondary"
                   onClick={() =>
                     navigate(
-                      `/english-learning?unit=${packId}&tab=words&return=${encodeURIComponent("/private-lesson?" + searchParams)}`,
+                      `/english-learning?unit=${curriculumLessonId ? curriculumLessonId.split("-L")[0] : packId}&tab=words&return=${encodeURIComponent("/private-lesson?" + searchParams)}`,
                     )
                   }
                 >
@@ -1709,10 +1663,10 @@ export function PrivateLessonPage() {
                 <label className="field">
                   <span>{t("privateLesson.supportLanguage")}</span>
                   <span className="unit-help-language">
-                    {unit?.supportLanguageCode &&
+                    {prepUnit?.supportLanguageCode &&
                       new Intl.DisplayNames([i18n.language], {
                         type: "language",
-                      }).of(unit.supportLanguageCode)}
+                      }).of(prepUnit.supportLanguageCode)}
                   </span>
                 </label>
                 <label className="field">
@@ -1738,7 +1692,7 @@ export function PrivateLessonPage() {
                   </p>
                   <details className="unit-lesson-words">
                     <summary>{t("ux.unitWords")}</summary>
-                    {unit?.words.map((word) => (
+                    {prepUnit?.words.map((word) => (
                       <p key={word.sourceText} dir="auto">
                         <strong>{word.sourceText}</strong> ·{" "}
                         {word.translationText}
@@ -2842,7 +2796,7 @@ export function PrivateLessonPage() {
           >
             <div className="modal-body">{teacherChoices}</div>
           </Modal>
-          {!packId && (
+          {!packId && !curriculumLessonId && (
             <section className="private-lesson-history live-panel">
               <div className="private-lesson-history-heading">
                 <div>

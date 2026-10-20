@@ -237,7 +237,7 @@ export function DevDashboardPage() {
         1
       : Math.min(completed + 1, total);
   const planLink = isStructured
-    ? "/english-zero-c1"
+    ? "/english-learning"
     : course
       ? `/courses/${course.id}`
       : "/english-learning";
