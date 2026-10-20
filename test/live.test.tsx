@@ -95,6 +95,9 @@ function mount(
   vi.stubEnv("VITE_DEMO_MODE", "false");
   setTokens({ accessToken: "access", refreshToken: "refresh", expiresIn: 900 });
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    // These fixtures exercise the retained legacy content source, unpublished C1.
+    if (url.endsWith("/structured-english/catalog"))
+      return json({ programs: [] });
     if (url.endsWith("/auth/me")) return json({ user: identity });
     if (url.endsWith("/profile") && (!init?.method || init.method === "GET"))
       return json({ profile });

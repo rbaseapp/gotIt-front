@@ -166,7 +166,17 @@ beforeEach(() => {
       passage: "Hello. I am Ben.",
       writingPrompt: "Write.",
       roleplayPrompt: "Speak.",
-      lessons: [],
+      lessons: [
+        {
+          id: "P01-L1",
+          title: "שיעור ראשון",
+          minutes: 10,
+          targets: Array.from({ length: 6 }, (_, index) => ({
+            en: `word${index + 1}`,
+            he: `משמעות ${index + 1}`,
+          })),
+        },
+      ],
     },
   });
   mocks.start.mockResolvedValue(attempt);
@@ -180,10 +190,26 @@ const open = (path: string) =>
     </MemoryRouter>,
   );
 describe("structured English live learner flow", () => {
+  it("renders the existing illustrated program map with the new content", async () => {
+    const { container } = open("/english-learning");
+    await screen.findByRole("heading", { name: /Pre-A1 · ברכות/ });
+    expect(
+      container.querySelector(".program-unit-map .pm-hero-art"),
+    ).toHaveAttribute("src", "/assets/program-map/hero.webp");
+    expect(
+      container.querySelector(".pm-roadmap .pm-steps"),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(".pm-sidebar .pm-keywords"),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(".c1-nav, .c1-stats, .c1-unit-grid"),
+    ).toBeNull();
+  });
   it("shows six words at a time, gates later games, and reveals feedback only after submission", async () => {
     const user = userEvent.setup();
     open("/english-zero-c1?view=words&unit=P01");
-    await screen.findByRole("heading", { name: /ברכות/ });
+    await screen.findByText("word6");
     expect(screen.getByText("word6")).toBeVisible();
     expect(screen.queryByText("word7")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /שליפה מעברית/ })).toBeDisabled();
