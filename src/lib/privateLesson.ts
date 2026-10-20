@@ -289,6 +289,10 @@ export const getLessonUnit = (id: string) =>
 export const privateLessonSessionSchema = z.object({
   activity: lessonActivitySchema.nullable().optional().default(null),
   lesson: z.object({
+    curriculum: z
+      .object({ lessonId: z.string(), version: z.string() })
+      .nullable()
+      .optional(),
     wordPack: lessonUnitSchema.nullable().optional().default(null),
     id: uuid,
     durationSeconds: z
@@ -342,6 +346,7 @@ export const privateLessonSessionSchema = z.object({
 export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
 export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15 | 20;
 export type PrivateLessonInput = {
+  curriculumLessonId?: string;
   interactionMode?: "guided" | "conversation";
   courseId?: string;
   packId?: string;
@@ -548,6 +553,10 @@ export const privateLessonReportSchema = z.object({
 });
 
 export const savedPrivateLessonSchema = z.object({
+  curriculum: z
+    .object({ lessonId: z.string(), version: z.string() })
+    .nullable()
+    .optional(),
   wordPack: lessonUnitSchema.nullable().optional(),
   id: uuid,
   course: z.object({ courseId: uuid }).passthrough().nullable().optional(),

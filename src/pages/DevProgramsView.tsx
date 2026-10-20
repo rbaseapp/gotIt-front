@@ -48,7 +48,7 @@ const programIcons = {
   travel: Plane,
 };
 function artwork(program: Program) {
-  return program.id === "english-path"
+  return program.id === "english-path" || program.id === "english-zero-c1"
     ? { kind: "path" as const }
     : { kind: "course" as const, courseId: program.id };
 }
@@ -84,6 +84,7 @@ export function DevProgramsView({
   busy,
   onRemove,
   onNew,
+  structuredProgram,
 }: {
   courses: Course[];
   homework: HomeworkSummary[];
@@ -97,6 +98,7 @@ export function DevProgramsView({
   busy: boolean;
   onRemove: (course: Course) => Promise<void>;
   onNew: () => void;
+  structuredProgram?: Program;
 }) {
   const { t, i18n } = useTranslation();
   const { user, profile } = useApp();
@@ -113,7 +115,7 @@ export function DevProgramsView({
     t("ux.structuredHelp"),
   );
   const programs = [
-    ...(path ? [path] : []),
+    ...(structuredProgram ? [structuredProgram] : path ? [path] : []),
     ...courses.map((course) => courseProgram(course, t("ux.personalProgram"))),
   ];
   const active =

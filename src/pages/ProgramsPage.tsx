@@ -17,6 +17,7 @@ import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
 import { programsDesignEnabled } from "../lib/programs";
 import { DevProgramsView } from "./DevProgramsView";
 import { ProgramChooser } from "../components/ProgramChooser";
+import { curriculumApi, structuredProgram } from "../lib/structuredEnglish";
 
 export function ProgramsPage() {
   const { t, i18n } = useTranslation();
@@ -36,6 +37,12 @@ export function ProgramsPage() {
     "he";
   const [completedOpen, setCompletedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const structured = useResource(
+    useCallback(async () => {
+      const catalog = await curriculumApi.catalog();
+      return catalog.programs.length ? curriculumApi.get() : null;
+    }, []),
+  );
   const courses = useCachedResource(
     useCallback(() => courseApi.list(), []),
     resourceKey(user, "courses"),
@@ -76,7 +83,12 @@ export function ProgramsPage() {
       (profile.defaultTranslationLanguage !== null &&
         profile.defaultTranslationLanguage.split("-")[0].toLowerCase() !==
           "he"));
-  const pairAvailable = matchingPath || switchPublishedPair;
+  const structuredPair = Boolean(
+    structured.data &&
+    target.split("-")[0] === "en" &&
+    support.split("-")[0] === "he",
+  );
+  const pairAvailable = structuredPair || matchingPath || switchPublishedPair;
   const openPrepared = async () => {
     setBusy(true);
     try {
@@ -88,6 +100,10 @@ export function ProgramsPage() {
           defaultSourceLanguage: target,
           defaultTranslationLanguage: support,
         });
+      if (structuredPair) {
+        open("/english-zero-c1", "english-zero-c1", target);
+        return;
+      }
       const catalog = await product(wordPacksSchema, "word-packs");
       if (!englishPathLevels(catalog.packs).some((level) => level.packs.length))
         throw new Error(t("englishPath.unavailableTitle"));
@@ -244,6 +260,9 @@ export function ProgramsPage() {
   if (programsDesignEnabled())
     return (
       <DevProgramsView
+        structuredProgram={
+          structured.data ? structuredProgram(structured.data) : undefined
+        }
         courses={courses.data?.courses ?? []}
         homework={courses.data?.homework ?? []}
         packs={packs.data?.packs ?? []}
@@ -275,6 +294,19 @@ export function ProgramsPage() {
         error={courses.error}
         retry={() => void courses.reload()}
       />
+      {structured.data && !completedOpen && (
+        <article className="program-card structured">
+          <BookOpen size={28} />
+          <h2>{structured.data.program.title}</h2>
+          <p>{t("c1.subtitle")}</p>
+          <button
+            className="button primary"
+            onClick={() => open("/english-zero-c1", "english-zero-c1", "en")}
+          >
+            {t("ux.openMap")}
+          </button>
+        </article>
+      )}
       <RemoteState
         loading={packs.loading}
         error={packs.error}

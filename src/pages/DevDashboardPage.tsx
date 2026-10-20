@@ -23,6 +23,7 @@ import { resourceKey } from "../lib/resourceCache";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { courseApi, lessonLink } from "../lib/courses";
 import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
+import { curriculumApi } from "../lib/structuredEnglish";
 import {
   chooseHomeLanguage,
   homeLanguage,
@@ -88,6 +89,17 @@ export function DevDashboardPage() {
   const [chosen, setChosen] = useState(() => homeLanguage(user));
   const code = chosen || language.code;
   const selected = selectedProgram(user, code);
+  const structured = useResource(
+    useCallback(async () => {
+      if (
+        code !== "en" ||
+        !["english-zero-c1", "english-path"].includes(selected ?? "")
+      )
+        return null;
+      const catalog = await curriculumApi.catalog();
+      return catalog.programs.length ? curriculumApi.get() : null;
+    }, [code, selected]),
+  );
   const [recentPage, setRecentPage] = useState(1);
   const courses = useCachedResource(
     useCallback(() => courseApi.list(), []),
@@ -186,17 +198,28 @@ export function DevDashboardPage() {
   );
   const nextPack =
     path.find((pack) => !completedEnglishUnit(pack)) ?? path.at(-1);
-  const isPath = selected === "english-path" && code === "en";
-  const isProgram = !!course || isPath;
-  const completed = course
-    ? course.progress.covered
-    : path.filter(completedEnglishUnit).length;
-  const total =
-    plan?.units.reduce((sum, unit) => sum + unit.lessons.length, 0) ??
-    path.length;
-  const programDone = course
-    ? !course.nextLesson
-    : isPath && total > 0 && completed >= total;
+  const isStructured = Boolean(structured.data);
+  const structuredUnit = structured.data?.units.find(
+    (unit) => unit.id === structured.data?.currentUnit,
+  );
+  const isPath = selected === "english-path" && code === "en" && !isStructured;
+  const isProgram = !!course || isPath || isStructured;
+  const completed = isStructured
+    ? structured.data!.units.filter(
+        (unit) => unit.waived || structured.data!.completed[`gate:${unit.id}`],
+      ).length
+    : course
+      ? course.progress.covered
+      : path.filter(completedEnglishUnit).length;
+  const total = isStructured
+    ? structured.data!.units.length
+    : (plan?.units.reduce((sum, unit) => sum + unit.lessons.length, 0) ??
+      path.length);
+  const programDone = isStructured
+    ? structured.data!.graduation.complete
+    : course
+      ? !course.nextLesson
+      : isPath && total > 0 && completed >= total;
   const nextNumber =
     course?.nextLesson && plan
       ? plan.units
@@ -213,7 +236,11 @@ export function DevDashboardPage() {
         course.nextLesson.lessonIndex +
         1
       : Math.min(completed + 1, total);
-  const planLink = course ? `/courses/${course.id}` : "/english-learning";
+  const planLink = isStructured
+    ? "/english-zero-c1"
+    : course
+      ? `/courses/${course.id}`
+      : "/english-learning";
   const lesson = course?.nextLesson
     ? lessonLink(course)
     : isPath && nextPack && !programDone
@@ -257,7 +284,7 @@ export function DevDashboardPage() {
       (item) => item.id !== selected && item.activeVersion !== null,
     ) ?? [];
   const heading = isProgram
-    ? (plan?.title ?? t("englishPath.title"))
+    ? (structured.data?.program.title ?? plan?.title ?? t("englishPath.title"))
     : t(
         !d?.counts.total
           ? "newDashboard.firstWords"
@@ -370,12 +397,14 @@ export function DevDashboardPage() {
                       )}
                     </small>
                     <h2 dir="auto">
-                      {course?.nextLesson?.title ??
+                      {structuredUnit?.title ??
+                        course?.nextLesson?.title ??
                         nextPack?.title ??
                         t("ux.openMap")}
                     </h2>
                     <p dir="auto">
-                      {course?.nextLesson?.objective ??
+                      {structuredUnit?.goal ??
+                        course?.nextLesson?.objective ??
                         nextPack?.description ??
                         plan?.outcome}
                     </p>
@@ -533,6 +562,7 @@ export function DevDashboardPage() {
                       {
                         title: t("newDashboard.continueLesson"),
                         detail:
+                          structuredUnit?.title ??
                           course?.nextLesson?.title ??
                           nextPack?.title ??
                           t("ux.openMap"),

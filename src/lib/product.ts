@@ -616,6 +616,8 @@ export const labels: Record<string, string> = new Proxy(
   },
 );
 export function errorMessage(reason: unknown): string {
+  if (reason instanceof ApiError && reason.code.startsWith("CURRICULUM_"))
+    return i18n.t(`c1.errors.${reason.code}`, { defaultValue: reason.message });
   const localizedCodes = new Set([
     "NO_ELIGIBLE_ITEMS",
     "SPEECH_NOT_CONFIGURED",

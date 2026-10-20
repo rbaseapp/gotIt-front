@@ -1,0 +1,1459 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  BookOpen,
+  Check,
+  Headphones,
+  Mic,
+  Pause,
+  Save,
+  Volume2,
+} from "lucide-react";
+import { RemoteState } from "../components/RemoteState";
+import { CurriculumPicture } from "../components/CurriculumPicture";
+import { useResource } from "../lib/useResource";
+import {
+  curriculumApi,
+  type CurriculumAttempt,
+  type CurriculumArticle,
+  type CurriculumUnit,
+  type CurriculumTeacher,
+  type PhonicsSession,
+} from "../lib/structuredEnglish";
+import { errorMessage } from "../lib/product";
+import { chooseProgram } from "../lib/learningNavigation";
+import { useApp } from "../context/AppContext";
+import { recordVoice } from "../lib/voice";
+import "../structured-english.css";
+
+const bands = ["Pre-A1", "A1", "A2", "B1", "B2", "C1"];
+const games = ["recognition", "matching", "recall", "listening", "context"];
+type Operation = { key: string; id: string; revision?: number };
+
+export function StructuredEnglishPage() {
+  const { t } = useTranslation(),
+    { user } = useApp();
+  const resource = useResource(useCallback(() => curriculumApi.get(), []));
+  const data = resource.data;
+  const [params, setParams] = useSearchParams();
+  const view = params.get("view") ?? "map",
+    unitId =
+      params.get("unit") === "C1E" && view !== "words"
+        ? (data?.currentUnit ?? "P01")
+        : (params.get("unit") ?? data?.currentUnit ?? "P01");
+  const [unit, setUnit] = useState<CurriculumUnit>();
+  const [teacher, setTeacher] = useState<CurriculumTeacher>();
+  const [phonics, setPhonics] = useState<PhonicsSession>();
+  const [article, setArticle] = useState<CurriculumArticle>();
+  const [unseen, setUnseen] = useState<{
+    id: string;
+    title: string;
+    passage: string;
+    previouslyAttempted: boolean;
+  }>();
+  const [attempt, setAttempt] = useState<CurriculumAttempt>();
+  const [answer, setAnswer] = useState(""),
+    [hint, setHint] = useState(""),
+    [feedback, setFeedback] = useState("");
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const [minutes, setMinutes] = useState(20),
+    [literacy, setLiteracy] = useState<
+      "starting" | "developing" | "independent"
+    >("starting");
+  const [placementBand, setPlacementBand] = useState("A1");
+  const [wordBatch, setWordBatch] = useState(0);
+  const [recording, setRecording] = useState(false),
+    [transcription, setTranscription] = useState<{
+      id: string;
+      text: string;
+    }>();
+  const operation = useRef<Operation | null>(null),
+    audioRef = useRef<HTMLAudioElement | null>(null);
+  const recordingAbort = useRef<AbortController | null>(null),
+    releaseRecording = useRef<AbortController | null>(null);
+  const focusRef = useRef<HTMLHeadingElement>(null);
+  const lessonId = params.get("lesson") ?? `${unitId}-L1`,
+    phonicsId = params.get("phonics") ?? "F01";
+  const activityId =
+    view === "attempt" && attempt
+      ? `attempt:${attempt.id}`
+      : view === "teacher"
+        ? `teacher:${lessonId}`
+        : view === "phonics"
+          ? `phonics:${phonicsId}`
+          : view === "text"
+            ? `text:${unitId}`
+            : view === "unseen" && params.get("unseen")
+              ? `unseen:${params.get("unseen")}`
+              : view === "article" && params.get("article")
+                ? `article:${params.get("article")}`
+                : `unit:${unitId}`;
+  const eventFor = (key: string) => {
+    if (operation.current?.key !== key)
+      operation.current = { key, id: crypto.randomUUID() };
+    return operation.current.id;
+  };
+  const commandFor = async (key: string) => {
+    const eventId = eventFor(key);
+    const revision = operation.current!.revision ?? (await refreshRevision());
+    operation.current!.revision = revision;
+    return { eventId, revision };
+  };
+  const go = (next: Record<string, string>) => {
+    if (next.unit && next.unit !== unitId) setWordBatch(0);
+    setFeedback("");
+    setHint("");
+    setAnswer("");
+    setTranscription(undefined);
+    setError("");
+    setParams(next);
+  };
+  const run = async (action: () => Promise<void>) => {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await action();
+      operation.current = null;
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const fresh = async () => {
+    await resource.reload();
+  };
+  const refreshRevision = async () => (await curriculumApi.get()).revision;
+  useEffect(() => {
+    chooseProgram("english-zero-c1", user, "en");
+  }, [user]);
+  useEffect(() => {
+    focusRef.current?.focus();
+  }, [view, attempt?.cursor, teacher?.cursor]);
+  useEffect(
+    () => () => {
+      recordingAbort.current?.abort();
+      audioRef.current?.pause();
+    },
+    [],
+  );
+  useEffect(() => {
+    if (!data?.enrolled) return;
+    let disposed = false;
+    const pulse = () => {
+      if (!disposed && document.visibilityState === "visible" && !busy)
+        void curriculumApi.heartbeat(activityId).catch(() => {});
+    };
+    pulse();
+    const timer = window.setInterval(pulse, 20000);
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
+    };
+  }, [data?.enrolled, activityId, busy]);
+  useEffect(() => {
+    if (!data?.enrolled || !["map", "words", "text"].includes(view)) return;
+    let active = true;
+    void curriculumApi
+      .unit(unitId)
+      .then((value) => {
+        if (active) setUnit(value.unit);
+      })
+      .catch((reason) => {
+        if (active) setError(errorMessage(reason));
+      });
+    return () => {
+      active = false;
+    };
+  }, [data?.enrolled, unitId, view, data?.revision]);
+  useEffect(() => {
+    if (!data?.enrolled) return;
+    let active = true;
+    const accept =
+      <T,>(setter: (value: T) => void) =>
+      (value: T) => {
+        if (active) setter(value);
+      };
+    let load: Promise<unknown> | undefined;
+    if (view === "teacher")
+      load = curriculumApi.teacher(lessonId).then((value) => {
+        if (active) {
+          setTeacher(value);
+          setAnswer(data.drafts[`teacher:${lessonId}`] ?? "");
+        }
+      });
+    if (view === "phonics")
+      load = curriculumApi.phonics(phonicsId).then((value) => {
+        if (active) setPhonics(value.session);
+      });
+    if (view === "article" && params.get("article"))
+      load = curriculumApi
+        .article(params.get("article")!)
+        .then(accept(setArticle));
+    if (view === "unseen" && params.get("unseen"))
+      load = curriculumApi
+        .unseen(params.get("unseen")!)
+        .then(accept(setUnseen));
+    if (view === "attempt" && params.get("attempt"))
+      load = curriculumApi.attempt(params.get("attempt")!).then((value) => {
+        if (active) {
+          setAttempt(value);
+          setAnswer(data.drafts[value.activityId] ?? "");
+        }
+      });
+    void load?.catch((reason) => {
+      if (active) setError(errorMessage(reason));
+    });
+    return () => {
+      active = false;
+    };
+  }, [data?.enrolled, view, lessonId, phonicsId, params, data?.drafts]);
+  const play = async (value: { contentType: string; audioBase64: string }) => {
+    audioRef.current?.pause();
+    const bytes = Uint8Array.from(atob(value.audioBase64), (char) =>
+      char.charCodeAt(0),
+    );
+    const url = URL.createObjectURL(
+      new Blob([bytes], { type: value.contentType }),
+    );
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => URL.revokeObjectURL(url);
+    audio.onerror = () => URL.revokeObjectURL(url);
+    await audio.play();
+  };
+  const start = (id: string) =>
+    run(async () => {
+      const { revision, eventId } = await commandFor(`start:${id}`);
+      const next = await curriculumApi.start(revision, id, eventId);
+      setAttempt(next);
+      go({ view: "attempt", attempt: next.id, unit: unitId });
+      await fresh();
+    });
+  const submit = (choiceId?: string) =>
+    run(async () => {
+      if (!attempt?.question) return;
+      const key = JSON.stringify([
+        "answer",
+        attempt.id,
+        attempt.cursor,
+        answer,
+        choiceId,
+        transcription?.id,
+      ]);
+      const { revision, eventId } = await commandFor(key);
+      const next = await curriculumApi.answer(
+        revision,
+        attempt.id,
+        attempt.cursor,
+        answer,
+        choiceId,
+        transcription?.text === answer ? transcription.id : undefined,
+        eventId,
+      );
+      setAttempt(next);
+      setAnswer("");
+      setTranscription(undefined);
+      setHint("");
+      await fresh();
+    });
+  const record = async () => {
+    if (recording) {
+      releaseRecording.current?.abort();
+      return;
+    }
+    if (!attempt?.question || busy) return;
+    setError("");
+    setRecording(true);
+    const controller = new AbortController(),
+      release = new AbortController();
+    recordingAbort.current = controller;
+    releaseRecording.current = release;
+    try {
+      const wav = await recordVoice(
+        controller.signal,
+        release.signal,
+        90,
+        true,
+      );
+      setRecording(false);
+      setBusy(true);
+      const result = await curriculumApi.transcribe(
+        attempt.id,
+        attempt.cursor,
+        wav,
+      );
+      setTranscription(result);
+      setAnswer(result.text);
+      setFeedback(result.note);
+    } catch (reason) {
+      if (!controller.signal.aborted) setError(errorMessage(reason));
+    } finally {
+      setRecording(false);
+      setBusy(false);
+    }
+  };
+  const showDone = (id: string) => Boolean(data?.completed[id]);
+  const stateLabel = (status: string) => t(`c1.wordState.${status}`);
+  const selectedUnit = data?.units.find((item) => item.id === unitId);
+  const saveDraft = () =>
+    run(async () => {
+      if (!attempt) return;
+      const { revision, eventId } = await commandFor(
+        `draft:${attempt.id}:${answer}`,
+      );
+      await curriculumApi.save(revision, attempt.activityId, answer, eventId);
+      setFeedback(t("c1.saved"));
+      await fresh();
+    });
+  const continuePath = () => {
+    const next = data?.nextAction;
+    if (!next) return;
+    if (next.kind === "practice") {
+      void start(next.id);
+      return;
+    }
+    if (next.kind === "attempt") {
+      go({ view: "attempt", attempt: next.id, unit: unitId });
+      return;
+    }
+    if (next.kind === "teacher") {
+      go({ view: "teacher", lesson: next.id, unit: data!.currentUnit });
+      return;
+    }
+    if (next.kind === "phonics") {
+      go({ view: "phonics", phonics: next.id, unit: data!.currentUnit });
+      return;
+    }
+    if (next.kind === "unseen") {
+      go({ view: "unseen", unseen: next.id, unit: data!.currentUnit });
+      return;
+    }
+    if (next.kind === "words") {
+      go({ view: "words", unit: next.id });
+      setWordBatch(next.batch ?? 0);
+      return;
+    }
+  };
+  const settings = (enrolled = false) => (
+    <div className="c1-settings">
+      <label>
+        {t("c1.dailyTime")}
+        <select
+          value={enrolled ? (data?.settings?.minutes ?? minutes) : minutes}
+          onChange={(event) => {
+            const value = Number(event.target.value);
+            setMinutes(value);
+            if (enrolled)
+              void run(async () => {
+                await curriculumApi.enroll(value, data!.settings!.literacy);
+                await fresh();
+              });
+          }}
+        >
+          {[10, 20, 30, 45, 60].map((value) => (
+            <option key={value} value={value}>
+              {t("c1.minutes", { count: value })}
+            </option>
+          ))}
+        </select>
+      </label>
+      {!enrolled && (
+        <label>
+          {t("c1.readingStartingPoint")}
+          <select
+            value={literacy}
+            onChange={(event) =>
+              setLiteracy(event.target.value as typeof literacy)
+            }
+          >
+            {(["starting", "developing", "independent"] as const).map(
+              (value) => (
+                <option key={value} value={value}>
+                  {t(`c1.literacy.${value}`)}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+      )}
+    </div>
+  );
+  return (
+    <main className="c1-page ux-page page-enter" dir="rtl" aria-busy={busy}>
+      <header className="c1-header">
+        <div>
+          <Link to="/programs">{t("ux.programsTitle")}</Link>
+          <h1>{t("c1.title")}</h1>
+          <p>{t("c1.subtitle")}</p>
+        </div>
+        {data?.enrolled && settings(true)}
+      </header>
+      <RemoteState
+        loading={resource.loading && !data}
+        error={resource.error}
+        retry={() => void resource.reload()}
+      />
+      {error && (
+        <div className="c1-error" role="alert">
+          {error}
+          <button className="button ghost" onClick={() => void run(fresh)}>
+            {t("common.retry")}
+          </button>
+        </div>
+      )}
+      {busy && (
+        <p className="c1-feedback" role="status">
+          {t("c1.working")}
+        </p>
+      )}
+      {feedback && (
+        <p className="c1-feedback" role="status">
+          {feedback}
+        </p>
+      )}
+      {data && !data.enrolled && (
+        <section className="ux-card c1-welcome">
+          <BookOpen size={32} />
+          <h2>{t("c1.welcome")}</h2>
+          <p>{t("c1.welcomeBody")}</p>
+          {settings()}
+          <button
+            className="button primary"
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                await curriculumApi.enroll(
+                  minutes,
+                  literacy,
+                  eventFor(`enroll:${minutes}:${literacy}`),
+                );
+                await fresh();
+              })
+            }
+          >
+            {t("c1.begin")}
+          </button>
+          <p>{t("c1.placementIntro")}</p>
+        </section>
+      )}
+      {data?.enrolled && (
+        <>
+          <nav className="c1-nav" aria-label={t("c1.navigation")}>
+            {["map", "words", "phonics", "placement", "sources"].map((name) => (
+              <button
+                key={name}
+                className={`button ${view === name ? "primary" : "ghost"}`}
+                aria-current={view === name ? "page" : undefined}
+                disabled={busy || recording}
+                onClick={() =>
+                  go({
+                    view: name,
+                    unit: unitId,
+                    phonics:
+                      data.phonics.find(
+                        (item) =>
+                          item.unlocked && !showDone(`phonics:${item.id}`),
+                      )?.id ?? "F24",
+                  })
+                }
+              >
+                {t(`c1.tabs.${name}`)}
+              </button>
+            ))}
+          </nav>
+          {view === "map" && (
+            <>
+              <div className="c1-stats">
+                {(
+                  ["introduced", "usable", "retained", "maintenance"] as const
+                ).map((name) => (
+                  <div className="ux-card" key={name}>
+                    <strong>{data.review[name]}</strong>
+                    <span>{t(`c1.wordState.${name}`)}</span>
+                  </div>
+                ))}
+              </div>
+              <section className="ux-card c1-today">
+                <div>
+                  <h2 ref={focusRef} tabIndex={-1}>
+                    {t("c1.today")}
+                  </h2>
+                  <p>
+                    {data.dailyPlan
+                      .map(
+                        (part) =>
+                          `${t(`c1.plan.${part.kind}`)}  ${t("c1.minutes", { count: part.minutes })}`,
+                      )
+                      .join("  ")}
+                  </p>
+                </div>
+                {data.nextAction && data.nextAction.kind !== "complete" && (
+                  <button
+                    className="button primary"
+                    disabled={busy}
+                    onClick={continuePath}
+                  >
+                    {t("c1.nextActivity")}{" "}
+                    {data.nextAction.game
+                      ? t(`c1.games.${data.nextAction.game}`)
+                      : t("c1.practice")}
+                  </button>
+                )}
+                {Object.entries(data.activeAttempts).map(([activity, id]) => (
+                  <button
+                    key={id}
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() =>
+                      go({ view: "attempt", attempt: id, unit: unitId })
+                    }
+                  >
+                    {t("c1.resume")}{" "}
+                    <span>
+                      {data.units.find((item) => activity.includes(item.id))
+                        ?.title ?? t("c1.practice")}
+                    </span>
+                  </button>
+                ))}
+                <button
+                  className="button primary"
+                  disabled={busy || !data.review.due}
+                  onClick={() => void start("review:due")}
+                >
+                  {t("c1.reviewDue", { count: data.review.due })}
+                </button>
+                <button
+                  className="button secondary"
+                  disabled={busy || !data.reading.eligible}
+                  onClick={() =>
+                    void run(async () => {
+                      const { revision, eventId } = await commandFor("article");
+                      const result = await curriculumApi.generateArticle(
+                        revision,
+                        eventId,
+                      );
+                      setArticle(result);
+                      go({ view: "article", article: result.id, unit: unitId });
+                      await fresh();
+                    })
+                  }
+                >
+                  {t("c1.newReading")}
+                </button>
+                <p>
+                  {t("c1.readingCadence", {
+                    targets: data.reading.remainingTargets,
+                    minutes: data.reading.remainingMinutes,
+                  })}
+                </p>
+                {data.articleJob && (
+                  <button
+                    className="button ghost"
+                    onClick={() =>
+                      go({
+                        view: "article",
+                        article: data.articleJob!,
+                        unit: unitId,
+                      })
+                    }
+                  >
+                    {t("c1.openReading")}
+                  </button>
+                )}
+              </section>
+              <section className="ux-card">
+                <h2>{t("c1.finalAssessment")}</h2>
+                <p>
+                  {t(
+                    data.graduation.complete
+                      ? "c1.finalComplete"
+                      : "c1.finalBody",
+                  )}
+                </p>
+                <div className="c1-actions">
+                  {data.graduation.skills.map((skill) => (
+                    <button
+                      key={skill}
+                      className="button secondary"
+                      disabled={busy || !data.graduation.ready}
+                      onClick={() => void start(`exit:${skill}`)}
+                    >
+                      {showDone(`exit:${skill}`) && <Check size={16} />}{" "}
+                      {t(`c1.skills.${skill}`)}
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <section className="ux-card c1-current">
+                <p className="pill" dir="ltr">
+                  {selectedUnit?.band} {unitId}
+                </p>
+                <h2>{selectedUnit?.title}</h2>
+                <p>{selectedUnit?.goal}</p>
+                <div className="c1-actions">
+                  <button
+                    className="button primary"
+                    onClick={() => go({ view: "words", unit: unitId })}
+                  >
+                    {t("c1.studyWords")}
+                  </button>
+                  {selectedUnit?.lessons.map((lesson) => (
+                    <div key={lesson.id} className="c1-stage">
+                      <h3>{lesson.title}</h3>
+                      <span>{t("c1.minutes", { count: lesson.minutes })}</span>
+                      <button
+                        className="button secondary"
+                        onClick={() =>
+                          go({
+                            view: "teacher",
+                            unit: unitId,
+                            lesson: lesson.id,
+                          })
+                        }
+                      >
+                        {showDone(`teacher:${lesson.id}`) && (
+                          <Check size={16} />
+                        )}{" "}
+                        {t("c1.teacher")}
+                      </button>
+                      <button
+                        className="button ghost"
+                        disabled={busy || !showDone(`teacher:${lesson.id}`)}
+                        onClick={() => void start(`post:${lesson.id}`)}
+                      >
+                        {showDone(`post:${lesson.id}`) && <Check size={16} />}{" "}
+                        {t("c1.postlesson")}
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    className="button secondary"
+                    onClick={() => go({ view: "text", unit: unitId })}
+                  >
+                    {t("c1.unitReading")}
+                  </button>
+                  <button
+                    className="button primary"
+                    disabled={busy}
+                    onClick={() => void start(`gate:${unitId}`)}
+                  >
+                    {t("c1.checkpoint")}
+                  </button>
+                  {selectedUnit?.unseen && (
+                    <button
+                      className="button secondary"
+                      disabled={!showDone(`gate:${unitId}`)}
+                      onClick={() =>
+                        go({
+                          view: "unseen",
+                          unseen: selectedUnit.unseen!,
+                          unit: unitId,
+                        })
+                      }
+                    >
+                      {t("c1.unseen")}
+                    </button>
+                  )}
+                </div>
+              </section>
+              {bands.map((level) => (
+                <section key={level} className="c1-band">
+                  <h2 dir="ltr">{level}</h2>
+                  <div className="c1-unit-grid">
+                    {data.units
+                      .filter((item) => item.band === level)
+                      .map((item) => (
+                        <button
+                          key={item.id}
+                          className={`ux-card c1-unit ${item.id === unitId ? "selected" : ""}`}
+                          disabled={!item.unlocked}
+                          aria-current={item.id === unitId ? "step" : undefined}
+                          onClick={() => go({ view: "map", unit: item.id })}
+                        >
+                          <span dir="ltr">
+                            {item.id}
+                            {showDone(`gate:${item.id}`) && <Check size={16} />}
+                          </span>
+                          <strong>{item.title}</strong>
+                          {item.waived && (
+                            <small>{t("c1.placementWaiver")}</small>
+                          )}
+                          <span>
+                            {item.words} {t("c1.words")}
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                </section>
+              ))}
+            </>
+          )}
+          {view === "words" && unit?.id === unitId && (
+            <section className="ux-card">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {unit.title} {t("c1.studyWords")}
+              </h2>
+              <p>{t("c1.wordInstructions")}</p>
+              <div className="c1-actions">
+                <button
+                  className="button ghost"
+                  disabled={wordBatch === 0}
+                  onClick={() => setWordBatch((value) => value - 1)}
+                >
+                  {t("c1.previousGroup")}
+                </button>
+                <span>
+                  {wordBatch + 1} / {Math.ceil(unit.words.length / 6)}
+                </span>
+                <button
+                  className="button ghost"
+                  disabled={(wordBatch + 1) * 6 >= unit.words.length}
+                  onClick={() => setWordBatch((value) => value + 1)}
+                >
+                  {t("c1.nextGroup")}
+                </button>
+                <button
+                  className="button primary"
+                  disabled={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      const ids = unit.words
+                        .slice(wordBatch * 6, wordBatch * 6 + 6)
+                        .map((word) => word.id);
+                      const { revision, eventId } = await commandFor(
+                        `expose:${ids.join(",")}`,
+                      );
+                      await curriculumApi.expose(revision, ids, eventId);
+                      await fresh();
+                    })
+                  }
+                >
+                  {t("c1.introduceGroup")}
+                </button>
+              </div>
+              <div className="c1-actions">
+                {games.map((game) => (
+                  <button
+                    key={game}
+                    className="button secondary"
+                    disabled={
+                      busy ||
+                      !unit.games.find((item) => item.mode === game)?.eligible
+                    }
+                    onClick={() => void start(`words:${unitId}:${game}`)}
+                  >
+                    {t(`c1.games.${game}`)}{" "}
+                    <span>
+                      {unit.games.find((item) => item.mode === game)
+                        ?.practised ?? 0}{" "}
+                      / {unit.words.filter((word) => word.evidence).length}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="c1-word-grid">
+                {unit.words
+                  .slice(wordBatch * 6, wordBatch * 6 + 6)
+                  .map((word) => (
+                    <article className="c1-word" key={word.id}>
+                      <strong lang="en" dir="ltr">
+                        {word.en}
+                      </strong>
+                      <span>{word.he}</span>
+                      <small>
+                        {word.evidence
+                          ? stateLabel(word.evidence.status)
+                          : t("c1.newWord")}
+                      </small>
+                      <button
+                        className="button ghost"
+                        disabled={busy}
+                        aria-label={`${t("c1.listen")}: ${word.en}`}
+                        onClick={() =>
+                          void run(async () => {
+                            await play(
+                              await curriculumApi.teachingAudio(
+                                "target",
+                                word.id,
+                              ),
+                            );
+                          })
+                        }
+                      >
+                        <Volume2 size={18} />
+                        {t("c1.listen")}
+                      </button>
+                      <button
+                        className="button secondary"
+                        disabled={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            const { revision, eventId } = await commandFor(
+                              `expose:${word.id}`,
+                            );
+                            await curriculumApi.expose(
+                              revision,
+                              [word.id],
+                              eventId,
+                            );
+                            await fresh();
+                          })
+                        }
+                      >
+                        {word.evidence
+                          ? t("c1.reviewWord")
+                          : t("c1.introduceWord")}
+                      </button>
+                    </article>
+                  ))}
+              </div>
+            </section>
+          )}
+          {view === "teacher" && teacher?.id === lessonId && (
+            <section className="ux-card c1-learning">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {teacher.title}
+              </h2>
+              <p>
+                {teacher.cursor + 1} / {teacher.total} {t("c1.splitLesson")}
+              </p>
+              {!teacher.complete && (
+                <Link
+                  className="button secondary"
+                  to={`/private-lesson?curriculum=${lessonId}&language=en&minutes=${data.settings?.minutes === 10 ? 5 : data.settings?.minutes === 20 ? 10 : data.settings?.minutes === 45 ? 15 : 20}&return=${encodeURIComponent(`/english-zero-c1?view=teacher&lesson=${lessonId}&unit=${unitId}`)}`}
+                >
+                  <Mic size={18} />
+                  {t("c1.voiceTeacher")}
+                </Link>
+              )}
+              {teacher.complete ? (
+                <p className="c1-success">{t("c1.lessonComplete")}</p>
+              ) : (
+                teacher.phase && (
+                  <>
+                    <p className="c1-teacher-instruction">
+                      {teacher.phase.instruction}
+                    </p>
+                    {teacher.phase.english && (
+                      <p className="c1-english" lang="en" dir="ltr">
+                        {teacher.phase.english}
+                      </p>
+                    )}
+                    {teacher.phase.contrast && (
+                      <p className="c1-english" lang="en" dir="ltr">
+                        {teacher.phase.contrast}
+                      </p>
+                    )}
+                    {teacher.phase.turns?.map((turn, index) => (
+                      <div className="c1-dialogue" key={index}>
+                        <p lang="en" dir="ltr">
+                          {turn.text_en}
+                        </p>
+                        <small>{turn.text_he}</small>
+                      </div>
+                    ))}
+                    {teacher.phase.support && (
+                      <details>
+                        <summary>{t("c1.support")}</summary>
+                        {teacher.phase.support.map((line, index) => (
+                          <p key={index}>{line}</p>
+                        ))}
+                      </details>
+                    )}
+                    {teacher.phase.passage && (
+                      <p className="c1-passage" lang="en" dir="ltr">
+                        {teacher.phase.passage}
+                      </p>
+                    )}
+                    {teacher.phase.task && <p>{teacher.phase.task}</p>}
+                    <label className="field">
+                      {t("c1.answerOrAsk")}
+                      <textarea
+                        value={answer}
+                        onChange={(event) => setAnswer(event.target.value)}
+                        rows={4}
+                        dir="auto"
+                      />
+                    </label>
+                    <div className="c1-actions">
+                      <button
+                        className="button primary"
+                        disabled={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            const text = answer.trim() || t("c1.understood");
+                            const { revision, eventId } = await commandFor(
+                              `teacher:${lessonId}:${teacher.cursor}:${text}`,
+                            );
+                            const result = await curriculumApi.teacherTurn(
+                              revision,
+                              lessonId,
+                              text,
+                              eventId,
+                            );
+                            setFeedback(result.feedback);
+                            setAnswer("");
+                            setTeacher(await curriculumApi.teacher(lessonId));
+                            await fresh();
+                          })
+                        }
+                      >
+                        {t("c1.sendContinue")}
+                      </button>
+                      <button
+                        className="button ghost"
+                        disabled={busy}
+                        onClick={() =>
+                          void run(async () => {
+                            await curriculumApi.save(
+                              await refreshRevision(),
+                              `teacher:${lessonId}`,
+                              answer,
+                            );
+                            setFeedback(t("c1.saved"));
+                            await fresh();
+                          })
+                        }
+                      >
+                        <Save size={18} />
+                        {t("c1.savePause")}
+                      </button>
+                    </div>
+                  </>
+                )
+              )}
+              <button
+                className="button secondary"
+                disabled={busy || !showDone(`teacher:${lessonId}`)}
+                onClick={() => void start(`post:${lessonId}`)}
+              >
+                {t("c1.postlesson")}
+              </button>
+            </section>
+          )}
+          {view === "phonics" && (
+            <div className="c1-phonics-layout">
+              <nav
+                className="c1-phonics-list"
+                aria-label={t("c1.tabs.phonics")}
+              >
+                {data.phonics.map((item) => (
+                  <button
+                    className={`button ${item.id === phonicsId ? "primary" : "ghost"}`}
+                    key={item.id}
+                    disabled={!item.unlocked || busy}
+                    onClick={() =>
+                      go({ view: "phonics", phonics: item.id, unit: unitId })
+                    }
+                  >
+                    {item.id} {item.title}{" "}
+                    {showDone(`phonics:${item.id}`) && ""}
+                  </button>
+                ))}
+              </nav>
+              {phonics?.id === phonicsId && (
+                <section className="ux-card c1-learning">
+                  <h2 ref={focusRef} tabIndex={-1}>
+                    {phonics.title}
+                  </h2>
+                  <p>{phonics.caution}</p>
+                  <div className="c1-sounds">
+                    {phonics.mappings.map((mapping, index) => (
+                      <button
+                        className="c1-sound"
+                        key={`${mapping.grapheme}:${index}`}
+                        disabled={busy}
+                        onClick={() =>
+                          void run(async () =>
+                            play(
+                              await curriculumApi.teachingAudio(
+                                "phonics",
+                                phonics.id,
+                                index,
+                              ),
+                            ),
+                          )
+                        }
+                      >
+                        <strong lang="en" dir="ltr">
+                          {mapping.grapheme}
+                        </strong>
+                        <span dir="ltr">{mapping.phoneme}</span>
+                        <Volume2 size={18} />
+                      </button>
+                    ))}
+                  </div>
+                  {phonics.script.map((line, index) => (
+                    <p key={index}>{line}</p>
+                  ))}
+                  <p className="c1-english" lang="en" dir="ltr">
+                    {phonics.sentence}
+                  </p>
+                  <button
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() =>
+                      void run(async () =>
+                        play(
+                          await curriculumApi.teachingAudio(
+                            "phonics",
+                            phonics.id,
+                            phonics.mappings.length,
+                          ),
+                        ),
+                      )
+                    }
+                  >
+                    <Headphones size={18} />
+                    {t("c1.listenModel")}
+                  </button>
+                  <p>{phonics.decodability}</p>
+                  <div className="c1-actions">
+                    <button
+                      className="button primary"
+                      disabled={busy}
+                      onClick={() => void start(`phonics:${phonics.id}`)}
+                    >
+                      {t("c1.phonicsPractice")}
+                    </button>
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
+          {view === "text" && unit?.id === unitId && (
+            <section className="ux-card c1-learning">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {unit.title}
+              </h2>
+              <p className="c1-passage" dir="ltr" lang="en">
+                {unit.passage}
+              </p>
+              <button
+                className="button primary"
+                disabled={busy}
+                onClick={() => void start(`text:${unitId}`)}
+              >
+                {t("c1.comprehension")}
+              </button>
+            </section>
+          )}
+          {view === "unseen" && unseen?.id === params.get("unseen") && (
+            <section className="ux-card c1-learning">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {unseen.title}
+              </h2>
+              <p>
+                {unseen.previouslyAttempted
+                  ? t("c1.parallelForm")
+                  : t("c1.freshText")}
+              </p>
+              {!unseen.previouslyAttempted && (
+                <p className="c1-passage" dir="ltr" lang="en">
+                  {unseen.passage}
+                </p>
+              )}
+              <button
+                className="button primary"
+                disabled={busy}
+                onClick={() => void start(`unseen:${unseen.id}`)}
+              >
+                {t("c1.comprehension")}
+              </button>
+            </section>
+          )}
+          {view === "article" && article?.id === params.get("article") && (
+            <section className="ux-card c1-learning">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {article.title ?? t("c1.newReading")}
+              </h2>
+              <p role="status">{t(`c1.articleStatus.${article.status}`)}</p>
+              {article.text && (
+                <>
+                  <p>
+                    {t(
+                      article.mode === "independent"
+                        ? "c1.independentReading"
+                        : "c1.guidedReading",
+                    )}
+                  </p>
+                  <p className="c1-passage" dir="ltr" lang="en">
+                    {article.text}
+                  </p>
+                  <details>
+                    <summary>{t("c1.supportWords")}</summary>
+                    <p dir="ltr" lang="en">
+                      {article.supportWords.join("  ")}
+                    </p>
+                  </details>
+                  <div className="c1-actions">
+                    {Array.from(
+                      { length: article.attempt?.question?.audioParts ?? 0 },
+                      (_, part) => (
+                        <button
+                          className="button secondary"
+                          key={part}
+                          disabled={busy}
+                          onClick={() =>
+                            void run(async () => {
+                              await play(
+                                await curriculumApi.audio(
+                                  article.id,
+                                  article.attempt!.cursor,
+                                  part,
+                                ),
+                              );
+                              setArticle({ ...article, mode: "guided" });
+                            })
+                          }
+                        >
+                          <Headphones size={18} />
+                          {t("c1.listen")} {part + 1}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                  <button
+                    className="button primary"
+                    disabled={busy}
+                    onClick={() => {
+                      setAttempt(article.attempt!);
+                      go({
+                        view: "attempt",
+                        attempt: article.id,
+                        unit: unitId,
+                      });
+                    }}
+                  >
+                    {t("c1.comprehension")}
+                  </button>
+                </>
+              )}
+              {article.status === "generating" && (
+                <button
+                  className="button secondary"
+                  disabled={busy}
+                  onClick={() =>
+                    void run(async () =>
+                      setArticle(await curriculumApi.article(article.id)),
+                    )
+                  }
+                >
+                  {t("common.retry")}
+                </button>
+              )}
+            </section>
+          )}
+          {view === "attempt" && attempt?.id === params.get("attempt") && (
+            <section className="ux-card c1-learning">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {t("c1.practice")} {Math.min(attempt.cursor + 1, attempt.total)}{" "}
+                / {attempt.total}
+              </h2>
+              <progress
+                value={attempt.cursor}
+                max={attempt.total}
+                aria-label={t("c1.progress")}
+              />
+              {attempt.feedback && (
+                <div
+                  className={`c1-feedback ${attempt.feedback.correct ? "correct" : "repair"}`}
+                  role="status"
+                >
+                  <strong>
+                    {attempt.feedback.correct
+                      ? t("c1.answerAccepted")
+                      : t("c1.repair")}
+                  </strong>
+                  <p>{attempt.feedback.feedback}</p>
+                  {attempt.feedback.answer && (
+                    <p lang="en" dir="ltr">
+                      {attempt.feedback.answer}
+                    </p>
+                  )}
+                  <small>
+                    {attempt.feedback.independent
+                      ? t("c1.independentAttempt")
+                      : t("c1.supportedAttempt")}
+                  </small>
+                </div>
+              )}
+              {attempt.result ? (
+                <>
+                  <h3>
+                    {attempt.result.complete
+                      ? t("c1.activityComplete")
+                      : t("c1.morePractice")}
+                  </h3>
+                  <p>{Math.round(attempt.result.score * 100)}%</p>
+                  <button
+                    className="button primary"
+                    onClick={() => go({ view: "map", unit: unitId })}
+                  >
+                    {t("c1.returnMap")}
+                  </button>
+                  <button
+                    className="button ghost"
+                    disabled={busy}
+                    onClick={() => void start(attempt.activityId)}
+                  >
+                    {t("c1.repeat")}
+                  </button>
+                </>
+              ) : (
+                attempt.question && (
+                  <>
+                    {attempt.question.passage && (
+                      <p className="c1-passage" lang="en" dir="ltr">
+                        {attempt.question.passage}
+                      </p>
+                    )}
+                    <h3>{attempt.question.prompt}</h3>
+                    {attempt.question.text && (
+                      <p dir="ltr" lang="en">
+                        {attempt.question.text}
+                      </p>
+                    )}
+                    {attempt.question.picture && (
+                      <CurriculumPicture
+                        picture={attempt.question.picture}
+                        label={t("c1.newScene")}
+                      />
+                    )}
+                    {attempt.question.hasAudio && attempt.question.passage && (
+                      <p>{t("c1.readingAudioSupport")}</p>
+                    )}
+                    {attempt.question.hasAudio && (
+                      <div className="c1-actions">
+                        {Array.from(
+                          { length: attempt.question.audioParts },
+                          (_, part) => (
+                            <button
+                              key={part}
+                              className="button secondary"
+                              disabled={busy}
+                              onClick={() =>
+                                void run(async () =>
+                                  play(
+                                    await curriculumApi.audio(
+                                      attempt.id,
+                                      attempt.cursor,
+                                      part,
+                                    ),
+                                  ),
+                                )
+                              }
+                            >
+                              <Volume2 size={18} />
+                              {t("c1.listen")}{" "}
+                              {attempt.question!.audioParts > 1
+                                ? `${part + 1} / ${attempt.question!.audioParts}`
+                                : ""}
+                            </button>
+                          ),
+                        )}
+                      </div>
+                    )}
+                    {hint && (
+                      <p className="c1-hint" role="status">
+                        {hint}
+                      </p>
+                    )}
+                    {attempt.question.choices ? (
+                      <div className="c1-choices">
+                        {attempt.question.choices.map((choice) => (
+                          <button
+                            className="button secondary"
+                            key={choice.id}
+                            disabled={busy}
+                            onClick={() => void submit(choice.id)}
+                          >
+                            {choice.picture && (
+                              <CurriculumPicture
+                                picture={choice.picture}
+                                label={choice.text}
+                              />
+                            )}
+                            <span>{choice.text}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        <label className="field">
+                          {t("c1.answer")}
+                          <textarea
+                            value={answer}
+                            dir="auto"
+                            rows={
+                              attempt.question.kind.includes("writing") ? 10 : 4
+                            }
+                            onChange={(event) => {
+                              setAnswer(event.target.value);
+                              if (transcription?.text !== event.target.value)
+                                setTranscription(undefined);
+                            }}
+                          />
+                        </label>
+                        <div className="c1-actions">
+                          <button
+                            className="button primary"
+                            disabled={busy || recording || !answer.trim()}
+                            onClick={() => void submit()}
+                          >
+                            {t("c1.checkAnswer")}
+                          </button>
+                          <button
+                            className="button secondary"
+                            disabled={busy}
+                            onClick={() => void record()}
+                          >
+                            {recording ? (
+                              <Pause size={18} />
+                            ) : (
+                              <Mic size={18} />
+                            )}{" "}
+                            {t(recording ? "c1.stopRecording" : "c1.record")}
+                          </button>
+                          <button
+                            className="button ghost"
+                            disabled={busy || recording}
+                            onClick={() => void saveDraft()}
+                          >
+                            <Save size={18} />
+                            {t("c1.savePause")}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    <button
+                      className="button ghost"
+                      disabled={busy || recording}
+                      onClick={() =>
+                        void run(async () => {
+                          const { revision, eventId } = await commandFor(
+                            `hint:${attempt.id}:${attempt.cursor}`,
+                          );
+                          const result = await curriculumApi.hint(
+                            revision,
+                            attempt.id,
+                            attempt.cursor,
+                            eventId,
+                          );
+                          setHint(result.hint);
+                          await fresh();
+                        })
+                      }
+                    >
+                      {t("c1.hint")}
+                    </button>
+                  </>
+                )
+              )}
+            </section>
+          )}
+          {view === "placement" && (
+            <section className="ux-card c1-learning">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {t("c1.tabs.placement")}
+              </h2>
+              <p>{t("c1.placementBody")}</p>
+              <label className="field">
+                {t("c1.testBand")}
+                <select
+                  value={placementBand}
+                  onChange={(event) => setPlacementBand(event.target.value)}
+                >
+                  {bands.map((value) => (
+                    <option key={value}>{value}</option>
+                  ))}
+                </select>
+              </label>
+              <div className="c1-actions">
+                {[
+                  "decoding",
+                  "vocabulary",
+                  "listening",
+                  "speaking",
+                  "reading",
+                  "writing",
+                ].map((skill) => (
+                  <button
+                    className="button secondary"
+                    key={skill}
+                    disabled={busy}
+                    onClick={() =>
+                      void start(`placement:${placementBand}:${skill}`)
+                    }
+                  >
+                    {t(`c1.skills.${skill}`)}{" "}
+                    {data.placement[skill] &&
+                      `${data.placement[skill].band}  ${Math.round(data.placement[skill].score * 100)}%`}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+          {view === "sources" && (
+            <section className="ux-card c1-learning">
+              <h2 ref={focusRef} tabIndex={-1}>
+                {t("c1.tabs.sources")}
+              </h2>
+              <p>{data.program.researchStatus}</p>
+              <p>{data.program.attribution}</p>
+              <p>{t("c1.researchLimits")}</p>
+              <ul>
+                {data.evidence.map((item, index) => {
+                  const evidence = item as Record<string, unknown>;
+                  return (
+                    <li key={index}>
+                      <a
+                        href={String(evidence.url ?? "")}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {String(
+                          evidence.title ??
+                            evidence.title_he ??
+                            evidence.id ??
+                            "",
+                        )}
+                      </a>
+                      <p>
+                        {String(
+                          evidence.limitation_he ??
+                            evidence.limitations_he ??
+                            evidence.caveat_he ??
+                            "",
+                        )}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p>{t("c1.elective", { count: data.elective.count })}</p>
+              <button
+                className="button secondary"
+                disabled={!data.elective.unlocked}
+                onClick={() => go({ view: "words", unit: "C1E" })}
+              >
+                {t("c1.studyWords")}
+              </button>
+              <a
+                href="https://learnenglish.britishcouncil.org/free-resources/reading/c1"
+                target="_blank"
+                rel="noreferrer"
+              >
+                British Council C1 reading
+              </a>
+            </section>
+          )}
+        </>
+      )}
+    </main>
+  );
+}

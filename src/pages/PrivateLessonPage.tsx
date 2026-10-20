@@ -46,6 +46,8 @@ import { speak } from "../lib/utils";
 import { readLessonDraft, saveLessonDraft } from "../lib/lessonDraft";
 import { courseApi, type Course } from "../lib/courses";
 import { LessonSummary } from "../components/LessonSummary";
+import { RemoteState } from "../components/RemoteState";
+import { curriculumApi } from "../lib/structuredEnglish";
 import { learningReturn } from "../lib/learningNavigation";
 import { LessonHomeworkCard } from "./HomeworkPage";
 import "../courses.css";
@@ -119,6 +121,16 @@ export function PrivateLessonPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("course");
+  const curriculumLessonId = searchParams.get("curriculum");
+  const curriculumPreview = useResource(
+    useCallback(
+      () =>
+        curriculumLessonId
+          ? curriculumApi.teacher(curriculumLessonId)
+          : Promise.resolve(null),
+      [curriculumLessonId],
+    ),
+  );
   const packId = searchParams.get("pack");
   useLayoutEffect(() => {
     if (packId) window.scrollTo({ top: 0, behavior: "instant" });
@@ -173,7 +185,12 @@ export function PrivateLessonPage() {
   const [speechRate, setSpeechRate] =
     useState<PrivateLessonSpeechRate>("normal");
   const [lessonDurationMinutes, setLessonDurationMinutes] =
-    useState<PrivateLessonDurationMinutes>(5);
+    useState<PrivateLessonDurationMinutes>(() =>
+      curriculumLessonId &&
+      [5, 10, 15, 20].includes(Number(searchParams.get("minutes")))
+        ? (Number(searchParams.get("minutes")) as PrivateLessonDurationMinutes)
+        : 5,
+    );
   const selectedUnitStation = unit?.teacherStations?.find(
     (step) =>
       step.station ===
@@ -622,6 +639,18 @@ export function PrivateLessonPage() {
 
   useEffect(() => {
     let active = true;
+    if (curriculumLessonId) {
+      const basic = ["Pre-A1", "A1"].includes(
+        curriculumPreview.data?.band ?? "Pre-A1",
+      );
+      setSupportLanguage("he");
+      setLessonMode(basic ? "absolute_beginner" : "standard");
+      setTeachingLanguage(basic ? "support" : "target");
+      setVocabularyMode("none");
+      setSpeechRate(basic ? "slow" : "normal");
+      setSetupLoading(false);
+      return;
+    }
     setSetupLoading(true);
     setError("");
     void getPrivateLessonSetup(
@@ -681,6 +710,8 @@ export function PrivateLessonPage() {
     courseData?.preferences.targetLanguageCode,
     searchParams,
     user,
+    curriculumLessonId,
+    curriculumPreview.data?.band,
   ]);
 
   const coursePreferences = courseData
@@ -758,6 +789,7 @@ export function PrivateLessonPage() {
             ? "conversation"
             : "guided",
         ...(courseId ? { courseId } : {}),
+        ...(curriculumLessonId ? { curriculumLessonId } : {}),
         ...(packId
           ? {
               packId,
@@ -1442,12 +1474,16 @@ export function PrivateLessonPage() {
           <div>
             <p className="eyebrow">{t("privateLesson.eyebrow")}</p>
             <h1>
-              {courseId && courseData?.nextLesson
-                ? courseData.nextLesson.title
-                : t("ux.readyForLesson")}
+              {curriculumLessonId && curriculumPreview.data
+                ? curriculumPreview.data.title
+                : courseId && courseData?.nextLesson
+                  ? courseData.nextLesson.title
+                  : t("ux.readyForLesson")}
             </h1>
             <p>
-              {courseId ? (
+              {curriculumLessonId ? (
+                t("c1.splitLesson")
+              ) : courseId ? (
                 <>
                   {t("courses.yourCourse")} ·{" "}
                   {languageOptions.find(
@@ -1467,7 +1503,101 @@ export function PrivateLessonPage() {
 
       {phase === "setup" || phase === "preparing" ? (
         <>
-          {packId ? (
+          {curriculumLessonId ? (
+            <form
+              className="unit-lesson-prep canonical-page"
+              onSubmit={(event) => void startLesson(event)}
+            >
+              <RemoteState
+                loading={curriculumPreview.loading}
+                error={curriculumPreview.error}
+                retry={() => void curriculumPreview.reload()}
+              />
+              <section className="ux-card mint">
+                <h2>{curriculumPreview.data?.title}</h2>
+                <p>{t("c1.splitLesson")}</p>
+                <p>{curriculumPreview.data?.phase?.instruction}</p>
+                <button
+                  className="button primary"
+                  type="submit"
+                  disabled={
+                    !curriculumPreview.data ||
+                    curriculumPreview.data.complete ||
+                    phase === "preparing"
+                  }
+                >
+                  {phase === "preparing" && (
+                    <LoaderCircle size={18} className="spin" />
+                  )}
+                  {t("privateLesson.start")}
+                </button>
+              </section>
+              <section className="ux-card unit-lesson-preferences">
+                <label className="field">
+                  <span>{t("ux.chooseTeacher")}</span>
+                  <select
+                    value={teacherVoice}
+                    onChange={(event) =>
+                      setTeacherVoice(event.target.value as TeacherVoice)
+                    }
+                  >
+                    {(["female", "male"] as const).map((value) => (
+                      <option key={value} value={value}>
+                        {t(`privateLesson.voiceOptions.${value}`)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>{t("privateLesson.speechRate")}</span>
+                  <select
+                    value={speechRate}
+                    onChange={(event) =>
+                      setSpeechRate(
+                        event.target.value as PrivateLessonSpeechRate,
+                      )
+                    }
+                  >
+                    {privateLessonSpeechRates.map((value) => (
+                      <option value={value} key={value}>
+                        {t(`privateLesson.speedOptions.${value}`)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>{t("c1.dailyTime")}</span>
+                  <select
+                    value={lessonDurationMinutes}
+                    onChange={(event) =>
+                      setLessonDurationMinutes(
+                        Number(
+                          event.target.value,
+                        ) as PrivateLessonDurationMinutes,
+                      )
+                    }
+                  >
+                    {[5, 10, 15, 20].map((value) => (
+                      <option key={value} value={value}>
+                        {t("c1.minutes", { count: value })}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </section>
+              {error && (
+                <p className="form-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <Link
+                className="button ghost"
+                to={`/english-zero-c1?view=teacher&lesson=${curriculumLessonId}&unit=${curriculumLessonId.split("-L")[0]}`}
+              >
+                {t("c1.returnMap")}
+              </Link>
+            </form>
+          ) : packId ? (
             <div
               className="unit-lesson-prep canonical-page"
               data-figma-desktop="43:6205"

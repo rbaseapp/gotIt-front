@@ -84,7 +84,20 @@ export function LessonSummary({
             {children}
           </details>
         </section>
-        <LessonHomeworkCard lessonId={lesson.id} />
+        {lesson.curriculum ? (
+          <section className="ux-card">
+            <h2>{t("c1.postlesson")}</h2>
+            <p>{t("c1.splitLesson")}</p>
+            <Link
+              className="button primary"
+              to={`/english-zero-c1?view=teacher&lesson=${lesson.curriculum.lessonId}&unit=${lesson.curriculum.lessonId.split("-L")[0]}`}
+            >
+              {t("c1.resume")}
+            </Link>
+          </section>
+        ) : (
+          <LessonHomeworkCard lessonId={lesson.id} />
+        )}
         {report.recommendedReviewItemIds.length > 0 && (
           <Link
             className="button primary"

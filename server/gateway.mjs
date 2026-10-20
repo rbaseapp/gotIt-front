@@ -305,10 +305,12 @@ export function createGateway(config) {
           return;
         }
         const limit =
-          apiPath === "/api/v1/pronunciation/assessments" ||
-          apiPath === "/api/v1/courses/transcribe"
-            ? 1024 * 1024
-            : 256 * 1024;
+          apiPath === "/api/v1/structured-english/transcriptions"
+            ? 4 * 1024 * 1024
+            : apiPath === "/api/v1/pronunciation/assessments" ||
+                apiPath === "/api/v1/courses/transcribe"
+              ? 1024 * 1024
+              : 256 * 1024;
         const chunks = [];
         let size = 0;
         for await (const chunk of req) {

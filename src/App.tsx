@@ -102,6 +102,11 @@ const EnglishLearningPathPage = lazy(() =>
 const MinutesPage = lazy(() =>
   import("./pages/MinutesPage").then((m) => ({ default: m.MinutesPage })),
 );
+const StructuredEnglishPage = lazy(() =>
+  import("./pages/StructuredEnglishPage").then((m) => ({
+    default: m.StructuredEnglishPage,
+  })),
+);
 const BillingPage = lazy(() =>
   import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
 );
@@ -367,6 +372,16 @@ export default function App() {
                     element={
                       mode === "live" ? (
                         <EnglishLearningPathPage />
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/english-zero-c1"
+                    element={
+                      mode === "live" ? (
+                        <StructuredEnglishPage />
                       ) : (
                         <Navigate to="/learn" replace />
                       )
