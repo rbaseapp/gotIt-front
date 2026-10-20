@@ -90,7 +90,7 @@ export function LessonSummary({
             <p>{t("c1.splitLesson")}</p>
             <Link
               className="button primary"
-              to={`/english-zero-c1?view=teacher&lesson=${lesson.curriculum.lessonId}&unit=${lesson.curriculum.lessonId.split("-L")[0]}`}
+              to={`/english-learning?view=teacher&lesson=${lesson.curriculum.lessonId}&unit=${lesson.curriculum.lessonId.split("-L")[0]}`}
             >
               {t("c1.resume")}
             </Link>

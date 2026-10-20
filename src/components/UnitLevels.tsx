@@ -10,12 +10,14 @@ export function UnitLevels({
   onOpen,
   onWords,
   initialLevel,
+  canOpen,
 }: {
   packs: WordPack[];
   current?: WordPack;
   onOpen: (pack: WordPack) => void;
   onWords: (pack: WordPack) => void;
   initialLevel?: string;
+  canOpen?: (pack: WordPack) => boolean;
 }) {
   const { t } = useTranslation();
   const levels = englishPathLevels(packs);
@@ -186,10 +188,18 @@ export function UnitLevels({
                   : t("pathUi.meetingAfterWords")}
               </p>
             </div>
-            <button className="button primary" onClick={() => onOpen(featured)}>
+            <button
+              className="button primary"
+              disabled={canOpen ? !canOpen(featured) : false}
+              onClick={() => onOpen(featured)}
+            >
               {t("pathUi.continueUnit")}
             </button>
-            <button className="button ghost" onClick={() => onWords(featured)}>
+            <button
+              className="button ghost"
+              disabled={canOpen ? !canOpen(featured) : false}
+              onClick={() => onWords(featured)}
+            >
               {t("structuredUi.words")}
             </button>
           </aside>

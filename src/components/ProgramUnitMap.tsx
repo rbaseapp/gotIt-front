@@ -17,14 +17,23 @@ import type { EnglishUnitMap } from "./EnglishUnitMap";
 import {
   programMapModel,
   programUnitTitle,
-  type MapStep,
+  type ProgramMapStep,
+  type ProgramMapModel,
 } from "../lib/programMap";
 import { homeworkTaskLink } from "../lib/unitLearningPath";
 import "./ProgramUnitMap.css";
 import { ProgramMapSidebar } from "./ProgramMapSidebar";
 import { englishPathLevels } from "../lib/englishPath";
 
-type Props = ComponentProps<typeof EnglishUnitMap>;
+type Props = ComponentProps<typeof EnglishUnitMap> & {
+  presentation?: {
+    model: ProgramMapModel;
+    packs: ComponentProps<typeof EnglishUnitMap>["packs"];
+    words: { sourceText: string }[];
+    canSelect: (id: string) => boolean;
+    tools?: ReactNode;
+  };
+};
 export function ProgramUnitMap({
   current,
   packs,
@@ -37,31 +46,37 @@ export function ProgramUnitMap({
   onActivities,
   onSelect,
   stationUrl,
+  presentation,
 }: Props) {
   const { t } = useTranslation();
   const [completedOpen, setCompletedOpen] = useState(false);
   const [futureOpen, setFutureOpen] = useState(false);
   const id = useId();
-  const ready = path && !pathLoading && !pathError;
-  const model = path ? programMapModel(current, path) : undefined;
-  const programPacks = englishPathLevels(packs).flatMap((level) => level.packs);
+  const ready = Boolean(presentation || (path && !pathLoading && !pathError));
+  const model: ProgramMapModel | undefined =
+    presentation?.model ?? (path ? programMapModel(current, path) : undefined);
+  const programPacks =
+    presentation?.packs ??
+    englishPathLevels(packs).flatMap((level) => level.packs);
   const returnTo = `/english-learning?unit=${current.id}`;
   const originalTitle = programUnitTitle(current.title);
   const localizedTitle =
     originalTitle === "Building Your First Sentences"
       ? t("programMap.firstTitle")
       : originalTitle;
-  const title = (step: MapStep) =>
-    step.kind === "words"
-      ? t("programMap.wordStage", {
-          from: `\u2066${step.from}`,
-          to: `${step.to}\u2069`,
-        })
-      : step.kind === "meeting"
-        ? t(`pathUi.${step.station.station}`)
-        : t("unitMap.followUp");
+  const title = (step: ProgramMapStep) =>
+    step.kind === "activity"
+      ? step.title
+      : step.kind === "words"
+        ? t("programMap.wordStage", {
+            from: `\u2066${step.from}`,
+            to: `${step.to}\u2069`,
+          })
+        : step.kind === "meeting"
+          ? t(`pathUi.${step.station.station}`)
+          : t("unitMap.followUp");
   const action = (
-    step: MapStep | undefined,
+    step: ProgramMapStep | undefined,
     label: string,
     className = "pm-action",
   ): ReactNode => {
@@ -74,6 +89,12 @@ export function ProgramUnitMap({
     if (!ready || !step?.available)
       return (
         <button className={className} disabled>
+          {content}
+        </button>
+      );
+    if (step.kind === "activity")
+      return (
+        <button className={className} onClick={step.onOpen}>
           {content}
         </button>
       );
@@ -108,13 +129,14 @@ export function ProgramUnitMap({
     rest.findIndex((step) => step.id === model?.active?.id) + 1,
   );
   const visible = futureOpen ? rest : rest.slice(0, initialCount);
-  const row = (step: MapStep) => {
+  const row = (step: ProgramMapStep) => {
     const active = model?.active?.id === step.id;
     const Icon = step.complete
       ? Check
       : !step.available
         ? LockKeyhole
-        : step.kind === "meeting"
+        : step.kind === "meeting" ||
+            (step.kind === "activity" && step.icon === "meeting")
           ? Mic
           : BookOpen;
     return (
@@ -136,34 +158,44 @@ export function ProgramUnitMap({
         <div className="pm-step-copy">
           <h3>{title(step)}</h3>
           <p>
-            {step.complete
-              ? t("unitMap.completed")
-              : step.kind === "words"
-                ? t("programMap.wordsHelp")
-                : step.kind === "meeting"
-                  ? t("programMap.meetingHelp")
-                  : t("unitMap.followUpHelp")}
+            {step.kind === "activity"
+              ? step.description
+              : step.complete
+                ? t("unitMap.completed")
+                : step.kind === "words"
+                  ? t("programMap.wordsHelp")
+                  : step.kind === "meeting"
+                    ? t("programMap.meetingHelp")
+                    : t("unitMap.followUpHelp")}
           </p>
           {!step.complete && !step.available && (
             <p className="pm-lock-reason">
-              {step.kind === "meeting" && step.station.lockReason === "words"
-                ? t("unitMap.wordsRequired", {
-                    count: Math.max(
-                      0,
-                      step.station.requiredWords - (model?.introduced ?? 0),
-                    ),
-                  })
-                : t(
-                    step.kind === "homework"
-                      ? step.station.meetingCompleted
-                        ? "unitMap.noAssignment"
-                        : "unitMap.practiceAfterMeeting"
-                      : "unitMap.previousPreparation",
-                  )}
+              {step.kind === "activity"
+                ? (step.lockReason ?? t("unitMap.previousPreparation"))
+                : step.kind === "meeting" && step.station.lockReason === "words"
+                  ? t("unitMap.wordsRequired", {
+                      count: Math.max(
+                        0,
+                        step.station.requiredWords - (model?.introduced ?? 0),
+                      ),
+                    })
+                  : t(
+                      step.kind === "homework"
+                        ? step.station.meetingCompleted
+                          ? "unitMap.noAssignment"
+                          : "unitMap.practiceAfterMeeting"
+                        : "unitMap.previousPreparation",
+                    )}
             </p>
           )}
           {active && (
             <div className="pm-step-meta">
+              {step.kind === "activity" && step.minutes !== undefined && (
+                <span>
+                  <Clock3 size={19} />
+                  {t("c1.minutes", { count: step.minutes })}
+                </span>
+              )}
               {step.kind === "meeting" && (
                 <span>
                   <Clock3 size={19} />
@@ -205,6 +237,9 @@ export function ProgramUnitMap({
           )}
         </div>
         {active && action(step, t("programMap.continue"))}
+        {step.complete &&
+          step.kind === "activity" &&
+          action(step, t("unitMap.repeat"), "pm-review")}
         {step.complete && step.kind === "meeting" && ready && (
           <Link className="pm-review" to={stationUrl(step.station.station)}>
             {t("unitMap.repeatMeeting")}
@@ -386,6 +421,7 @@ export function ProgramUnitMap({
           pathError={pathError}
           ready={Boolean(ready)}
           model={model}
+          words={presentation?.words}
           onWords={onWords}
         />
       </div>
@@ -403,7 +439,13 @@ export function ProgramUnitMap({
             }}
           >
             {programPacks.map((pack) => (
-              <option key={pack.id} value={pack.id}>
+              <option
+                key={pack.id}
+                value={pack.id}
+                disabled={
+                  presentation ? !presentation.canSelect(pack.id) : false
+                }
+              >
                 {pack.title}
               </option>
             ))}
@@ -414,6 +456,7 @@ export function ProgramUnitMap({
         </button>
         <button onClick={onWords}>{t("structuredUi.words")}</button>
         <button onClick={onActivities}>{t("structuredUi.activities")}</button>
+        {presentation?.tools}
       </nav>
     </div>
   );

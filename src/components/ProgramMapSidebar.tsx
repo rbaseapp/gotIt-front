@@ -2,14 +2,15 @@ import { Check, Circle, Flag, Map, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { WordPack } from "../lib/product";
 import type { UnitLearningPath } from "../lib/unitLearningPath";
-import type { programMapModel } from "../lib/programMap";
+import type { ProgramMapModel } from "../lib/programMap";
 type Props = {
   current: WordPack;
   path?: UnitLearningPath;
   pathLoading: boolean;
   pathError: string;
   ready: boolean;
-  model?: ReturnType<typeof programMapModel>;
+  model?: ProgramMapModel;
+  words?: { sourceText: string }[];
   onWords: () => void;
 };
 export function ProgramMapSidebar({
@@ -20,10 +21,11 @@ export function ProgramMapSidebar({
   ready,
   model,
   onWords,
+  words: suppliedWords,
 }: Props) {
   const { t } = useTranslation();
   const remaining = model ? model.steps.length - model.completed : 0;
-  const words = path?.words.slice(0, 6) ?? [];
+  const words = suppliedWords?.slice(0, 6) ?? path?.words.slice(0, 6) ?? [];
   return (
     <aside className="pm-sidebar">
       <section className="pm-card pm-keywords">
@@ -67,7 +69,9 @@ export function ProgramMapSidebar({
               {ready
                 ? t("programMap.remainingShort", { count: remaining })
                 : t(
-                    pathError ? "programMap.pathUnavailable" : "common.loadingFromServer",
+                    pathError
+                      ? "programMap.pathUnavailable"
+                      : "common.loadingFromServer",
                   )}
             </p>
           </div>
