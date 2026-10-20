@@ -94,9 +94,9 @@ const TransferPage = lazy(() =>
 const WordPacksPage = lazy(() =>
   import("./pages/WordPacksPage").then((m) => ({ default: m.WordPacksPage })),
 );
-const EnglishLearningPathPage = lazy(() =>
-  import("./pages/EnglishLearningPathPage").then((m) => ({
-    default: m.EnglishLearningPathPage,
+const EnglishLearningEntryPage = lazy(() =>
+  import("./pages/EnglishLearningEntryPage").then((m) => ({
+    default: m.EnglishLearningEntryPage,
   })),
 );
 const MinutesPage = lazy(() =>
@@ -371,7 +371,7 @@ export default function App() {
                     path="/english-learning"
                     element={
                       mode === "live" ? (
-                        <EnglishLearningPathPage />
+                        <EnglishLearningEntryPage />
                       ) : (
                         <Navigate to="/learn" replace />
                       )
