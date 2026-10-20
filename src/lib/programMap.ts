@@ -12,6 +12,30 @@ export type MapStep = {
   available: boolean;
 };
 
+/** Additional authored content uses the same roadmap presentation and controls. */
+export type ProgramActivityStep = {
+  id: string;
+  number: number;
+  kind: "activity";
+  title: string;
+  description: string;
+  complete: boolean;
+  available: boolean;
+  lockReason?: string;
+  minutes?: number;
+  icon?: "meeting";
+  onOpen: () => void;
+};
+export type ProgramMapStep = MapStep | ProgramActivityStep;
+export type ProgramMapModel = {
+  steps: ProgramMapStep[];
+  active?: ProgramMapStep;
+  completed: number;
+  prefix: ProgramMapStep[];
+  introduced: number;
+  percent: number;
+};
+
 export function programUnitTitle(title: string) {
   return title.replace(/^(?:יחידה|Unit)\s*\d+\s*[:·–-]\s*/iu, "").trim();
 }

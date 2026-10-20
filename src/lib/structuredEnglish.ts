@@ -423,8 +423,8 @@ export function structuredProgram(data: Curriculum): Program {
     completed,
     total: data.units.length,
     status: data.graduation.complete ? "completed" : "ongoing",
-    destination: "/english-zero-c1",
-    continueTo: "/english-zero-c1",
+    destination: "/english-learning",
+    continueTo: "/english-learning",
     next:
       data.units.find((unit) => unit.id === data.currentUnit)?.title ?? null,
     lessonNumber: null,
