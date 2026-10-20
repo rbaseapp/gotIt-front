@@ -401,7 +401,7 @@ export function StructuredEnglishPage() {
         <div className="c1-error" role="alert">
           {error}
           <button className="button ghost" onClick={() => void run(fresh)}>
-            {t("common.retry")}
+            {t("common.tryAgain")}
           </button>
         </div>
       )}
@@ -960,7 +960,6 @@ export function StructuredEnglishPage() {
                   <h2 ref={focusRef} tabIndex={-1}>
                     {phonics.title}
                   </h2>
-                  <p>{phonics.caution}</p>
                   <div className="c1-sounds">
                     {phonics.mappings.map((mapping, index) => (
                       <button
@@ -1011,7 +1010,6 @@ export function StructuredEnglishPage() {
                     <Headphones size={18} />
                     {t("c1.listenModel")}
                   </button>
-                  <p>{phonics.decodability}</p>
                   <div className="c1-actions">
                     <button
                       className="button primary"
@@ -1143,7 +1141,7 @@ export function StructuredEnglishPage() {
                     )
                   }
                 >
-                  {t("common.retry")}
+                  {t("common.tryAgain")}
                 </button>
               )}
             </section>
