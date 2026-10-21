@@ -73,6 +73,7 @@ export function StructuredEnglishPage() {
     >("starting");
   const [placementBand, setPlacementBand] = useState("A1");
   const [wordBatch, setWordBatch] = useState(0);
+  const [introduction, setIntroduction] = useState({ id: "", request: 0 });
   const [recording, setRecording] = useState(false),
     [transcription, setTranscription] = useState<{
       id: string;
@@ -418,6 +419,38 @@ export function StructuredEnglishPage() {
       });
     } else void start(id);
   };
+  const eligibleGames =
+    unit?.id === unitId ? unit.games.filter((game) => game.eligible > 0) : [];
+  const needsIntroduction = unit?.id === unitId && eligibleGames.length === 0;
+  const smartPractice = () => {
+    if (!data || unit?.id !== unitId || !selectedUnit?.unlocked) return;
+    const active = Object.entries(data.activeAttempts).find(([id]) =>
+      id.startsWith(`words:${unitId}:`),
+    );
+    if (active) {
+      go({ view: "attempt", attempt: active[1], unit: unitId });
+      return;
+    }
+    const recommended =
+      data.nextAction?.kind === "words" && data.nextAction.id === unitId
+        ? data.nextAction.game
+        : undefined;
+    const game =
+      eligibleGames.find((item) => item.mode === recommended) ??
+      eligibleGames[0];
+    if (game) {
+      void start(`words:${unitId}:${game.mode}`);
+      return;
+    }
+    const index = unit.words.findIndex((word) => !word.evidence);
+    if (index >= 0) {
+      setWordBatch(Math.floor(index / 6));
+      setIntroduction((previous) => ({
+        id: unit.words[index].id,
+        request: previous.request + 1,
+      }));
+    }
+  };
   const mapReady = data?.enrolled && unit?.id === unitId && displayPack;
   const showMap = view === "map" && data?.enrolled;
   const mapModel =
@@ -487,17 +520,30 @@ export function StructuredEnglishPage() {
           {view === "words" && unit && (
             <button
               className="button primary path-practice"
-              disabled={busy || !unit.games.some((game) => game.eligible > 0)}
-              onClick={() =>
-                void start(
-                  `words:${unitId}:${(data?.nextAction?.kind === "words" && data.nextAction.id === unitId ? data.nextAction.game : undefined) ?? unit.games.find((game) => game.eligible > 0)?.mode ?? "recognition"}`,
-                )
+              disabled={
+                busy ||
+                recording ||
+                unit.id !== unitId ||
+                !selectedUnit?.unlocked
               }
+              aria-describedby={
+                needsIntroduction ? "practice-introduction-help" : undefined
+              }
+              onClick={smartPractice}
             >
               {t("dashboard.smartPractice")}
             </button>
           )}
         </header>
+      )}
+      {view === "words" && needsIntroduction && selectedUnit?.unlocked && (
+        <p
+          className="course-note"
+          id="practice-introduction-help"
+          role="status"
+        >
+          {t("c1.wordInstructions")}
+        </p>
       )}
       <RemoteState
         loading={resource.loading && !data}
@@ -727,13 +773,15 @@ export function StructuredEnglishPage() {
           {view === "words" && unit?.id === unitId && (
             <>
               <UnitWordBrowser
-                key={`${unit.id}:${wordBatch}`}
+                key={`${unit.id}:${wordBatch}:${introduction.request}`}
                 packId={unit.id}
                 entries={displayEntries.slice(wordBatch * 6, wordBatch * 6 + 6)}
                 language="en"
                 supportLanguage="he"
                 busy={busy}
                 suppliedContent={suppliedContent}
+                initialEntryId={introduction.id}
+                focusKnown={introduction.request > 0}
                 onKnown={(entry) =>
                   void run(async () => {
                     const { revision, eventId } = await commandFor(
