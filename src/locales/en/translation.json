@@ -2929,7 +2929,7 @@
     "unitReading": "Unit reading",
     "checkpoint": "Progress check",
     "unseen": "New text and transfer",
-    "wordInstructions": "Practice starts by meeting the word. Open Smart Practice to see its study card, listen and read its meaning. Confirming familiarity on the card opens the first exercise. Familiarity is not mastery.",
+    "wordInstructions": "Smart Practice opens the game path with all words in this unit: flashcards, matching, word building and listening as available. Difficult words return for review, and an interrupted round can resume. Familiarity is not mastery.",
     "games": {
       "recognition": "Recognize meaning",
       "matching": "Match word and meaning",
