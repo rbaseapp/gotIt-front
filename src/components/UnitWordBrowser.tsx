@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, ChevronLeft } from "lucide-react";
 import { ReadAloud } from "./CourseComposer";
@@ -19,8 +19,6 @@ export function UnitWordBrowser({
   onKnown,
   packId,
   suppliedContent,
-  initialEntryId,
-  focusKnown = false,
 }: {
   packId: string;
   entries: WordPackEntry[];
@@ -29,17 +27,9 @@ export function UnitWordBrowser({
   busy: boolean;
   onKnown: (entry: WordPackEntry) => void;
   suppliedContent?: { knownLabel: string; knownHelp: string };
-  initialEntryId?: string;
-  focusKnown?: boolean;
 }) {
   const { t } = useTranslation();
-  const [selectedId, setSelectedId] = useState<string | undefined>(
-    initialEntryId,
-  );
-  const knownRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (focusKnown) knownRef.current?.focus();
-  }, [focusKnown]);
+  const [selectedId, setSelectedId] = useState<string>();
   const [limit, setLimit] = useState(6);
   const selected =
     entries.find((entry) => entry.id === selectedId) ?? entries[0];
@@ -203,7 +193,6 @@ export function UnitWordBrowser({
           <label className="unit-known-toggle">
             <input
               type="checkbox"
-              ref={knownRef}
               disabled={busy || Boolean(suppliedContent && selected.known)}
               checked={!!selected.known}
               aria-describedby="unit-known-help"
