@@ -1,3 +1,4 @@
+import { courseLessonFromLocation } from "../lib/courseSelection";
 import {
   useCallback,
   useEffect,
@@ -165,6 +166,8 @@ export function PrivateLessonPage() {
     };
   }, [packId]);
   const [courseData, setCourseData] = useState<Course | null>(null);
+  const { lesson: displayedCourseLesson, selection: courseLessonSelection } =
+    courseLessonFromLocation(courseData, searchParams);
   const [courseError, setCourseError] = useState("");
   const [courseRetry, setCourseRetry] = useState(0);
   const { profile, retryProfile, user } = useApp();
@@ -838,6 +841,10 @@ export function PrivateLessonPage() {
     event.preventDefault();
     // Failed capability loading must not silently downgrade a new lesson.
     if (setupLoading || !lessonSetup) return;
+    if (courseId && !displayedCourseLesson) {
+      setError(t("pathChoices.selectionChanged"));
+      return;
+    }
     dispose();
     setPhase("preparing");
     setError("");
@@ -877,7 +884,14 @@ export function PrivateLessonPage() {
           !courseId && !packId && searchParams.get("practice") === "free"
             ? "conversation"
             : "guided",
-        ...(courseId ? { courseId } : {}),
+        ...(courseId
+          ? {
+              courseId,
+              ...(courseLessonSelection
+                ? { courseLesson: courseLessonSelection }
+                : {}),
+            }
+          : {}),
         ...(curriculumLessonId ? { curriculumLessonId } : {}),
         ...(packId
           ? {
@@ -1500,14 +1514,20 @@ export function PrivateLessonPage() {
       language: lessonTargetLanguage,
       prep: "warmup",
     });
-    if (courseId) back.set("course", courseId);
-    else if (curriculumLessonId) back.set("curriculum", curriculumLessonId);
+    if (courseId) {
+      back.set("course", courseId);
+      if (courseLessonSelection) {
+        back.set("version", String(courseLessonSelection.version));
+        back.set("unit", courseLessonSelection.unitKey);
+        back.set("lesson", String(courseLessonSelection.lessonIndex));
+      }
+    } else if (curriculumLessonId) back.set("curriculum", curriculumLessonId);
     else if (packId) back.set("pack", packId);
     else back.set("practice", "free");
     const returnTo = encodeURIComponent("/private-lesson?" + back);
-    if (courseId && courseData?.nextLesson) {
+    if (courseId && displayedCourseLesson) {
       navigate(
-        `/courses/${courseId}/units/${encodeURIComponent(courseData?.nextLesson.unitKey)}/words?return=${returnTo}`,
+        `/courses/${courseId}/units/${encodeURIComponent(displayedCourseLesson.unitKey)}/words?return=${returnTo}`,
       );
     } else if (curriculumLessonId) {
       navigate(
@@ -1606,8 +1626,8 @@ export function PrivateLessonPage() {
             <h1>
               {curriculumLessonId && curriculumPreview.data
                 ? curriculumPreview.data.title
-                : courseId && courseData?.nextLesson
-                  ? courseData.nextLesson.title
+                : courseId && displayedCourseLesson
+                  ? displayedCourseLesson.title
                   : t("ux.readyForLesson")}
             </h1>
             <p>
@@ -1802,7 +1822,10 @@ export function PrivateLessonPage() {
               onSubmit={(event) => void startLesson(event)}
             >
               <section className="ux-card mint">
-                <h2 dir="auto">{courseData?.nextLesson?.objective}</h2>
+                <h2 dir="auto">{displayedCourseLesson?.objective}</h2>
+                {courseData && !displayedCourseLesson && (
+                  <p role="alert">{t("pathChoices.selectionChanged")}</p>
+                )}
                 <p>
                   {t("privateLesson.durationMinutes", {
                     count: lessonDurationMinutes,
@@ -1814,7 +1837,7 @@ export function PrivateLessonPage() {
                       (version) => version.version === courseData.activeVersion,
                     )
                     ?.plan.units.find(
-                      (unit) => unit.key === courseData.nextLesson?.unitKey,
+                      (unit) => unit.key === displayedCourseLesson?.unitKey,
                     )
                     ?.vocabulary.slice(0, 5)
                     .join(" · ")}
@@ -1834,7 +1857,7 @@ export function PrivateLessonPage() {
                 <button
                   className="button primary"
                   disabled={
-                    !courseData?.nextLesson ||
+                    !displayedCourseLesson ||
                     setupLoading ||
                     phase === "preparing" ||
                     (lessonTeachingLanguage === "support" &&
@@ -1937,7 +1960,7 @@ export function PrivateLessonPage() {
               <button
                 type="button"
                 className="button secondary"
-                disabled={setupLoading || !courseData?.nextLesson}
+                disabled={setupLoading || !displayedCourseLesson}
                 onClick={warmup}
               >
                 {t("ux.warmup")}

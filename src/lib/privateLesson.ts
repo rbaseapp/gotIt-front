@@ -358,6 +358,7 @@ export type PrivateLessonInput = {
   interactionProtocol?: "adaptive-v1";
   interactionMode?: "guided" | "conversation";
   courseId?: string;
+  courseLesson?: { version: number; unitKey: string; lessonIndex: number };
   packId?: string;
   station?: "supported" | "midpoint" | "review";
   targetLanguageCode: string;

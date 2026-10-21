@@ -22,7 +22,11 @@ import { useCachedResource } from "../lib/useCachedResource";
 import { resourceKey } from "../lib/resourceCache";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { courseApi, lessonLink } from "../lib/courses";
-import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
+import {
+  completedEnglishUnit,
+  resolvedEnglishUnit,
+  englishPathLevels,
+} from "../lib/englishPath";
 import { curriculumApi } from "../lib/structuredEnglish";
 import {
   chooseHomeLanguage,
@@ -197,7 +201,7 @@ export function DevDashboardPage() {
     (level) => level.packs,
   );
   const nextPack =
-    path.find((pack) => !completedEnglishUnit(pack)) ?? path.at(-1);
+    path.find((pack) => !resolvedEnglishUnit(pack)) ?? path.at(-1);
   const isStructured = Boolean(structured.data);
   const structuredUnit = structured.data?.units.find(
     (unit) => unit.id === structured.data?.currentUnit,
@@ -216,10 +220,11 @@ export function DevDashboardPage() {
     : (plan?.units.reduce((sum, unit) => sum + unit.lessons.length, 0) ??
       path.length);
   const programDone = isStructured
-    ? structured.data!.graduation.complete
+    ? structured.data!.graduation.complete ||
+      structured.data!.navigationComplete === true
     : course
       ? !course.nextLesson
-      : isPath && total > 0 && completed >= total;
+      : isPath && total > 0 && path.every(resolvedEnglishUnit);
   const nextNumber =
     course?.nextLesson && plan
       ? plan.units
@@ -392,7 +397,11 @@ export function DevDashboardPage() {
                     <small>
                       {t(
                         programDone
-                          ? "newDashboard.programComplete"
+                          ? structured.data?.pathChoices?.units.length ||
+                            structured.data?.pathChoices?.activities.length ||
+                            course?.skippedLessons?.length
+                            ? "pathChoices.routeEnd"
+                            : "newDashboard.programComplete"
                           : "newDashboard.nextLesson",
                       )}
                     </small>

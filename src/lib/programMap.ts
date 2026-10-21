@@ -2,6 +2,7 @@ import type { WordPack } from "./product";
 import type { UnitLearningPath } from "./unitLearningPath";
 
 export type MapStep = {
+  skipped?: boolean;
   id: string;
   number: number;
   kind: "words" | "meeting" | "homework";
@@ -14,6 +15,7 @@ export type MapStep = {
 
 /** Additional authored content uses the same roadmap presentation and controls. */
 export type ProgramActivityStep = {
+  skipped?: boolean;
   id: string;
   number: number;
   kind: "activity";

@@ -30,3 +30,5 @@ export const completedEnglishUnit = (pack: WordPack) =>
   pack.wordCount > 0 &&
   (pack.progress.completed ?? pack.progress.mastered) === pack.wordCount &&
   pack.progress.unitCompleted !== false;
+export const resolvedEnglishUnit = (pack: WordPack) =>
+  completedEnglishUnit(pack) || pack.progress.pathSkipped === true;
