@@ -308,6 +308,9 @@ export default function App() {
                           preferLesson={
                             location.search.includes("course=") ||
                             location.search.includes("pack=") ||
+                            new URLSearchParams(location.search).has(
+                              "curriculum",
+                            ) ||
                             location.search.includes("practice=free") ||
                             location.search.includes("view=")
                           }
