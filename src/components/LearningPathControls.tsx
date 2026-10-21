@@ -140,7 +140,7 @@ export function LearningPathControls({
             disabled={busy}
             onClick={() => setConfirm(false)}
           >
-            {t("common.cancel")}
+            {t("feedback.cancel")}
           </button>
         </div>
       </Modal>
