@@ -273,6 +273,7 @@
       "generate": "Stundenzusammenfassung erstellen",
       "title": "Deine Lektionszusammenfassung",
       "preparing": "Persönliche Wiederholung wird erstellt…",
+      "preparingBody": "Deine Stunde ist beendet. Wir speichern deinen Fortschritt und bereiten eine Zusammenfassung deiner Übungen vor.",
       "failed": "Die Lektion endete, aber die Zusammenfassung ist noch nicht verfügbar.",
       "retry": "Zusammenfassung erneut erstellen",
       "strengths": "Was gut lief",
