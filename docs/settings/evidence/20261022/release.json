@@ -1,0 +1,116 @@
+{
+  "date": "2026-10-22",
+  "environment": "DEV",
+  "url": "https://gotit-dev.rbaseapp.com/settings",
+  "productionDeployed": false,
+  "autoDeployChanged": false,
+  "services": {
+    "core": {
+      "service": "srv-dar6gp942hec73d6b8bg",
+      "deployment": "dep-dbcjf3t9fdbs73a2o2pg",
+      "status": "live",
+      "commit": "4d8ec3efa0e1059aa6fb9eeb8dd0b4a5709f1e3c"
+    },
+    "backend": {
+      "service": "srv-dar6ei7f3r2c73balbp0",
+      "deployment": "dep-dbcjchnb9u1s73bsig6g",
+      "status": "live",
+      "commit": "05411acd751af48b9c5993fc4985df229caa687e"
+    },
+    "web": {
+      "service": "srv-dar6dng473hc73a0ns1g",
+      "deployment": "dep-dbcjjdgm7kps73bucnng",
+      "status": "live",
+      "commit": "fdb5ac63db6903b744b1cd90591690fb071a2f89"
+    }
+  },
+  "liveAcceptance": {
+    "environment": "DEV",
+    "origin": "https://gotit-dev.rbaseapp.com",
+    "checks": [
+      "POST auth/login: 200",
+      "GET auth/methods: 200",
+      "GET profile: 200",
+      "PATCH profile: 200",
+      "GET profile: 200",
+      "GET notifications/config: 200",
+      "PATCH notifications/preferences: 200",
+      "GET notifications/preferences: 200",
+      "PATCH profile: 200",
+      "GET profile: 200"
+    ],
+    "methods": [
+      {
+        "provider": "google",
+        "connected": false,
+        "available": true
+      },
+      {
+        "provider": "facebook",
+        "connected": false,
+        "available": true
+      },
+      {
+        "provider": "email",
+        "connected": true,
+        "available": true
+      }
+    ],
+    "deliveryConfigured": {
+      "email": true,
+      "push": true
+    },
+    "photoRoundTrip": true,
+    "reminderRoundTrip": true,
+    "fixtureCleanup": "runs in finally",
+    "realMessagesSent": false
+  },
+  "acceptanceFixturesRemaining": 0,
+  "ready": {
+    "web": 200,
+    "backend": 200,
+    "core": 200
+  },
+  "verification": {
+    "web": {
+      "typecheck": "passed",
+      "lint": "passed",
+      "vitest": 425,
+      "vitestFiles": 68,
+      "gateway": 23,
+      "build": "passed with existing warnings",
+      "playwrightCases": 4,
+      "viewportWidths": [
+        1920,
+        320
+      ]
+    },
+    "backend": {
+      "fastTests": 331,
+      "focusedPostgresCases": 12,
+      "migrationDownUpRehearsal": 1,
+      "additionalTestCommit": "31b88ec"
+    },
+    "core": {
+      "tests": 35,
+      "typecheck": "passed",
+      "build": "passed"
+    }
+  },
+  "liveBrowser": {
+    "ownerGoogleConnected": true,
+    "ownerFacebookConnected": false,
+    "ownerEmailConnected": false,
+    "appleAbsent": true,
+    "nineCategories": true,
+    "teacherPreferencesLoaded": true,
+    "ownerPreferencesMutatedByAcceptance": false
+  },
+  "limitations": [
+    "Exact pixel-identical fidelity across all nine source tabs remains partial; see design-qa.md",
+    "Real OAuth provider linking and inbox/physical-device Push receipt not verified",
+    "Existing source illustrations differ; unsupported security/extension/billing actions use actual supported destinations",
+    "New strings fully HE/EN; other six catalogs use English for new text"
+  ],
+  "migration": "1792645000000_settings-profile-and-reminders applied to gotit_dev"
+}
