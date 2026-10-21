@@ -21,6 +21,7 @@ import { ProgramUnitMap } from "../components/ProgramUnitMap";
 import { UnitLevels } from "../components/UnitLevels";
 import { UnitWordBrowser } from "../components/UnitWordBrowser";
 import { PathArtwork } from "../components/PathArtwork";
+import { ReadAloud } from "../components/CourseComposer";
 import {
   curriculumDisplayPacks,
   curriculumDisplayEntries,
@@ -73,7 +74,7 @@ export function StructuredEnglishPage() {
     >("starting");
   const [placementBand, setPlacementBand] = useState("A1");
   const [wordBatch, setWordBatch] = useState(0);
-  const [introduction, setIntroduction] = useState({ id: "", request: 0 });
+  const confirmedIntroduction = useRef<string | null>(null);
   const [recording, setRecording] = useState(false),
     [transcription, setTranscription] = useState<{
       id: string;
@@ -165,7 +166,8 @@ export function StructuredEnglishPage() {
     };
   }, [data?.enrolled, activityId, busy]);
   useEffect(() => {
-    if (!data?.enrolled || !["map", "words", "text"].includes(view)) return;
+    if (!data?.enrolled || !["map", "words", "study", "text"].includes(view))
+      return;
     let active = true;
     void curriculumApi
       .unit(unitId)
@@ -444,12 +446,29 @@ export function StructuredEnglishPage() {
     }
     const index = unit.words.findIndex((word) => !word.evidence);
     if (index >= 0) {
-      setWordBatch(Math.floor(index / 6));
-      setIntroduction((previous) => ({
-        id: unit.words[index].id,
-        request: previous.request + 1,
-      }));
+      go({ view: "study", unit: unitId, word: unit.words[index].id });
     }
+  };
+  const studyWord =
+    unit?.id === unitId
+      ? (unit.words.find((word) => word.id === params.get("word")) ??
+        unit.words.find((word) => !word.evidence))
+      : undefined;
+  const confirmAndPractise = async () => {
+    if (!studyWord || !selectedUnit?.unlocked || busy || recording) return;
+    if (studyWord.evidence || confirmedIntroduction.current === studyWord.id) {
+      void start(`words:${unitId}:recognition`);
+      return;
+    }
+    let confirmed = false;
+    await run(async () => {
+      const { revision, eventId } = await commandFor(`expose:${studyWord.id}`);
+      await curriculumApi.expose(revision, [studyWord.id], eventId);
+      confirmedIntroduction.current = studyWord.id;
+      await fresh();
+      confirmed = true;
+    });
+    if (confirmed) void start(`words:${unitId}:recognition`);
   };
   const mapReady = data?.enrolled && unit?.id === unitId && displayPack;
   const showMap = view === "map" && data?.enrolled;
@@ -471,13 +490,17 @@ export function StructuredEnglishPage() {
           ? t("structuredUi.activities")
           : view === "words"
             ? t("structuredUi.words")
-            : view === "attempt"
-              ? t("courses.homework")
-              : view === "teacher"
-                ? t("c1.teacher")
-                : view === "settings"
-                  ? t("lessonPrep.preferences")
-                  : t(`c1.tabs.${view}`, { defaultValue: t("c1.unitReading") });
+            : view === "study"
+              ? t("gameUi.studyTitle")
+              : view === "attempt"
+                ? t("courses.homework")
+                : view === "teacher"
+                  ? t("c1.teacher")
+                  : view === "settings"
+                    ? t("lessonPrep.preferences")
+                    : t(`c1.tabs.${view}`, {
+                        defaultValue: t("c1.unitReading"),
+                      });
   return (
     <div
       className={
@@ -770,18 +793,57 @@ export function StructuredEnglishPage() {
               </aside>
             </div>
           )}
+          {view === "study" && studyWord && selectedUnit?.unlocked && (
+            <div className="live-session">
+              <section className="memorization-card live-panel practice-card">
+                <div className="memorization-copy">
+                  <h1 ref={focusRef} tabIndex={-1} lang="en" dir="ltr">
+                    {studyWord.en}
+                  </h1>
+                  <p className="memorization-translation" lang="he" dir="rtl">
+                    {studyWord.he}
+                  </p>
+                  <ReadAloud
+                    text={studyWord.en}
+                    language="en"
+                    label={t("pathUi.listenWord")}
+                    className="button secondary memorization-audio"
+                    showLabel
+                  />
+                  {displayEntries.find((entry) => entry.id === studyWord.id)
+                    ?.exampleText && (
+                    <blockquote lang="en" dir="ltr">
+                      {
+                        displayEntries.find(
+                          (entry) => entry.id === studyWord.id,
+                        )!.exampleText
+                      }
+                    </blockquote>
+                  )}
+                </div>
+                <p className="study-evidence-note">{t("gameUi.studyNote")}</p>
+                <div className="memorization-actions">
+                  <button
+                    className="button primary"
+                    disabled={busy || recording}
+                    onClick={() => void confirmAndPractise()}
+                  >
+                    {t("c1.introduceWord")} · {t("game.startReview")}
+                  </button>
+                </div>
+              </section>
+            </div>
+          )}
           {view === "words" && unit?.id === unitId && (
             <>
               <UnitWordBrowser
-                key={`${unit.id}:${wordBatch}:${introduction.request}`}
+                key={`${unit.id}:${wordBatch}`}
                 packId={unit.id}
                 entries={displayEntries.slice(wordBatch * 6, wordBatch * 6 + 6)}
                 language="en"
                 supportLanguage="he"
                 busy={busy}
                 suppliedContent={suppliedContent}
-                initialEntryId={introduction.id}
-                focusKnown={introduction.request > 0}
                 onKnown={(entry) =>
                   void run(async () => {
                     const { revision, eventId } = await commandFor(
