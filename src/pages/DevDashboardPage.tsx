@@ -1,15 +1,13 @@
+import { LearningStatusSource } from "../components/LearningStatusSource";
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpenText,
   Check,
   ChevronLeft,
-  Flame,
-  Globe2,
   MessageCircle,
   Play,
   Sparkles,
-  Target,
   Gift,
   Zap,
 } from "lucide-react";
@@ -20,16 +18,22 @@ import { DashboardArticle } from "../components/DashboardArticle";
 import { DashboardQuickReview } from "../components/DashboardQuickReview";
 import { RemoteState } from "../components/RemoteState";
 import { useResource } from "../lib/useResource";
+import { useCachedResource } from "../lib/useCachedResource";
+import { resourceKey } from "../lib/resourceCache";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { courseApi, lessonLink } from "../lib/courses";
-import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
+import {
+  completedEnglishUnit,
+  resolvedEnglishUnit,
+  englishPathLevels,
+} from "../lib/englishPath";
+import { curriculumApi } from "../lib/structuredEnglish";
 import {
   chooseHomeLanguage,
   homeLanguage,
   selectedProgram,
 } from "../lib/learningNavigation";
 import { captureIsInactive } from "../lib/dashboardDesign";
-import { getLanguageOptions } from "../lib/languages";
 import {
   dashboardSchema,
   itemSchema,
@@ -83,14 +87,28 @@ function Segments({
 }
 
 export function DevDashboardPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { profile, user } = useApp();
   const language = useLearningLanguage();
   const [chosen, setChosen] = useState(() => homeLanguage(user));
   const code = chosen || language.code;
   const selected = selectedProgram(user, code);
+  const structured = useResource(
+    useCallback(async () => {
+      if (
+        code !== "en" ||
+        !["english-zero-c1", "english-path"].includes(selected ?? "")
+      )
+        return null;
+      const catalog = await curriculumApi.catalog();
+      return catalog.programs.length ? curriculumApi.get() : null;
+    }, [code, selected]),
+  );
   const [recentPage, setRecentPage] = useState(1);
-  const courses = useResource(useCallback(() => courseApi.list(), []));
+  const courses = useCachedResource(
+    useCallback(() => courseApi.list(), []),
+    resourceKey(user, "courses"),
+  );
   const dashboard = useResource(
     useCallback(
       async () => ({
@@ -183,18 +201,30 @@ export function DevDashboardPage() {
     (level) => level.packs,
   );
   const nextPack =
-    path.find((pack) => !completedEnglishUnit(pack)) ?? path.at(-1);
-  const isPath = selected === "english-path" && code === "en";
-  const isProgram = !!course || isPath;
-  const completed = course
-    ? course.progress.covered
-    : path.filter(completedEnglishUnit).length;
-  const total =
-    plan?.units.reduce((sum, unit) => sum + unit.lessons.length, 0) ??
-    path.length;
-  const programDone = course
-    ? !course.nextLesson
-    : isPath && total > 0 && completed >= total;
+    path.find((pack) => !resolvedEnglishUnit(pack)) ?? path.at(-1);
+  const isStructured = Boolean(structured.data);
+  const structuredUnit = structured.data?.units.find(
+    (unit) => unit.id === structured.data?.currentUnit,
+  );
+  const isPath = selected === "english-path" && code === "en" && !isStructured;
+  const isProgram = !!course || isPath || isStructured;
+  const completed = isStructured
+    ? structured.data!.units.filter(
+        (unit) => unit.waived || structured.data!.completed[`gate:${unit.id}`],
+      ).length
+    : course
+      ? course.progress.covered
+      : path.filter(completedEnglishUnit).length;
+  const total = isStructured
+    ? structured.data!.units.length
+    : (plan?.units.reduce((sum, unit) => sum + unit.lessons.length, 0) ??
+      path.length);
+  const programDone = isStructured
+    ? structured.data!.graduation.complete ||
+      structured.data!.navigationComplete === true
+    : course
+      ? !course.nextLesson
+      : isPath && total > 0 && path.every(resolvedEnglishUnit);
   const nextNumber =
     course?.nextLesson && plan
       ? plan.units
@@ -211,7 +241,11 @@ export function DevDashboardPage() {
         course.nextLesson.lessonIndex +
         1
       : Math.min(completed + 1, total);
-  const planLink = course ? `/courses/${course.id}` : "/english-learning";
+  const planLink = isStructured
+    ? "/english-learning"
+    : course
+      ? `/courses/${course.id}`
+      : "/english-learning";
   const lesson = course?.nextLesson
     ? lessonLink(course)
     : isPath && nextPack && !programDone
@@ -235,7 +269,6 @@ export function DevDashboardPage() {
     : d?.counts.total
       ? smart
       : "/vocabulary";
-  const names = new Map(getLanguageOptions(i18n.resolvedLanguage || "en"));
   const languages = new Set(
     [
       code,
@@ -256,7 +289,7 @@ export function DevDashboardPage() {
       (item) => item.id !== selected && item.activeVersion !== null,
     ) ?? [];
   const heading = isProgram
-    ? (plan?.title ?? t("englishPath.title"))
+    ? (structured.data?.program.title ?? plan?.title ?? t("englishPath.title"))
     : t(
         !d?.counts.total
           ? "newDashboard.firstWords"
@@ -279,60 +312,22 @@ export function DevDashboardPage() {
     <div
       className={`nd-dashboard${isProgram ? " nd-with-program" : " nd-words-only"}`}
     >
-      <div className="nd-strip">
-        <div className="nd-wrap">
-          {d && (
-            <>
-              <span className="nd-chip">
-                <Target size={16} />
-                {t("newDashboard.goal", {
-                  current: d.dailyGoal.current,
-                  value: d.dailyGoal.value,
-                  unit,
-                })}
-                <span className="nd-mini-track">
-                  <i
-                    style={{
-                      width: `${Math.min(100, (d.dailyGoal.current / Math.max(1, d.dailyGoal.value)) * 100)}%`,
-                    }}
-                  />
-                </span>
-              </span>
-              <span className="nd-chip">
-                <Flame size={16} />
-                {t("newDashboard.streak", {
-                  count: d.gamification.currentStreakDays,
-                })}
-              </span>
-            </>
-          )}
-          <label className="nd-language">
-            <Globe2 size={17} />
-            <span>
-              {names.get(profile.defaultTranslationLanguage || "he") ||
-                profile.defaultTranslationLanguage}{" "}
-              ←
-            </span>
-            <select
-              aria-label={t("vocabulary.sourceLanguage")}
-              value={code}
-              disabled={language.loading}
-              onChange={(event) => {
-                setChosen(event.target.value);
-                language.setCode(event.target.value);
-                chooseHomeLanguage(event.target.value, user);
-                setRecentPage(1);
-              }}
-            >
-              {[...languages].map((value) => (
-                <option key={value} value={value}>
-                  {names.get(value) || value}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </div>
+      <LearningStatusSource
+        goal={d?.dailyGoal}
+        streakDays={d?.gamification.currentStreakDays}
+        language={{
+          value: code,
+          options: [...languages],
+          translationCode: profile.defaultTranslationLanguage || "he",
+          disabled: language.loading,
+          onChange: (code) => {
+            setChosen(code);
+            language.setCode(code);
+            chooseHomeLanguage(code, user);
+            setRecentPage(1);
+          },
+        }}
+      />
       <div className="nd-wrap nd-content">
         <RemoteState
           loading={
@@ -402,17 +397,23 @@ export function DevDashboardPage() {
                     <small>
                       {t(
                         programDone
-                          ? "newDashboard.programComplete"
+                          ? structured.data?.pathChoices?.units.length ||
+                            structured.data?.pathChoices?.activities.length ||
+                            course?.skippedLessons?.length
+                            ? "pathChoices.routeEnd"
+                            : "newDashboard.programComplete"
                           : "newDashboard.nextLesson",
                       )}
                     </small>
                     <h2 dir="auto">
-                      {course?.nextLesson?.title ??
+                      {structuredUnit?.title ??
+                        course?.nextLesson?.title ??
                         nextPack?.title ??
                         t("ux.openMap")}
                     </h2>
                     <p dir="auto">
-                      {course?.nextLesson?.objective ??
+                      {structuredUnit?.goal ??
+                        course?.nextLesson?.objective ??
                         nextPack?.description ??
                         plan?.outcome}
                     </p>
@@ -570,31 +571,53 @@ export function DevDashboardPage() {
                       {
                         title: t("newDashboard.continueLesson"),
                         detail:
+                          structuredUnit?.title ??
                           course?.nextLesson?.title ??
                           nextPack?.title ??
                           t("ux.openMap"),
                         to: lesson,
                         Icon: Play,
+                        reward: d.gamification.dailyTaskRewards?.lesson,
                       },
                       {
                         title: t("newDashboard.talkToTeacher"),
                         detail: t("newDashboard.teacherHelp"),
                         to: `/private-lesson?${new URLSearchParams({ practice: "free", language: code, return: "/dashboard" })}`,
                         Icon: MessageCircle,
+                        reward: d.gamification.dailyTaskRewards?.conversation,
                       },
                       {
                         title: t("newDashboard.readArticle"),
                         detail: t("newDashboard.articleHelp"),
                         to: `/reading?${new URLSearchParams({ language: code })}`,
                         Icon: BookOpenText,
+                        reward: d.gamification.dailyTaskRewards?.reading,
                       },
-                    ].map(({ title, detail, to, Icon }) => (
+                    ].map(({ title, detail, to, Icon, reward }) => (
                       <li key={title}>
                         <Icon size={20} />
                         <div>
                           <b>{title}</b>
                           <small dir="auto">{detail}</small>
                         </div>
+                        <span
+                          className={`nd-task-xp${reward?.completed ? " completed" : ""}`}
+                          dir="ltr"
+                          title={t(
+                            reward?.completed
+                              ? "newDashboard.taskRewardClaimed"
+                              : "newDashboard.xpHelp",
+                          )}
+                        >
+                          {reward?.completed ? (
+                            <Check size={14} aria-hidden="true" />
+                          ) : (
+                            <Zap size={14} aria-hidden="true" />
+                          )}
+                          {reward
+                            ? `${reward.completed ? "" : "+"}${reward.xp} XP`
+                            : "XP"}
+                        </span>
                         <Link to={to}>{t("newDashboard.begin")}</Link>
                       </li>
                     ))}

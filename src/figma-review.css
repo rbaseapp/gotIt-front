@@ -3402,22 +3402,31 @@ html body.private-lesson-session-open .private-lesson-mute span {
 .personal-map .course-plan-overview {
   min-height: 498px;
   padding: 40px 28px;
-  padding-inline-end: calc(50% - 10px);
   padding-inline-start: 32px;
-  position: relative;
   border-radius: 24px;
   background: linear-gradient(90deg, #f1edff, #fdfcff 58%, white);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  align-items: center;
+  gap: 24px;
+}
+.personal-map .course-plan-content {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 16px;
+}
+.course-plan-content,
+.personal-map-word-preview {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .personal-map .course-plan-overview h2 {
   font-size: calc(48px * var(--text-scale, 1));
   line-height: 1.2;
   margin: 0;
 }
-.personal-map .course-plan-overview > p {
+.personal-map .course-plan-content > p {
   font-size: calc(32px * var(--text-scale, 1));
   line-height: 1.2;
 }
@@ -3429,21 +3438,16 @@ html body.private-lesson-session-open .private-lesson-mute span {
   color: var(--purple);
   font-size: calc(24px * var(--text-scale, 1));
 }
-.personal-map .course-plan-overview > .button {
+.personal-map .course-plan-content > .button {
   width: 100%;
   font-size: calc(30px * var(--text-scale, 1));
   min-height: 70px;
 }
-.personal-map .course-plan-overview > .personal-map-listen {
+.personal-map .course-plan-content > .personal-map-listen {
   min-height: 59px;
   background: white;
 }
 .personal-map-word-preview {
-  position: absolute;
-  inset-inline-end: 48px;
-  inset-inline-start: auto;
-  top: 118px;
-  width: 390px;
   min-height: 224px;
   padding: 50px 24px;
   border-radius: 80px;
@@ -3464,7 +3468,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
   color: var(--muted);
 }
 .personal-map .course-progress,
-.personal-map .course-plan-overview > .course-text-link {
+.personal-map .course-plan-content > .course-text-link {
   font-size: calc(18px * var(--text-scale, 1));
 }
 .personal-journey {
@@ -4203,11 +4207,11 @@ html[dir="ltr"] .auth-review .auth-submit {
   .personal-map .course-plan-overview {
     padding-block: 32px;
   }
-  .personal-map .course-plan-overview > p {
+  .personal-map .course-plan-content > p {
     margin: 0;
   }
-  .personal-map .course-plan-overview > .course-text-link,
-  .personal-map .course-plan-overview > .course-progress {
+  .personal-map .course-plan-content > .course-text-link,
+  .personal-map .course-plan-content > .course-progress {
     margin: 0;
   }
   .personal-journey li + li::before {

@@ -1,3 +1,4 @@
+import { courseLessonFromLocation } from "../lib/courseSelection";
 import {
   useCallback,
   useEffect,
@@ -40,12 +41,15 @@ import { TeacherVoicePreview } from "../components/TeacherVoicePreview";
 import { LessonWorkspace } from "../components/LessonWorkspace";
 import { LanguageCombobox } from "../components/LanguageCombobox";
 import { PrivateLessonText } from "../lib/privateLessonText";
+import { textDirection } from "../lib/textDirection";
 import { PrivateLessonFlow } from "../lib/privateLessonFlow";
+import { AdaptiveLessonVoice } from "../lib/adaptiveLessonVoice";
 import { Modal } from "../components/Modal";
 import { speak } from "../lib/utils";
 import { readLessonDraft, saveLessonDraft } from "../lib/lessonDraft";
 import { courseApi, type Course } from "../lib/courses";
 import { LessonSummary } from "../components/LessonSummary";
+import { curriculumApi } from "../lib/structuredEnglish";
 import { learningReturn } from "../lib/learningNavigation";
 import { LessonHomeworkCard } from "./HomeworkPage";
 import "../courses.css";
@@ -119,14 +123,28 @@ export function PrivateLessonPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("course");
+  const curriculumLessonId = searchParams.get("curriculum");
+  const curriculumPreview = useResource(
+    useCallback(
+      () =>
+        curriculumLessonId
+          ? curriculumApi.teacher(curriculumLessonId)
+          : Promise.resolve(null),
+      [curriculumLessonId],
+    ),
+  );
   const packId = searchParams.get("pack");
   useLayoutEffect(() => {
-    if (packId) window.scrollTo({ top: 0, behavior: "instant" });
-  }, [packId]);
+    if (packId || curriculumLessonId)
+      window.scrollTo({ top: 0, behavior: "instant" });
+  }, [packId, curriculumLessonId]);
   const minuteBalance = useResource(
     useCallback(
-      () => (packId ? billing.minutes() : Promise.resolve(null)),
-      [packId],
+      () =>
+        packId || curriculumLessonId
+          ? billing.minutes()
+          : Promise.resolve(null),
+      [packId, curriculumLessonId],
     ),
   );
   const [unit, setUnit] = useState<LessonUnit>();
@@ -148,6 +166,8 @@ export function PrivateLessonPage() {
     };
   }, [packId]);
   const [courseData, setCourseData] = useState<Course | null>(null);
+  const { lesson: displayedCourseLesson, selection: courseLessonSelection } =
+    courseLessonFromLocation(courseData, searchParams);
   const [courseError, setCourseError] = useState("");
   const [courseRetry, setCourseRetry] = useState(0);
   const { profile, retryProfile, user } = useApp();
@@ -173,12 +193,53 @@ export function PrivateLessonPage() {
   const [speechRate, setSpeechRate] =
     useState<PrivateLessonSpeechRate>("normal");
   const [lessonDurationMinutes, setLessonDurationMinutes] =
-    useState<PrivateLessonDurationMinutes>(5);
+    useState<PrivateLessonDurationMinutes>(() =>
+      curriculumLessonId &&
+      [5, 10, 15, 20].includes(Number(searchParams.get("minutes")))
+        ? (Number(searchParams.get("minutes")) as PrivateLessonDurationMinutes)
+        : 5,
+    );
   const selectedUnitStation = unit?.teacherStations?.find(
     (step) =>
       step.station ===
       (searchParams.get("station") || unit?.station || "supported"),
   );
+  const curriculumWords = useResource(
+    useCallback(
+      () =>
+        curriculumLessonId
+          ? curriculumApi.unit(curriculumLessonId.split("-L")[0])
+          : Promise.resolve(null),
+      [curriculumLessonId],
+    ),
+  );
+  const prepUnit = curriculumLessonId
+    ? curriculumPreview.data
+      ? {
+          title: curriculumPreview.data.title,
+          moduleNumber: Number(curriculumLessonId.match(/\d+/)?.[0] ?? 1),
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          words: (curriculumWords.data?.unit.words ?? [])
+            .slice(
+              curriculumLessonId.endsWith("L2") ? 6 : 0,
+              curriculumLessonId.endsWith("L2") ? 12 : 6,
+            )
+            .map((word) => ({ sourceText: word.en, translationText: word.he })),
+          introduced: 0,
+        }
+      : undefined
+    : unit;
+  const prepStation = curriculumLessonId
+    ? {
+        available: Boolean(
+          curriculumPreview.data && !curriculumPreview.data.complete,
+        ),
+        lockReason: null,
+        requiredWords: 0,
+      }
+    : selectedUnitStation;
+  const prepError = curriculumLessonId ? curriculumPreview.error : unitError;
   const plannedMinutes = packId
     ? (selectedUnitStation?.durationMinutes ?? 5)
     : lessonDurationMinutes;
@@ -261,6 +322,9 @@ export function PrivateLessonPage() {
   const textTurnRef = useRef<PrivateLessonText | undefined>(undefined);
   const flowRef = useRef<PrivateLessonFlow | undefined>(undefined);
   const microphoneMutedRef = useRef(false);
+  const adaptiveVoiceRef = useRef(new AdaptiveLessonVoice());
+  const resumeVoiceRef = useRef(false);
+  const lessonPausedRef = useRef(false);
   const turnId = useRef(0);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -278,6 +342,7 @@ export function PrivateLessonPage() {
   const translationRequested = useRef(false);
   const assistantBuffer = useRef("");
   const lessonStartedAt = useRef(0);
+  const lessonDeadlineRef = useRef(0);
   const finalizing = useRef(false);
   const personalizationTouched = useRef(false);
   const completionReason = useRef<"completed" | "stopped" | "disconnected">(
@@ -334,12 +399,15 @@ export function PrivateLessonPage() {
             ),
           ),
           completionReason: completionReason.current,
-          turns: turnsRef.current
-            .filter(
-              (turn): turn is Turn & { role: "learner" | "tutor" } =>
-                turn.role === "learner" || turn.role === "tutor",
-            )
-            .map(({ role, text }) => ({ role, text })),
+          turns:
+            activeSession.activity?.protocolVersion === "adaptive-v1"
+              ? []
+              : turnsRef.current
+                  .filter(
+                    (turn): turn is Turn & { role: "learner" | "tutor" } =>
+                      turn.role === "learner" || turn.role === "tutor",
+                  )
+                  .map(({ role, text }) => ({ role, text })),
         },
       );
       setCompletedLesson(lesson);
@@ -397,7 +465,7 @@ export function PrivateLessonPage() {
         },
       });
     }
-    if (activeResponse.current) {
+    if (activeResponse.current || activityBusyRef.current) {
       wrapPending.current = true;
       setStatus(t("privateLesson.endingAfterTurn"));
       return;
@@ -466,6 +534,8 @@ export function PrivateLessonPage() {
   ) => {
     const flow = flowRef.current;
     if (!flow || !activeSession.realtime.continuationEvent) return;
+    // Structured lessons never send the legacy autonomous continuation prompt.
+    if (activeSession.activity) return;
     flow.setPaused(
       phaseRef.current !== "active" ||
         microphoneMutedRef.current ||
@@ -489,10 +559,15 @@ export function PrivateLessonPage() {
   };
   const beginTimer = (activeSession: PrivateLessonSession) => {
     const startedAt = Date.now();
+    lessonDeadlineRef.current = startedAt + activeSession.lesson.durationSeconds * 1000;
     setRemaining(activeSession.lesson.durationSeconds);
     const tick = () => {
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-      setRemaining(Math.max(0, activeSession.lesson.durationSeconds - elapsed));
+      const secondsLeft = activeSession.activity?.protocolVersion === "adaptive-v1"
+        ? Math.max(0, Math.ceil((lessonDeadlineRef.current - Date.now()) / 1000))
+        : Math.max(0, activeSession.lesson.durationSeconds - elapsed);
+      setRemaining(secondsLeft);
+      if (activeSession.activity?.protocolVersion === "adaptive-v1" && secondsLeft <= activeSession.lesson.durationSeconds - activeSession.lesson.wrapUpAfterSeconds && phaseRef.current === "active") requestWrapUp(activeSession);
       continueLesson(activeSession);
       if (elapsed < activeSession.lesson.durationSeconds)
         timers.current.push(window.setTimeout(tick, 250));
@@ -531,6 +606,10 @@ export function PrivateLessonPage() {
     event: Record<string, unknown>,
     activeSession: PrivateLessonSession,
   ) => {
+    const spokenAnswer =
+      activeSession.activity?.protocolVersion === "adaptive-v1"
+        ? adaptiveVoiceRef.current.observe(event, activityRef.current)
+        : null;
     textTurnRef.current?.observe(event);
     const flow = flowRef.current;
     flow?.observe(event);
@@ -559,15 +638,38 @@ export function PrivateLessonPage() {
         setStatus(t("privateLesson.communicationError"));
     }
     if (
+      event.type === "output_audio_buffer.stopped" &&
+      activeSession.activity?.protocolVersion === "adaptive-v1" &&
+      phaseRef.current === "active" &&
+      !lessonPausedRef.current &&
+      resumeVoiceRef.current &&
+      !activityBusyRef.current &&
+      activityRef.current?.status === "active"
+    ) {
+      if (connectionRef.current?.setMicrophoneMuted(false)) {
+        microphoneMutedRef.current = false;
+        setMicrophoneMuted(false);
+      }
+    }
+    if (
       event.type === "conversation.item.input_audio_transcription.completed" &&
       typeof event.transcript === "string"
     ) {
       if (!activeSession.activity) addTurn("learner", event.transcript);
-      if (activeSession.activity) {
+      if (
+        activeSession.activity &&
+        (activeSession.activity.protocolVersion !== "adaptive-v1" ||
+          spokenAnswer)
+      ) {
         connectionRef.current?.setMicrophoneMuted(true);
         microphoneMutedRef.current = true;
         setMicrophoneMuted(true);
-        void submitActivity(activeSession, "answer", event.transcript, "voice");
+        void submitActivity(
+          activeSession,
+          "answer",
+          spokenAnswer?.text ?? event.transcript,
+          "voice",
+        );
       }
     }
     if (
@@ -622,6 +724,16 @@ export function PrivateLessonPage() {
 
   useEffect(() => {
     let active = true;
+    if (curriculumLessonId) {
+      const basic = ["Pre-A1", "A1"].includes(
+        curriculumPreview.data?.band ?? "Pre-A1",
+      );
+      setSupportLanguage("he");
+      setLessonMode(basic ? "absolute_beginner" : "standard");
+      setTeachingLanguage(basic ? "support" : "target");
+      setVocabularyMode("none");
+      setSpeechRate(basic ? "slow" : "normal");
+    }
     setSetupLoading(true);
     setError("");
     void getPrivateLessonSetup(
@@ -632,6 +744,7 @@ export function PrivateLessonPage() {
       .then((setup) => {
         if (!active) return;
         setLessonSetup(setup);
+        if (curriculumLessonId) return;
         const preparation =
           searchParams.get("prep") === "warmup"
             ? readLessonDraft(user, targetLanguage, courseId)
@@ -681,6 +794,8 @@ export function PrivateLessonPage() {
     courseData?.preferences.targetLanguageCode,
     searchParams,
     user,
+    curriculumLessonId,
+    curriculumPreview.data?.band,
   ]);
 
   const coursePreferences = courseData
@@ -724,10 +839,19 @@ export function PrivateLessonPage() {
 
   const startLesson = async (event: FormEvent) => {
     event.preventDefault();
+    // Failed capability loading must not silently downgrade a new lesson.
+    if (setupLoading || !lessonSetup) return;
+    if (courseId && !displayedCourseLesson) {
+      setError(t("pathChoices.selectionChanged"));
+      return;
+    }
     dispose();
     setPhase("preparing");
     setError("");
     setTurns([]);
+    adaptiveVoiceRef.current = new AdaptiveLessonVoice();
+    resumeVoiceRef.current = inputMode === "voice";
+    lessonPausedRef.current = false;
     turnsRef.current = [];
     setSession(undefined);
     setActivity(null);
@@ -753,11 +877,22 @@ export function PrivateLessonPage() {
     abortRef.current = controller;
     try {
       const created = await createPrivateLessonSession({
+        ...(lessonSetup?.interactionCapabilities?.adaptiveLessons
+          ? { interactionProtocol: "adaptive-v1" as const }
+          : {}),
         interactionMode:
           !courseId && !packId && searchParams.get("practice") === "free"
             ? "conversation"
             : "guided",
-        ...(courseId ? { courseId } : {}),
+        ...(courseId
+          ? {
+              courseId,
+              ...(courseLessonSelection
+                ? { courseLesson: courseLessonSelection }
+                : {}),
+            }
+          : {}),
+        ...(curriculumLessonId ? { curriculumLessonId } : {}),
         ...(packId
           ? {
               packId,
@@ -822,6 +957,19 @@ export function PrivateLessonPage() {
             setStatus(t("privateLesson.connected"));
             lessonStartedAt.current = Date.now();
             beginTimer(created);
+            if (created.activity?.protocolVersion === "adaptive-v1") {
+              void lessonActivityApi.get(created.lesson.id).then((reply) => {
+                if (controller.signal.aborted || controller !== abortRef.current) return;
+                if (reply.activity.remainingSeconds !== undefined) {
+                  lessonDeadlineRef.current = Date.now() + Math.min(created.lesson.durationSeconds, reply.activity.remainingSeconds) * 1000;
+                  setRemaining(reply.activity.remainingSeconds);
+                }
+              }).catch((reason) => {
+                if (controller.signal.aborted || controller !== abortRef.current) return;
+                if (reason instanceof ApiError && reason.code === "PRIVATE_LESSON_ACTIVITY_CONFLICT") requestWrapUp(created);
+                else setActivityError(errorMessage(reason));
+              });
+            }
           },
           onClose() {
             if (
@@ -847,6 +995,7 @@ export function PrivateLessonPage() {
             setTutorAudioLevel(level);
           },
           onMicrophoneUnavailable() {
+            resumeVoiceRef.current = false;
             setInputMode("text");
             setMicrophoneMuted(true);
             microphoneMutedRef.current = true;
@@ -972,6 +1121,7 @@ export function PrivateLessonPage() {
   };
   const toggleMicrophone = () => {
     const nextMuted = !microphoneMuted;
+    resumeVoiceRef.current = !nextMuted;
     if (connectionRef.current?.setMicrophoneMuted(nextMuted)) {
       microphoneMutedRef.current = nextMuted;
       if (nextMuted) flowRef.current?.microphoneMuted();
@@ -1004,6 +1154,7 @@ export function PrivateLessonPage() {
     const command = saved ?? {
       eventId: crypto.randomUUID(),
       revision: current.revision,
+      ...(current.activityId ? { activityId: current.activityId } : {}),
       action,
       ...(text
         ? action === "review"
@@ -1024,9 +1175,12 @@ export function PrivateLessonPage() {
       if (controller !== abortRef.current || controller?.signal.aborted)
         return false;
       activityRef.current = response.activity;
+      if (response.activity.protocolVersion === "adaptive-v1" && response.activity.remainingSeconds !== undefined)
+        lessonDeadlineRef.current = Date.now() + Math.min(activeSession.lesson.durationSeconds, response.activity.remainingSeconds) * 1000;
       setActivity(response.activity);
       setTranslatedTurn("");
       pendingActivity.current = null;
+      if (phaseRef.current !== "active") return true;
       if (action === "review") return true;
       if (text) addTurn("learner", text);
       if (activeResponse.current)
@@ -1036,7 +1190,14 @@ export function PrivateLessonPage() {
         ...response.tutorEvent,
         event_id: command.eventId,
       });
-      if (!sent) setActivityError(t("lessonUi.audioReplyUnavailable"));
+      if (sent) {
+        activeResponse.current = true;
+        setResponding(true);
+        setNeedsContinue(false);
+      } else {
+        flowRef.current?.sendFailed();
+        setActivityError(t("lessonUi.audioReplyUnavailable"));
+      }
       return true;
     } catch (reason) {
       if (controller !== abortRef.current || controller?.signal.aborted)
@@ -1060,11 +1221,17 @@ export function PrivateLessonPage() {
         }
       }
       setActivityError(errorMessage(reason));
+      setNeedsContinue(true);
       return false;
     } finally {
       if (controller === abortRef.current) {
         activityBusyRef.current = false;
         setActivityBusy(false);
+        if (wrapPending.current && !activeResponse.current)
+          requestWrapUp(
+            activeSession,
+            completionReason.current === "stopped" ? "stopped" : "completed",
+          );
       }
     }
   };
@@ -1122,6 +1289,7 @@ export function PrivateLessonPage() {
       return;
     }
     setInputMode("voice");
+    resumeVoiceRef.current = true;
     if (connection.setMicrophoneMuted(false)) {
       microphoneMutedRef.current = false;
       setMicrophoneMuted(false);
@@ -1129,6 +1297,7 @@ export function PrivateLessonPage() {
     }
   };
   const selectLessonInputMode = (mode: "voice" | "text") => {
+    resumeVoiceRef.current = mode === "voice";
     if (mode === "text") {
       connectionRef.current?.setMicrophoneMuted(true);
       microphoneMutedRef.current = true;
@@ -1345,13 +1514,24 @@ export function PrivateLessonPage() {
       language: lessonTargetLanguage,
       prep: "warmup",
     });
-    if (courseId) back.set("course", courseId);
+    if (courseId) {
+      back.set("course", courseId);
+      if (courseLessonSelection) {
+        back.set("version", String(courseLessonSelection.version));
+        back.set("unit", courseLessonSelection.unitKey);
+        back.set("lesson", String(courseLessonSelection.lessonIndex));
+      }
+    } else if (curriculumLessonId) back.set("curriculum", curriculumLessonId);
     else if (packId) back.set("pack", packId);
     else back.set("practice", "free");
     const returnTo = encodeURIComponent("/private-lesson?" + back);
-    if (courseId && courseData?.nextLesson) {
+    if (courseId && displayedCourseLesson) {
       navigate(
-        `/courses/${courseId}/units/${encodeURIComponent(courseData.nextLesson.unitKey)}/words?return=${returnTo}`,
+        `/courses/${courseId}/units/${encodeURIComponent(displayedCourseLesson.unitKey)}/words?return=${returnTo}`,
+      );
+    } else if (curriculumLessonId) {
+      navigate(
+        `/english-learning?unit=${encodeURIComponent(curriculumLessonId.split("-L")[0])}&tab=words&return=${returnTo}`,
       );
     } else if (packId) {
       navigate(
@@ -1368,9 +1548,11 @@ export function PrivateLessonPage() {
     searchParams.get("return"),
     courseId
       ? "/courses/" + courseId
-      : packId
-        ? "/english-learning?unit=" + packId
-        : "/dashboard",
+      : curriculumLessonId
+        ? "/english-learning?unit=" + curriculumLessonId.split("-L")[0]
+        : packId
+          ? "/english-learning?unit=" + packId
+          : "/dashboard",
   );
   if (phase === "ended" && reportRequested && completedLesson?.report)
     return (
@@ -1435,19 +1617,23 @@ export function PrivateLessonPage() {
 
   return (
     <div
-      className={`private-lesson-page live-page page-enter${packId ? " unit-prep-page" : ""}${sessionFullscreen ? " session-fullscreen" : ""}`}
+      className={`private-lesson-page live-page page-enter${packId || curriculumLessonId ? " unit-prep-page" : ""}${sessionFullscreen ? " session-fullscreen" : ""}`}
     >
-      {!packId && (
+      {!packId && !curriculumLessonId && (
         <section className="page-heading-row private-lesson-heading">
           <div>
             <p className="eyebrow">{t("privateLesson.eyebrow")}</p>
             <h1>
-              {courseId && courseData?.nextLesson
-                ? courseData.nextLesson.title
-                : t("ux.readyForLesson")}
+              {curriculumLessonId && curriculumPreview.data
+                ? curriculumPreview.data.title
+                : courseId && displayedCourseLesson
+                  ? displayedCourseLesson.title
+                  : t("ux.readyForLesson")}
             </h1>
             <p>
-              {courseId ? (
+              {curriculumLessonId ? (
+                t("c1.splitLesson")
+              ) : courseId ? (
                 <>
                   {t("courses.yourCourse")} ·{" "}
                   {languageOptions.find(
@@ -1467,7 +1653,7 @@ export function PrivateLessonPage() {
 
       {phase === "setup" || phase === "preparing" ? (
         <>
-          {packId ? (
+          {packId || curriculumLessonId ? (
             <div
               className="unit-lesson-prep canonical-page"
               data-figma-desktop="43:6205"
@@ -1482,12 +1668,14 @@ export function PrivateLessonPage() {
                     }).of(lessonTargetLanguage),
                   })}{" "}
                   ·{" "}
-                  {t("englishPath.unit", { number: unit?.moduleNumber ?? "…" })}{" "}
+                  {t("englishPath.unit", {
+                    number: prepUnit?.moduleNumber ?? "…",
+                  })}{" "}
                   · {t("lessonPrep.aiTeacher")}
                 </p>
               </header>
               <section className="ux-card mint">
-                <h2 dir="auto">{unit?.title}</h2>
+                <h2 dir="auto">{prepUnit?.title}</h2>
                 <p>
                   {t("privateLesson.durationMinutes", {
                     count: plannedMinutes,
@@ -1506,32 +1694,32 @@ export function PrivateLessonPage() {
                   <br />
                   <span
                     className="unit-lesson-word-preview"
-                    lang={unit?.targetLanguageCode}
+                    lang={prepUnit?.targetLanguageCode}
                     dir="auto"
                   >
-                    {unit?.words
+                    {prepUnit?.words
                       .slice(0, 5)
                       .map((word) => word.sourceText)
                       .join(" · ")}
                   </span>
                 </p>
-                {unitError && (
+                {prepError && (
                   <p role="alert" className="form-error">
-                    {unitError}
+                    {prepError}
                   </p>
                 )}
-                {!unit && !unitError && (
+                {!prepUnit && !prepError && (
                   <p role="status">{t("common.loading")}</p>
                 )}
-                {selectedUnitStation && !selectedUnitStation.available && (
+                {prepStation && !prepStation.available && (
                   <p role="status">
-                    {selectedUnitStation.lockReason === "previous_preparation"
+                    {prepStation.lockReason === "previous_preparation"
                       ? t("unitMap.previousPreparation")
                       : t("pathUi.remaining", {
                           count: Math.max(
                             0,
-                            selectedUnitStation.requiredWords -
-                              (unit?.introduced ?? 0),
+                            prepStation.requiredWords -
+                              (prepUnit?.introduced ?? 0),
                           ),
                         })}
                   </p>
@@ -1541,8 +1729,8 @@ export function PrivateLessonPage() {
                     className="button primary"
                     type="submit"
                     disabled={
-                      !unit ||
-                      !selectedUnitStation?.available ||
+                      !prepUnit ||
+                      !prepStation?.available ||
                       phase === "preparing" ||
                       setupLoading
                     }
@@ -1558,7 +1746,7 @@ export function PrivateLessonPage() {
                   className="button secondary"
                   onClick={() =>
                     navigate(
-                      `/english-learning?unit=${packId}&tab=words&return=${encodeURIComponent("/private-lesson?" + searchParams)}`,
+                      `/english-learning?unit=${curriculumLessonId ? curriculumLessonId.split("-L")[0] : packId}&tab=words&return=${encodeURIComponent("/private-lesson?" + searchParams)}`,
                     )
                   }
                 >
@@ -1579,10 +1767,10 @@ export function PrivateLessonPage() {
                 <label className="field">
                   <span>{t("privateLesson.supportLanguage")}</span>
                   <span className="unit-help-language">
-                    {unit?.supportLanguageCode &&
+                    {prepUnit?.supportLanguageCode &&
                       new Intl.DisplayNames([i18n.language], {
                         type: "language",
-                      }).of(unit.supportLanguageCode)}
+                      }).of(prepUnit.supportLanguageCode)}
                   </span>
                 </label>
                 <label className="field">
@@ -1608,7 +1796,7 @@ export function PrivateLessonPage() {
                   </p>
                   <details className="unit-lesson-words">
                     <summary>{t("ux.unitWords")}</summary>
-                    {unit?.words.map((word) => (
+                    {prepUnit?.words.map((word) => (
                       <p key={word.sourceText} dir="auto">
                         <strong>{word.sourceText}</strong> ·{" "}
                         {word.translationText}
@@ -1634,7 +1822,10 @@ export function PrivateLessonPage() {
               onSubmit={(event) => void startLesson(event)}
             >
               <section className="ux-card mint">
-                <h2 dir="auto">{courseData?.nextLesson?.objective}</h2>
+                <h2 dir="auto">{displayedCourseLesson?.objective}</h2>
+                {courseData && !displayedCourseLesson && (
+                  <p role="alert">{t("pathChoices.selectionChanged")}</p>
+                )}
                 <p>
                   {t("privateLesson.durationMinutes", {
                     count: lessonDurationMinutes,
@@ -1646,7 +1837,7 @@ export function PrivateLessonPage() {
                       (version) => version.version === courseData.activeVersion,
                     )
                     ?.plan.units.find(
-                      (unit) => unit.key === courseData.nextLesson?.unitKey,
+                      (unit) => unit.key === displayedCourseLesson?.unitKey,
                     )
                     ?.vocabulary.slice(0, 5)
                     .join(" · ")}
@@ -1666,7 +1857,7 @@ export function PrivateLessonPage() {
                 <button
                   className="button primary"
                   disabled={
-                    !courseData?.nextLesson ||
+                    !displayedCourseLesson ||
                     setupLoading ||
                     phase === "preparing" ||
                     (lessonTeachingLanguage === "support" &&
@@ -1769,7 +1960,7 @@ export function PrivateLessonPage() {
               <button
                 type="button"
                 className="button secondary"
-                disabled={setupLoading || !courseData?.nextLesson}
+                disabled={setupLoading || !displayedCourseLesson}
                 onClick={warmup}
               >
                 {t("ux.warmup")}
@@ -2712,7 +2903,7 @@ export function PrivateLessonPage() {
           >
             <div className="modal-body">{teacherChoices}</div>
           </Modal>
-          {!packId && (
+          {!packId && !curriculumLessonId && (
             <section className="private-lesson-history live-panel">
               <div className="private-lesson-history-heading">
                 <div>
@@ -2880,7 +3071,15 @@ export function PrivateLessonPage() {
               }
               onAction={(action) =>
                 activity
-                  ? void submitActivity(session, action)
+                  ? pendingActivity.current
+                    ? void submitActivity(
+                        session,
+                        pendingActivity.current.action,
+                        pendingActivity.current.answer ??
+                          pendingActivity.current.correctedAnswer,
+                        pendingActivity.current.channel,
+                      )
+                    : void submitActivity(session, action)
                   : requestConversationHelp(action)
               }
               onMicrophone={() => void enableLessonMicrophone()}
@@ -2904,6 +3103,7 @@ export function PrivateLessonPage() {
                   : requestTranslation(session)
               }
               onPause={(paused) => {
+                lessonPausedRef.current = paused;
                 connectionRef.current?.setMicrophoneMuted(true);
                 microphoneMutedRef.current = true;
                 setMicrophoneMuted(true);
@@ -3091,7 +3291,13 @@ export function PrivateLessonPage() {
                           className="lesson-current-message"
                           aria-live="polite"
                         >
-                          <p dir="auto">
+                          <p
+                            dir={textDirection(
+                              turns
+                                .filter((turn) => turn.role === "tutor")
+                                .at(-1)?.text ?? "",
+                            )}
+                          >
                             {
                               turns
                                 .filter((turn) => turn.role === "tutor")
@@ -3186,7 +3392,7 @@ export function PrivateLessonPage() {
                               <small>
                                 {t(`privateLesson.roles.${turn.role}`)}
                               </small>
-                              <p dir="auto">{turn.text}</p>
+                              <p dir={textDirection(turn.text)}>{turn.text}</p>
                             </div>
                           ))
                       ) : (

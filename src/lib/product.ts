@@ -263,6 +263,8 @@ export const sessionSchema = z.object({
   xpEarned: count,
   algorithmVersion: z.string(),
   curriculumOrder: z.boolean().optional(),
+  curriculumUnitId: z.string().max(40).optional(),
+  curriculumTitle: z.string().max(500).optional(),
   scope: z
     .object({
       type: z.enum(["pack", "track", "topic"]),
@@ -307,6 +309,7 @@ export const wordPackSchema = z.object({
   progress: z.object({
     introduced: count.optional(),
     unitCompleted: z.boolean().optional(),
+    pathSkipped: z.boolean().optional(),
     linked: count,
     new: count,
     learning: count,
@@ -513,6 +516,13 @@ export const dashboardSchema = z.object({
     currentStreakDays: count,
     longestStreakDays: count,
     lastActivityDate: z.string().nullable(),
+    dailyTaskRewards: z
+      .object({
+        lesson: z.object({ xp: count, completed: z.boolean() }),
+        conversation: z.object({ xp: count, completed: z.boolean() }),
+        reading: z.object({ xp: count, completed: z.boolean() }),
+      })
+      .optional(),
   }),
   weeklyActivity: z.object({
     timezone: z.string(),
@@ -609,6 +619,8 @@ export const labels: Record<string, string> = new Proxy(
   },
 );
 export function errorMessage(reason: unknown): string {
+  if (reason instanceof ApiError && reason.code.startsWith("CURRICULUM_"))
+    return i18n.t(`c1.errors.${reason.code}`, { defaultValue: reason.message });
   const localizedCodes = new Set([
     "NO_ELIGIBLE_ITEMS",
     "SPEECH_NOT_CONFIGURED",

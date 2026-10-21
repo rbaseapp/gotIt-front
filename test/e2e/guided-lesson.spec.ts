@@ -26,6 +26,7 @@ async function fixture(
     allowMicrophone?: boolean;
     conversation?: boolean;
     legacy?: boolean;
+    adaptive?: boolean;
   } = {},
 ) {
   const commands: Array<Record<string, unknown>> = [];
@@ -179,6 +180,7 @@ async function fixture(
                 guidedTasks: true,
                 textAnswers: true,
                 billingPause: false,
+                adaptiveLessons: Boolean(options.adaptive),
               },
             }),
       };
@@ -221,6 +223,16 @@ async function fixture(
           ? null
           : {
               ...activity,
+              ...(options.adaptive
+                ? {
+                    protocolVersion: "adaptive-v1",
+                    activityId: "task-0",
+                    status: "active",
+                    reason: "opening",
+                    remainingSeconds: 300,
+                    completedActivities: 0,
+                  }
+                : {}),
               interactionMode: options.conversation ? "conversation" : "guided",
             },
       };
@@ -251,6 +263,8 @@ async function fixture(
           tasks: [],
         },
       };
+    else if (path.endsWith("/activity") && route.request().method() === "GET")
+      payload = { activity: { ...activity, protocolVersion: "adaptive-v1", activityId: "task-0", status: "active", reason: "opening", remainingSeconds: 280, completedActivities: 0 }, tutorEvent: guidedSession.realtime.openingEvent };
     else if (
       path.endsWith("/activity") &&
       route.request().method() === "POST"
@@ -266,6 +280,16 @@ async function fixture(
       payload = {
         activity: {
           ...activity,
+          ...(options.adaptive
+            ? {
+                protocolVersion: "adaptive-v1",
+                activityId: "task-1",
+                status: "active",
+                reason: "progress",
+                remainingSeconds: 270,
+                completedActivities: 1,
+              }
+            : {}),
           revision: 1,
           stage: "chat",
           tutorText: "יפה, ננסה בקשה חדשה.",
@@ -282,6 +306,50 @@ async function fixture(
   });
   return commands;
 }
+test("adaptive text lesson binds a stable retry to its server task without microphone access", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const commands = await fixture(page, { adaptive: true });
+  let requestedProtocol: string | undefined;
+  page.on("request", (request) => {
+    if (
+      new URL(request.url()).pathname.endsWith(
+        "/private-lessons/realtime-sessions",
+      )
+    )
+      requestedProtocol = request.postDataJSON().interactionProtocol;
+  });
+  await page.goto(`/private-lesson?pack=${id}`);
+  await page.getByLabel(he.lessonUi.answerMode).selectOption("text");
+  await page
+    .getByRole("button", { name: he.lessonPrep.startWithTeacher, exact: true })
+    .click();
+  await expect(page.locator(".lesson-session")).toBeVisible();
+  expect(requestedProtocol).toBe("adaptive-v1");
+  await expect(page.locator(".lesson-room-timer")).toHaveText(/4:\d{2}/);
+  await page.getByLabel(he.lessonUi.yourAnswer).fill("I want tea.");
+  await page
+    .getByRole("button", { name: he.lessonUi.send, exact: true })
+    .click();
+  await expect(page.locator(".lesson-room-composer .form-error")).toBeVisible();
+  await page
+    .getByRole("button", { name: he.lessonUi.send, exact: true })
+    .click();
+  await expect(page.getByLabel(he.lessonUi.yourAnswer)).toHaveValue("");
+  expect(commands).toHaveLength(2);
+  expect(commands[0].activityId).toBe("task-0");
+  expect(commands[1]).toEqual(commands[0]);
+  expect(
+    await page.evaluate(() =>
+      Reflect.get(window, "gotitTestMicrophoneCaptures"),
+    ),
+  ).toBe(0);
+  await page.screenshot({
+    path: "output/playwright/adaptive-lesson-text-390.png",
+    animations: "disabled",
+  });
+});
 for (const width of [320, 390, 1487])
   test(`guided lesson ${width}: canonical geometry, text without microphone, stable retry`, async ({
     page,

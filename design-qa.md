@@ -1,99 +1,57 @@
-# Home layout verification — 2026-10-07
+﻿# Settings design QA - 2026-10-14
 
-final result: passed
+Source visual truth: owner-supplied conversation attachment Image 1 (2560x2260
+source pixels, displayed at 1667x1472). Implementation:
+docs/settings/evidence/desktop-he.jpg, 1667x1472 browser/CSS pixels, density 1.
+The browser's 15px scrollbar gutter is excluded when judging content alignment.
+Profile default state; actual/demo identity intentionally differs from Shay.
+The supplied source and rendered implementation were reviewed for full composition
+and profile/connection/sidebar detail. Focused evidence: profile-detail.jpg in the
+same evidence directory, cropped from the actual browser screenshot. This is not
+a constructed mock. Mobile: mobile-he.jpg and mobile-en.jpg, 320x780 CSS pixels,
+client/scroll 305/305. No source mobile artboard was supplied.
 
-## Source and captures
+Findings and iteration history:
+- P1 resolved: legacy shell max-width reduced sidebar/content proportions. Scoped
+  selector specificity now removes that limit for settings only. Final sidebar
+  starts at x20, content x372, roughly 20/80 columns, 30px gap.
+- P2 resolved: LTR email collided with RTL pencil. Field direction now follows
+  its container and editing affordance remains separate.
+- P2 resolved: generic provider symbols replaced with actual Google identity and
+  Simple Icons Apple assets, bundled locally.
+- P2 resolved: separate local-name note inflated the card. Small inline note now
+  preserves accurate tab-local scope and the intended field-row density.
+- P2 resolved: category-resource failure/loading exposed misleading save. Save
+  is now blocked until initial read succeeds; read failure offers retry.
+Post-fix desktop and profile-detail evidence is saved above. No actionable
+P0/P1/P2 finding remains within the owner-approved supported-settings scope.
 
-- Visual truth: the user's attached screenshot of the normal home (original 2836 × 1326 pixels; chat preview 2048 × 958). No local attachment path was supplied.
-- Normal program rendering: `test-results/home-program-reference-size.png`.
-- Vocabulary rendering: `test-results/home-words-reference-size.png`.
-- Responsive captures: `test-results/dashboard-390.png`, `test-results/dashboard-1024.png`, `test-results/dashboard-1440.png`.
-- Matched desktop captures: 2836 × 1326 CSS pixels, deviceScaleFactor 1; both images were opened together in one comparison input. Both use Hebrew, an active unscoped smart review, 71 due words, daily progress 16/20, a 2-day streak and the large-text preference.
-- Chrome preview was additionally inspected through Browser Use. The host's devicePixelRatio is 1.75; physical viewport 4963 × 2321 corresponds to CSS viewport 2836 × 1326. Temporary viewport overrides are reset after inspection.
-- Local preview fixtures are isolated in ignored `test-results/home-preview.config.ts`; they do not affect production routes or APIs.
+Required fidelity surfaces:
+- Typography: Assistant, 40px heading, 21px navigation/fields, 16-18px supporting
+  copy; heavy labels, mobile scaling and localized wrapping inspected.
+- Layout: cream full-width surface, green left sidebar, 26px cards, 60px controls,
+  circular field icons, profile/avatar/connection order and geometry match.
+  Existing canonical shared header is retained; its height differs from the mock.
+- Tokens: #faf8ef page, #fffefa cards, #105c49 green, #132e50 headings,
+  #e0f2e9 icon circles, #e3e7dc borders.
+- Assets: existing GotIt logo/Mohi, actual provider brands, existing Lucide UI
+  icons. No rasterized UI, custom icon drawings or placeholder assets.
+- Copy/data: actual profile/email/timezone; all supported settings categories.
+  Owner selected explicit unavailability for missing email/avatar/linking APIs.
+  Display name stays tab-local; help opens existing help, not a fictional chatbot.
 
-## Comparison
+Interactions: local actual-component/demo timezone unlock/focus, UTC change,
+explicit save/success announcement; category navigation/current item; shared
+modal Escape/close. Hebrew RTL and English LTR at 320px have no document overflow.
+Final browser console: no error/warning entries. Eight focused regressions cover
+rollout, hashes, locale content, profile failure, retries and save isolation.
+Full historical browser sweep, physical devices and live provider/identity writes
+were not performed.
 
-The normal program and vocabulary renders now share the white hero, large learning illustration on the left, content and actions on the right, matching typography, spacing, corner radii, and the two illustrated cards underneath. The active-session hero bounds were equal in the matched desktop capture test. The three source raster assets are reused without modification.
-
-Focused inspection covered the hero artwork and text, primary-button width, card images and action areas. Context-specific labels, icons, counts and destinations intentionally follow real learning state: vocabulary review keeps its vocabulary destination; program continuation keeps its program destination. These content differences are not represented as fake program state.
-
-## Findings and verification history
-
-- Previous P1: vocabulary mode used a small illustration, a full-width stacked CTA and a one-column secondary section. Fixed by rendering the same illustrated structure in both contexts and removing the vocabulary-only CSS overrides.
-- Previous P2: program-data arrival changed which illustration and card structure existed. Fixed by making those elements unconditional. A delayed-course-response test confirms that the large artwork stays in place before and after program data arrives.
-- Post-fix: no actionable P0/P1/P2 visual findings in the shared layout. Both reference-sized captures and the 390/1024/1440 responsive captures were inspected.
-- 16 related navigation/responsive tests passed across the initial run and corrected test rerun. The corrections were a fixture-name capitalization expectation and comparing artwork geometry rather than the naturally varying height of different text.
-- An additional matched-state screenshot test passed, including equal hero bounds across program and vocabulary contexts.
-- TypeScript, targeted ESLint, formatting, diff whitespace checks and the production build passed.
-- Navigation tests cover word practice, private lessons and language changes, including Hebrew, English and Arabic. Browser console inspection of the local preview returned no errors.
-
-## Limits
-
-The visual review uses local fixture data. Deployment to the development or production site was not part of this task. Mobile follows the existing normal program layout, which hides the desktop illustration and uses a compact card. User data, font rendering and text-size preferences can affect text wrapping while sharing the same layout rules.
-
----
-
-## Previous QA record (preserved)
-
-# My Map implementation QA
-
-**Final result: passed**
-
-## Visual evidence
-
-- Closed source: `C:/Users/Ori/.codex/generated_images/01a11573-9293-7aa0-8d0a-e7ad3db8f6ce/exec-b89437db-1c60-406a-9b1b-55e8701d81f9.png` (1487 × 1058).
-- Expanded reference: `C:/Users/Ori/.codex/generated_images/01a11573-9293-7aa0-8d0a-e7ad3db8f6ce/exec-4c0bfb9c-f5be-4d30-91b4-d4aedf9cb759.png` (1100 × 1429).
-- Final browser capture: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/closed-final.png` (1487 × 1058).
-- Full closed comparison: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/comparison-final.png`.
-- Expanded comparison: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/expanded-comparison.png`.
-- Focused action comparison: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/actions-comparison.png`; reviewed entry/disclosure separation, outlines, text and icons.
-- Post-meeting desktop capture: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/map-after-meeting-1487.png` (1487 × 1442 full page).
-- Post-meeting mobile capture: `C:/Users/Ori/.codex/generated_images/gotit-unit-map-qa/map-after-meeting-320.png` (320 × 2064 full page).
-
-The desktop CSS viewport is 1487 × 1058, density 1. Closed images were compared at equal pixels without scaling. The expanded concept has a different canvas width and represents illustrative copy, not the same runtime state; its comparison establishes hierarchy and disclosure/task patterns, not exact full-frame geometry. Expanded screenshots exceed viewport height because the lists are open. Responsive checks also used 390 and 768 px widths. Browser screenshots were generated by the existing Playwright/Chrome test workflow. The local preview was additionally opened and exercised in the user's Chrome through Computer Use, with no browser error logs.
-
-## Comparison history
-
-1. Initial comparison (`comparison-initial.png` in the same evidence directory): P2 entry-button outlines lacked the green contrast of the accepted image; P2 follow-up hero inherited the words-only green surface; P2 desktop hero occupied too much height. Result at this iteration: blocked.
-2. Applied green secondary outlines, preserved the lavender next-step surface for follow-up practice, increased mobile click targets to 44 px, and reduced the desktop hero's grid, spacing and CTA size. Moved its words link alongside the last copy row rather than allocating another grid row.
-3. Recaptured at the same viewport. `comparison-final.png` shows the closed page fits 1487 × 1058 and keeps the original map architecture. Entry buttons remain compact and separate from disclosure arrows. No actionable P0/P1/P2 differences remain.
-
-## Required fidelity surfaces
-
-- **Typography:** existing Rubik family and RTL hierarchy retained; compact row actions use 16 px text. Desktop titles and subtitles remain legible; mobile text wraps without horizontal overflow.
-- **Spacing/layout:** original navigation, title, tabs, level selector, unit/progress card, hero, completed activity entry, word activity, teacher activity and future-unit entry retained. Both details start closed. Content-dependent completed counts and unit titles differ from the illustrative source; this is expected live-data behavior.
-- **Colors/tokens:** existing brand green, lavender hero and muted text preserved. Completed/current/future tasks use green/purple/muted semantic states; state is also communicated by text and icon, not color alone.
-- **Assets:** original `PathArtwork` raster assets and existing GotIt logo retained. New standard disclosure/check/pencil/lock controls use the installed Lucide icon library. The real logo/navigation are preserved instead of copying generated-image distortions.
-- **Copy:** Hebrew and English strings and all six additional supported locales supplied. Meeting labels and durations reflect the server-selected checkpoint. After a meeting, the hero recommends its follow-up rather than another meeting. Real exercises display their own objectives.
-- **Accessibility/interaction:** native buttons/links, separate disclosure labels, `aria-expanded`/`aria-controls`, focus outline, status/error announcements, disabled meeting entry and no link on a locked exercise. Mobile entry controls have at least 44 px height. Full-page screenshots can show the fixed mobile navigation within the long capture; actual viewport interaction/overflow checks passed.
-
-## Business rules implemented
-
-1. The server selects the next available checkpoint: supported (10 words or the smaller unit size), midpoint (half the unit), review (all words). Word thresholds alone cannot skip a previous checkpoint or its required follow-up.
-2. A meeting checkpoint requires a completed saved report with evidence quality other than `insufficient`. Greetings/report failures do not advance it. Completion is distinct from mastery and from completion of its follow-up.
-3. Unit follow-up is grounded in saved lesson evidence: 3–6 tasks, 2–5 minutes. It is blocked until the meeting report is completed. Opening its disclosure prepares a pending assignment inline, with retry using the same idempotent command.
-4. Only the first unfinished task can receive a normal action. Completed tasks can be reviewed; review does not reset original attempts, completion or advancement. Locked tasks have no entry action, and API guards also reject direct attempts.
-5. The earliest genuine meeting with an assignment remains the checkpoint. Repeating a meeting does not replace earned progress. Historical meetings without an assignment remain explicit rather than being silently marked prepared.
-6. Stage word disclosure is scoped to the current checkpoint and its current batch of up to six words. The full words/practice browser remains accessible through its separate entry button. Teacher session vocabulary also uses the chosen checkpoint's introduced words.
-7. Whole-unit completion requires all words completed and all three meeting preparations completed; knowing the vocabulary alone no longer silently selects the next unit.
-
-## Verification
-
-- Backend unit suite: 220 tests passed; dedicated PostgreSQL course and unit-map persistence checks passed using disposable local Docker databases.
-- Frontend map/lesson preparation workflow: 17 Chrome E2E tests passed, including closed/expanded lists, word browser entry, completed/current/locked tasks, inline preparation/retry, direct links, error states and mobile overflow.
-- Homework review and lesson preparation regression tests passed.
-- Complete frontend unit run: 43 files, 228 tests passed. Inline preparation was rechecked after removing unnecessary manual callback memoization; the affected four browser scenarios passed again.
-- Frontend and backend production builds passed. Gateway/source-map security suite: 20 tests passed after restoring installed dependencies to the existing lockfile versions.
-- Real paid voice/provider calls were not made; generation, scoring and browser edge cases used deterministic fixtures. Production provider configuration remains a deployment-time dependency.
-
-## Implementation checklist
-
-- [x] Preserve map architecture and word practice.
-- [x] Separate entry buttons and disclosure arrows.
-- [x] Enforce meeting/preparation/task prerequisites in the backend.
-- [x] Support safe repetition and persisted progress.
-- [x] Verify responsive rendering, routes and error states.
-- [x] Compare the rendered implementation with the accepted concept after fixes.
+P3 follow-up: retained repository logo and Mohi artwork differ from the source's
+small brand-art details (wand/book versus bulb). Canonical shared header is the
+existing project design. Exact source artwork would allow verbatim replacement.
+No source image file is archived locally; selected source remains the user's
+conversation attachment. No claim of a side-by-side comparison file is made.
 
 final result: passed

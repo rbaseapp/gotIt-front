@@ -217,8 +217,35 @@ it("renders canonical conversation turns and avoids duplicating the current tuto
   };
   mount(undefined, undefined, activity);
   expect(screen.getAllByText("What do you enjoy doing?")).toHaveLength(1);
-  expect(screen.getByText("I enjoy reading.")).toHaveAttribute("dir", "auto");
+  expect(screen.getByText("I enjoy reading.")).toHaveAttribute("dir", "ltr");
 });
+
+it.each([
+  ["Great! עכשיו נתרגל יחד משפט קצר בעברית עם המילה walk.", "rtl"],
+  ["שלום! Let's practice a short sentence together in English.", "ltr"],
+  ["123 — שָׁלוֹם! עכשיו נמשיך ללמוד יחד.", "rtl"],
+  ["Good! الآن نتدرب على جملة جديدة مع المعلمة.", "rtl"],
+  ["お茶をお願いします。", "ltr"],
+  ["123… 🎉", "auto"],
+])(
+  "uses the content's dominant script for lesson messages: %s",
+  (text, dir) => {
+    mount(undefined, undefined, {
+      ...guidedSession.activity!,
+      tutorText: text,
+      question: "OK? עכשיו נסה לענות על השאלה בעברית.",
+      feedback: "Nice! התשובה שלך נכונה ומדויקת מאוד.",
+      turns: [],
+    });
+    expect(screen.getByText(text)).toHaveAttribute("dir", dir);
+    expect(
+      screen.getByText("OK? עכשיו נסה לענות על השאלה בעברית."),
+    ).toHaveAttribute("dir", "rtl");
+    expect(
+      screen.getByText("Nice! התשובה שלך נכונה ומדויקת מאוד."),
+    ).toHaveAttribute("dir", "rtl");
+  },
+);
 
 it("lets the learner write during teacher playback but prevents an unanswered send", () => {
   const answer = vi.fn(async () => true);

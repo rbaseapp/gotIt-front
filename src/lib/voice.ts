@@ -34,6 +34,7 @@ export async function recordVoice(
   signal: AbortSignal,
   releaseSignal: AbortSignal,
   maximumSeconds = 6,
+  extended = false,
 ): Promise<string> {
   if (
     !window.isSecureContext ||
@@ -71,7 +72,7 @@ export async function recordVoice(
         () => {
           if (recorder.state !== "inactive") recorder.stop();
         },
-        Math.min(15, maximumSeconds) * 1000,
+        Math.min(extended ? 90 : 15, maximumSeconds) * 1000,
       );
       const clean = () => {
         clearTimeout(timer);
@@ -82,7 +83,7 @@ export async function recordVoice(
       releaseSignal.addEventListener("abort", release, { once: true });
       recorder.ondataavailable = (event) => {
         size += event.data.size;
-        if (size > 1000000) {
+        if (size > (extended ? 6000000 : 1000000)) {
           abort();
           return;
         }
@@ -107,7 +108,10 @@ export async function recordVoice(
     const decoded = await audioContext.decodeAudioData(
       await blob.arrayBuffer(),
     );
-    const duration = Math.min(decoded.duration, Math.min(15, maximumSeconds));
+    const duration = Math.min(
+      decoded.duration,
+      Math.min(extended ? 90 : 15, maximumSeconds),
+    );
     if (duration < 0.1) throw new Error(i18n.t("voiceErrors.tooShort"));
     const offline = new OfflineAudioContext(
       1,

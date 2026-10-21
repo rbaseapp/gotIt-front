@@ -1,10 +1,17 @@
+import { myWordsDesignEnabled } from "./lib/myWords";
 import { lazy, Suspense, useEffect } from "react";
+const DevMyWordsPage = lazy(() =>
+  import("./pages/DevMyWordsPage").then((module) => ({
+    default: module.DevMyWordsPage,
+  })),
+);
 import { LoaderCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "./context/AppContext";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { dashboardDesignEnabled } from "./lib/dashboardDesign";
+import { practiceDesignEnabled } from "./lib/practiceDesign";
 import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
@@ -48,6 +55,11 @@ const DevDashboardPage = lazy(() =>
 const LiveLearnPage = lazy(() =>
   import("./pages/LiveLearnPage").then((m) => ({ default: m.LiveLearnPage })),
 );
+const DevPracticePage = lazy(() =>
+  import("./pages/DevPracticePage").then((m) => ({
+    default: m.DevPracticePage,
+  })),
+);
 const AccountPage = lazy(() =>
   import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })),
 );
@@ -59,6 +71,11 @@ const SmartPracticeReadyPage = lazy(() =>
 const LiveVocabularyPage = lazy(() =>
   import("./pages/LiveVocabularyPage").then((m) => ({
     default: m.LiveVocabularyPage,
+  })),
+);
+const DevFocusGamePage = lazy(() =>
+  import("./pages/DevFocusGamePage").then((m) => ({
+    default: m.DevFocusGamePage,
   })),
 );
 const LiveGameSessionPage = lazy(() =>
@@ -77,13 +94,18 @@ const TransferPage = lazy(() =>
 const WordPacksPage = lazy(() =>
   import("./pages/WordPacksPage").then((m) => ({ default: m.WordPacksPage })),
 );
-const EnglishLearningPathPage = lazy(() =>
-  import("./pages/EnglishLearningPathPage").then((m) => ({
-    default: m.EnglishLearningPathPage,
+const EnglishLearningEntryPage = lazy(() =>
+  import("./pages/EnglishLearningEntryPage").then((m) => ({
+    default: m.EnglishLearningEntryPage,
   })),
 );
 const MinutesPage = lazy(() =>
   import("./pages/MinutesPage").then((m) => ({ default: m.MinutesPage })),
+);
+const StructuredEnglishPage = lazy(() =>
+  import("./pages/StructuredEnglishPage").then((m) => ({
+    default: m.StructuredEnglishPage,
+  })),
 );
 const BillingPage = lazy(() =>
   import("./pages/BillingPage").then((m) => ({ default: m.BillingPage })),
@@ -197,9 +219,13 @@ export default function App() {
             element={
               mode === "live" ? (
                 <LiveGameAccess>
-                  <LiveGameSessionPage
-                    key={location.pathname + location.search}
-                  />
+                  {practiceDesignEnabled() ? (
+                    <DevFocusGamePage />
+                  ) : (
+                    <LiveGameSessionPage
+                      key={location.pathname + location.search}
+                    />
+                  )}
                 </LiveGameAccess>
               ) : (
                 <GameSessionPage />
@@ -234,14 +260,26 @@ export default function App() {
                   <Route
                     path="/learn"
                     element={
-                      mode === "live" ? <LiveLearnPage /> : <LearnPage />
+                      mode === "live" ? (
+                        practiceDesignEnabled() ? (
+                          <DevPracticePage />
+                        ) : (
+                          <LiveLearnPage />
+                        )
+                      ) : (
+                        <LearnPage />
+                      )
                     }
                   />
                   <Route
                     path="/vocabulary"
                     element={
                       mode === "live" ? (
-                        <LiveVocabularyPage />
+                        myWordsDesignEnabled() ? (
+                          <DevMyWordsPage />
+                        ) : (
+                          <LiveVocabularyPage />
+                        )
                       ) : (
                         <VocabularyPage />
                       )
@@ -287,6 +325,9 @@ export default function App() {
                           preferLesson={
                             location.search.includes("course=") ||
                             location.search.includes("pack=") ||
+                            new URLSearchParams(location.search).has(
+                              "curriculum",
+                            ) ||
                             location.search.includes("practice=free") ||
                             location.search.includes("view=")
                           }
@@ -350,7 +391,17 @@ export default function App() {
                     path="/english-learning"
                     element={
                       mode === "live" ? (
-                        <EnglishLearningPathPage />
+                        <EnglishLearningEntryPage />
+                      ) : (
+                        <Navigate to="/learn" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/english-zero-c1"
+                    element={
+                      mode === "live" ? (
+                        <StructuredEnglishPage />
                       ) : (
                         <Navigate to="/learn" replace />
                       )

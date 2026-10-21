@@ -100,10 +100,17 @@ export function configuration(env = process.env) {
   };
 }
 export function upstreamTimeoutMs(prefix, apiPath) {
+  if (
+    prefix === "/gotit-api" &&
+    apiPath === "/api/v1/private-lessons/realtime-sessions"
+  )
+    return 220000;
   return prefix === "/gotit-api" &&
     /^\/api\/v1\/courses\/homework\/[0-9a-f-]+\/prepare$/i.test(apiPath)
     ? 220000
-    : 80000;
+    : prefix === "/gotit-api" && apiPath === "/api/v1/courses/artwork/generate"
+      ? 110000
+      : 80000;
 }
 function replayableHomeworkPreparation(prefix, apiPath, method, body) {
   if (
@@ -189,7 +196,7 @@ export function createGateway(config) {
         fail(400, "INVALID_PATH");
         return;
       }
-      if (/%(?:2f|5c|2e)/i.test(req.url)) {
+      if (/%(?:2f|5c|2e)/i.test(req.url.split("?", 1)[0])) {
         fail(400, "INVALID_PATH");
         return;
       }
@@ -303,10 +310,12 @@ export function createGateway(config) {
           return;
         }
         const limit =
-          apiPath === "/api/v1/pronunciation/assessments" ||
-          apiPath === "/api/v1/courses/transcribe"
-            ? 1024 * 1024
-            : 256 * 1024;
+          apiPath === "/api/v1/structured-english/transcriptions"
+            ? 4 * 1024 * 1024
+            : apiPath === "/api/v1/pronunciation/assessments" ||
+                apiPath === "/api/v1/courses/transcribe"
+              ? 1024 * 1024
+              : 256 * 1024;
         const chunks = [];
         let size = 0;
         for await (const chunk of req) {

@@ -1,6 +1,9 @@
 import { z } from "zod";
 const filterKeys = [
   "search",
+  "learningStatuses",
+  "origins",
+  "partsOfSpeech",
   "userStatus",
   "sort",
   "learningStatus",

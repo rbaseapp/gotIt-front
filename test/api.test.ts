@@ -202,6 +202,13 @@ describe("API token lifecycle and safe failures", () => {
     ).rejects.toMatchObject({ code: "REQUEST_TIMEOUT" });
     expect(timeout).toHaveBeenCalledWith(90000);
     await expect(
+      api.product("private-lessons/realtime-sessions", "POST", {
+        targetLanguageCode: "en",
+        interactionProtocol: "adaptive-v1",
+      }),
+    ).rejects.toMatchObject({ code: "REQUEST_TIMEOUT" });
+    expect(timeout).toHaveBeenCalledWith(225000);
+    await expect(
       api.product("courses/intake", "POST", {}),
     ).rejects.toMatchObject({
       code: "REQUEST_TIMEOUT",
