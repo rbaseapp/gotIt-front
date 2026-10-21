@@ -17,6 +17,7 @@ import {
   matchingItemIds,
   readFocusCheckpoint,
   reviewItems,
+  wholeWordClozeContext,
   type FocusOutcome,
 } from "../src/lib/focusPractice";
 import { recordVoice } from "../src/lib/voice";
@@ -108,6 +109,26 @@ const click = async (name: string | RegExp) => {
 const next = () => click(/^Continue$/);
 
 describe("DEV focus game engine", () => {
+  it("uses the translation prompt for old partial-word gaps, including restored checkpoints", async () => {
+    const options = { clozeContext: "Hello my name is _____a." };
+    const view = await mount("drag_drop", options);
+    await screen.findByRole("button", { name: "chair", exact: true });
+    expect(document.querySelector(".sen")).toHaveTextContent(
+      focusCards[0].translationText,
+    );
+    expect(document.querySelector(".sen")).not.toHaveTextContent(
+      "Hello my name",
+    );
+    view.unmount();
+    await mount("drag_drop", options, true);
+    await screen.findByRole("button", { name: "chair", exact: true });
+    expect(document.querySelector(".sen")).toHaveTextContent(
+      focusCards[0].translationText,
+    );
+    expect(document.querySelector(".sen")).not.toHaveTextContent(
+      "Hello my name",
+    );
+  });
   it("keeps every curriculum word through flashcards into a multi-board matching stage", async () => {
     const { fixture } = await mount("smart", {
       count: 5,
@@ -246,11 +267,59 @@ describe("DEV focus game engine", () => {
     expect(audioPlay).not.toHaveBeenCalled();
     await click("chair");
     await waitFor(() =>
-      expect(speak).toHaveBeenCalledWith(focusCards[0].context, "en", 0.85),
+      expect(speak).toHaveBeenCalledWith(
+        focusCards[0].context,
+        "en",
+        0.85,
+        expect.any(Function),
+      ),
     );
     expect(audio).toBeEnabled();
     speak.mockRestore();
   });
+  it.each([1, 2])(
+    "waits for sentence speech to finish before advancing a %i-card cloze session",
+    async (count) => {
+      let finish: (() => void) | undefined;
+      const speak = vi
+        .spyOn(speech, "speak")
+        .mockImplementation(
+          (_text, _language, _rate, onFinish?: () => void) => {
+            finish = onFinish;
+            return true;
+          },
+        );
+      const { fixture } = await mount("drag_drop", { count });
+      await click("chair");
+      await waitFor(() => expect(speak).toHaveBeenCalled());
+      // A sentence can easily take longer than the old 1.9-second transition.
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 2200));
+      });
+      expect(document.querySelector(".sen")).toHaveTextContent(
+        "Please sit on the chair.",
+      );
+      expect(
+        screen.queryByRole("dialog", { name: "Drag and complete completed" }),
+      ).not.toBeInTheDocument();
+      expect(
+        fixture.requests.filter((request) =>
+          request.path.endsWith("/exercises"),
+        ),
+      ).toHaveLength(1);
+      expect(finish).toBeTypeOf("function");
+      act(() => finish!());
+      if (count === 1)
+        await screen.findByRole("dialog", {
+          name: "Drag and complete completed",
+        });
+      else
+        await waitFor(() =>
+          expect(document.querySelector(".sen")).toHaveTextContent("I read a"),
+        );
+      speak.mockRestore();
+    },
+  );
   it("cracks the gift on each tap, then lands the original accessory after the coin burst", async () => {
     vi.stubGlobal(
       "ResizeObserver",
@@ -743,6 +812,16 @@ describe("DEV focus game engine", () => {
 });
 
 describe("focus practice safeguards", () => {
+  it("rejects partial Unicode word gaps while preserving complete words and expressions", () => {
+    for (const context of ["_____a", "stair_____", "_____e\u0301", "_____n't"])
+      expect(wholeWordClozeContext(context)).toBeUndefined();
+    for (const context of [
+      "Hello my name is _____.",
+      "_____ is not York.",
+      "我喜欢_____中文。",
+    ])
+      expect(wholeWordClozeContext(context)).toBe(context);
+  });
   it("keeps matching boards distinct and leaves recall available when meanings repeat", () => {
     const cards = [
       focusCards[0],

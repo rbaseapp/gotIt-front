@@ -19,6 +19,18 @@ export const focusModes = [
   "recall",
 ] as const;
 export type FocusMode = (typeof focusModes)[number];
+
+export function wholeWordClozeContext(context: string | null | undefined) {
+  if (!context) return undefined;
+  // Older issued exercises/checkpoints can contain gaps inside a word.
+  for (const { segment } of new Intl.Segmenter(undefined, {
+    granularity: "word",
+  }).segment(context)) {
+    if (/_{2,}/u.test(segment) && !/^_{2,}$/u.test(segment)) return undefined;
+  }
+  return context;
+}
+
 export function focusGamesEnabled(type: string) {
   return (
     practiceDesignEnabled() &&

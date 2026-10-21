@@ -68,6 +68,7 @@ export function useFocusSession(
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [audioError, setAudioError] = useState("");
+  const [sentencePlaying, setSentencePlaying] = useState(false);
   useEffect(() => {
     if (!audioError) return;
     const timer = setTimeout(() => setAudioError(""), 3000);
@@ -120,6 +121,7 @@ export function useFocusSession(
   };
   const stopAudio = () => {
     playbackVersion.current++;
+    if (alive.current) setSentencePlaying(false);
     audio.current?.pause();
     if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
     audioUrl.current = undefined;
@@ -982,11 +984,24 @@ export function useFocusSession(
       (card) => card.learningItemId === active?.learningItemId,
     );
     stopAudio();
+    if (!card) return;
+    const version = playbackVersion.current;
+    const finish = () => {
+      if (alive.current && playbackVersion.current === version)
+        setSentencePlaying(false);
+    };
+    setSentencePlaying(true);
     if (
-      card &&
-      !speak(card.context || card.sourceText, card.sourceLanguageCode, 0.85)
-    )
+      !speak(
+        card.context || card.sourceText,
+        card.sourceLanguageCode,
+        0.85,
+        finish,
+      )
+    ) {
+      finish();
       setAudioError(t("game.speechUnavailable"));
+    }
   };
   const markDifficult = (itemId: string, requeue = false) =>
     update((value) => ({
@@ -1023,6 +1038,7 @@ export function useFocusSession(
     busy,
     error,
     audioError,
+    sentencePlaying,
     recording,
     microphoneConsented,
     listeningSilent,

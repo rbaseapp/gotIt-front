@@ -33,6 +33,7 @@ export function focusFixture(
     curriculumUnit?: string;
     omitCapabilityLanguage?: boolean;
     enabledSkills?: string[];
+    clozeContext?: string;
   } = {},
 ) {
   let serial = 100,
@@ -316,7 +317,9 @@ export function focusFixture(
                     ? card.sourceText
                     : card.translationText,
               languageCode: "en",
-              context: card.context.replace(card.sourceText, "_____"),
+              context:
+                options.clozeContext ??
+                card.context.replace(card.sourceText, "_____"),
               ...(kind === "multiple_choice" ? { choices } : {}),
               ...(exerciseType === "flashcards"
                 ? { answer: card.translationText }

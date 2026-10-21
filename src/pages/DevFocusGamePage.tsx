@@ -63,6 +63,7 @@ import {
   solved,
   reviewItems,
   stageSummary,
+  wholeWordClozeContext,
   type FocusOutcome,
 } from "../lib/focusPractice";
 import { LiveGameSessionPage } from "./LiveGameSessionPage";
@@ -204,6 +205,7 @@ function FocusGame({ type }: { type: string }) {
       error ||
       busy ||
       pending ||
+      engine.sentencePlaying ||
       mode === "flashcards" ||
       mode === "matching" ||
       mode === "pronunciation" ||
@@ -212,7 +214,16 @@ function FocusGame({ type }: { type: string }) {
       return;
     const timer = setTimeout(() => autoAdvance(), 1900);
     return () => clearTimeout(timer);
-  }, [outcome, state?.phase, mode, busy, pending, error, exit]);
+  }, [
+    outcome,
+    state?.phase,
+    mode,
+    busy,
+    pending,
+    error,
+    exit,
+    engine.sentencePlaying,
+  ]);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 2800);
@@ -1254,8 +1265,9 @@ function ClozeGame({
               .some((other) => other.id === choice.id),
         )
       : choices;
-  const context = exercise.prompt.context
-    ? shortContext(exercise.prompt.context, "_____", 14)
+  const wholeContext = wholeWordClozeContext(exercise.prompt.context);
+  const context = wholeContext
+    ? shortContext(wholeContext, "_____", 14)
     : undefined;
   const parts = context?.split(/(_{2,}|\[…\]|\[\.\.\.\])/u);
   const gapIndex =
