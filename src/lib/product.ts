@@ -309,6 +309,7 @@ export const wordPackSchema = z.object({
   progress: z.object({
     introduced: count.optional(),
     unitCompleted: z.boolean().optional(),
+    pathSkipped: z.boolean().optional(),
     linked: count,
     new: count,
     learning: count,
