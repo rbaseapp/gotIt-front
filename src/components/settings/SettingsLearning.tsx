@@ -43,7 +43,6 @@ export function SettingsLearning({ goals = false }: { goals?: boolean }) {
           ? {
               dailyGoal: draft.dailyGoal,
               defaultNewItemsPerDay: draft.defaultNewItemsPerDay,
-              learningPreferences: draft.learningPreferences,
             }
           : {
               languages: draft.languages,
@@ -159,7 +158,7 @@ export function SettingsLearning({ goals = false }: { goals?: boolean }) {
               </label>
             </section>
             <section className="sd-card">
-              <h2>{t("settingsLive.practiceFocus")}</h2>
+              <h2>{t("settings.enabledSkills")}</h2>
               <div className="sd-tiles">
                 {(
                   [

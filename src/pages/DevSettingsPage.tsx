@@ -90,7 +90,12 @@ export function DevSettingsPage() {
         <div className="sd-panel" key={section}>
           {section === "profile" && <SettingsProfile />}
           {section === "languages" && <SettingsLearning />}
-          {section === "learning" && <SettingsLearning goals />}
+          {section === "learning" && (
+            <>
+              <SettingsLearning goals />
+              <SettingsTeacher focusOnly />
+            </>
+          )}
           {section === "private-lessons" && <SettingsTeacher />}
           {section === "notifications" && <SettingsNotifications />}
           {section === "interface" && <SettingsInterface />}

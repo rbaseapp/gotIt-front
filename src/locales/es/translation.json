@@ -2851,7 +2851,7 @@
   },
   "settingsDesign": {
     "navigation": "Navegación de ajustes",
-    "nameHelp": "El nombre solo se guarda en esta pestaña.",
+    "nameHelp": "Saved to your account and displayed in the app.",
     "emailHelp": "Tu correo de acceso. Pulsa el lápiz para conocer las opciones de cambio.",
     "editEmail": "Cambiar correo",
     "editTimezone": "Editar zona horaria",

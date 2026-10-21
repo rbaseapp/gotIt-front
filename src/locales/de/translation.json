@@ -2851,7 +2851,7 @@
   },
   "settingsDesign": {
     "navigation": "Einstellungsnavigation",
-    "nameHelp": "Der Anzeigename gilt nur für diesen Tab.",
+    "nameHelp": "Saved to your account and displayed in the app.",
     "emailHelp": "Deine Anmeldeadresse. Der Stift zeigt die Änderungsmöglichkeiten.",
     "editEmail": "E-Mail-Adresse ändern",
     "editTimezone": "Zeitzone bearbeiten",

@@ -2881,7 +2881,7 @@
   },
   "settingsDesign": {
     "navigation": "Разделы настроек",
-    "nameHelp": "Имя сохраняется только в текущей вкладке.",
+    "nameHelp": "Saved to your account and displayed in the app.",
     "emailHelp": "Адрес для входа. Нажмите карандаш, чтобы узнать о возможности изменения.",
     "editEmail": "Изменить email",
     "editTimezone": "Изменить часовой пояс",

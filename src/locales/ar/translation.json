@@ -2896,7 +2896,7 @@
   },
   "settingsDesign": {
     "navigation": "تنقّل الإعدادات",
-    "nameHelp": "الاسم محفوظ في علامة التبويب الحالية فقط.",
+    "nameHelp": "Saved to your account and displayed in the app.",
     "emailHelp": "عنوان تسجيل الدخول. اختر القلم لمعرفة إمكانية التغيير.",
     "editEmail": "تغيير البريد الإلكتروني",
     "editTimezone": "تعديل المنطقة الزمنية",

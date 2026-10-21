@@ -97,3 +97,40 @@ Authenticated DEV, full browser-suite sweep, physical devices, paid providers,
 DB integration and production acceptance were not run. This Web-only change needs
 no API, migration or configuration rollout. The local preview is excluded from
 the normal production entry; its state cannot substitute for live learning.
+
+
+## Settings live correction ? 2026-10-22
+
+Scope: nine DEV settings categories from the supplied Claude Design, with real
+identity/profile/notification contracts. The preceding program-map report remains
+historical evidence for its own scope. Settings functional/responsive checks pass;
+literal pixel-identical design acceptance remains partial.
+
+Source was inspected as rendered artboards, including profile, reminder schedule
+and matrix, teacher selectors and six focus choices under Goals. Source and local
+implementation were reviewed together. Corrections include Assistant/Rubik type,
+250px sidebar, max 1328px composition, 20px card corners, 14/16px gaps, 324px profile
+card height, teacher segment/duration/speed layouts and focus placement. Existing
+shared application header and genuine application assets are retained.
+
+Final browser evidence: all nine sections at 1920x1080 and 320x780, no horizontal
+document overflow, no page errors/raw translation keys, actual PNG decode to JPEG
+preview/save/header, keyboard master switch and explicit save. HE/EN account
+labels and native common buttons are present; other new strings fall back to EN.
+Existing high-contrast preferences intentionally strengthen borders; live owner
+account has high contrast on, which differs from the reference's default styling.
+
+Known remaining differences: exact source illustrations could not be exported
+through the available asset capability; existing branded images remain. Source
+25-minute lesson/free mix choices exceed current lesson enums. Security, extension
+and inline billing actions with missing owner APIs use available support/transfer/
+portal destinations. Recovery-email editing, session-wide logout, history purge,
+self-service deletion and website-to-extension controls are not implemented.
+These differences prevent a claim of exact fidelity across every category.
+
+Live DEV readback confirms the actual owner's Google connected, Facebook and Email
+unconnected with connect actions, and no Apple row. A disposable live fixture
+confirms photo/name/reminder round trips through owner APIs and same-origin gateway.
+No owner preference or credential was mutated by acceptance. OAuth consent/link,
+mailbox delivery and physical-device Push receipt remain unverified. Sanitized
+release details and fixture screenshots live under docs/settings/evidence/20261022.

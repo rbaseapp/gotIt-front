@@ -2851,7 +2851,7 @@
   },
   "settingsDesign": {
     "navigation": "Navigation des paramètres",
-    "nameHelp": "Le nom est conservé uniquement dans cet onglet.",
+    "nameHelp": "Saved to your account and displayed in the app.",
     "emailHelp": "Votre adresse de connexion. Le crayon indique les possibilités de modification.",
     "editEmail": "Modifier l’adresse e-mail",
     "editTimezone": "Modifier le fuseau horaire",

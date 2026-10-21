@@ -2850,7 +2850,7 @@
   },
   "settingsDesign": {
     "navigation": "Settings navigation",
-    "nameHelp": "The display name is kept for this tab only.",
+    "nameHelp": "Saved to your account and displayed in the app.",
     "emailHelp": "Your sign-in address. Select the pencil for change availability.",
     "editEmail": "Change email address",
     "editTimezone": "Edit timezone",

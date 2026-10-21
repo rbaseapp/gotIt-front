@@ -725,6 +725,8 @@
   gap: 14px;
 }
 .sd-teachers button {
+  position: relative;
+  min-height: 168px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -755,6 +757,33 @@
   gap: 8px;
   position: relative;
   justify-content: space-between;
+}
+.sd-speed::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 8px;
+  right: 8px;
+  height: 4px;
+  background: #dce5df;
+}
+.sd-speed button {
+  position: relative;
+}
+.sd-teacher-options > .sd-choice-field:first-child {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  align-items: center;
+}
+.sd-teacher-options > .sd-choice-field:nth-child(2) .sd-segment {
+  background: transparent;
+  padding: 0;
+  gap: 8px;
+}
+.sd-teacher-options > .sd-choice-field:nth-child(2) button {
+  border: 1px solid var(--sd-border);
+  border-radius: 12px;
+  min-height: 46px;
 }
 .sd-speed button {
   flex: 1;

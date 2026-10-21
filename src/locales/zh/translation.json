@@ -2851,7 +2851,7 @@
   },
   "settingsDesign": {
     "navigation": "设置导航",
-    "nameHelp": "显示名称仅保存在当前标签页。",
+    "nameHelp": "Saved to your account and displayed in the app.",
     "emailHelp": "您的登录邮箱。点击铅笔查看更改说明。",
     "editEmail": "更改邮箱地址",
     "editTimezone": "编辑时区",
