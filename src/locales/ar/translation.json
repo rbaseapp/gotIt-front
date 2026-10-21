@@ -3075,5 +3075,29 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "pathChoices": {
+    "skipUnit": "تخطي الوحدة",
+    "restoreUnit": "إعادة الوحدة إلى المسار",
+    "help": "يمكنك البدء بأي خطوة. يغيّر التخطي المسار المقترح ويمكن التراجع عنه؛ ولا يُعد دليلاً على الإتقان.",
+    "summary": "{{complete}} مكتملة · {{skipped}} متخطاة · {{remaining}} متبقية",
+    "routeEnd": "وصلت إلى نهاية المسار الذي اخترته. يمكنك العودة إلى أي محتوى، بما فيه ما تخطيته.",
+    "completed": "مكتمل",
+    "skipped": "تم التخطي",
+    "pending": "غير مكتمل",
+    "startHere": "ابدأ من هنا",
+    "restore": "إعادة إلى المسار",
+    "skip": "تخطي",
+    "confirmTitle": "تخطي بقية الوحدة؟",
+    "confirmBody": "ستُزال {{count}} خطوات غير مكتملة من الخطوات التالية المقترحة. سيُحفظ العمل السابق ويمكن التراجع.",
+    "chooseUnit": "اختر وحدة",
+    "chooseStep": "اختيار خطوة أو تخطيها",
+    "prerequisite": "المعرفة السابقة المقترحة: {{topics}}",
+    "words": "كلمات",
+    "meeting": "لقاء",
+    "homework": "تدريب",
+    "wordsRecommended": "نوصي بمعرفة {{count}} كلمة قبل اللقاء. يمكنك البدء الآن.",
+    "selectionChanged": "تغير الدرس المحدد أو لم يعد متاحًا. ارجع إلى خريطة الدورة واختره مجددًا.",
+    "finishedPrograms": "برامج انتهت"
   }
 }

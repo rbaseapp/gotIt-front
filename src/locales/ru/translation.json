@@ -3060,5 +3060,29 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "pathChoices": {
+    "skipUnit": "Пропустить раздел",
+    "restoreUnit": "Вернуть раздел в маршрут",
+    "help": "Можно начать с любого шага. Пропуск меняет рекомендуемый маршрут и отменяется; он не подтверждает владение материалом.",
+    "summary": "{{complete}} завершено · {{skipped}} пропущено · {{remaining}} осталось",
+    "routeEnd": "Вы дошли до конца выбранного маршрута. Можно вернуться к любому материалу, включая пропущенный.",
+    "completed": "Завершено",
+    "skipped": "Пропущено",
+    "pending": "Не завершено",
+    "startHere": "Начать здесь",
+    "restore": "Вернуть в маршрут",
+    "skip": "Пропустить",
+    "confirmTitle": "Пропустить остаток раздела?",
+    "confirmBody": "Из следующих рекомендаций будут убраны незавершённые шаги: {{count}}. Предыдущая работа сохранится. Пропуск можно отменить.",
+    "chooseUnit": "Выбрать раздел",
+    "chooseStep": "Выбрать или пропустить шаг",
+    "prerequisite": "Рекомендуемые предварительные знания: {{topics}}",
+    "words": "Слова",
+    "meeting": "Урок",
+    "homework": "Практика",
+    "wordsRecommended": "Перед уроком рекомендуем познакомиться со словами: {{count}}. Можно начать сейчас.",
+    "selectionChanged": "Выбранный урок изменился или недоступен. Вернитесь к плану курса и выберите его снова.",
+    "finishedPrograms": "Завершённые маршруты"
   }
 }

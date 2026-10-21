@@ -19,6 +19,10 @@ export const curriculumSchema = z.object({
   }),
   revision: z.number(),
   enrolled: z.boolean(),
+  pathChoices: z
+    .object({ units: z.array(z.string()), activities: z.array(z.string()) })
+    .optional(),
+  navigationComplete: z.boolean().optional(),
   settings: z
     .object({
       minutes: z.number(),
@@ -51,6 +55,7 @@ export const curriculumSchema = z.object({
       words: z.number(),
       unlocked: z.boolean(),
       waived: z.boolean(),
+      skipped: z.boolean().optional(),
       lessons: z.array(
         z.object({ id: z.string(), title: z.string(), minutes: z.number() }),
       ),
@@ -104,6 +109,17 @@ const wordEvidence = z
   .object({ status: z.string(), dueAt: z.string() })
   .nullable();
 export const curriculumUnitSchema = z.object({
+  pathSteps: z
+    .array(
+      z.object({
+        id: z.string(),
+        complete: z.boolean(),
+        skipped: z.boolean(),
+        available: z.boolean(),
+        batch: z.number().optional(),
+      }),
+    )
+    .optional(),
   unit: z.object({
     id: z.string(),
     band,
@@ -267,6 +283,13 @@ const ack = z.object({
 });
 const root = "structured-english";
 export const curriculumApi = {
+  pathChoice: (input: {
+    eventId: string;
+    revision: number;
+    unitId: string;
+    activityId?: string;
+    skipped: boolean;
+  }) => product(ack, `${root}/path-choices`, "POST", input),
   get: () => product(curriculumSchema, root),
   catalog: () =>
     product(

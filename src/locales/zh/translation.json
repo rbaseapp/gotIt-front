@@ -3030,5 +3030,29 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "pathChoices": {
+    "skipUnit": "跳过单元",
+    "restoreUnit": "将单元恢复到学习路径",
+    "help": "你可以从任何步骤开始。跳过会调整推荐路径，且可以撤销；这不代表已掌握内容。",
+    "summary": "已完成 {{complete}} · 已跳过 {{skipped}} · 剩余 {{remaining}}",
+    "routeEnd": "你已到达所选路径的终点。你可以重新学习任何内容，包括已跳过的内容。",
+    "completed": "已完成",
+    "skipped": "已跳过",
+    "pending": "尚未完成",
+    "startHere": "从这里开始",
+    "restore": "恢复到路径",
+    "skip": "跳过",
+    "confirmTitle": "跳过本单元剩余内容？",
+    "confirmBody": "将从后续推荐中移除 {{count}} 个未完成步骤。之前的学习记录会保留，你可以撤销此操作。",
+    "chooseUnit": "选择单元",
+    "chooseStep": "选择或跳过步骤",
+    "prerequisite": "建议的预备知识：{{topics}}",
+    "words": "单词",
+    "meeting": "课程",
+    "homework": "练习",
+    "wordsRecommended": "建议在上课前熟悉 {{count}} 个单词。你也可以立即开始。",
+    "selectionChanged": "所选课程已更改或不可用。请返回课程地图重新选择。",
+    "finishedPrograms": "已结束的学习计划"
   }
 }

@@ -3030,5 +3030,29 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "pathChoices": {
+    "skipUnit": "Einheit überspringen",
+    "restoreUnit": "Einheit wieder aufnehmen",
+    "help": "Du kannst bei jedem Schritt beginnen. Überspringen ändert den empfohlenen Lernweg und ist umkehrbar; es belegt keine Beherrschung.",
+    "summary": "{{complete}} abgeschlossen · {{skipped}} übersprungen · {{remaining}} offen",
+    "routeEnd": "Du hast das Ende deines gewählten Lernwegs erreicht. Alle Inhalte bleiben zugänglich, auch übersprungene.",
+    "completed": "Abgeschlossen",
+    "skipped": "Übersprungen",
+    "pending": "Noch offen",
+    "startHere": "Hier beginnen",
+    "restore": "Wieder aufnehmen",
+    "skip": "Überspringen",
+    "confirmTitle": "Rest dieser Einheit überspringen?",
+    "confirmBody": "{{count}} offene Schritte werden aus den nächsten Empfehlungen entfernt. Bisherige Arbeit bleibt erhalten. Du kannst dies rückgängig machen.",
+    "chooseUnit": "Einheit wählen",
+    "chooseStep": "Schritt wählen oder überspringen",
+    "prerequisite": "Empfohlene Vorkenntnisse: {{topics}}",
+    "words": "Wörter",
+    "meeting": "Unterricht",
+    "homework": "Übung",
+    "wordsRecommended": "Vor diesem Unterricht empfehlen wir {{count}} bekannte Wörter. Du kannst jetzt beginnen.",
+    "selectionChanged": "Die gewählte Lektion wurde geändert oder ist nicht verfügbar. Wähle sie im Kursplan erneut.",
+    "finishedPrograms": "Beendete Programme"
   }
 }

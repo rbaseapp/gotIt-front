@@ -3030,5 +3030,29 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "pathChoices": {
+    "skipUnit": "Passer cette unité",
+    "restoreUnit": "Rétablir cette unité",
+    "help": "Vous pouvez commencer à chaque étape. Passer modifie le parcours conseillé et reste réversible ; cela ne prouve pas la maîtrise.",
+    "summary": "{{complete}} terminées · {{skipped}} passées · {{remaining}} restantes",
+    "routeEnd": "Vous avez atteint la fin du parcours choisi. Tous les contenus restent accessibles, même ceux que vous avez passés.",
+    "completed": "Terminée",
+    "skipped": "Passée",
+    "pending": "Non terminée",
+    "startHere": "Commencer ici",
+    "restore": "Rétablir dans le parcours",
+    "skip": "Passer",
+    "confirmTitle": "Passer le reste de cette unité ?",
+    "confirmBody": "{{count}} étapes non terminées seront retirées des prochaines recommandations. Le travail précédent est conservé et cette action est réversible.",
+    "chooseUnit": "Choisir une unité",
+    "chooseStep": "Choisir ou passer une étape",
+    "prerequisite": "Connaissances préalables conseillées : {{topics}}",
+    "words": "Mots",
+    "meeting": "Cours",
+    "homework": "Exercices",
+    "wordsRecommended": "Nous conseillons de connaître {{count}} mots avant ce cours. Vous pouvez commencer maintenant.",
+    "selectionChanged": "La leçon choisie a changé ou est indisponible. Retournez au plan du cours et choisissez-la à nouveau.",
+    "finishedPrograms": "Programmes terminés"
   }
 }

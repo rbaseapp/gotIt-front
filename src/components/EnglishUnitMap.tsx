@@ -3,6 +3,7 @@ import { Check, ChevronDown, LockKeyhole, SquarePen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { PathArtwork } from "./PathArtwork";
+import { UnitPathChoices } from "./UnitPathChoices";
 import { englishPathLevels } from "../lib/englishPath";
 import type { WordPack } from "../lib/product";
 import { errorMessage } from "../lib/product";
@@ -27,6 +28,7 @@ export function EnglishUnitMap({
   pathLoading,
   pathError,
   onRetryPath,
+  onPathChanged,
 }: {
   current: WordPack;
   packs: WordPack[];
@@ -41,6 +43,7 @@ export function EnglishUnitMap({
   pathLoading: boolean;
   pathError: string;
   onRetryPath: () => void;
+  onPathChanged?: () => Promise<void>;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
@@ -171,6 +174,13 @@ export function EnglishUnitMap({
           {t("structuredUi.allUnits")}
         </button>
       </div>
+      {ready && path && onPathChanged && (
+        <UnitPathChoices
+          path={path}
+          stationUrl={stationUrl}
+          onChanged={onPathChanged}
+        />
+      )}
       <section className="unit-roadmap-card" data-figma-desktop="43:2557">
         <header className="unit-roadmap-heading">
           <h2 dir="auto">{current.title}</h2>
@@ -203,6 +213,7 @@ export function EnglishUnitMap({
             </div>
             <div
               className={`unit-teacher-station${nextStation || practiceStation ? "" : " unit-word-station"}`}
+              hidden={path?.navigationComplete}
             >
               <span className="unit-station-icon">
                 <PathArtwork
@@ -274,6 +285,9 @@ export function EnglishUnitMap({
                 </button>
               </div>
             </div>
+            {path?.navigationComplete && (
+              <p role="status">{t("pathChoices.routeEnd")}</p>
+            )}
             {completedActivities > 0 && (
               <button
                 className="path-completed button secondary"

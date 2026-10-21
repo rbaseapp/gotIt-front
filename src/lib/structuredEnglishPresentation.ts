@@ -45,6 +45,7 @@ export function curriculumDisplayPacks(data: Curriculum): WordPack[] {
         mastered: 0,
         completed: done ? unit.words : 0,
         unitCompleted: done,
+        pathSkipped: unit.skipped,
         due: 0,
       },
     };
@@ -221,6 +222,24 @@ export function curriculumRoadmap(
         done(`exit:${skill}`),
         data.graduation.ready,
       );
+  for (const step of steps) {
+    step.skipped =
+      !step.complete &&
+      Boolean(
+        data.pathChoices?.units.includes(unit.id) ||
+        data.pathChoices?.activities.includes(step.id) ||
+        (step.id.startsWith("post:") &&
+          data.pathChoices?.activities.includes(
+            `teacher:${step.id.slice(5)}`,
+          ) &&
+          !done(`teacher:${step.id.slice(5)}`)),
+      );
+    // All content can be selected. A postlesson still needs its actual teacher source.
+    step.available =
+      !step.id.startsWith("post:") || done(`teacher:${step.id.slice(5)}`);
+    if (step.id.startsWith("post:"))
+      step.lockReason = label("unitMap.practiceAfterMeeting");
+  }
   const next = data.nextAction;
   const nextId =
     next?.kind === "words"
@@ -234,8 +253,9 @@ export function curriculumRoadmap(
           : next?.id;
   const active =
     steps.find(
-      (step) => step.id === nextId && !step.complete && step.available,
-    ) ?? steps.find((step) => !step.complete && step.available);
+      (step) =>
+        step.id === nextId && !step.complete && !step.skipped && step.available,
+    ) ?? steps.find((step) => !step.complete && !step.skipped);
   const prefix: ProgramActivityStep[] = [];
   for (const step of steps) {
     if (!step.complete) break;

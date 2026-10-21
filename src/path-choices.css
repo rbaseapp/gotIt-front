@@ -1,0 +1,53 @@
+.path-choices {
+  margin-block: 1rem;
+  min-width: 0;
+}
+.path-choices header,
+.path-choice-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.path-choices header {
+  justify-content: space-between;
+}
+.path-choices h2 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+.path-choices ol {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+.path-choices li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.75rem;
+  border-block-start: 1px solid var(--border, #d9e3df);
+}
+.path-choices li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.path-choices small {
+  display: block;
+  margin-block-start: 0.25rem;
+}
+.path-choices .button {
+  min-height: 44px;
+  white-space: normal;
+}
+@media (max-width: 600px) {
+  .path-choices li {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .path-choice-actions .button {
+    flex: 1;
+  }
+}
