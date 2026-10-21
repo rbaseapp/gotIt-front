@@ -1,136 +1,69 @@
-﻿# Program map UI/UX acceptance - 2026-10-22
+# Subscription selection design QA — 2026-10-22
 
 final result: passed
 
-Scope: adapt the selected unit-map interaction hierarchy to the existing GotIt
-shared map; retain the existing product design system and authoritative behavior.
-This is local implementation acceptance, not DEV deployment or a pixel clone.
-Previous root settings report is preserved at docs/settings/design-qa-20261014.md.
+Source: https://claude.ai/artifact/QxCJLacpzBzSSFVDuaotRV#artboard-2a786bd673d2,
+Pricing artboard, annual selected. Source truth capture:
+`output/pricing-evidence/source-desktop.png` and `source-minutes-faq.png`.
+Implementation: `http://127.0.0.1:5194/output/pricing-preview.html`, actual BillingPage
+and application header with a local-only catalog/account fixture.
 
-## Source, implementation and comparison
+## Comparison evidence and scope
 
-Source visual truth: owner-selected Claude artifact
-https://claude.ai/artifact/QxCJLacpzBzSSFVDuaotRV#play-491bf3f68d1b,
-board UnitStartHere.dc.html. Authenticated artifact full-screen viewing supplied
-source-desktop.jpg (1490 x 714 px), under docs/program-map/uiux-20261022/.
-The public viewer itself remained on Loading. No unrelated design board is used.
+- Desktop: source and implementation screenshots were emitted together in the same
+  comparison input, including a second focused comparison of table/minutes/FAQ.
+  Captures are approximately 1280 x 1000 CSS pixels; source browser zoom is 125%
+  (DPR 1.25), so its viewport override was 1600 x 1250 to obtain the same CSS width.
+  Implementation uses DPR 1 and 1280 x 1000. Source artifact toolbars and the
+  existing product header are excluded when judging content alignment.
+- Final desktop capture: `output/pricing-evidence/implementation-desktop.png`.
+  Mobile capture: `implementation-mobile.png`, 320 x 780; document and scroll
+  widths both 305px after the scrollbar. No page-level horizontal overflow.
+- Source first four content offsets relative to main start: 0, 35, 173, 265px.
+  Revised implementation: 0, 35, 173, 265px. Source illustration renders at
+  120 x 110.3px. The existing `src/assets/mywords/moohi.png` is byte-identical
+  (SHA-256 verified) to the reference illustration.
+- Intended content changes: real Pro/Tutor tiers replace the illustrative
+  Free/Basic/Premium tiers; one actual pack replaces four illustrative packs.
+  Card height reflects the real entitlement list. Prices, discounts, minute-bank
+  terms and refund text are grounded in the existing contracts.
 
-Implementation: http://127.0.0.1:5187/design-preview/ using the real shared map
-and explicit local in-memory data. desktop.png is 1475 x 1358 content pixels,
-from a 1490 x 900 CSS viewport with a 15px scrollbar gutter. mobile.png is
-375 x 2785 content pixels from 390 x 844 CSS; mobile-confirmation.png is 390 x 844.
-All final CLI captures use CSS-pixel scale (density 1) and disabled animations.
-Early CUA full-page captures were cropped incorrectly and were discarded.
+## Findings and iteration history
 
-State: Hebrew RTL; 2 completed steps of 14, steps 2 and 3 skipped, step 5 current.
-Updated own-name titles intentionally differ from the illustrative Noa content.
-The source header/demo controls are external presentation context, whereas the
-implementation retains a labeled review shell and the existing product hero/title.
+1. P1: legacy `.billing-plan` styling clipped the recommendation ribbon and added
+   an unwanted card gradient. Removed that legacy class; comparison after the fix
+   shows the complete ribbon, white cards and reference border/shadow treatment.
+2. P2: legacy current-plan bottom margin and forced square illustration shifted
+   the period selector/cards. Scoped away the margin, restored the image's natural
+   aspect ratio, normal body leading and source card spacing. Final measured offsets
+   above match the source; final desktop comparison was captured after these fixes.
+3. P3: real plan names are longer than the mock's Hebrew labels; headings use a
+   modestly smaller size, while retaining Rubik, weight and hierarchy. The existing
+   application logo/header, actual progress and account controls remain in use.
 
-Source and implementation were combined and visually inspected together:
-comparison-overview.png contains equal 1480 x 624 overview regions, removing the
-source artifact toolbar and excluding the small scrollbar-gutter difference.
-comparison-focus.png compares the heading, hint, completed row and vocabulary
-region, normalizing component widths to 1133px; this focused image is for hierarchy
-and detail, not a claim of identical grid proportions. Original screenshots remain
-available to avoid hiding intentional size and wrapping differences.
+## Required surfaces
 
-## Iterations and resolved findings
+- Typography: Rubik headings/prices and Assistant body; matching weight, body
+  leading and price hierarchy. Actual long names and localized currencies wrap.
+- Layout: three desktop cards, 18px gutters, 26px card radii, 28px section rhythm,
+  54px plan actions and 56px pack action. Below 980px cards stack, matching source.
+- Color: cream #FAF9F5, ink #22322C, green #286F5C/#173F35 and gold #F5C542;
+  comparison highlight, minute panel and native disclosure styling are retained.
+- Images/icons: exact existing mascot; library icons replace the mock's inline
+  symbols. No recreated illustration or placeholder asset.
+- Copy: Hebrew/English plus existing supported locale catalogs; catalog-specific
+  rights and period totals, no invented savings or allowances. Six additional
+  locales retain English fallback for newly introduced copy.
 
-- P2: 320px viewport overflow from the existing body's 320px minimum width plus
-  its scrollbar. Added a map-scoped min-width reset. Post-fix browser measurements
-  at viewport widths 320/390/768/1490: client and scroll widths both
-  305/375/753/1475. Final responsive captures and assertions passed.
-- P2: sidebar remaining count included skipped steps while the hero excluded them.
-  Both now count unfinished, unskipped steps. Final desktop shows 10 in both places;
-  browser skip/restore returns both counts to 10 without changing completed steps.
-- P2: completed review inherited a gray default button surface. The review control
-  now has a transparent surface and 44px hit area; post-fix desktop/mobile captures
-  show the quiet green review action.
-- Initial preview-only favicon 404 was corrected using the existing product icon.
-  The final browser run recorded no new console or page errors.
+## Functional checks and limitations
 
-No actionable P0/P1/P2 finding remains within the shared map change.
+Browser checked period switching, unavailable quarterly Pro, selected pack,
+comparison and FAQ disclosure, 320px layout. Billing/checkout/Paddle regressions
+cover amount/currency normalization, correct SKU, Free status-only, portal routing,
+status failures and empty catalog. No real payment completed. Preview HMR logged
+createRoot warnings during edits; fresh navigation is used for acceptance.
+Production rollout and physical-device/payment-provider acceptance are not claimed.
 
-## Fidelity surfaces and deliberate product adaptations
+No remaining actionable P0/P1/P2 visual findings within the requested catalog adaptation.
 
-- Typography: existing Assistant/Rubik stack, navy headings and responsive type
-  hierarchy retained; row headings reduced from 25px to 22px on desktop. The
-  current product's heavier/larger headings differ from the smaller reference.
-  Long, updated titles wrap rather than truncate. This preserves the established
-  product typography instead of introducing a second design system.
-- Spacing/layout: existing hero, two-column roadmap/sidebar, rounded white cards,
-  timeline, completed/future disclosures and mobile stacking retained. The wider
-  current-product map and completed-range disclosure are intentional, not pixel
-  copies of the mock. The new hint and secondary actions fit these existing regions.
-- Colors/tokens: existing green/yellow/navy tokens retained. Yellow is reserved
-  for the current continuation; white outlined green-text secondary entry appears
-  on row hover/focus, and warm explanatory confirmation content remains distinct.
-- Image quality: existing genuine compressed branded hero.webp retained, sharp
-  at desktop/mobile sizes. The source's different mascot pose and demo logo were
-  not recreated using shapes or placeholders. Standard icons use existing Lucide.
-- Copy: live callers keep server titles, words, durations and progress. Updated
-  own-name titles are used in the sample. Eight instruction/dialog translations
-  were added. The confirmation accurately preserves the approved contract:
-  choosing a step does not automatically complete or skip earlier work. Explicit
-  skip and restore remain separate actions. No fake success/evidence is added.
-
-## Interaction evidence
-
-The final Playwright CLI run (explicitly authorized after CUA disconnected)
-verified: two matching primary continuation actions, hover reveal, no entry CTA
-for locked practice, no opening before confirmation, cancel restoring focus,
-touch-menu entry, confirmed activity callback, explicit skip/restore, unchanged
-2/14 completion, and equal client/scroll widths at four breakpoints. Console
-and page-error capture returned []. The shared modal retains its existing Escape,
-focus trap and focus restoration; focused unit tests also cover menu Escape.
-
-## Verification and limits
-
-27 focused cases in 4 files, typecheck, lint, build and 23 gateway checks passed.
-The full forks run reported 420 passed and 1 failed in 67 files. The dedicated
-English-path lazy-loading case in test/live.test.tsx failed while waiting for a
-heading, also reproduced on unmodified observed DEV 9a95e23. A terminated threads
-run is not counted as a pass. verification.json records exact scope and outcomes.
-
-Authenticated DEV, full browser-suite sweep, physical devices, paid providers,
-DB integration and production acceptance were not run. This Web-only change needs
-no API, migration or configuration rollout. The local preview is excluded from
-the normal production entry; its state cannot substitute for live learning.
-
-
-## Settings live correction ? 2026-10-22
-
-Scope: nine DEV settings categories from the supplied Claude Design, with real
-identity/profile/notification contracts. The preceding program-map report remains
-historical evidence for its own scope. Settings functional/responsive checks pass;
-literal pixel-identical design acceptance remains partial.
-
-Source was inspected as rendered artboards, including profile, reminder schedule
-and matrix, teacher selectors and six focus choices under Goals. Source and local
-implementation were reviewed together. Corrections include Assistant/Rubik type,
-250px sidebar, max 1328px composition, 20px card corners, 14/16px gaps, 324px profile
-card height, teacher segment/duration/speed layouts and focus placement. Existing
-shared application header and genuine application assets are retained.
-
-Final browser evidence: all nine sections at 1920x1080 and 320x780, no horizontal
-document overflow, no page errors/raw translation keys, actual PNG decode to JPEG
-preview/save/header, keyboard master switch and explicit save. HE/EN account
-labels and native common buttons are present; other new strings fall back to EN.
-Existing high-contrast preferences intentionally strengthen borders; live owner
-account has high contrast on, which differs from the reference's default styling.
-
-Known remaining differences: exact source illustrations could not be exported
-through the available asset capability; existing branded images remain. Source
-25-minute lesson/free mix choices exceed current lesson enums. Security, extension
-and inline billing actions with missing owner APIs use available support/transfer/
-portal destinations. Recovery-email editing, session-wide logout, history purge,
-self-service deletion and website-to-extension controls are not implemented.
-These differences prevent a claim of exact fidelity across every category.
-
-Live DEV readback confirms the actual owner's Google connected, Facebook and Email
-unconnected with connect actions, and no Apple row. A disposable live fixture
-confirms photo/name/reminder round trips through owner APIs and same-origin gateway.
-No owner preference or credential was mutated by acceptance. OAuth consent/link,
-mailbox delivery and physical-device Push receipt remain unverified. Sanitized
-release details and fixture screenshots live under docs/settings/evidence/20261022.
+Fresh English browser tab: LTR rendering and clean console verified; `implementation-ltr.png`. An English charge-line separator was corrected after this screenshot.

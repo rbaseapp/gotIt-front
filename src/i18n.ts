@@ -8,6 +8,8 @@ import fr from "./locales/fr/translation.json";
 import he from "./locales/he/translation.json";
 import ru from "./locales/ru/translation.json";
 import zh from "./locales/zh/translation.json";
+import pricingEn from "./locales/pricing-en.json";
+import pricingHe from "./locales/pricing-he.json";
 
 export const UI_LOCALE_STORAGE_KEY = "gotit.uiLocale.v1";
 export const SUPPORTED_UI_LOCALES = [
@@ -64,10 +66,10 @@ void i18n.use(initReactI18next).init({
   resources: {
     ar: { translation: ar },
     de: { translation: de },
-    en: { translation: en },
+    en: { translation: { ...en, pricing: pricingEn } },
     es: { translation: es },
     fr: { translation: fr },
-    he: { translation: he },
+    he: { translation: { ...he, pricing: pricingHe } },
     ru: { translation: ru },
     zh: { translation: zh },
   },
