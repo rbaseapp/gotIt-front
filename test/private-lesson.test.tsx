@@ -291,6 +291,7 @@ describe("private voice lesson", () => {
   });
 
   it("uses the original unit preparation UI for a curriculum lesson", async () => {
+    const user = userEvent.setup();
     const scroll = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
     mocks.capture.mockImplementation(async (_schema, path) => {
       if (path === "structured-english/teacher/P01-L1")
@@ -324,6 +325,24 @@ describe("private voice lesson", () => {
     expect(
       container.querySelector(".unit-lesson-word-preview"),
     ).toHaveTextContent("hello");
+    mocks.create.mockRejectedValueOnce(
+      new Error("Synthetic provider unavailable"),
+    );
+    await user.click(screen.getByRole("button", { name: "מתחילים עם המורה" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          curriculumLessonId: "P01-L1",
+          interactionMode: "guided",
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          lessonMode: "absolute_beginner",
+          teachingLanguage: "support",
+          requestedDurationMinutes: 10,
+          vocabularyMode: "none",
+        }),
+      ),
+    );
     scroll.mockRestore();
   });
 
