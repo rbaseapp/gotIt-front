@@ -5,3 +5,8 @@ export const GOOGLE_CLIENT_ID =
 
 export const FACEBOOK_APP_ID =
   import.meta.env.VITE_FACEBOOK_APP_ID || "2207127606520765";
+
+// Chrome Web Store listing for the GotIt extension.
+export const CHROME_EXTENSION_URL =
+  import.meta.env.VITE_CHROME_EXTENSION_URL ||
+  "https://chromewebstore.google.com/detail/gotit-%E2%80%94-learn-words-in-co/eehpbnojkgghpanaikgakimfpahgickk";

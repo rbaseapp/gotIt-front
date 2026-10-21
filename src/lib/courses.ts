@@ -230,10 +230,12 @@ export const courseApi = {
         courses: z.array(courseSchema),
         homework: z.array(homeworkSummarySchema),
         available: z.boolean(),
+        templates: z.array(z.object({id:uuid,title:z.string(),targetLanguageCode:z.string(),supportLanguageCode:z.string()})).default([]),
       }),
       "courses",
     ),
   get: (id: string) => product(courseResponse, `courses/${id}`),
+  useTemplate: (id:string,eventId:string) => product(courseResponse,`courses/templates/${id}/use`,'POST',{eventId}),
   unitWords: (id: string, unitKey: string) =>
     product(
       courseWordsSchema,

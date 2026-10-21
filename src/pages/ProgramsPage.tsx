@@ -247,6 +247,12 @@ export function ProgramsPage() {
             {t("ux.personalProgram")}
           </Link>
         </section>
+        {(courses.data?.templates??[]).filter((template)=>template.targetLanguageCode===target&&template.supportLanguageCode===support).map((template)=>(
+          <section className="ux-card" key={template.id}>
+            <h2>{template.title}</h2>
+            <button className="button primary" disabled={busy} onClick={()=>void startTemplate(template.id)}>{t('pathUi.useTemplate')}</button>
+          </section>
+        ))}
         <div className="ux-inline-actions">
           <Link
             className="button ghost"

@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_DEMO_MODE?: string;
   readonly VITE_GOOGLE_CLIENT_ID?: string;
   readonly VITE_FACEBOOK_APP_ID?: string;
+  readonly VITE_CHROME_EXTENSION_URL?: string;
 }
 
 interface ImportMeta {
