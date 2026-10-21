@@ -1571,7 +1571,12 @@
     "EMAIL_VERIFICATION_REQUIRED": "请先验证邮箱再登录。",
     "EMAIL_CODE_INVALID": "验证码错误、已过期或已使用。请请求新验证码。",
     "EMAIL_RATE_LIMITED": "请求过多，请稍后重试。",
-    "EMAIL_DELIVERY_UNAVAILABLE": "邮件发送暂时不可用，请稍后重试。"
+    "EMAIL_DELIVERY_UNAVAILABLE": "邮件发送暂时不可用，请稍后重试。",
+    "PRIVATE_LESSON_PLAN_INSUFFICIENT": "未能准备足够多样的练习活动。请稍后重试。",
+    "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE": "课程活动暂时不可用。",
+    "PRIVATE_LESSON_ACTIVITY_CONFLICT": "课程已更新，请重新加载当前活动。",
+    "PRIVATE_LESSON_ACTIVITY_EXPIRED": "临时课程数据已过期。",
+    "PRIVATE_LESSON_ACTIVITY_LIMIT": "本课已达到活动数量上限，请结束并保存。"
   },
   "validation": {
     "skills": "至少选择一项技能，不能重复。",
@@ -2100,7 +2105,9 @@
     "moreGamesHelp": "拖动或点击、卡片、拼写和发音",
     "previousExample": "我们之前说的话",
     "fullInstruction": "完整说明",
-    "voiceSample": "英语语音示例 · AI 老师"
+    "voiceSample": "英语语音示例 · AI 老师",
+    "activitiesFinished": "可用活动已完成。你可以结束并保存本课。",
+    "activityCaption": "活动 {{count}} · {{title}}"
   },
   "structuredUi": {
     "mapTitle": "我的学习地图",
@@ -3030,5 +3037,47 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "landing": {
+    "nav": {},
+    "hero": {},
+    "demo": {},
+    "journey": {
+      "mark": {},
+      "practice": {},
+      "speak": {},
+      "read": {}
+    },
+    "languages": {},
+    "testimonials": {},
+    "faq": {},
+    "cta": {},
+    "footer": {},
+    "ext": {},
+    "sample": {}
+  },
+  "pathChoices": {
+    "skipUnit": "跳过单元",
+    "restoreUnit": "将单元恢复到学习路径",
+    "help": "你可以从任何步骤开始。跳过会调整推荐路径，且可以撤销；这不代表已掌握内容。",
+    "summary": "已完成 {{complete}} · 已跳过 {{skipped}} · 剩余 {{remaining}}",
+    "routeEnd": "你已到达所选路径的终点。你可以重新学习任何内容，包括已跳过的内容。",
+    "completed": "已完成",
+    "skipped": "已跳过",
+    "pending": "尚未完成",
+    "startHere": "从这里开始",
+    "restore": "恢复到路径",
+    "skip": "跳过",
+    "confirmTitle": "跳过本单元剩余内容？",
+    "confirmBody": "将从后续推荐中移除 {{count}} 个未完成步骤。之前的学习记录会保留，你可以撤销此操作。",
+    "chooseUnit": "选择单元",
+    "chooseStep": "选择或跳过步骤",
+    "prerequisite": "建议的预备知识：{{topics}}",
+    "words": "单词",
+    "meeting": "课程",
+    "homework": "练习",
+    "wordsRecommended": "建议在上课前熟悉 {{count}} 个单词。你也可以立即开始。",
+    "selectionChanged": "所选课程已更改或不可用。请返回课程地图重新选择。",
+    "finishedPrograms": "已结束的学习计划"
   }
 }

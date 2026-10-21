@@ -36,6 +36,11 @@ const messageCodes = new Set([
   "EMAIL_DELIVERY_UNAVAILABLE",
   "SUBSCRIPTION_REQUIRED",
   "PRIVATE_LESSON_MINUTES_REQUIRED",
+  "PRIVATE_LESSON_PLAN_INSUFFICIENT",
+  "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE",
+  "PRIVATE_LESSON_ACTIVITY_CONFLICT",
+  "PRIVATE_LESSON_ACTIVITY_EXPIRED",
+  "PRIVATE_LESSON_ACTIVITY_LIMIT",
   "AI_MONTHLY_LIMIT_REACHED",
   "AI_DAILY_LIMIT_REACHED",
   "AI_SESSION_ACTIVE",
@@ -97,16 +102,22 @@ async function request(
             path.endsWith("/image")
           ? 120000
           : path === "private-lessons/realtime-sessions"
-            ? 90000
-            : path.startsWith("courses/homework/") && path.endsWith("/prepare")
-              ? 230000
-              : path.startsWith("courses")
-                ? 120000
-                : path.startsWith("reading") ||
-                    path.endsWith("/complete") ||
-                    path === "import"
-                  ? 75000
-                  : 20000;
+            ? (body as { interactionProtocol?: string } | undefined)
+                ?.interactionProtocol === "adaptive-v1"
+              ? 225000
+              : 90000
+            : /^private-lessons\/[0-9a-f-]+\/activity$/i.test(path)
+              ? 35000
+              : path.startsWith("courses/homework/") &&
+                  path.endsWith("/prepare")
+                ? 230000
+                : path.startsWith("courses")
+                  ? 120000
+                  : path.startsWith("reading") ||
+                      path.endsWith("/complete") ||
+                      path === "import"
+                    ? 75000
+                    : 20000;
   const timeoutSignal = AbortSignal.timeout(timeoutMs);
   try {
     response = await fetch(`${base}/api/v1/${path}`, {

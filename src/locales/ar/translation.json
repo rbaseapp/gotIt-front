@@ -1617,7 +1617,12 @@
     "EMAIL_VERIFICATION_REQUIRED": "أكد بريدك قبل تسجيل الدخول.",
     "EMAIL_CODE_INVALID": "الرمز غير صحيح أو منتهي أو مستخدم. اطلب رمزاً جديداً.",
     "EMAIL_RATE_LIMITED": "طلبات كثيرة جداً. انتظر قبل المحاولة مجدداً.",
-    "EMAIL_DELIVERY_UNAVAILABLE": "إرسال البريد غير متاح مؤقتاً. حاول لاحقاً."
+    "EMAIL_DELIVERY_UNAVAILABLE": "إرسال البريد غير متاح مؤقتاً. حاول لاحقاً.",
+    "PRIVATE_LESSON_PLAN_INSUFFICIENT": "تعذّر إعداد أنشطة متنوعة وكافية للدرس. يُرجى المحاولة لاحقًا.",
+    "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE": "أنشطة الدرس غير متاحة مؤقتًا.",
+    "PRIVATE_LESSON_ACTIVITY_CONFLICT": "تغيّر الدرس. أعد تحميل النشاط الحالي.",
+    "PRIVATE_LESSON_ACTIVITY_EXPIRED": "انتهت صلاحية بيانات الدرس المؤقتة.",
+    "PRIVATE_LESSON_ACTIVITY_LIMIT": "بلغ الدرس الحد الأقصى للأنشطة. أنهِه واحفظه."
   },
   "validation": {
     "skills": "اختر مهارة واحدة على الأقل، بدون نسخ مكررة.",
@@ -2145,7 +2150,9 @@
     "moreGamesHelp": "السحب أو النقر، البطاقات، الإملاء والنطق",
     "previousExample": "ما قلناه سابقاً",
     "fullInstruction": "التعليمات الكاملة",
-    "voiceSample": "عينة صوت بالإنجليزية · معلم AI"
+    "voiceSample": "عينة صوت بالإنجليزية · معلم AI",
+    "activitiesFinished": "اكتملت الأنشطة المتاحة. يمكنك إنهاء الدرس وحفظه.",
+    "activityCaption": "النشاط {{count}} · {{title}}"
   },
   "structuredUi": {
     "mapTitle": "خريطة تعلّمي",
@@ -3075,5 +3082,47 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "landing": {
+    "nav": {},
+    "hero": {},
+    "demo": {},
+    "journey": {
+      "mark": {},
+      "practice": {},
+      "speak": {},
+      "read": {}
+    },
+    "languages": {},
+    "testimonials": {},
+    "faq": {},
+    "cta": {},
+    "footer": {},
+    "ext": {},
+    "sample": {}
+  },
+  "pathChoices": {
+    "skipUnit": "تخطي الوحدة",
+    "restoreUnit": "إعادة الوحدة إلى المسار",
+    "help": "يمكنك البدء بأي خطوة. يغيّر التخطي المسار المقترح ويمكن التراجع عنه؛ ولا يُعد دليلاً على الإتقان.",
+    "summary": "{{complete}} مكتملة · {{skipped}} متخطاة · {{remaining}} متبقية",
+    "routeEnd": "وصلت إلى نهاية المسار الذي اخترته. يمكنك العودة إلى أي محتوى، بما فيه ما تخطيته.",
+    "completed": "مكتمل",
+    "skipped": "تم التخطي",
+    "pending": "غير مكتمل",
+    "startHere": "ابدأ من هنا",
+    "restore": "إعادة إلى المسار",
+    "skip": "تخطي",
+    "confirmTitle": "تخطي بقية الوحدة؟",
+    "confirmBody": "ستُزال {{count}} خطوات غير مكتملة من الخطوات التالية المقترحة. سيُحفظ العمل السابق ويمكن التراجع.",
+    "chooseUnit": "اختر وحدة",
+    "chooseStep": "اختيار خطوة أو تخطيها",
+    "prerequisite": "المعرفة السابقة المقترحة: {{topics}}",
+    "words": "كلمات",
+    "meeting": "لقاء",
+    "homework": "تدريب",
+    "wordsRecommended": "نوصي بمعرفة {{count}} كلمة قبل اللقاء. يمكنك البدء الآن.",
+    "selectionChanged": "تغير الدرس المحدد أو لم يعد متاحًا. ارجع إلى خريطة الدورة واختره مجددًا.",
+    "finishedPrograms": "برامج انتهت"
   }
 }

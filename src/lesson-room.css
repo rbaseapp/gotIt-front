@@ -249,6 +249,7 @@
   color: var(--green);
 }
 .lesson-room-turn p {
+  text-align: start;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   line-height: 1.55;

@@ -36,6 +36,27 @@ it("allows bounded artwork generation without extending cache lookups", () => {
   );
 });
 
+it("allows bounded adaptive lesson planning while keeping ordinary activity requests short", () => {
+  assert.equal(
+    upstreamTimeoutMs(
+      "/gotit-api",
+      "/api/v1/private-lessons/realtime-sessions",
+    ),
+    220000,
+  );
+  assert.equal(
+    upstreamTimeoutMs(
+      "/gotit-api",
+      "/api/v1/private-lessons/11111111-1111-4111-8111-111111111111/activity",
+    ),
+    80000,
+  );
+  assert.equal(
+    upstreamTimeoutMs("/core-api", "/api/v1/private-lessons/realtime-sessions"),
+    80000,
+  );
+});
+
 let upstream;
 let gateway;
 let upstreamOrigin;

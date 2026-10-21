@@ -1627,7 +1627,12 @@
     "EMAIL_VERIFICATION_REQUIRED": "Verify your email before signing in.",
     "EMAIL_CODE_INVALID": "The code is incorrect, expired or already used. Request a new code.",
     "EMAIL_RATE_LIMITED": "Too many requests. Wait before trying again.",
-    "EMAIL_DELIVERY_UNAVAILABLE": "Email delivery is temporarily unavailable. Please try again later."
+    "EMAIL_DELIVERY_UNAVAILABLE": "Email delivery is temporarily unavailable. Please try again later.",
+    "PRIVATE_LESSON_PLAN_INSUFFICIENT": "The lesson material could not be prepared with enough useful variety. Please try again later.",
+    "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE": "Lesson activities are temporarily unavailable.",
+    "PRIVATE_LESSON_ACTIVITY_CONFLICT": "The lesson has changed. Reload the current activity.",
+    "PRIVATE_LESSON_ACTIVITY_EXPIRED": "The temporary lesson evidence has expired.",
+    "PRIVATE_LESSON_ACTIVITY_LIMIT": "This lesson has reached its activity limit. Finish and save it."
   },
   "validation": {
     "skills": "Choose at least one skill, without duplicates.",
@@ -2099,7 +2104,9 @@
     "moreGamesHelp": "Drag or tap, word cards, spelling and pronunciation",
     "previousExample": "What we said before",
     "fullInstruction": "Full instruction",
-    "voiceSample": "Voice sample in English · AI teacher"
+    "voiceSample": "Voice sample in English · AI teacher",
+    "activitiesFinished": "The available activities are complete. You can finish and save this lesson.",
+    "activityCaption": "Activity {{count}} · {{title}}"
   },
   "structuredUi": {
     "mapTitle": "My learning map",
@@ -3029,5 +3036,47 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "landing": {
+    "nav": {},
+    "hero": {},
+    "demo": {},
+    "journey": {
+      "mark": {},
+      "practice": {},
+      "speak": {},
+      "read": {}
+    },
+    "languages": {},
+    "testimonials": {},
+    "faq": {},
+    "cta": {},
+    "footer": {},
+    "ext": {},
+    "sample": {}
+  },
+  "pathChoices": {
+    "skipUnit": "Skip unit",
+    "restoreUnit": "Restore unit to path",
+    "help": "You can start at any step. Skipping changes your recommended path and can be undone; it does not demonstrate mastery.",
+    "summary": "{{complete}} completed · {{skipped}} skipped · {{remaining}} remaining",
+    "routeEnd": "You have reached the end of your chosen path. You can revisit any content, including skipped content.",
+    "completed": "Completed",
+    "skipped": "Skipped",
+    "pending": "Not completed",
+    "startHere": "Start here",
+    "restore": "Restore to path",
+    "skip": "Skip",
+    "confirmTitle": "Skip the rest of this unit?",
+    "confirmBody": "{{count}} unfinished steps will be removed from your recommended next steps. Previous work is preserved and you can undo this.",
+    "chooseUnit": "Choose a unit",
+    "chooseStep": "Choose or skip a step",
+    "prerequisite": "Recommended prior knowledge: {{topics}}",
+    "words": "Words",
+    "meeting": "Meeting",
+    "homework": "Practice",
+    "wordsRecommended": "We recommend knowing {{count}} words before this meeting. You can start now.",
+    "selectionChanged": "The selected lesson changed or is unavailable. Return to the course map and select it again.",
+    "finishedPrograms": "Finished programs"
   }
 }

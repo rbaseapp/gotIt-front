@@ -1581,7 +1581,12 @@
     "EMAIL_VERIFICATION_REQUIRED": "Verifica tu correo antes de iniciar sesión.",
     "EMAIL_CODE_INVALID": "El código es incorrecto, ha caducado o ya se usó. Solicita otro.",
     "EMAIL_RATE_LIMITED": "Demasiadas solicitudes. Espera antes de reintentarlo.",
-    "EMAIL_DELIVERY_UNAVAILABLE": "El envío de correos no está disponible temporalmente. Inténtalo más tarde."
+    "EMAIL_DELIVERY_UNAVAILABLE": "El envío de correos no está disponible temporalmente. Inténtalo más tarde.",
+    "PRIVATE_LESSON_PLAN_INSUFFICIENT": "No se pudieron preparar suficientes actividades variadas. Inténtalo más tarde.",
+    "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE": "Las actividades no están disponibles temporalmente.",
+    "PRIVATE_LESSON_ACTIVITY_CONFLICT": "La lección ha cambiado. Recarga la actividad actual.",
+    "PRIVATE_LESSON_ACTIVITY_EXPIRED": "Los datos temporales de la lección han caducado.",
+    "PRIVATE_LESSON_ACTIVITY_LIMIT": "La lección ha alcanzado su límite de actividades. Finalízala y guárdala."
   },
   "validation": {
     "skills": "Elige al menos una habilidad, sin duplicados.",
@@ -2100,7 +2105,9 @@
     "moreGamesHelp": "Arrastrar o pulsar, tarjetas, escritura y pronunciación",
     "previousExample": "Lo que dijimos antes",
     "fullInstruction": "Instrucción completa",
-    "voiceSample": "Muestra en inglés · profesor IA"
+    "voiceSample": "Muestra en inglés · profesor IA",
+    "activitiesFinished": "Las actividades disponibles han terminado. Puedes finalizar y guardar la lección.",
+    "activityCaption": "Actividad {{count}} · {{title}}"
   },
   "structuredUi": {
     "mapTitle": "Mi mapa de aprendizaje",
@@ -3030,5 +3037,47 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "landing": {
+    "nav": {},
+    "hero": {},
+    "demo": {},
+    "journey": {
+      "mark": {},
+      "practice": {},
+      "speak": {},
+      "read": {}
+    },
+    "languages": {},
+    "testimonials": {},
+    "faq": {},
+    "cta": {},
+    "footer": {},
+    "ext": {},
+    "sample": {}
+  },
+  "pathChoices": {
+    "skipUnit": "Omitir unidad",
+    "restoreUnit": "Restaurar unidad al recorrido",
+    "help": "Puedes empezar en cualquier paso. Omitir cambia el recorrido recomendado y se puede deshacer; no demuestra dominio.",
+    "summary": "{{complete}} completados · {{skipped}} omitidos · {{remaining}} pendientes",
+    "routeEnd": "Has llegado al final del recorrido elegido. Puedes volver a cualquier contenido, incluido el omitido.",
+    "completed": "Completado",
+    "skipped": "Omitido",
+    "pending": "Pendiente",
+    "startHere": "Empezar aquí",
+    "restore": "Restaurar al recorrido",
+    "skip": "Omitir",
+    "confirmTitle": "¿Omitir el resto de la unidad?",
+    "confirmBody": "Se quitarán {{count}} pasos pendientes de las próximas recomendaciones. Tu trabajo anterior se conserva y puedes deshacerlo.",
+    "chooseUnit": "Elegir unidad",
+    "chooseStep": "Elegir u omitir un paso",
+    "prerequisite": "Conocimientos previos recomendados: {{topics}}",
+    "words": "Palabras",
+    "meeting": "Clase",
+    "homework": "Práctica",
+    "wordsRecommended": "Recomendamos conocer {{count}} palabras antes de esta clase. Puedes empezar ahora.",
+    "selectionChanged": "La lección elegida cambió o no está disponible. Vuelve al mapa del curso y selecciónala de nuevo.",
+    "finishedPrograms": "Programas finalizados"
   }
 }

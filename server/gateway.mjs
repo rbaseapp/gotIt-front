@@ -100,6 +100,11 @@ export function configuration(env = process.env) {
   };
 }
 export function upstreamTimeoutMs(prefix, apiPath) {
+  if (
+    prefix === "/gotit-api" &&
+    apiPath === "/api/v1/private-lessons/realtime-sessions"
+  )
+    return 220000;
   return prefix === "/gotit-api" &&
     /^\/api\/v1\/courses\/homework\/[0-9a-f-]+\/prepare$/i.test(apiPath)
     ? 220000

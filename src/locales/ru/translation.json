@@ -1605,7 +1605,12 @@
     "EMAIL_VERIFICATION_REQUIRED": "Подтвердите почту перед входом.",
     "EMAIL_CODE_INVALID": "Код неверен, истёк или уже использован. Запросите новый.",
     "EMAIL_RATE_LIMITED": "Слишком много запросов. Подождите перед повтором.",
-    "EMAIL_DELIVERY_UNAVAILABLE": "Отправка почты временно недоступна. Попробуйте позже."
+    "EMAIL_DELIVERY_UNAVAILABLE": "Отправка почты временно недоступна. Попробуйте позже.",
+    "PRIVATE_LESSON_PLAN_INSUFFICIENT": "Не удалось подготовить достаточно разнообразных заданий. Попробуйте позже.",
+    "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE": "Задания урока временно недоступны.",
+    "PRIVATE_LESSON_ACTIVITY_CONFLICT": "Урок изменился. Загрузите текущее задание заново.",
+    "PRIVATE_LESSON_ACTIVITY_EXPIRED": "Срок хранения временных данных урока истёк.",
+    "PRIVATE_LESSON_ACTIVITY_LIMIT": "Достигнут лимит заданий. Завершите и сохраните урок."
   },
   "validation": {
     "skills": "Выберите хотя бы один навык без дубликатов.",
@@ -2130,7 +2135,9 @@
     "moreGamesHelp": "Перетаскивание или нажатие, карточки, правописание и произношение",
     "previousExample": "Что мы говорили раньше",
     "fullInstruction": "Полная инструкция",
-    "voiceSample": "Образец голоса на английском · ИИ-учитель"
+    "voiceSample": "Образец голоса на английском · ИИ-учитель",
+    "activitiesFinished": "Доступные задания завершены. Можно закончить и сохранить урок.",
+    "activityCaption": "Задание {{count}} · {{title}}"
   },
   "structuredUi": {
     "mapTitle": "Моя карта обучения",
@@ -3060,5 +3067,47 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "landing": {
+    "nav": {},
+    "hero": {},
+    "demo": {},
+    "journey": {
+      "mark": {},
+      "practice": {},
+      "speak": {},
+      "read": {}
+    },
+    "languages": {},
+    "testimonials": {},
+    "faq": {},
+    "cta": {},
+    "footer": {},
+    "ext": {},
+    "sample": {}
+  },
+  "pathChoices": {
+    "skipUnit": "Пропустить раздел",
+    "restoreUnit": "Вернуть раздел в маршрут",
+    "help": "Можно начать с любого шага. Пропуск меняет рекомендуемый маршрут и отменяется; он не подтверждает владение материалом.",
+    "summary": "{{complete}} завершено · {{skipped}} пропущено · {{remaining}} осталось",
+    "routeEnd": "Вы дошли до конца выбранного маршрута. Можно вернуться к любому материалу, включая пропущенный.",
+    "completed": "Завершено",
+    "skipped": "Пропущено",
+    "pending": "Не завершено",
+    "startHere": "Начать здесь",
+    "restore": "Вернуть в маршрут",
+    "skip": "Пропустить",
+    "confirmTitle": "Пропустить остаток раздела?",
+    "confirmBody": "Из следующих рекомендаций будут убраны незавершённые шаги: {{count}}. Предыдущая работа сохранится. Пропуск можно отменить.",
+    "chooseUnit": "Выбрать раздел",
+    "chooseStep": "Выбрать или пропустить шаг",
+    "prerequisite": "Рекомендуемые предварительные знания: {{topics}}",
+    "words": "Слова",
+    "meeting": "Урок",
+    "homework": "Практика",
+    "wordsRecommended": "Перед уроком рекомендуем познакомиться со словами: {{count}}. Можно начать сейчас.",
+    "selectionChanged": "Выбранный урок изменился или недоступен. Вернитесь к плану курса и выберите его снова.",
+    "finishedPrograms": "Завершённые маршруты"
   }
 }

@@ -1581,7 +1581,12 @@
     "EMAIL_VERIFICATION_REQUIRED": "Bestätige deine E-Mail vor der Anmeldung.",
     "EMAIL_CODE_INVALID": "Der Code ist falsch, abgelaufen oder bereits verwendet. Fordere einen neuen an.",
     "EMAIL_RATE_LIMITED": "Zu viele Anfragen. Warte vor dem nächsten Versuch.",
-    "EMAIL_DELIVERY_UNAVAILABLE": "E-Mail-Versand ist vorübergehend nicht verfügbar. Versuche es später."
+    "EMAIL_DELIVERY_UNAVAILABLE": "E-Mail-Versand ist vorübergehend nicht verfügbar. Versuche es später.",
+    "PRIVATE_LESSON_PLAN_INSUFFICIENT": "Es konnten nicht genügend abwechslungsreiche Aktivitäten vorbereitet werden. Versuche es später erneut.",
+    "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE": "Die Aktivitäten sind vorübergehend nicht verfügbar.",
+    "PRIVATE_LESSON_ACTIVITY_CONFLICT": "Die Lektion hat sich geändert. Lade die aktuelle Aktivität neu.",
+    "PRIVATE_LESSON_ACTIVITY_EXPIRED": "Die vorübergehenden Lektionsdaten sind abgelaufen.",
+    "PRIVATE_LESSON_ACTIVITY_LIMIT": "Das Aktivitätslimit wurde erreicht. Beende und speichere die Lektion."
   },
   "validation": {
     "skills": "Wählen Sie mindestens eine Fertigkeit aus, ohne Duplikate.",
@@ -2100,7 +2105,9 @@
     "moreGamesHelp": "Ziehen oder tippen, Karten, Schreiben und Aussprache",
     "previousExample": "Was wir zuvor gesagt haben",
     "fullInstruction": "Vollständige Anweisung",
-    "voiceSample": "Hörprobe auf Englisch · KI-Lehrkraft"
+    "voiceSample": "Hörprobe auf Englisch · KI-Lehrkraft",
+    "activitiesFinished": "Die verfügbaren Aktivitäten sind abgeschlossen. Du kannst die Lektion beenden und speichern.",
+    "activityCaption": "Aktivität {{count}} · {{title}}"
   },
   "structuredUi": {
     "mapTitle": "Mein Lernweg",
@@ -3030,5 +3037,47 @@
       "CURRICULUM_READING_INVALID": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable.",
       "CURRICULUM_EXIT_LOCKED": "This activity is not ready. Check the previous steps on the learning path, or retry if the teacher is temporarily unavailable."
     }
+  },
+  "landing": {
+    "nav": {},
+    "hero": {},
+    "demo": {},
+    "journey": {
+      "mark": {},
+      "practice": {},
+      "speak": {},
+      "read": {}
+    },
+    "languages": {},
+    "testimonials": {},
+    "faq": {},
+    "cta": {},
+    "footer": {},
+    "ext": {},
+    "sample": {}
+  },
+  "pathChoices": {
+    "skipUnit": "Einheit überspringen",
+    "restoreUnit": "Einheit wieder aufnehmen",
+    "help": "Du kannst bei jedem Schritt beginnen. Überspringen ändert den empfohlenen Lernweg und ist umkehrbar; es belegt keine Beherrschung.",
+    "summary": "{{complete}} abgeschlossen · {{skipped}} übersprungen · {{remaining}} offen",
+    "routeEnd": "Du hast das Ende deines gewählten Lernwegs erreicht. Alle Inhalte bleiben zugänglich, auch übersprungene.",
+    "completed": "Abgeschlossen",
+    "skipped": "Übersprungen",
+    "pending": "Noch offen",
+    "startHere": "Hier beginnen",
+    "restore": "Wieder aufnehmen",
+    "skip": "Überspringen",
+    "confirmTitle": "Rest dieser Einheit überspringen?",
+    "confirmBody": "{{count}} offene Schritte werden aus den nächsten Empfehlungen entfernt. Bisherige Arbeit bleibt erhalten. Du kannst dies rückgängig machen.",
+    "chooseUnit": "Einheit wählen",
+    "chooseStep": "Schritt wählen oder überspringen",
+    "prerequisite": "Empfohlene Vorkenntnisse: {{topics}}",
+    "words": "Wörter",
+    "meeting": "Unterricht",
+    "homework": "Übung",
+    "wordsRecommended": "Vor diesem Unterricht empfehlen wir {{count}} bekannte Wörter. Du kannst jetzt beginnen.",
+    "selectionChanged": "Die gewählte Lektion wurde geändert oder ist nicht verfügbar. Wähle sie im Kursplan erneut.",
+    "finishedPrograms": "Beendete Programme"
   }
 }
