@@ -2929,7 +2929,7 @@
     "unitReading": "Unit reading",
     "checkpoint": "Progress check",
     "unseen": "New text and transfer",
-    "wordInstructions": "To start practising, first meet a word: listen, read its meaning and check ?Listened and met the meaning?. This button takes you to the next word to introduce. Once confirmed, it opens the appropriate practice.",
+    "wordInstructions": "Practice starts by meeting the word. Open Smart Practice to see its study card, listen and read its meaning. Confirming familiarity on the card opens the first exercise. Familiarity is not mastery.",
     "games": {
       "recognition": "Recognize meaning",
       "matching": "Match word and meaning",
