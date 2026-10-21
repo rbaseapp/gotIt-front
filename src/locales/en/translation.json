@@ -320,6 +320,7 @@
       "title": "Your lesson summary",
       "generate": "Create my lesson summary",
       "preparing": "Preparing your personal review…",
+      "preparingBody": "Your lesson has ended. We are saving your progress and preparing a summary of what you practiced.",
       "failed": "The lesson ended, but the summary could not be prepared yet.",
       "retry": "Try preparing the summary again",
       "strengths": "What went well",

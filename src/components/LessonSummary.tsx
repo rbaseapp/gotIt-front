@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { SavedPrivateLesson } from "../lib/privateLesson";
 import { LessonHomeworkCard } from "../pages/HomeworkPage";
-import { Logo } from "./Logo";
+import "./LessonSummary.css";
 
 export function LessonSummary({
   lesson,
@@ -31,12 +31,6 @@ export function LessonSummary({
   const assisted = evidence.filter((entry) => !entry.independent);
   return (
     <section className="lesson-summary-workspace">
-      <header>
-        <Logo />
-        <Link className="button ghost" to={returnTo}>
-          {t("common.back")}
-        </Link>
-      </header>
       <div
         className="canonical-page lesson-summary"
         data-figma-desktop="43:6641"
@@ -87,12 +81,9 @@ export function LessonSummary({
         {lesson.curriculum ? (
           <section className="ux-card">
             <h2>{t("c1.postlesson")}</h2>
-            <p>{t("c1.splitLesson")}</p>
-            <Link
-              className="button primary"
-              to={`/english-learning?view=teacher&lesson=${lesson.curriculum.lessonId}&unit=${lesson.curriculum.lessonId.split("-L")[0]}`}
-            >
-              {t("c1.resume")}
+            <p>{t("unitMap.followUpHelp")}</p>
+            <Link className="button primary" to={returnTo}>
+              {t("pathUi.continueUnit")}
             </Link>
           </section>
         ) : (

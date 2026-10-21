@@ -1574,26 +1574,32 @@ export function PrivateLessonPage() {
   if (phase === "ended" && reportRequested)
     return (
       <section className="lesson-summary-workspace">
-        <header>
-          <Logo />
-        </header>
-        <main
-          className="canonical-page lesson-summary"
+        <div
+          className="canonical-page lesson-summary lesson-report-status"
           data-figma-desktop="43:7515"
         >
-          <h1>
-            {t(
-              reportLoading
-                ? "privateLesson.report.preparing"
-                : "privateLesson.report.failed",
-            )}
-          </h1>
           <section
-            className="ux-card mint"
+            className="ux-card lesson-report-status-card"
             role={reportLoading ? "status" : "alert"}
+            aria-live="polite"
+            aria-busy={reportLoading}
           >
+            <span className="lesson-report-status-icon" aria-hidden="true">
+              {reportLoading ? (
+                <LoaderCircle className="spin" size={32} />
+              ) : (
+                <BookOpen size={32} />
+              )}
+            </span>
+            <h1>
+              {t(
+                reportLoading
+                  ? "privateLesson.report.preparing"
+                  : "privateLesson.report.failed",
+              )}
+            </h1>
             {reportLoading ? (
-              <LoaderCircle className="spin" size={44} />
+              <p>{t("privateLesson.report.preparingBody")}</p>
             ) : (
               <>
                 <p>{reportError}</p>
@@ -1611,7 +1617,7 @@ export function PrivateLessonPage() {
           <Link className="button secondary" to={lessonReturn}>
             {t("common.back")}
           </Link>
-        </main>
+        </div>
       </section>
     );
 
