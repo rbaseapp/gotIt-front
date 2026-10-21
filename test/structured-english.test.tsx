@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, it, expect, vi } from "vitest";
+import i18n from "../src/i18n";
 import { StructuredEnglishPage } from "../src/pages/StructuredEnglishPage";
 import type {
   Curriculum,
@@ -18,6 +19,11 @@ const mocks = vi.hoisted(() => ({
   answer: vi.fn(),
   heartbeat: vi.fn(),
   expose: vi.fn(),
+  navigate: vi.fn(),
+}));
+vi.mock("react-router-dom", async (original) => ({
+  ...(await original<typeof import("react-router-dom")>()),
+  useNavigate: () => mocks.navigate,
 }));
 vi.mock("../src/context/AppContext", () => ({
   useApp: () => ({ user: { id: "curriculum-user" } }),
@@ -191,98 +197,60 @@ const open = (path: string) =>
     </MemoryRouter>,
   );
 describe("structured English live learner flow", () => {
-  it("opens a study card, then enters the first exercise after confirmation and safely retries a lost start response", async () => {
+  it("opens the existing whole-unit smart game route without recording exposure or starting a questionnaire", async () => {
     const user = userEvent.setup();
     const { unit } = await mocks.unit();
-    const freshUnit = {
-      ...unit,
-      words: unit.words.map((word: { id: string }) => ({
-        ...word,
-        evidence: null,
-      })),
-      games: unit.games.map((game: { mode: string }) => ({
-        ...game,
-        eligible: 0,
-      })),
-    };
-    mocks.unit.mockResolvedValue({ unit: freshUnit });
-    mocks.get.mockResolvedValue({
-      ...data,
-      review: { ...data.review, introduced: 0 },
-    });
-    mocks.expose.mockResolvedValue({ revision: 2 });
-    open("/english-learning?view=words&unit=P01");
-    const smart = await screen.findByRole("button", { name: "לתרגול החכם" });
-    expect(smart).toBeEnabled();
-    expect(smart).toHaveAccessibleDescription(/התרגול מתחיל בהיכרות/);
-    await user.click(screen.getByText("word5", { exact: true }));
-    await user.click(smart);
-    await screen.findByRole("heading", { name: "מכירים מילה חדשה" });
-    expect(screen.getByRole("heading", { name: "word1" })).toBeVisible();
-    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
-    expect(screen.queryByText("word5")).not.toBeInTheDocument();
-    const introduction = screen.getByRole("button", {
-      name: /הקשבתי והכרתי את המשמעות/,
-    });
-    expect(mocks.expose).not.toHaveBeenCalled();
-    expect(mocks.start).not.toHaveBeenCalled();
-    mocks.get.mockResolvedValue({ ...data, revision: 2 });
     mocks.unit.mockResolvedValue({
       unit: {
-        ...freshUnit,
-        words: freshUnit.words.map((word: { id: string }, index: number) => ({
-          ...word,
-          evidence:
-            index === 0 ? { status: "introduced", dueAt: "2026-10-22" } : null,
-        })),
-        games: freshUnit.games.map((game: { mode: string }) => ({
-          ...game,
-          eligible: game.mode === "recognition" ? 1 : 0,
-        })),
+        ...unit,
+        words: unit.words.map((word: object) => ({ ...word, evidence: null })),
+        games: unit.games.map((game: object) => ({ ...game, eligible: 0 })),
       },
     });
-    mocks.start.mockRejectedValueOnce(new Error("Connection lost"));
-    await user.click(introduction);
-    await waitFor(() => expect(mocks.expose).toHaveBeenCalledTimes(1));
-    expect(mocks.expose.mock.calls[0]?.[1]).toEqual(["P01-T1"]);
-    await screen.findByRole("alert");
-    expect(screen.getByRole("heading", { name: "word1" })).toBeVisible();
-    mocks.get.mockResolvedValue({ ...data, revision: 3 });
-    await user.click(
-      screen.getByRole("button", { name: /הקשבתי והכרתי את המשמעות/ }),
+    open("/english-learning?view=words&unit=P01");
+    const smart = await screen.findByRole("button", {
+      name: i18n.t("dashboard.smartPractice"),
+    });
+    expect(smart).toBeEnabled();
+    await user.click(smart);
+    const url = new URL(
+      mocks.navigate.mock.calls[0][0],
+      "https://example.test",
     );
-    await screen.findByRole("heading", { name: "בחרו משמעות" });
-    expect(mocks.start.mock.calls[0]?.[1]).toBe("words:P01:recognition");
-    expect(mocks.start).toHaveBeenCalledTimes(2);
-    expect(mocks.start.mock.calls[1]).toEqual(mocks.start.mock.calls[0]);
-    expect(mocks.expose).toHaveBeenCalledTimes(1);
+    expect(url.pathname).toBe("/learn/session/smart");
+    expect(url.searchParams.get("curriculumUnit")).toBe("P01");
+    expect(url.searchParams.get("count")).toBe("12");
+    expect(url.searchParams.get("language")).toBe("en");
+    expect(url.searchParams.get("return")).toBe(
+      "/english-learning?view=words&unit=P01",
+    );
+    expect(url.searchParams.has("pack")).toBe(false);
+    expect(url.searchParams.has("items")).toBe(false);
+    expect(mocks.expose).not.toHaveBeenCalled();
+    expect(mocks.start).not.toHaveBeenCalled();
   });
-  it("resumes an unfinished word activity in this unit instead of starting another", async () => {
+  it("resumes the actual multi-game session instead of a legacy vocabulary questionnaire", async () => {
     const user = userEvent.setup();
+    const resume = "22222222-2222-4222-8222-222222222222";
     mocks.get.mockResolvedValue({
       ...data,
+      practiceSessions: { P01: resume },
       activeAttempts: { "words:P01:recognition": attempt.id },
     });
     open("/english-learning?view=words&unit=P01");
     await user.click(
-      await screen.findByRole("button", { name: "לתרגול החכם" }),
+      await screen.findByRole("button", {
+        name: i18n.t("dashboard.smartPractice"),
+      }),
     );
-    await screen.findByRole("heading", { name: "בחרו משמעות" });
-    expect(mocks.attempt).toHaveBeenCalledWith(attempt.id);
+    const url = new URL(
+      mocks.navigate.mock.calls[0][0],
+      "https://example.test",
+    );
+    expect(url.pathname).toBe("/learn/session/smart");
+    expect(url.searchParams.get("resume")).toBe(resume);
+    expect(mocks.attempt).not.toHaveBeenCalled();
     expect(mocks.start).not.toHaveBeenCalled();
-  });
-  it("ignores an ineligible recommended mode", async () => {
-    const user = userEvent.setup();
-    mocks.get.mockResolvedValue({
-      ...data,
-      nextAction: { kind: "words", id: "P01", game: "recall" },
-    });
-    open("/english-learning?view=words&unit=P01");
-    await user.click(
-      await screen.findByRole("button", { name: "לתרגול החכם" }),
-    );
-    await screen.findByRole("heading", { name: "בחרו משמעות" });
-    expect(mocks.start.mock.calls[0]?.[1]).toBe("words:P01:recognition");
   });
   it("does not enable smart practice while inspecting a locked unit", async () => {
     mocks.get.mockResolvedValue({
@@ -314,12 +282,15 @@ describe("structured English live learner flow", () => {
   });
   it("shows six words at a time, gates later games, and reveals feedback only after submission", async () => {
     const user = userEvent.setup();
-    open("/english-zero-c1?view=words&unit=P01");
+    const page = open("/english-zero-c1?view=words&unit=P01");
     await screen.findByText("word6");
     expect(screen.getByText("word6")).toBeVisible();
     expect(screen.queryByText("word7")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /שליפה מעברית/ })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: /זיהוי משמעות/ }));
+    expect(mocks.navigate).toHaveBeenCalled();
+    page.unmount();
+    open(`/english-learning?view=attempt&attempt=${attempt.id}&unit=P01`);
     await screen.findByRole("heading", { name: "בחרו משמעות" });
     expect(screen.queryByText("hello")).not.toBeInTheDocument();
     const next = {

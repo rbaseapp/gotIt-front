@@ -30,6 +30,7 @@ export function focusFixture(
     speech?: boolean;
     locale?: string;
     count?: number;
+    curriculumUnit?: string;
     omitCapabilityLanguage?: boolean;
     enabledSkills?: string[];
   } = {},
@@ -68,6 +69,12 @@ export function focusFixture(
     correctCount: 0,
     xpEarned: 0,
     algorithmVersion: "isolated-fixture",
+    ...(options.curriculumUnit
+      ? {
+          curriculumUnitId: options.curriculumUnit,
+          curriculumTitle: "Unit vocabulary",
+        }
+      : {}),
   };
   const cards = focusCards.slice(0, options.count ?? 5);
   const dashboard = {
@@ -231,6 +238,8 @@ export function focusFixture(
               },
             ],
       });
+    if (path.endsWith("/structured-english/heartbeat"))
+      return json({ activeSeconds: 0 });
     if (path.endsWith("/word-packs")) return json({ packs: [] });
     if (path.endsWith("/private-lessons")) return json({ lessons: [] });
     if (path.endsWith("/learning/queue"))

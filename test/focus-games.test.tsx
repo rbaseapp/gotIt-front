@@ -85,7 +85,7 @@ async function mount(
   const view = render(
     <MemoryRouter
       initialEntries={[
-        `/learn/session/${type}?language=en&count=2${resume ? `&resume=${focusSessionId}` : ""}`,
+        `/learn/session/${type}?language=en&count=${options.count ?? 2}${options.curriculumUnit ? `&curriculumUnit=${options.curriculumUnit}` : ""}${resume ? `&resume=${focusSessionId}` : ""}`,
       ]}
     >
       <Routes>
@@ -108,6 +108,56 @@ const click = async (name: string | RegExp) => {
 const next = () => click(/^Continue$/);
 
 describe("DEV focus game engine", () => {
+  it("keeps every curriculum word through flashcards into a multi-board matching stage", async () => {
+    const { fixture } = await mount("smart", {
+      count: 5,
+      curriculumUnit: "P01",
+    });
+    await screen.findByRole("button", { name: "Show translation" });
+    const created = fixture.requests.find(
+      (request) =>
+        request.method === "POST" &&
+        request.path.endsWith("/practice/sessions"),
+    )!;
+    expect(created.body).toMatchObject({
+      curriculumUnitId: "P01",
+      count: 5,
+      sourceLanguageCode: "en",
+      sessionType: "smart_review",
+    });
+    expect(created.body).not.toHaveProperty("scope");
+    for (const card of focusCards) {
+      await waitFor(() =>
+        expect(document.querySelector(".mover .word")).toHaveTextContent(
+          card.sourceText,
+        ),
+      );
+      await click("Show translation");
+      await click(/^Easy/i);
+    }
+    await screen.findByRole("dialog", { name: "Flashcards completed" });
+    expect(
+      new Set(fixture.attempts.map((attempt) => attempt.learningItemId)).size,
+    ).toBe(5);
+    await next();
+    await screen.findByRole("button", { name: "chair", exact: true });
+    const checkpoint = readFocusCheckpoint(focusUserId, focusSessionId)!;
+    expect(checkpoint.sequence).toEqual([
+      "flashcards",
+      "matching",
+      "drag_drop",
+      "listening",
+      "pronunciation",
+    ]);
+    expect(checkpoint.stageItems).toEqual(
+      focusCards.map((card) => card.learningItemId),
+    );
+    expect(checkpoint.session.curriculumUnitId).toBe("P01");
+    expect(document.querySelectorAll("[data-word] .w")).toHaveLength(2);
+    expect(
+      screen.queryByRole("heading", { name: /Choose.*meaning/ }),
+    ).not.toBeInTheDocument();
+  });
   it.each(["en", "he"])(
     "keeps source words visible on the final matching board and after resume (%s)",
     async (locale) => {
@@ -456,67 +506,79 @@ describe("DEV focus game engine", () => {
       true,
     );
   });
-  it("runs all five modes with automatic question/board advance, retry and authoritative close", async () => {
-    vi.mocked(recordVoice).mockResolvedValue("fixture-wave");
-    const { fixture } = await mount();
-    for (let i = 0; i < 2; i++) {
-      await click("Show translation");
-      await click(/^Easy/i);
-    }
-    await screen.findByRole("dialog", { name: "Flashcards completed" });
-    await next();
-    for (const card of focusCards.slice(0, 2)) {
-      await click(card.sourceText);
-      await click(card.translationText);
-      await waitFor(() =>
-        expect(fixture.attempts).toHaveLength(3 + focusCards.indexOf(card)),
+  it.each([false, true])(
+    "runs all five modes with automatic question/board advance, retry and authoritative close (curriculum=%s)",
+    async (curriculum) => {
+      vi.mocked(recordVoice).mockResolvedValue("fixture-wave");
+      const { fixture } = await mount(
+        "smart",
+        curriculum ? { curriculumUnit: "P01" } : {},
       );
-    }
-    await screen.findByRole("dialog", { name: "Matching completed" });
-    await next();
-    await click("book");
-    await screen.findByText("Almost… try another word");
-    await click("chair");
-    await screen.findByText(i18n.t("focusGames.assisted"));
-    await waitFor(() =>
-      expect(document.querySelector(".fg.drag_drop .sen")).toHaveTextContent(
-        "I read a",
-      ),
-    );
-    await click("book");
-    await screen.findByRole("dialog", { name: "Drag and complete completed" });
-    await next();
-    for (const word of ["chair", "book"]) {
-      await waitFor(() => expect(screen.getByRole("textbox")).toHaveValue(""));
-      fireEvent.change(screen.getByRole("textbox"), {
-        target: { value: word },
+      for (let i = 0; i < 2; i++) {
+        await click("Show translation");
+        await click(/^Easy/i);
+      }
+      await screen.findByRole("dialog", { name: "Flashcards completed" });
+      await next();
+      for (const card of focusCards.slice(0, 2)) {
+        await click(card.sourceText);
+        await click(card.translationText);
+        await waitFor(() =>
+          expect(fixture.attempts).toHaveLength(3 + focusCards.indexOf(card)),
+        );
+      }
+      await screen.findByRole("dialog", { name: "Matching completed" });
+      await next();
+      await click("book");
+      await screen.findByText("Almost… try another word");
+      await click("chair");
+      await screen.findByText(i18n.t("focusGames.assisted"));
+      await waitFor(() =>
+        expect(document.querySelector(".fg.drag_drop .sen")).toHaveTextContent(
+          "I read a",
+        ),
+      );
+      await click("book");
+      await screen.findByRole("dialog", {
+        name: "Drag and complete completed",
       });
-      await screen.findByText("Got it!");
-      if (word === "chair")
+      await next();
+      for (const word of ["chair", "book"]) {
         await waitFor(() =>
           expect(screen.getByRole("textbox")).toHaveValue(""),
         );
-    }
-    await screen.findByRole("dialog", { name: "Listen and write completed" });
-    await click("Continue to the last game");
-    await click("Start recording");
-    await click("Allow microphone");
-    await screen.findByText("Clear pronunciation from the test provider.");
-    await next();
-    await click("Can't speak now — pause speaking games");
-    await screen.findByRole("dialog", { name: "Pronunciation completed" });
-    await click("Session summary");
-    await screen.findByRole("region", { name: "Session summary" });
-    expect(fixture.session.status).toBe("completed");
-    expect(fixture.attempts).toHaveLength(11);
-    expect(screen.getByRole("dialog", { name: "Session summary" })).toHaveClass(
-      "fg-completion-modal",
-    );
-    expect(document.querySelector(".fg-game-surface")).toHaveAttribute("inert");
-    expect(
-      sessionStorage.getItem(checkpointKey(focusUserId, focusSessionId)),
-    ).not.toContain("fixture-wave");
-  });
+        fireEvent.change(screen.getByRole("textbox"), {
+          target: { value: word },
+        });
+        await screen.findByText("Got it!");
+        if (word === "chair")
+          await waitFor(() =>
+            expect(screen.getByRole("textbox")).toHaveValue(""),
+          );
+      }
+      await screen.findByRole("dialog", { name: "Listen and write completed" });
+      await click("Continue to the last game");
+      await click("Start recording");
+      await click("Allow microphone");
+      await screen.findByText("Clear pronunciation from the test provider.");
+      await next();
+      await click("Can't speak now — pause speaking games");
+      await screen.findByRole("dialog", { name: "Pronunciation completed" });
+      await click("Session summary");
+      await screen.findByRole("region", { name: "Session summary" });
+      expect(fixture.session.status).toBe("completed");
+      expect(fixture.attempts).toHaveLength(11);
+      expect(
+        screen.getByRole("dialog", { name: "Session summary" }),
+      ).toHaveClass("fg-completion-modal");
+      expect(document.querySelector(".fg-game-surface")).toHaveAttribute(
+        "inert",
+      );
+      expect(
+        sessionStorage.getItem(checkpointKey(focusUserId, focusSessionId)),
+      ).not.toContain("fixture-wave");
+    },
+  );
 
   it("preserves an ambiguous creation intent across a tab reload", async () => {
     const first = await mount("recall", { failCreateOnce: true });
