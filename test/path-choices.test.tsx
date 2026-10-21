@@ -40,6 +40,9 @@ describe("free learning paths", () => {
     expect(choose).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "דלג על היחידה" }));
     expect(choose).not.toHaveBeenCalled();
+    expect(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "ביטול" }),
+    ).toBeVisible();
     await user.click(
       within(screen.getByRole("dialog")).getByRole("button", {
         name: "דלג על היחידה",
