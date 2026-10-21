@@ -21,7 +21,7 @@ import { RemoteState } from "../components/RemoteState";
 import { useFeedback } from "../components/Feedback";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useApp } from "../context/AppContext";
-import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
+import { resolvedEnglishUnit, englishPathLevels } from "../lib/englishPath";
 import {
   errorMessage,
   product,
@@ -82,7 +82,7 @@ export function EnglishLearningPathPage() {
   }, [available, user]);
   const next = levels
     .flatMap(({ packs }) => packs)
-    .find((pack) => !completedEnglishUnit(pack));
+    .find((pack) => !resolvedEnglishUnit(pack));
   const current =
     levels
       .flatMap(({ packs }) => packs)
@@ -395,7 +395,9 @@ export function EnglishLearningPathPage() {
       : undefined;
   const stations = pathForCurrent?.stations ?? [];
   const nextStation = stations.find(
-    (step) => step.available && !step.meetingCompleted,
+    (step) =>
+      step.station === pathForCurrent?.nextAction.station &&
+      pathForCurrent?.nextAction.kind === "meeting",
   );
   const meetingStation = params.get("station")
     ? stations.find(
@@ -528,6 +530,9 @@ export function EnglishLearningPathPage() {
                   }
                   pathError={unitPath.error}
                   onRetryPath={() => void unitPath.reload()}
+                  onPathChanged={async () => {
+                    await Promise.all([unitPath.reload(), resource.reload()]);
+                  }}
                   current={current}
                   packs={resource.data?.packs ?? []}
                   nextStation={nextStation}

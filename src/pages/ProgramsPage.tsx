@@ -11,7 +11,7 @@ import { useResource } from "../lib/useResource";
 import { useCachedResource } from "../lib/useCachedResource";
 import { resourceKey } from "../lib/resourceCache";
 import { product, wordPacksSchema, errorMessage } from "../lib/product";
-import { englishPathLevels, completedEnglishUnit } from "../lib/englishPath";
+import { englishPathLevels, resolvedEnglishUnit } from "../lib/englishPath";
 import { getLanguageOptions } from "../lib/languages";
 import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
 import { programsDesignEnabled } from "../lib/programs";
@@ -120,7 +120,7 @@ export function ProgramsPage() {
     : englishPathLevels(packs.data?.packs ?? []).flatMap(
         (level) => level.packs,
       );
-  const next = path.find((pack) => !completedEnglishUnit(pack));
+  const next = path.find((pack) => !resolvedEnglishUnit(pack));
   const groups = new Map<string, Course[]>();
   for (const course of courses.data?.courses ?? []) {
     const completed = course.activeVersion !== null && !course.nextLesson;
@@ -400,7 +400,9 @@ export function ProgramsPage() {
                       {course.nextLesson?.title ??
                         t(
                           course.activeVersion
-                            ? "courses.courseComplete"
+                            ? course.skippedLessons?.length
+                              ? "pathChoices.routeEnd"
+                              : "courses.courseComplete"
                             : course.draftVersion
                               ? "courses.awaitingApproval"
                               : "courses.intakeInProgress",

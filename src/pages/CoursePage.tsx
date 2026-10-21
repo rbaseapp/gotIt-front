@@ -1,3 +1,4 @@
+import { CoursePathChoices } from "../components/CoursePathChoices";
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -727,7 +728,9 @@ export function CoursePage() {
                         ? "courses.previewKicker"
                         : course.nextLesson
                           ? "courses.nextLesson"
-                          : "courses.courseComplete",
+                          : course.skippedLessons?.length
+                            ? "pathChoices.routeEnd"
+                            : "courses.courseComplete",
                     )}
                   </span>
                   <h2 dir="auto">
@@ -741,7 +744,11 @@ export function CoursePage() {
                           count: displayed.plan.units.length,
                         })
                       : (course.nextLesson?.objective ??
-                        t("courses.completeBody"))}
+                        t(
+                          course.skippedLessons?.length
+                            ? "pathChoices.routeEnd"
+                            : "courses.completeBody",
+                        ))}
                   </p>
                   {draft ? (
                     <button
@@ -855,6 +862,17 @@ export function CoursePage() {
                 </section>
               )}
               {!draft && <HomeworkLinks items={openHomework} />}
+              {!draft && (
+                <CoursePathChoices
+                  course={course}
+                  busy={busy}
+                  onChoice={async (input) => {
+                    await run(async () => {
+                      await command("path-choices", input);
+                    });
+                  }}
+                />
+              )}
               {!draft && (
                 <CourseJourney
                   course={course}
