@@ -67,3 +67,20 @@ Production rollout and physical-device/payment-provider acceptance are not claim
 No remaining actionable P0/P1/P2 visual findings within the requested catalog adaptation.
 
 Fresh English browser tab: LTR rendering and clean console verified; `implementation-ltr.png`. An English charge-line separator was corrected after this screenshot.
+
+## Authenticated DEV acceptance
+
+Render deploy `dep-dbck1r29lscs73e5liv0` is Live at source commit
+`d9d11230ea19f9bb463c031c5ae6423bdaa81823` (2026-10-22 01:48:11 Asia/Jerusalem).
+`https://gotit-dev.rbaseapp.com/billing` and `/ready` return 200; served billing
+chunk is `BillingPage-DMH-PNIc.js`. Existing authenticated account loads actual
+Core plans, zero remaining minutes and Paddle ILS quotes. Monthly/quarterly/yearly
+selection and quarterly Pro unavailability were verified without submitting a
+purchase; console errors/warnings: none. Evidence stays local in
+`output/pricing-evidence/dev-deployment.json`, `dev-acceptance.json` and
+`dev-pricing.png`. No account screenshot is published to the Git repository.
+
+Final focused gate: 20 billing/Paddle/localization tests passed; 23 gateway tests,
+typecheck, ESLint and production build passed. The broad suite had 429/430 passing
+and an English-path wait that passed separately on both baseline and changed tree;
+a clean complete broad-suite pass is not claimed. No real payment was completed.
