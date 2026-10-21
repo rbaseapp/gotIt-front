@@ -191,7 +191,7 @@ const open = (path: string) =>
     </MemoryRouter>,
   );
 describe("structured English live learner flow", () => {
-  it("guides a new learner into introduction without recording exposure, then starts practice only after confirmation", async () => {
+  it("opens a study card, then enters the first exercise after confirmation and safely retries a lost start response", async () => {
     const user = userEvent.setup();
     const { unit } = await mocks.unit();
     const freshUnit = {
@@ -214,14 +214,16 @@ describe("structured English live learner flow", () => {
     open("/english-learning?view=words&unit=P01");
     const smart = await screen.findByRole("button", { name: "לתרגול החכם" });
     expect(smart).toBeEnabled();
-    expect(smart).toHaveAccessibleDescription(/כדי להתחיל לתרגל/);
+    expect(smart).toHaveAccessibleDescription(/התרגול מתחיל בהיכרות/);
     await user.click(screen.getByText("word5", { exact: true }));
     await user.click(smart);
-    const introduction = screen.getByRole("checkbox", {
-      name: "הקשבתי והכרתי את המשמעות",
+    await screen.findByRole("heading", { name: "מכירים מילה חדשה" });
+    expect(screen.getByRole("heading", { name: "word1" })).toBeVisible();
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(screen.queryByText("word5")).not.toBeInTheDocument();
+    const introduction = screen.getByRole("button", {
+      name: /הקשבתי והכרתי את המשמעות/,
     });
-    expect(introduction).toHaveFocus();
-    expect(introduction).not.toBeChecked();
     expect(mocks.expose).not.toHaveBeenCalled();
     expect(mocks.start).not.toHaveBeenCalled();
     mocks.get.mockResolvedValue({ ...data, revision: 2 });
@@ -239,17 +241,21 @@ describe("structured English live learner flow", () => {
         })),
       },
     });
+    mocks.start.mockRejectedValueOnce(new Error("Connection lost"));
     await user.click(introduction);
     await waitFor(() => expect(mocks.expose).toHaveBeenCalledTimes(1));
     expect(mocks.expose.mock.calls[0]?.[1]).toEqual(["P01-T1"]);
-    await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "לתרגול החכם" }),
-      ).not.toHaveAttribute("aria-describedby"),
+    await screen.findByRole("alert");
+    expect(screen.getByRole("heading", { name: "word1" })).toBeVisible();
+    mocks.get.mockResolvedValue({ ...data, revision: 3 });
+    await user.click(
+      screen.getByRole("button", { name: /הקשבתי והכרתי את המשמעות/ }),
     );
-    await user.click(screen.getByRole("button", { name: "לתרגול החכם" }));
     await screen.findByRole("heading", { name: "בחרו משמעות" });
     expect(mocks.start.mock.calls[0]?.[1]).toBe("words:P01:recognition");
+    expect(mocks.start).toHaveBeenCalledTimes(2);
+    expect(mocks.start.mock.calls[1]).toEqual(mocks.start.mock.calls[0]);
+    expect(mocks.expose).toHaveBeenCalledTimes(1);
   });
   it("resumes an unfinished word activity in this unit instead of starting another", async () => {
     const user = userEvent.setup();
