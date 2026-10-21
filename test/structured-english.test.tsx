@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   attempt: vi.fn(),
   answer: vi.fn(),
   heartbeat: vi.fn(),
+  expose: vi.fn(),
 }));
 vi.mock("../src/context/AppContext", () => ({
   useApp: () => ({ user: { id: "curriculum-user" } }),
@@ -190,6 +191,105 @@ const open = (path: string) =>
     </MemoryRouter>,
   );
 describe("structured English live learner flow", () => {
+  it("guides a new learner into introduction without recording exposure, then starts practice only after confirmation", async () => {
+    const user = userEvent.setup();
+    const { unit } = await mocks.unit();
+    const freshUnit = {
+      ...unit,
+      words: unit.words.map((word: { id: string }) => ({
+        ...word,
+        evidence: null,
+      })),
+      games: unit.games.map((game: { mode: string }) => ({
+        ...game,
+        eligible: 0,
+      })),
+    };
+    mocks.unit.mockResolvedValue({ unit: freshUnit });
+    mocks.get.mockResolvedValue({
+      ...data,
+      review: { ...data.review, introduced: 0 },
+    });
+    mocks.expose.mockResolvedValue({ revision: 2 });
+    open("/english-learning?view=words&unit=P01");
+    const smart = await screen.findByRole("button", { name: "לתרגול החכם" });
+    expect(smart).toBeEnabled();
+    expect(smart).toHaveAccessibleDescription(/כדי להתחיל לתרגל/);
+    await user.click(screen.getByText("word5", { exact: true }));
+    await user.click(smart);
+    const introduction = screen.getByRole("checkbox", {
+      name: "הקשבתי והכרתי את המשמעות",
+    });
+    expect(introduction).toHaveFocus();
+    expect(introduction).not.toBeChecked();
+    expect(mocks.expose).not.toHaveBeenCalled();
+    expect(mocks.start).not.toHaveBeenCalled();
+    mocks.get.mockResolvedValue({ ...data, revision: 2 });
+    mocks.unit.mockResolvedValue({
+      unit: {
+        ...freshUnit,
+        words: freshUnit.words.map((word: { id: string }, index: number) => ({
+          ...word,
+          evidence:
+            index === 0 ? { status: "introduced", dueAt: "2026-10-22" } : null,
+        })),
+        games: freshUnit.games.map((game: { mode: string }) => ({
+          ...game,
+          eligible: game.mode === "recognition" ? 1 : 0,
+        })),
+      },
+    });
+    await user.click(introduction);
+    await waitFor(() => expect(mocks.expose).toHaveBeenCalledTimes(1));
+    expect(mocks.expose.mock.calls[0]?.[1]).toEqual(["P01-T1"]);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "לתרגול החכם" }),
+      ).not.toHaveAttribute("aria-describedby"),
+    );
+    await user.click(screen.getByRole("button", { name: "לתרגול החכם" }));
+    await screen.findByRole("heading", { name: "בחרו משמעות" });
+    expect(mocks.start.mock.calls[0]?.[1]).toBe("words:P01:recognition");
+  });
+  it("resumes an unfinished word activity in this unit instead of starting another", async () => {
+    const user = userEvent.setup();
+    mocks.get.mockResolvedValue({
+      ...data,
+      activeAttempts: { "words:P01:recognition": attempt.id },
+    });
+    open("/english-learning?view=words&unit=P01");
+    await user.click(
+      await screen.findByRole("button", { name: "לתרגול החכם" }),
+    );
+    await screen.findByRole("heading", { name: "בחרו משמעות" });
+    expect(mocks.attempt).toHaveBeenCalledWith(attempt.id);
+    expect(mocks.start).not.toHaveBeenCalled();
+  });
+  it("ignores an ineligible recommended mode", async () => {
+    const user = userEvent.setup();
+    mocks.get.mockResolvedValue({
+      ...data,
+      nextAction: { kind: "words", id: "P01", game: "recall" },
+    });
+    open("/english-learning?view=words&unit=P01");
+    await user.click(
+      await screen.findByRole("button", { name: "לתרגול החכם" }),
+    );
+    await screen.findByRole("heading", { name: "בחרו משמעות" });
+    expect(mocks.start.mock.calls[0]?.[1]).toBe("words:P01:recognition");
+  });
+  it("does not enable smart practice while inspecting a locked unit", async () => {
+    mocks.get.mockResolvedValue({
+      ...data,
+      units: data.units.map((unit) => ({ ...unit, unlocked: false })),
+    });
+    open("/english-learning?view=words&unit=P01");
+    expect(
+      await screen.findByRole("button", { name: "לתרגול החכם" }),
+    ).toBeDisabled();
+    expect(mocks.start).not.toHaveBeenCalled();
+  });
+
   it("renders the existing illustrated program map with the new content", async () => {
     const { container } = open("/english-learning");
     await screen.findByRole("heading", { name: /Pre-A1 · ברכות/ });
