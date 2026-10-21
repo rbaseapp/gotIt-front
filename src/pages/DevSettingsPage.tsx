@@ -13,9 +13,17 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { InterfacePreferences } from "../components/InterfacePreferences";
+import { SettingsInterface } from "../components/settings/SettingsInterface";
+import { SettingsLearning } from "../components/settings/SettingsLearning";
+import { SettingsTeacher } from "../components/settings/SettingsTeacher";
+import {
+  SettingsSecurity,
+  SettingsSubscription,
+  SettingsExtension,
+} from "../components/settings/SettingsAccountSections";
+import { SettingsNotifications } from "../components/settings/SettingsNotifications";
 import { SettingsProfile } from "../components/settings/SettingsProfile";
-import { LegacySettingsPage } from "./LegacySettingsPage";
+
 import { settingsSection, type SettingsSection } from "../lib/settingsDesign";
 import logo from "../assets/settings/logo-on-dark.svg";
 import mohi from "../assets/program-chooser/mohi.png";
@@ -81,62 +89,14 @@ export function DevSettingsPage() {
         </header>
         <div className="sd-panel" key={section}>
           {section === "profile" && <SettingsProfile />}
-          {[
-            "languages",
-            "private-lessons",
-            "learning",
-            "notifications",
-          ].includes(section) && (
-            <LegacySettingsPage
-              section={
-                section as
-                  "languages" | "private-lessons" | "learning" | "notifications"
-              }
-            />
-          )}
-          {section === "interface" && (
-            <InterfacePreferences
-              onReminders={() => {
-                window.location.hash = "notifications";
-              }}
-            />
-          )}
-          {section === "extension" && (
-            <section className="sd-card sd-info">
-              <h2>{t("settingsDesign.extensionTitle")}</h2>
-              <p>{t("settingsDesign.extensionBody")}</p>
-              <Link className="sd-outline" to="/help">
-                {t("settingsDesign.extensionAction")}
-              </Link>
-              <Link className="sd-outline" to="/transfer">
-                {t("nav.transfer")}
-              </Link>
-            </section>
-          )}
-          {section === "security" && (
-            <section className="sd-card sd-info">
-              <h2>{t("settingsDesign.securityTitle")}</h2>
-              <p>{t("settingsDesign.securityBody")}</p>
-              <Link className="sd-outline" to="/privacy-policy">
-                {t("auth.privacy")}
-              </Link>
-              <Link className="sd-outline" to="/help">
-                {t("help.contactTitle")}
-              </Link>
-            </section>
-          )}
-          {section === "subscription" && (
-            <section className="sd-card sd-info">
-              <h2>{t("settingsDesign.subscriptionTitle")}</h2>
-              <p>{t("settingsDesign.subscriptionBody")}</p>
-              <Link className="sd-outline" to="/billing">
-                {t("settingsDesign.subscriptionAction")}
-              </Link>
-              <Link className="sd-outline" to="/billing/minutes">
-                {t("accountUi.minutesPlan")}
-              </Link>
-            </section>
-          )}
+          {section === "languages" && <SettingsLearning />}
+          {section === "learning" && <SettingsLearning goals />}
+          {section === "private-lessons" && <SettingsTeacher />}
+          {section === "notifications" && <SettingsNotifications />}
+          {section === "interface" && <SettingsInterface />}
+          {section === "extension" && <SettingsExtension />}
+          {section === "security" && <SettingsSecurity />}
+          {section === "subscription" && <SettingsSubscription />}
         </div>
       </div>
     </div>

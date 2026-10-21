@@ -74,6 +74,10 @@ const messageCodes = new Set([
 ]);
 
 function localizedMessage(code: string): string {
+  if (code === "OAUTH_EMAIL_MISMATCH")
+    return i18n.t("settingsLive.emailMismatch");
+  if (code === "OAUTH_ALREADY_LINKED")
+    return i18n.t("settingsLive.alreadyLinked");
   if (code === "COURSE_SUPPORT_LANGUAGE_REQUIRED")
     return i18n.t("courses.supportLanguageError");
   if (code === "COURSE_TARGET_CHANGE_NEW" || code === "COURSE_REVISION_LIMIT")

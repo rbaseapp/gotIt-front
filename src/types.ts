@@ -103,8 +103,12 @@ export interface UserProfile {
     textScale?: "normal" | "large";
     reducedMotion?: boolean;
     sounds?: boolean;
+    textDirection?: "rtl" | "ltr";
+    highContrast?: boolean;
   };
   name: string;
+  displayName?: string | null;
+  avatarData?: string | null;
   email: string;
   /** Null delegates source-language detection to the translation provider. */
   defaultSourceLanguage: string | null;

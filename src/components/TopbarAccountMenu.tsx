@@ -63,7 +63,22 @@ export function TopbarAccountMenu({
         aria-label={t("shell.accountMenu")}
         onClick={() => setUserOpen((value) => !value)}
       >
-        <span className="avatar">{profile.name.charAt(0)}</span>
+        <span className="avatar">
+          {profile.avatarData ? (
+            <img
+              src={profile.avatarData}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "50%",
+              }}
+            />
+          ) : (
+            profile.name.charAt(0)
+          )}
+        </span>
         {showAccountLink && (
           <span className="nd-account-label">{t("ux.account")}</span>
         )}

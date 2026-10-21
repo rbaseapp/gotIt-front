@@ -165,6 +165,8 @@ export function parseProfile(payload: unknown): ProfilePatch {
       value.defaultTranslationLanguage === null
         ? null
         : text(value.defaultTranslationLanguage),
+    displayName: value.displayName == null ? null : text(value.displayName),
+    avatarData: value.avatarData == null ? null : text(value.avatarData),
     timezone: text(value.timezone),
     dailyGoal: { type: text(goal.type), value: integer(goal.value, 1) },
     defaultNewItemsPerDay: integer(value.defaultNewItemsPerDay),
@@ -307,6 +309,12 @@ export function profilePayload(profile: ProfilePatch): ProfilePatch {
       : {}),
     defaultSourceLanguage: profile.defaultSourceLanguage,
     defaultTranslationLanguage: profile.defaultTranslationLanguage,
+    ...(profile.displayName !== undefined
+      ? { displayName: profile.displayName }
+      : {}),
+    ...(profile.avatarData !== undefined
+      ? { avatarData: profile.avatarData }
+      : {}),
     timezone: profile.timezone,
     dailyGoal: { ...profile.dailyGoal },
     defaultNewItemsPerDay: profile.defaultNewItemsPerDay,

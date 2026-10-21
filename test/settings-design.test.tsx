@@ -12,6 +12,15 @@ import {
   settingsSection,
 } from "../src/lib/settingsDesign";
 
+vi.mock("../src/lib/accountSettings", () => ({
+  signInMethods: vi.fn(async () => [
+    { provider: "google", connected: true, available: true },
+    { provider: "facebook", connected: false, available: true },
+    { provider: "email", connected: true, available: true },
+  ]),
+  linkMethod: vi.fn(),
+  prepareAvatar: vi.fn(async () => "data:image/jpeg;base64,YWJj"),
+}));
 const state = vi.hoisted(() => ({
   updateProfile: vi.fn(),
   retryProfile: vi.fn(),
@@ -73,19 +82,26 @@ it("preserves an edited timezone on a failed save and retries the same scoped pa
   );
   expect(state.updateProfile).toHaveBeenCalledWith({
     name: seedProfile.name,
+    displayName: seedProfile.name,
+    avatarData: null,
     timezone: next,
   });
 });
 
-it("uses the actual email and explains unsupported actions without claiming connections or writing", async () => {
+it("uses Core method truth for Google, Facebook and email and explains the separate email-change boundary", async () => {
   render(<SettingsProfile />);
   const user = userEvent.setup();
   expect(screen.getByLabelText(i18n.t("settings.email"))).toHaveValue(
     "learner@example.com",
   );
   expect(
-    screen.getAllByText(i18n.t("settingsDesign.unknownConnection")),
+    await screen.findAllByText(i18n.t("settingsLive.connected")),
   ).toHaveLength(2);
+  expect(screen.getByText("Facebook")).toBeInTheDocument();
+  expect(screen.queryByText("Apple")).not.toBeInTheDocument();
+  expect(
+    screen.getByText(i18n.t("settingsLive.notConnected")),
+  ).toBeInTheDocument();
   await user.click(
     screen.getByRole("button", { name: i18n.t("settingsDesign.editEmail") }),
   );

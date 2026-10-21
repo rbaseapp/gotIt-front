@@ -165,7 +165,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         try {
           const profile = await api.getProfile();
           if (!cancelled) {
-            setLiveProfile((current) => ({ ...current, ...profile }));
+            setLiveProfile((current) => ({
+              ...current,
+              ...profile,
+              name: profile.displayName || current.name,
+            }));
             setProfileError("");
           }
         } catch (error) {
@@ -209,7 +213,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.feedbackSounds = preferences?.sounds
       ? "true"
       : "false";
-    if (preferences?.uiLocale) void setUiLocale(preferences.uiLocale);
+    document.documentElement.dataset.highContrast = preferences?.highContrast
+      ? "true"
+      : "false";
+    if (preferences?.uiLocale)
+      void setUiLocale(preferences.uiLocale).then(() => {
+        if (preferences.textDirection)
+          document.documentElement.dir = preferences.textDirection;
+      });
+    else if (preferences?.textDirection)
+      document.documentElement.dir = preferences.textDirection;
   }, [profile.learningPreferences]);
   const dateOf = (value: string) =>
     new Intl.DateTimeFormat("en-CA", { timeZone: profile.timezone }).format(
@@ -299,7 +312,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMode("live");
       try {
         const result = await api.getProfile();
-        setLiveProfile((current) => ({ ...current, ...result }));
+        setLiveProfile((current) => ({
+          ...current,
+          ...result,
+          name: result.displayName || current.name,
+        }));
         setProfileError("");
       } catch (error) {
         setProfileError(
@@ -323,7 +340,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMode("live");
       try {
         const result = await api.getProfile();
-        setLiveProfile((current) => ({ ...current, ...result }));
+        setLiveProfile((current) => ({
+          ...current,
+          ...result,
+          name: result.displayName || current.name,
+        }));
         setProfileError("");
       } catch (error) {
         setProfileError(
@@ -347,7 +368,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMode("live");
       try {
         const result = await api.getProfile();
-        setLiveProfile((current) => ({ ...current, ...result }));
+        setLiveProfile((current) => ({
+          ...current,
+          ...result,
+          name: result.displayName || current.name,
+        }));
         setProfileError("");
       } catch (error) {
         setProfileError(
@@ -389,7 +414,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async retryProfile() {
       try {
         const result = await api.getProfile();
-        setLiveProfile((current) => ({ ...current, ...result }));
+        setLiveProfile((current) => ({
+          ...current,
+          ...result,
+          name: result.displayName || current.name,
+        }));
         setProfileError("");
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
@@ -494,7 +523,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         throw new Error(i18n.t("session.loadBeforeSave"));
       try {
         const result = await api.saveProfile(next);
-        const name = next.name.trim() || user?.email.split("@")[0] || "";
+        const name =
+          result.displayName ||
+          next.name.trim() ||
+          user?.email.split("@")[0] ||
+          "";
         setLiveProfile({ ...next, ...result, name });
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
