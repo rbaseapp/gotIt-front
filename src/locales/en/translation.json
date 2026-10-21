@@ -2929,7 +2929,7 @@
     "unitReading": "Unit reading",
     "checkpoint": "Progress check",
     "unseen": "New text and transfer",
-    "wordInstructions": "Start with sound and meaning, up to six targets at a time. Continue from matching to recall, listening and contextual use. Familiarity is not mastery.",
+    "wordInstructions": "To start practising, first meet a word: listen, read its meaning and check ?Listened and met the meaning?. This button takes you to the next word to introduce. Once confirmed, it opens the appropriate practice.",
     "games": {
       "recognition": "Recognize meaning",
       "matching": "Match word and meaning",
