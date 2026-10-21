@@ -3080,5 +3080,11 @@
     "wordsRecommended": "建议在上课前熟悉 {{count}} 个单词。你也可以立即开始。",
     "selectionChanged": "所选课程已更改或不可用。请返回课程地图重新选择。",
     "finishedPrograms": "已结束的学习计划"
+  },
+  "mapChoice": {
+    "desktopHint": "想从其他步骤开始？将鼠标移到该步骤上并选择“从这里开始”。",
+    "touchHint": "想从其他步骤开始？打开该步骤旁的 ⋯ 菜单。",
+    "startTitle": "从第 {{count}} 步开始？",
+    "startBody": "之后可以返回任何步骤。打开此步骤不会完成或跳过之前的步骤。"
   }
 }

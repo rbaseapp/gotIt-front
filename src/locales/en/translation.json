@@ -3079,5 +3079,11 @@
     "wordsRecommended": "We recommend knowing {{count}} words before this meeting. You can start now.",
     "selectionChanged": "The selected lesson changed or is unavailable. Return to the course map and select it again.",
     "finishedPrograms": "Finished programs"
+  },
+  "mapChoice": {
+    "desktopHint": "Want to start at another step? Hover over it and choose “Start here”.",
+    "touchHint": "Want to start at another step? Open the ⋯ menu beside it.",
+    "startTitle": "Start at step {{count}}?",
+    "startBody": "You can return to any step later. Opening this step does not complete or skip earlier steps."
   }
 }

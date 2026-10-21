@@ -1,3 +1,6 @@
+body:has(.program-unit-map) {
+  min-width: 0;
+}
 .app-layout > .main-column > .page-content:has(.dev-program-map) {
   max-width: 1448px;
   padding: 20px 36px;
@@ -359,7 +362,7 @@
   order: 1;
 }
 .program-unit-map .pm-step h3 {
-  font-size: 25px;
+  font-size: 22px;
   line-height: 1.2;
   font-weight: 800;
 }
@@ -371,6 +374,109 @@
 }
 .pm-step.is-future p:first-of-type {
   display: none;
+}
+.pm-start-here {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1.5px solid #e3e8e2;
+  border-radius: 10px;
+  background: #fff;
+  color: #1c5244;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 150ms ease,
+    background-color 150ms ease;
+}
+.pm-step:hover .pm-start-here,
+.pm-step:focus-within .pm-start-here {
+  opacity: 1;
+}
+.pm-start-here:hover {
+  border-color: #286f5c;
+  background: #e5f0eb;
+}
+.pm-start-here:disabled {
+  cursor: wait;
+}
+.program-unit-map .pm-map-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  color: #53665e;
+  background: #f8f9f6;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.pm-map-hint svg {
+  flex-shrink: 0;
+}
+.pm-touch-hint,
+.path-choice-options .pm-menu-start {
+  display: none;
+}
+.pm-skipped {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: #65746b;
+  background: #eef1ed;
+}
+.pm-start-dialog {
+  color: #182b24;
+}
+.pm-start-title {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+}
+.pm-start-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff7df;
+  line-height: 1.6;
+}
+.pm-start-note svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.pm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+.pm-dialog-actions .button {
+  min-height: 44px;
+}
+@media (hover: none), (pointer: coarse), (max-width: 760px) {
+  .pm-start-here,
+  .pm-desktop-hint {
+    display: none;
+  }
+  .pm-touch-hint,
+  .path-choice-options .pm-menu-start {
+    display: block;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pm-start-here {
+    transition: none;
+  }
 }
 .pm-step.is-current {
   border: 2px solid #f7bf2e;
@@ -496,6 +602,14 @@
 .pm-review {
   color: var(--pm-green);
   font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 .pm-finished {
   display: flex;

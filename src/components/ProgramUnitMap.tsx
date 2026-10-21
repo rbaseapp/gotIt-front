@@ -4,6 +4,8 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  CornerDownLeft,
+  Info,
   List,
   LockKeyhole,
   Map,
@@ -11,7 +13,7 @@ import {
   Play,
   Trophy,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { EnglishUnitMap } from "./EnglishUnitMap";
 import {
@@ -26,10 +28,12 @@ import { ProgramMapSidebar } from "./ProgramMapSidebar";
 import { englishPathLevels } from "../lib/englishPath";
 import {
   LearningPathControls,
+  ChoiceMenu,
   PathStepChoice,
   type PathChoiceControl,
 } from "./LearningPathControls";
 import { useUnitPathChoices } from "./UnitPathChoices";
+import { Modal } from "./Modal";
 
 type Props = ComponentProps<typeof EnglishUnitMap> & {
   choices?: PathChoiceControl;
@@ -58,6 +62,8 @@ export function ProgramUnitMap({
   onPathChanged,
 }: Props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [startId, setStartId] = useState<string>();
   const [completedOpen, setCompletedOpen] = useState(false);
   const [futureOpen, setFutureOpen] = useState(false);
   const id = useId();
@@ -77,6 +83,7 @@ export function ProgramUnitMap({
   const ready = Boolean(presentation || (path && !pathLoading && !pathError));
   const model: ProgramMapModel | undefined =
     presentation?.model ?? (path ? programMapModel(current, path) : undefined);
+  const startStep = model?.steps.find((step) => step.id === startId);
   const programPacks =
     presentation?.packs ??
     englishPathLevels(packs).flatMap((level) => level.packs);
@@ -154,6 +161,22 @@ export function ProgramUnitMap({
     rest.findIndex((step) => step.id === model?.active?.id) + 1,
   );
   const visible = futureOpen ? rest : rest.slice(0, initialCount);
+  const openStep = (step: ProgramMapStep) => {
+    if (!ready || !step.available) return;
+    if (step.kind === "activity") step.onOpen();
+    else if (step.kind === "words") onWords();
+    else
+      navigate(
+        step.kind === "meeting"
+          ? stationUrl(step.station.station)
+          : homeworkTaskLink(
+              step.station.homework!.id,
+              undefined,
+              false,
+              returnTo,
+            ),
+      );
+  };
   const row = (step: ProgramMapStep) => {
     const active = model?.active?.id === step.id;
     const Icon = step.complete
@@ -182,7 +205,9 @@ export function ProgramUnitMap({
         </span>
         <div className="pm-step-copy">
           <h3>{title(step)}</h3>
-          {step.skipped && <small>{t("pathChoices.skipped")}</small>}
+          {step.skipped && (
+            <small className="pm-skipped">{t("pathChoices.skipped")}</small>
+          )}
           <p>
             {step.kind === "activity"
               ? step.description
@@ -264,10 +289,21 @@ export function ProgramUnitMap({
         </div>
         <div className="pm-step-actions">
           {!step.complete &&
-            action(
-              step,
-              t(active ? "programMap.continue" : "pathChoices.startHere"),
-            )}
+            active &&
+            step.available &&
+            action(step, t("programMap.continue"))}
+          {!step.complete && !active && step.available && ready && (
+            <button
+              className="pm-start-here"
+              type="button"
+              disabled={choices?.busy}
+              onClick={() => setStartId(step.id)}
+              aria-label={`${t("mapChoice.startTitle", { count: step.number })}: ${title(step)}`}
+            >
+              <CornerDownLeft size={17} aria-hidden="true" />
+              {t("pathChoices.startHere")}
+            </button>
+          )}
           {step.complete &&
             step.kind === "activity" &&
             action(step, t("unitMap.repeat"), "pm-review")}
@@ -295,6 +331,11 @@ export function ProgramUnitMap({
           {ready && choices && (
             <PathStepChoice
               {...choices}
+              onStart={
+                !active && step.available
+                  ? () => setStartId(step.id)
+                  : undefined
+              }
               item={{
                 key: step.id,
                 title: title(step),
@@ -302,6 +343,23 @@ export function ProgramUnitMap({
                 skipped: Boolean(step.skipped),
               }}
             />
+          )}
+          {ready && !choices && !step.complete && !active && step.available && (
+            <ChoiceMenu
+              label={`${t("pathChoices.chooseStep")}: ${title(step)}`}
+            >
+              {(close) => (
+                <button
+                  type="button"
+                  onClick={() => {
+                    close();
+                    setStartId(step.id);
+                  }}
+                >
+                  {t("pathChoices.startHere")}
+                </button>
+              )}
+            </ChoiceMenu>
           )}
         </div>
       </li>
@@ -423,6 +481,15 @@ export function ProgramUnitMap({
             <p>{t("programMap.noStages")}</p>
           ) : (
             <>
+              <p className="pm-map-hint">
+                <Info size={16} aria-hidden="true" />
+                <span className="pm-desktop-hint">
+                  {t("mapChoice.desktopHint")}
+                </span>
+                <span className="pm-touch-hint">
+                  {t("mapChoice.touchHint")}
+                </span>
+              </p>
               {model.prefix.length > 0 && (
                 <div className="pm-completed-group">
                   <button
@@ -531,6 +598,45 @@ export function ProgramUnitMap({
         <button onClick={onActivities}>{t("structuredUi.activities")}</button>
         {presentation?.tools}
       </nav>
+      <Modal
+        open={Boolean(startStep)}
+        onClose={() => setStartId(undefined)}
+        title={t("mapChoice.startTitle", { count: startStep?.number })}
+        size="sm"
+        className="pm-start-dialog"
+      >
+        <div className="modal-body">
+          <p className="pm-start-title" dir="auto">
+            {startStep && title(startStep)}
+          </p>
+          <p className="pm-start-note">
+            <Info size={20} aria-hidden="true" />
+            {t("mapChoice.startBody")}
+          </p>
+          <div className="pm-dialog-actions">
+            <button
+              type="button"
+              className="button secondary"
+              data-autofocus
+              onClick={() => setStartId(undefined)}
+            >
+              {t("feedback.cancel")}
+            </button>
+            <button
+              type="button"
+              className="button primary"
+              disabled={!startStep?.available || choices?.busy}
+              onClick={() => {
+                if (startStep) openStep(startStep);
+                setStartId(undefined);
+              }}
+            >
+              {t("pathChoices.startHere")}
+              <CornerDownLeft size={18} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -3080,5 +3080,11 @@
     "wordsRecommended": "Recomendamos conocer {{count}} palabras antes de esta clase. Puedes empezar ahora.",
     "selectionChanged": "La lección elegida cambió o no está disponible. Vuelve al mapa del curso y selecciónala de nuevo.",
     "finishedPrograms": "Programas finalizados"
+  },
+  "mapChoice": {
+    "desktopHint": "¿Quieres empezar en otro paso? Pasa el cursor y elige «Empezar aquí».",
+    "touchHint": "¿Quieres empezar en otro paso? Abre el menú ⋯ a su lado.",
+    "startTitle": "¿Empezar en el paso {{count}}?",
+    "startBody": "Puedes volver a cualquier paso después. Abrir este paso no completa ni omite los anteriores."
   }
 }

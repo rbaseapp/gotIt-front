@@ -24,7 +24,9 @@ export function ProgramMapSidebar({
   words: suppliedWords,
 }: Props) {
   const { t } = useTranslation();
-  const remaining = model ? model.steps.length - model.completed : 0;
+  const remaining = model
+    ? model.steps.filter((step) => !step.complete && !step.skipped).length
+    : 0;
   const words = suppliedWords?.slice(0, 6) ?? path?.words.slice(0, 6) ?? [];
   return (
     <aside className="pm-sidebar">
