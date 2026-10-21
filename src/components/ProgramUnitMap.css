@@ -386,7 +386,7 @@
   inset-inline-end: -2px;
   background: #ffbf27;
 }
-.pm-step.is-current > .pm-action {
+.pm-step.is-current .pm-step-actions > .pm-action {
   order: 0;
   min-width: 220px;
 }
@@ -567,7 +567,7 @@
     flex-wrap: wrap;
     padding-inline-end: 62px;
   }
-  .pm-step.is-current > .pm-action {
+  .pm-step.is-current .pm-step-actions > .pm-action {
     order: 3;
     margin-inline-start: auto;
     min-width: 190px;
@@ -587,6 +587,26 @@
   }
 }
 @media (max-width: 760px) {
+  .pm-steps,
+  .pm-step {
+    min-width: 0;
+  }
+  .pm-step {
+    flex-wrap: wrap;
+  }
+  .pm-step-copy {
+    flex: 1 1 calc(100% - 54px);
+  }
+  .pm-step-actions {
+    min-width: 0;
+    width: 100%;
+    order: 3;
+  }
+  .pm-step-actions > .pm-action {
+    flex: 1;
+    min-width: 0;
+    font-size: 18px;
+  }
   .app-layout > .main-column > .page-content:has(.dev-program-map) {
     padding: 12px;
   }
@@ -667,7 +687,7 @@
   .pm-step.is-current::before {
     inset-inline-end: 15px;
   }
-  .pm-step.is-current > .pm-action {
+  .pm-step.is-current .pm-step-actions > .pm-action {
     font-size: 20px;
     width: 100%;
     min-width: 0;

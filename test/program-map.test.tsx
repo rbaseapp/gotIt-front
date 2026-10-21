@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { ProgramUnitMap } from "../src/components/ProgramUnitMap";
@@ -7,6 +7,7 @@ import { programsDesignEnabled } from "../src/lib/programs";
 import { fixtureHomework } from "./course-fixtures";
 import i18n from "../src/i18n";
 import { mapPack, mapPath } from "./program-map-fixtures";
+import * as unitPathApi from "../src/lib/unitLearningPath";
 
 function mount(overrides: Partial<Parameters<typeof ProgramUnitMap>[0]> = {}) {
   const props = {
@@ -114,7 +115,7 @@ describe("dynamic DEV program map", () => {
         screen.queryByRole("link", { name: /המשך/ }),
       ).not.toBeInTheDocument();
       expect(document.querySelector(".pm-progress")).not.toBeInTheDocument();
-    expect(screen.queryByText(/common\./)).not.toBeInTheDocument();
+      expect(screen.queryByText(/common\./)).not.toBeInTheDocument();
       if (state === "error") {
         fireEvent.click(
           screen.getByRole("button", { name: i18n.t("common.tryAgain") }),
@@ -123,6 +124,101 @@ describe("dynamic DEV program map", () => {
       }
     },
   );
+  it("keeps path choices inside the original map rows without a duplicate stage list", async () => {
+    const choose = vi.fn().mockResolvedValue(undefined);
+    const path = structuredClone(mapPath);
+    path.steps = path.stations.flatMap((station) =>
+      ["words", "meeting", "homework"].map((kind) => ({
+        key: `${station.station}-${kind}`,
+        kind: kind as "words" | "meeting" | "homework",
+        station: station.station,
+        complete: false,
+        skipped: kind === "words",
+        available: kind !== "homework",
+        homeworkId: null,
+      })),
+    );
+    mount({
+      path,
+      onPathChanged: vi.fn(),
+      choices: { busy: false, onChoice: choose },
+    });
+    expect(document.querySelector(".path-choices")).toBeNull();
+    expect(document.querySelectorAll(".pm-roadmap")).toHaveLength(1);
+    const row = document.querySelector('.pm-step[aria-current="step"]')!;
+    fireEvent.click(
+      within(row as HTMLElement).getByRole("button", {
+        name: new RegExp(`^${i18n.t("pathChoices.skip")}:`),
+      }),
+    );
+    fireEvent.click(
+      within(row as HTMLElement).getByRole("button", {
+        name: i18n.t("pathChoices.skip"),
+        exact: true,
+      }),
+    );
+    expect(choose).toHaveBeenCalledWith(true, "midpoint-meeting");
+    expect(document.querySelectorAll(".pm-step")).toHaveLength(5);
+  });
+  it("uses server navigation skips while preserving real completion counts", () => {
+    const path = structuredClone(mapPath);
+    path.steps = [
+      {
+        key: "midpoint-meeting",
+        kind: "meeting",
+        station: "midpoint",
+        complete: false,
+        skipped: true,
+        available: true,
+        homeworkId: null,
+      },
+    ];
+    const model = programMapModel(mapPack, path);
+    expect(
+      model.steps.find((step) => step.id === "midpoint-meeting")?.skipped,
+    ).toBe(true);
+    expect(model.active?.id).not.toBe("midpoint-meeting");
+    expect(model.completed).toBe(4);
+    path.navigationComplete = true;
+    expect(programMapModel(mapPack, path).active).toBeUndefined();
+  });
+  it("sends the canonical server step key from the original legacy map", async () => {
+    const path = structuredClone(mapPath);
+    path.navigationRevision = 7;
+    path.steps = [
+      {
+        key: "midpoint:meeting",
+        kind: "meeting",
+        station: "midpoint",
+        complete: false,
+        skipped: false,
+        available: true,
+        homeworkId: null,
+      },
+    ];
+    const choose = vi
+      .spyOn(unitPathApi, "chooseUnitPath")
+      .mockResolvedValue({ path });
+    mount({ path, onPathChanged: vi.fn().mockResolvedValue(undefined) });
+    const row = document.querySelector('.pm-step[aria-current="step"]')!;
+    fireEvent.click(
+      within(row as HTMLElement).getByRole("button", {
+        name: new RegExp(`^${i18n.t("pathChoices.skip")}:`),
+      }),
+    );
+    fireEvent.click(
+      within(row as HTMLElement).getByRole("button", {
+        name: i18n.t("pathChoices.skip"),
+        exact: true,
+      }),
+    );
+    expect(choose).toHaveBeenCalledWith(mapPack.id, {
+      eventId: expect.any(String),
+      revision: 7,
+      step: "midpoint:meeting",
+      skipped: true,
+    });
+  });
   it("uses authoritative prerequisites even when a station is next", () => {
     const path = structuredClone(mapPath);
     path.stations[1].available = false;

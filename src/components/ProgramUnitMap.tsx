@@ -24,8 +24,15 @@ import { homeworkTaskLink } from "../lib/unitLearningPath";
 import "./ProgramUnitMap.css";
 import { ProgramMapSidebar } from "./ProgramMapSidebar";
 import { englishPathLevels } from "../lib/englishPath";
+import {
+  LearningPathControls,
+  PathStepChoice,
+  type PathChoiceControl,
+} from "./LearningPathControls";
+import { useUnitPathChoices } from "./UnitPathChoices";
 
 type Props = ComponentProps<typeof EnglishUnitMap> & {
+  choices?: PathChoiceControl;
   presentation?: {
     model: ProgramMapModel;
     packs: ComponentProps<typeof EnglishUnitMap>["packs"];
@@ -47,11 +54,26 @@ export function ProgramUnitMap({
   onSelect,
   stationUrl,
   presentation,
+  choices: providedChoices,
+  onPathChanged,
 }: Props) {
   const { t } = useTranslation();
   const [completedOpen, setCompletedOpen] = useState(false);
   const [futureOpen, setFutureOpen] = useState(false);
   const id = useId();
+  const legacyChoices = useUnitPathChoices(path, onPathChanged);
+  const choices =
+    providedChoices ??
+    (legacyChoices
+      ? {
+          ...legacyChoices,
+          onChoice: (skipped: boolean, key?: string) =>
+            legacyChoices.onChoice(
+              skipped,
+              key?.replace(/-(words|meeting|homework)$/u, ":$1"),
+            ),
+        }
+      : undefined);
   const ready = Boolean(presentation || (path && !pathLoading && !pathError));
   const model: ProgramMapModel | undefined =
     presentation?.model ?? (path ? programMapModel(current, path) : undefined);
@@ -240,30 +262,48 @@ export function ProgramUnitMap({
             </div>
           )}
         </div>
-        {!step.complete &&
-          action(
-            step,
-            t(active ? "programMap.continue" : "pathChoices.startHere"),
-          )}
-        {step.complete &&
-          step.kind === "activity" &&
-          action(step, t("unitMap.repeat"), "pm-review")}
-        {step.complete && step.kind === "meeting" && ready && (
-          <Link className="pm-review" to={stationUrl(step.station.station)}>
-            {t("unitMap.repeatMeeting")}
-          </Link>
-        )}
-        {step.complete &&
-          step.kind === "homework" &&
-          step.station.homework &&
-          ready && (
-            <Link
-              className="pm-review"
-              to={homeworkTaskLink(step.station.homework.id, 0, true, returnTo)}
-            >
-              {t("unitMap.repeat")}
+        <div className="pm-step-actions">
+          {!step.complete &&
+            action(
+              step,
+              t(active ? "programMap.continue" : "pathChoices.startHere"),
+            )}
+          {step.complete &&
+            step.kind === "activity" &&
+            action(step, t("unitMap.repeat"), "pm-review")}
+          {step.complete && step.kind === "meeting" && ready && (
+            <Link className="pm-review" to={stationUrl(step.station.station)}>
+              {t("unitMap.repeatMeeting")}
             </Link>
           )}
+          {step.complete &&
+            step.kind === "homework" &&
+            step.station.homework &&
+            ready && (
+              <Link
+                className="pm-review"
+                to={homeworkTaskLink(
+                  step.station.homework.id,
+                  0,
+                  true,
+                  returnTo,
+                )}
+              >
+                {t("unitMap.repeat")}
+              </Link>
+            )}
+          {ready && choices && (
+            <PathStepChoice
+              {...choices}
+              item={{
+                key: step.id,
+                title: title(step),
+                complete: step.complete,
+                skipped: Boolean(step.skipped),
+              }}
+            />
+          )}
+        </div>
       </li>
     );
   };
@@ -354,10 +394,25 @@ export function ProgramUnitMap({
           className="pm-card pm-roadmap"
           aria-labelledby={`${id}-roadmap`}
         >
-          <h2 id={`${id}-roadmap`}>
-            <Map aria-hidden="true" />
-            {t("programMap.roadmap")}
-          </h2>
+          <div className="path-choice-heading">
+            <h2 id={`${id}-roadmap`}>
+              <Map aria-hidden="true" />
+              {t("programMap.roadmap")}
+            </h2>
+            {ready && model && choices && (
+              <LearningPathControls
+                {...choices}
+                title={localizedTitle}
+                items={model.steps.map((step) => ({
+                  key: step.id,
+                  title: title(step),
+                  complete: step.complete,
+                  skipped: Boolean(step.skipped),
+                }))}
+              />
+            )}
+          </div>
+          {choices?.error && <p role="alert">{choices.error}</p>}
           {!ready ? (
             <p role="status">
               {pathError

@@ -82,14 +82,28 @@ export function programMapModel(pack: WordPack, path: UnitLearningPath) {
     });
     previousWords = to;
   });
-  const active =
-    steps.find(
-      (step) =>
-        !step.complete &&
-        step.kind === path.nextAction.kind &&
-        (step.kind === "words" ||
-          step.station.station === path.nextAction.station),
-    ) ?? steps.find((step) => !step.complete);
+  // Current servers supply navigation separately from learning evidence.
+  for (const step of steps) {
+    const navigation = path.steps?.find(
+      (item) =>
+        item.station === step.station.station && item.kind === step.kind,
+    );
+    if (navigation) {
+      step.complete = navigation.complete;
+      step.available = navigation.available;
+      step.skipped = navigation.skipped;
+    }
+  }
+  const active = path.navigationComplete
+    ? undefined
+    : (steps.find(
+        (step) =>
+          !step.complete &&
+          !step.skipped &&
+          step.kind === path.nextAction.kind &&
+          (step.kind === "words" ||
+            step.station.station === path.nextAction.station),
+      ) ?? steps.find((step) => !step.complete && !step.skipped));
   const completed = steps.filter((step) => step.complete).length;
   const prefix: MapStep[] = [];
   for (const step of steps) {

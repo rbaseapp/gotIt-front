@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, it, expect, vi } from "vitest";
@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
   heartbeat: vi.fn(),
   expose: vi.fn(),
   navigate: vi.fn(),
+  pathChoice: vi.fn(),
 }));
 vi.mock("react-router-dom", async (original) => ({
   ...(await original<typeof import("react-router-dom")>()),
@@ -197,6 +198,36 @@ const open = (path: string) =>
     </MemoryRouter>,
   );
 describe("structured English live learner flow", () => {
+  it("skips from the original roadmap without rendering a duplicate list", async () => {
+    mocks.pathChoice.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    open("/english-learning?unit=P01");
+    await screen.findByRole("heading", { name: i18n.t("programMap.roadmap") });
+    expect(document.querySelector(".path-choices")).toBeNull();
+    expect(document.querySelectorAll(".pm-roadmap")).toHaveLength(1);
+    const row = document.querySelector('.pm-step[aria-current="step"]')!;
+    await user.click(
+      within(row as HTMLElement).getByRole("button", {
+        name: new RegExp(`^${i18n.t("pathChoices.skip")}:`),
+      }),
+    );
+    await user.click(
+      within(row as HTMLElement).getByRole("button", {
+        name: i18n.t("pathChoices.skip"),
+        exact: true,
+      }),
+    );
+    await waitFor(() =>
+      expect(mocks.pathChoice).toHaveBeenCalledWith({
+        unitId: "P01",
+        activityId: "teacher:P01-L1",
+        revision: 1,
+        eventId: expect.any(String),
+        skipped: true,
+      }),
+    );
+    expect(mocks.start).not.toHaveBeenCalled();
+  });
   it("opens the existing whole-unit smart game route without recording exposure or starting a questionnaire", async () => {
     const user = userEvent.setup();
     const { unit } = await mocks.unit();

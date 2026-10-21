@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useId, useRef, useState, type ReactNode } from "react";
+import { MoreHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Modal } from "./Modal";
 import "../path-choices.css";
@@ -9,113 +9,135 @@ export type PathChoiceItem = {
   title: string;
   complete: boolean;
   skipped: boolean;
-  href?: string;
-  onOpen?: () => void;
-  unavailable?: string;
-  recommendation?: string;
 };
+export type PathChoiceControl = {
+  busy: boolean;
+  error?: string;
+  onChoice: (skipped: boolean, key?: string) => Promise<void>;
+};
+function ChoiceMenu({
+  label,
+  children,
+}: {
+  label: string;
+  children: (close: () => void) => ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const id = useId();
+  return (
+    <div
+      className="path-choice-menu"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          setOpen(false);
+          trigger.current?.focus();
+        }
+      }}
+    >
+      <button
+        ref={trigger}
+        type="button"
+        className="path-choice-trigger"
+        aria-label={label}
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen(!open)}
+      >
+        <MoreHorizontal size={20} aria-hidden="true" />
+      </button>
+      {open && (
+        <div id={id} className="path-choice-options">
+          {children(() => {
+            setOpen(false);
+            trigger.current?.focus();
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A secondary action in an existing stage, without a second stage list. */
+export function PathStepChoice({
+  item,
+  busy,
+  onChoice,
+}: PathChoiceControl & { item: PathChoiceItem }) {
+  const { t } = useTranslation();
+  if (item.complete) return null;
+  const label = t(item.skipped ? "pathChoices.restore" : "pathChoices.skip");
+  return (
+    <ChoiceMenu label={`${label}: ${item.title}`}>
+      {(close) => (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            close();
+            void onChoice(!item.skipped, item.key);
+          }}
+        >
+          {label}
+        </button>
+      )}
+    </ChoiceMenu>
+  );
+}
+
+/** Unit options live in the existing map heading. */
 export function LearningPathControls({
   title,
   items,
   busy,
-  error,
   onChoice,
-}: {
+}: PathChoiceControl & {
   title: string;
   items: PathChoiceItem[];
-  busy: boolean;
-  error?: string;
-  onChoice: (skipped: boolean, key?: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const [confirm, setConfirm] = useState(false);
-  const skipped = items.filter((item) => item.skipped).length;
-  const complete = items.filter((item) => item.complete).length;
-  const remaining = items.length - complete - skipped;
+  const remaining = items.filter(
+    (item) => !item.complete && !item.skipped,
+  ).length;
+  const skipped = items.some((item) => item.skipped && !item.complete);
+  if (!remaining && !skipped) return null;
   return (
-    <section
-      className="path-choices ux-card"
-      aria-label={title}
-      aria-busy={busy}
-    >
-      <header>
-        <h2 dir="auto">{title}</h2>
-        {remaining > 0 ? (
-          <button
-            type="button"
-            className="button secondary"
-            disabled={busy}
-            onClick={() => setConfirm(true)}
-          >
-            {t("pathChoices.skipUnit")}
-          </button>
-        ) : skipped > 0 ? (
-          <button
-            type="button"
-            className="button secondary"
-            disabled={busy}
-            onClick={() => void onChoice(false)}
-          >
-            {t("pathChoices.restoreUnit")}
-          </button>
-        ) : null}
-      </header>
-      <p>{t("pathChoices.help")}</p>
-      <p role="status">
-        {t("pathChoices.summary", { complete, skipped, remaining })}
-      </p>
-      {remaining === 0 && <p>{t("pathChoices.routeEnd")}</p>}
-      {error && <p role="alert">{error}</p>}
-      <ol>
-        {items.map((item) => (
-          <li key={item.key}>
-            <div>
-              <strong dir="auto">{item.title}</strong>
-              <small>
-                {t(
-                  item.complete
-                    ? "pathChoices.completed"
-                    : item.skipped
-                      ? "pathChoices.skipped"
-                      : "pathChoices.pending",
-                )}
-              </small>
-              {item.recommendation && <small>{item.recommendation}</small>}
-              {!item.href && item.unavailable && (
-                <small>{item.unavailable}</small>
-              )}
-            </div>
-            <div className="path-choice-actions">
-              {item.href && (
-                <Link className="button secondary" to={item.href}>
-                  {t("pathChoices.startHere")}
-                </Link>
-              )}
-              {item.onOpen && (
-                <button
-                  type="button"
-                  className="button secondary"
-                  disabled={busy}
-                  onClick={item.onOpen}
-                >
-                  {t("pathChoices.startHere")}
-                </button>
-              )}
-              {!item.complete && (
-                <button
-                  type="button"
-                  className="button ghost"
-                  disabled={busy}
-                  onClick={() => void onChoice(!item.skipped, item.key)}
-                  aria-label={`${t(item.skipped ? "pathChoices.restore" : "pathChoices.skip")}: ${item.title}`}
-                >
-                  {t(item.skipped ? "pathChoices.restore" : "pathChoices.skip")}
-                </button>
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
+    <>
+      <ChoiceMenu label={`${t("pathChoices.chooseStep")}: ${title}`}>
+        {(close) => (
+          <>
+            {remaining > 0 && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  close();
+                  setConfirm(true);
+                }}
+              >
+                {t("pathChoices.skipUnit")}
+              </button>
+            )}
+            {skipped && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  close();
+                  void onChoice(false);
+                }}
+              >
+                {t("pathChoices.restoreUnit")}
+              </button>
+            )}
+          </>
+        )}
+      </ChoiceMenu>
       <Modal
         open={confirm}
         onClose={() => !busy && setConfirm(false)}
@@ -144,6 +166,6 @@ export function LearningPathControls({
           </button>
         </div>
       </Modal>
-    </section>
+    </>
   );
 }

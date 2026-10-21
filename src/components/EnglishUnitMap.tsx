@@ -3,7 +3,8 @@ import { Check, ChevronDown, LockKeyhole, SquarePen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { PathArtwork } from "./PathArtwork";
-import { UnitPathChoices } from "./UnitPathChoices";
+import { useUnitPathChoices } from "./UnitPathChoices";
+import { LearningPathControls, PathStepChoice } from "./LearningPathControls";
 import { englishPathLevels } from "../lib/englishPath";
 import type { WordPack } from "../lib/product";
 import { errorMessage } from "../lib/product";
@@ -46,6 +47,21 @@ export function EnglishUnitMap({
   onPathChanged?: () => Promise<void>;
 }) {
   const { t } = useTranslation();
+  const choices = useUnitPathChoices(path, onPathChanged);
+  const stageChoice = (
+    kind: "words" | "meeting" | "homework",
+    station?: string,
+  ) => {
+    const step = path?.steps?.find(
+      (item) => item.kind === kind && item.station === station,
+    );
+    return step && choices ? (
+      <PathStepChoice
+        {...choices}
+        item={{ ...step, title: t(`pathChoices.${kind}`) }}
+      />
+    ) : null;
+  };
   const [expanded, setExpanded] = useState(true);
   const [wordsOpen, setWordsOpen] = useState(false);
   const [meetingOpen, setMeetingOpen] = useState(false);
@@ -174,16 +190,19 @@ export function EnglishUnitMap({
           {t("structuredUi.allUnits")}
         </button>
       </div>
-      {ready && path && onPathChanged && (
-        <UnitPathChoices
-          path={path}
-          stationUrl={stationUrl}
-          onChanged={onPathChanged}
-        />
-      )}
       <section className="unit-roadmap-card" data-figma-desktop="43:2557">
         <header className="unit-roadmap-heading">
           <h2 dir="auto">{current.title}</h2>
+          {ready && choices && (
+            <LearningPathControls
+              {...choices}
+              title={current.title}
+              items={(path?.steps ?? []).map((step) => ({
+                ...step,
+                title: t(`pathChoices.${step.kind}`),
+              }))}
+            />
+          )}
           <button
             className="path-disclosure"
             aria-expanded={expanded}
@@ -193,6 +212,7 @@ export function EnglishUnitMap({
             <PathArtwork name="map-ChevronDown1" circle="map-Circle" />
           </button>
         </header>
+        {choices?.error && <p role="alert">{choices.error}</p>}
         {expanded && (
           <>
             <div className="unit-roadmap-progress">
@@ -334,6 +354,11 @@ export function EnglishUnitMap({
                   >
                     <ChevronDown size={20} />
                   </button>
+                  {ready &&
+                    stageChoice(
+                      "words",
+                      path?.nextAction.station ?? path?.stations[0]?.station,
+                    )}
                 </div>
                 {wordsOpen && (
                   <div id={`${id}-words`} className="unit-activity-detail">
@@ -429,9 +454,11 @@ export function EnglishUnitMap({
                   >
                     <ChevronDown size={20} />
                   </button>
+                  {ready && stageChoice("meeting", rowStation?.station)}
                 </div>
                 {meetingOpen && (
                   <div id={`${id}-meeting`} className="unit-activity-detail">
+                    {ready && stageChoice("homework", rowStation?.station)}
                     <p className="unit-detail-caption">
                       {t("unitMap.meetingExercises")}
                     </p>

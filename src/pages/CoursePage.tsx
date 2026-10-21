@@ -1,4 +1,7 @@
-import { CoursePathChoices } from "../components/CoursePathChoices";
+import {
+  CoursePathChoices,
+  type CoursePathChoiceInput,
+} from "../components/CoursePathChoices";
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -41,6 +44,11 @@ import { chooseProgram } from "../lib/learningNavigation";
 import "../courses.css";
 
 export function CoursePage() {
+  async function choosePath(input: CoursePathChoiceInput) {
+    await run(async () => {
+      await command("path-choices", input);
+    });
+  }
   const { t, i18n } = useTranslation();
   const { profile, user } = useApp();
   const { courseId } = useParams();
@@ -863,17 +871,6 @@ export function CoursePage() {
               )}
               {!draft && <HomeworkLinks items={openHomework} />}
               {!draft && (
-                <CoursePathChoices
-                  course={course}
-                  busy={busy}
-                  onChoice={async (input) => {
-                    await run(async () => {
-                      await command("path-choices", input);
-                    });
-                  }}
-                />
-              )}
-              {!draft && (
                 <CourseJourney
                   course={course}
                   units={displayed.plan.units}
@@ -950,9 +947,19 @@ export function CoursePage() {
                           <ChevronDown size={18} />
                         </summary>
                         <div className="course-unit-body">
-                          <p className="course-unit-outcome" dir="auto">
-                            {unit.outcome}
-                          </p>
+                          <div className="path-choice-heading">
+                            <p className="course-unit-outcome" dir="auto">
+                              {unit.outcome}
+                            </p>
+                            {!draft && (
+                              <CoursePathChoices
+                                course={course}
+                                unitKey={unit.key}
+                                busy={busy}
+                                onChoice={choosePath}
+                              />
+                            )}
+                          </div>
                           <ol className="course-lesson-list">
                             {unit.lessons.map((lesson, lessonIndex) => {
                               const records = draft
@@ -993,12 +1000,27 @@ export function CoursePage() {
                                     <p dir="auto">{lesson.objective}</p>
                                     {!draft && (
                                       <small className="course-lesson-status">
-                                        {t(`courses.${state}`)}
+                                        {course.skippedLessons?.some(
+                                          (choice) =>
+                                            choice.unitKey === unit.key &&
+                                            choice.lessonIndex === lessonIndex,
+                                        )
+                                          ? t("pathChoices.skipped")
+                                          : t(`courses.${state}`)}
                                         {last &&
                                           ` · ${new Date(last.recordedAt).toLocaleDateString(i18n.language)}`}
                                       </small>
                                     )}
                                   </div>
+                                  {!draft && (
+                                    <CoursePathChoices
+                                      course={course}
+                                      unitKey={unit.key}
+                                      lessonIndex={lessonIndex}
+                                      busy={busy}
+                                      onChoice={choosePath}
+                                    />
+                                  )}
                                 </li>
                               );
                             })}

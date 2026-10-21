@@ -18,7 +18,6 @@ import { chooseProgram } from "../lib/learningNavigation";
 import { useApp } from "../context/AppContext";
 import { recordVoice } from "../lib/voice";
 import { ProgramUnitMap } from "../components/ProgramUnitMap";
-import { LearningPathControls } from "../components/LearningPathControls";
 import { UnitLevels } from "../components/UnitLevels";
 import { UnitWordBrowser } from "../components/UnitWordBrowser";
 import { PathArtwork } from "../components/PathArtwork";
@@ -611,38 +610,6 @@ export function StructuredEnglishPage() {
               />
             ) : (
               <>
-                <LearningPathControls
-                  key={unitId}
-                  title={t("pathChoices.chooseStep")}
-                  busy={busy}
-                  error={error}
-                  onChoice={async (skipped, activityId) => {
-                    await run(async () => {
-                      const command = await commandFor(
-                        `path-choice:${unitId}:${activityId ?? "unit"}:${skipped}`,
-                      );
-                      await curriculumApi.pathChoice({
-                        ...command,
-                        unitId,
-                        ...(activityId ? { activityId } : {}),
-                        skipped,
-                      });
-                      await fresh();
-                    });
-                  }}
-                  items={mapModel.steps.map((step) => ({
-                    key: step.id,
-                    title: step.kind === "activity" ? step.title : step.id,
-                    complete: step.complete,
-                    skipped: Boolean(step.skipped),
-                    ...(step.available && step.kind === "activity"
-                      ? { onOpen: step.onOpen }
-                      : {}),
-                    unavailable: !step.available
-                      ? t("unitMap.practiceAfterMeeting")
-                      : undefined,
-                  }))}
-                />
                 <ProgramUnitMap
                   key={unitId}
                   current={displayPack}
@@ -656,6 +623,24 @@ export function StructuredEnglishPage() {
                   onAll={() => go({ view: "levels", unit: unitId })}
                   onActivities={() => go({ view: "activities", unit: unitId })}
                   stationUrl={() => ""}
+                  choices={{
+                    busy,
+                    error,
+                    onChoice: async (skipped, activityId) => {
+                      await run(async () => {
+                        const command = await commandFor(
+                          `path-choice:${unitId}:${activityId ?? "unit"}:${skipped}`,
+                        );
+                        await curriculumApi.pathChoice({
+                          ...command,
+                          unitId,
+                          ...(activityId ? { activityId } : {}),
+                          skipped,
+                        });
+                        await fresh();
+                      });
+                    },
+                  }}
                   presentation={{
                     model: mapModel,
                     packs: displayPacks,

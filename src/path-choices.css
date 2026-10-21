@@ -1,53 +1,96 @@
-.path-choices {
-  margin-block: 1rem;
-  min-width: 0;
+.path-choice-menu {
+  position: relative;
+  flex: 0 0 auto;
 }
-.path-choices header,
-.path-choice-actions {
+.path-choice-trigger {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted, #667085);
+  background: transparent;
+  cursor: pointer;
+}
+.path-choice-trigger:hover,
+.path-choice-trigger[aria-expanded="true"] {
+  background: #edf4f1;
+  color: #226a59;
+}
+.path-choice-options {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 100%;
+  z-index: 10;
+  width: max-content;
+  max-width: min(240px, 70vw);
+  padding: 4px;
+  border: 1px solid #dce4e1;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 16px #102c241a;
+}
+.path-choice-options button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  text-align: start;
+  color: #226a59;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.path-choice-options button:hover {
+  background: #edf4f1;
+}
+.path-choice-options button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.path-choice-heading {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.path-choices header {
   justify-content: space-between;
+  gap: 8px;
 }
-.path-choices h2 {
-  font-size: 1.15rem;
+.path-choice-heading > h2 {
   margin: 0;
 }
-.path-choices ol {
-  list-style: none;
-  margin: 1rem 0 0;
-  padding: 0;
-}
-.path-choices li {
+.pm-step-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-block: 0.75rem;
-  border-block-start: 1px solid var(--border, #d9e3df);
+  gap: 4px;
+  margin-inline-start: auto;
 }
-.path-choices li > div {
-  min-width: 0;
-  overflow-wrap: anywhere;
+.course-path-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+  flex-wrap: wrap;
 }
-.path-choices small {
-  display: block;
-  margin-block-start: 0.25rem;
+.course-path-actions > a {
+  font-size: 0.875rem;
 }
-.path-choices .button {
-  min-height: 44px;
-  white-space: normal;
-}
-@media (max-width: 600px) {
-  .path-choices li {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 0.5rem;
+@media (max-width: 760px) {
+  .pm-step-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
-  .path-choice-actions .button {
+  .pm-step.is-current > .pm-step-actions {
+    order: 3;
+    width: 100%;
+  }
+  .pm-step.is-current .pm-step-actions > .pm-action {
     flex: 1;
+    min-width: 0;
+  }
+  .course-lesson-list > li {
+    flex-wrap: wrap;
   }
 }

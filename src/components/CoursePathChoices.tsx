@@ -1,96 +1,81 @@
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { lessonLink, type Course } from "../lib/courses";
-import { LearningPathControls } from "./LearningPathControls";
+import { LearningPathControls, PathStepChoice } from "./LearningPathControls";
 
+export type CoursePathChoiceInput = {
+  version: number;
+  unitKey: string;
+  lessonIndex?: number;
+  skipped: boolean;
+};
+/** Actions attach to the existing syllabus unit/lesson, without another selector or list. */
 export function CoursePathChoices({
   course,
+  unitKey,
+  lessonIndex,
   busy,
   onChoice,
 }: {
   course: Course;
+  unitKey: string;
+  lessonIndex?: number;
   busy: boolean;
-  onChoice: (input: {
-    version: number;
-    unitKey: string;
-    lessonIndex?: number;
-    skipped: boolean;
-  }) => Promise<void>;
+  onChoice: (input: CoursePathChoiceInput) => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState("");
   const version = course.versions.find(
     (item) => item.version === course.activeVersion,
   );
-  const unit =
-    version?.plan.units.find((item) => item.key === selected) ??
-    version?.plan.units.find(
-      (item) => item.key === course.nextLesson?.unitKey,
-    ) ??
-    version?.plan.units[0];
+  const unit = version?.plan.units.find((item) => item.key === unitKey);
   if (!unit || !version) return null;
-  return (
-    <div className="course-path-choices">
-      <label className="field">
-        <span>{t("pathChoices.chooseUnit")}</span>
-        <select
-          value={unit.key}
-          disabled={busy}
-          onChange={(event) => setSelected(event.target.value)}
-        >
-          {version.plan.units.map((item) => (
-            <option key={item.key} value={item.key}>
-              {item.title}
-            </option>
-          ))}
-        </select>
-      </label>
+  const items = unit.lessons.map((lesson, index) => ({
+    key: String(index),
+    title: lesson.title,
+    complete: course.evidence.some(
+      (e) =>
+        e.version === version.version &&
+        e.unitKey === unit.key &&
+        e.lessonIndex === index &&
+        e.independent,
+    ),
+    skipped: Boolean(
+      course.skippedLessons?.some(
+        (e) => e.unitKey === unit.key && e.lessonIndex === index,
+      ),
+    ),
+  }));
+  const choose = (skipped: boolean, key?: string) =>
+    onChoice({
+      version: version.version,
+      unitKey,
+      ...(key === undefined ? {} : { lessonIndex: Number(key) }),
+      skipped,
+    });
+  if (lessonIndex === undefined)
+    return (
       <LearningPathControls
-        key={`${course.id}:${version.version}:${unit.key}`}
         title={unit.title}
+        items={items}
         busy={busy}
-        onChoice={(skipped, key) =>
-          onChoice({
-            version: version.version,
-            unitKey: unit.key,
-            ...(key === undefined ? {} : { lessonIndex: Number(key) }),
-            skipped,
-          })
-        }
-        items={unit.lessons.map((lesson, lessonIndex) => ({
-          key: String(lessonIndex),
-          title: lesson.title,
-          complete: course.evidence.some(
-            (e) =>
-              e.unitKey === unit.key &&
-              e.lessonIndex === lessonIndex &&
-              e.independent,
-          ),
-          skipped: Boolean(
-            course.skippedLessons?.some(
-              (choice) =>
-                choice.unitKey === unit.key &&
-                choice.lessonIndex === lessonIndex,
-            ),
-          ),
-          href: lessonLink(course, {
-            version: version.version,
-            unitKey: unit.key,
-            lessonIndex,
-          }),
-          recommendation: unit.prerequisites.length
-            ? t("pathChoices.prerequisite", {
-                topics: unit.prerequisites
-                  .map(
-                    (key) =>
-                      version.plan.units.find((item) => item.key === key)
-                        ?.title ?? key,
-                  )
-                  .join(" · "),
-              })
-            : undefined,
-        }))}
+        onChoice={choose}
       />
+    );
+  const item = items[lessonIndex];
+  if (!item) return null;
+  return (
+    <div className="course-path-actions">
+      <Link
+        className="button ghost"
+        to={lessonLink(course, {
+          version: version.version,
+          unitKey,
+          lessonIndex,
+        })}
+      >
+        {t(item.complete ? "unitMap.repeat" : "pathChoices.startHere")}
+      </Link>
+      <PathStepChoice item={item} busy={busy} onChoice={choose} />
     </div>
   );
 }
