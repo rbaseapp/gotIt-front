@@ -122,7 +122,10 @@ export function ProgramUnitMap({
       </Link>
     );
   };
-  const remaining = model ? model.steps.length - model.completed : 0;
+  const hasSkips = model?.steps.some((step) => step.skipped);
+  const remaining = model
+    ? model.steps.filter((step) => !step.complete && !step.skipped).length
+    : 0;
   const rest = model?.steps.slice(model.prefix.length) ?? [];
   const initialCount = Math.max(
     3,
@@ -157,6 +160,7 @@ export function ProgramUnitMap({
         </span>
         <div className="pm-step-copy">
           <h3>{title(step)}</h3>
+          {step.skipped && <small>{t("pathChoices.skipped")}</small>}
           <p>
             {step.kind === "activity"
               ? step.description
@@ -236,7 +240,11 @@ export function ProgramUnitMap({
             </div>
           )}
         </div>
-        {active && action(step, t("programMap.continue"))}
+        {!step.complete &&
+          action(
+            step,
+            t(active ? "programMap.continue" : "pathChoices.startHere"),
+          )}
         {step.complete &&
           step.kind === "activity" &&
           action(step, t("unitMap.repeat"), "pm-review")}
@@ -302,14 +310,20 @@ export function ProgramUnitMap({
                     ? t("programMap.continueStep", {
                         count: model.active.number,
                       })
-                    : t("programMap.unitComplete"),
+                    : t(
+                        hasSkips
+                          ? "pathChoices.routeEnd"
+                          : "programMap.unitComplete",
+                      ),
                 )}
                 <p className="pm-encouragement">
                   <Trophy size={27} aria-hidden="true" />
                   {t(
                     remaining
                       ? "programMap.remaining"
-                      : "programMap.unitComplete",
+                      : hasSkips
+                        ? "pathChoices.routeEnd"
+                        : "programMap.unitComplete",
                     { count: remaining },
                   )}
                 </p>
@@ -408,7 +422,11 @@ export function ProgramUnitMap({
               {model.active === undefined && (
                 <p role="status" className="pm-finished">
                   <Trophy />
-                  {t("programMap.unitComplete")}
+                  {t(
+                    model.steps.some((step) => step.skipped)
+                      ? "pathChoices.routeEnd"
+                      : "programMap.unitComplete",
+                  )}
                 </p>
               )}
             </>
