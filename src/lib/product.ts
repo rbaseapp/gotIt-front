@@ -263,6 +263,8 @@ export const sessionSchema = z.object({
   xpEarned: count,
   algorithmVersion: z.string(),
   curriculumOrder: z.boolean().optional(),
+  curriculumUnitId: z.string().max(40).optional(),
+  curriculumTitle: z.string().max(500).optional(),
   scope: z
     .object({
       type: z.enum(["pack", "track", "topic"]),

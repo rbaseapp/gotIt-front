@@ -92,6 +92,7 @@ export const curriculumSchema = z.object({
     unlocked: z.boolean(),
   }),
   activeAttempts: z.record(z.string(), z.string()),
+  practiceSessions: z.record(z.string(), z.string()).optional(),
   graduation: z.object({
     ready: z.boolean(),
     complete: z.boolean(),
