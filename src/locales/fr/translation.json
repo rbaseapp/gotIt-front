@@ -273,6 +273,7 @@
       "generate": "Créer le résumé du cours",
       "title": "Résumé de votre cours",
       "preparing": "Préparation de votre révision personnelle…",
+      "preparingBody": "La leçon est terminée. Nous enregistrons ta progression et préparons un résumé de tes exercices.",
       "failed": "Le cours est terminé, mais le résumé n’est pas encore prêt.",
       "retry": "Réessayer de préparer le résumé",
       "strengths": "Points réussis",
@@ -3083,6 +3084,12 @@
     "wordsRecommended": "Nous conseillons de connaître {{count}} mots avant ce cours. Vous pouvez commencer maintenant.",
     "selectionChanged": "La leçon choisie a changé ou est indisponible. Retournez au plan du cours et choisissez-la à nouveau.",
     "finishedPrograms": "Programmes terminés"
+  },
+  "mapChoice": {
+    "desktopHint": "Commencer à une autre étape ? Survolez-la et choisissez « Commencer ici ».",
+    "touchHint": "Commencer à une autre étape ? Ouvrez le menu ⋯ à côté.",
+    "startTitle": "Commencer à l’étape {{count}} ?",
+    "startBody": "Vous pourrez revenir à chaque étape. Ouvrir cette étape ne termine ni ne passe les étapes précédentes."
   },
   "settingsLive": {
     "emailLogin": "Email and password",

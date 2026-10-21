@@ -15,7 +15,7 @@ export type PathChoiceControl = {
   error?: string;
   onChoice: (skipped: boolean, key?: string) => Promise<void>;
 };
-function ChoiceMenu({
+export function ChoiceMenu({
   label,
   children,
 }: {
@@ -67,23 +67,39 @@ export function PathStepChoice({
   item,
   busy,
   onChoice,
-}: PathChoiceControl & { item: PathChoiceItem }) {
+  onStart,
+}: PathChoiceControl & { item: PathChoiceItem; onStart?: () => void }) {
   const { t } = useTranslation();
   if (item.complete) return null;
   const label = t(item.skipped ? "pathChoices.restore" : "pathChoices.skip");
   return (
     <ChoiceMenu label={`${label}: ${item.title}`}>
       {(close) => (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => {
-            close();
-            void onChoice(!item.skipped, item.key);
-          }}
-        >
-          {label}
-        </button>
+        <>
+          {onStart && (
+            <button
+              type="button"
+              className="pm-menu-start"
+              disabled={busy}
+              onClick={() => {
+                close();
+                onStart();
+              }}
+            >
+              {t("pathChoices.startHere")}
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              close();
+              void onChoice(!item.skipped, item.key);
+            }}
+          >
+            {label}
+          </button>
+        </>
       )}
     </ChoiceMenu>
   );

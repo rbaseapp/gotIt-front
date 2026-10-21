@@ -273,6 +273,7 @@
       "generate": "Stundenzusammenfassung erstellen",
       "title": "Deine Lektionszusammenfassung",
       "preparing": "Persönliche Wiederholung wird erstellt…",
+      "preparingBody": "Deine Stunde ist beendet. Wir speichern deinen Fortschritt und bereiten eine Zusammenfassung deiner Übungen vor.",
       "failed": "Die Lektion endete, aber die Zusammenfassung ist noch nicht verfügbar.",
       "retry": "Zusammenfassung erneut erstellen",
       "strengths": "Was gut lief",
@@ -3083,6 +3084,12 @@
     "wordsRecommended": "Vor diesem Unterricht empfehlen wir {{count}} bekannte Wörter. Du kannst jetzt beginnen.",
     "selectionChanged": "Die gewählte Lektion wurde geändert oder ist nicht verfügbar. Wähle sie im Kursplan erneut.",
     "finishedPrograms": "Beendete Programme"
+  },
+  "mapChoice": {
+    "desktopHint": "Bei einem anderen Schritt starten? Fahre darüber und wähle „Hier starten“.",
+    "touchHint": "Bei einem anderen Schritt starten? Öffne daneben das Menü ⋯.",
+    "startTitle": "Bei Schritt {{count}} starten?",
+    "startBody": "Du kannst später zu jedem Schritt zurückkehren. Frühere Schritte werden dadurch weder abgeschlossen noch übersprungen."
   },
   "settingsLive": {
     "emailLogin": "Email and password",

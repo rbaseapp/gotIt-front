@@ -273,6 +273,7 @@
       "generate": "Crear resumen de la clase",
       "title": "Resumen de tu clase",
       "preparing": "Preparando tu repaso personal…",
+      "preparingBody": "La lección ha terminado. Estamos guardando tu progreso y preparando un resumen de lo que practicaste.",
       "failed": "La clase terminó, pero el resumen aún no está listo.",
       "retry": "Intentar crear el resumen de nuevo",
       "strengths": "Lo que salió bien",
@@ -3083,6 +3084,12 @@
     "wordsRecommended": "Recomendamos conocer {{count}} palabras antes de esta clase. Puedes empezar ahora.",
     "selectionChanged": "La lección elegida cambió o no está disponible. Vuelve al mapa del curso y selecciónala de nuevo.",
     "finishedPrograms": "Programas finalizados"
+  },
+  "mapChoice": {
+    "desktopHint": "¿Quieres empezar en otro paso? Pasa el cursor y elige «Empezar aquí».",
+    "touchHint": "¿Quieres empezar en otro paso? Abre el menú ⋯ a su lado.",
+    "startTitle": "¿Empezar en el paso {{count}}?",
+    "startBody": "Puedes volver a cualquier paso después. Abrir este paso no completa ni omite los anteriores."
   },
   "settingsLive": {
     "emailLogin": "Email and password",
