@@ -34,6 +34,7 @@ import {
 } from "../lib/focusPractice";
 import { recordVoice } from "../lib/voice";
 import { speak } from "../lib/utils";
+import { curriculumApi } from "../lib/structuredEnglish";
 import { useTranslation } from "react-i18next";
 
 const detailSchema = sessionSchema.extend({
@@ -136,6 +137,17 @@ export function useFocusSession(
     state?.exercises.find((exercise) => exercise.id === state.activeId) ??
     state?.exercises[0];
   const mode = state?.sequence[state.stage];
+  const curriculumUnit = params.get("curriculumUnit");
+  useEffect(() => {
+    if (!curriculumUnit || state?.session.status !== "active") return;
+    const pulse = () => {
+      if (document.visibilityState === "visible" && !lock.current)
+        void curriculumApi.heartbeat(`unit:${curriculumUnit}`).catch(() => {});
+    };
+    pulse();
+    const timer = window.setInterval(pulse, 20000);
+    return () => window.clearInterval(timer);
+  }, [curriculumUnit, state?.session.status]);
 
   const issue = async (
     value: FocusCheckpoint,
@@ -279,12 +291,15 @@ export function useFocusSession(
       } else {
         const items = params.get("items")?.split(",");
         const pack = params.get("pack");
+        const curriculumUnit = params.get("curriculumUnit");
         if (
           (items &&
             (!items.length ||
               items.length > 100 ||
               items.some((id) => !uuid.safeParse(id).success))) ||
-          (pack && !uuid.safeParse(pack).success)
+          (pack && !uuid.safeParse(pack).success) ||
+          (curriculumUnit &&
+            (items || pack || !/^[A-Z][A-Z0-9]{1,10}$/.test(curriculumUnit)))
         )
           throw new Error(t("game.invalidItems"));
         const requested = Number(params.get("count") || 10);
@@ -299,6 +314,7 @@ export function useFocusSession(
               : exerciseTypeFor(type as FocusMode),
           count,
           sourceLanguageCode: language,
+          ...(curriculumUnit ? { curriculumUnitId: curriculumUnit } : {}),
           ...(items ? { learningItemIds: items } : {}),
           ...(pack ? { scope: { type: "pack", id: pack } } : {}),
           ...(type === "smart"
@@ -340,6 +356,11 @@ export function useFocusSession(
           )
         ).session;
       }
+      if (
+        params.has("curriculumUnit") &&
+        session.curriculumUnitId !== params.get("curriculumUnit")
+      )
+        throw new Error(t("game.languageMismatch"));
       if (cached && (cached.type !== type || cached.language !== language))
         throw new Error(t("game.languageMismatch"));
       if (session.status !== "active") {
