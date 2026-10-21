@@ -196,7 +196,7 @@ export function createGateway(config) {
         fail(400, "INVALID_PATH");
         return;
       }
-      if (/%(?:2f|5c|2e)/i.test(req.url)) {
+      if (/%(?:2f|5c|2e)/i.test(req.url.split("?", 1)[0])) {
         fail(400, "INVALID_PATH");
         return;
       }

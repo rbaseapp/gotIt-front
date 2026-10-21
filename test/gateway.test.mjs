@@ -180,6 +180,12 @@ after(async () => {
   await rm(directory, { recursive: true, force: true });
 });
 describe("production frontend gateway", () => {
+  it("serves lesson deep links with encoded return destinations while still rejecting encoded path separators", async () => {
+    const page = await fetch(`${gatewayOrigin}/private-lesson?curriculum=P01-L1&return=%2Fenglish-learning%3Funit%3DP01`);
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /GotIt/);
+    assert.equal((await fetch(`${gatewayOrigin}/gotit-api/api/v1%2fprofile?return=%2Fenglish-learning`)).status, 400);
+  });
   it("forwards only the named email verification and recovery routes", async () => {
     for (const path of [
       "verify-email",
