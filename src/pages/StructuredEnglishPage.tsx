@@ -21,7 +21,6 @@ import { ProgramUnitMap } from "../components/ProgramUnitMap";
 import { UnitLevels } from "../components/UnitLevels";
 import { UnitWordBrowser } from "../components/UnitWordBrowser";
 import { PathArtwork } from "../components/PathArtwork";
-import { ReadAloud } from "../components/CourseComposer";
 import {
   curriculumDisplayPacks,
   curriculumDisplayEntries,
@@ -41,7 +40,7 @@ export function StructuredEnglishPage() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const view =
-      params.get("view") ??
+      (params.get("view") === "study" ? "words" : params.get("view")) ??
       (params.get("all") === "1" ? "levels" : params.get("tab")) ??
       "map",
     unitId =
@@ -74,7 +73,6 @@ export function StructuredEnglishPage() {
     >("starting");
   const [placementBand, setPlacementBand] = useState("A1");
   const [wordBatch, setWordBatch] = useState(0);
-  const confirmedIntroduction = useRef<string | null>(null);
   const [recording, setRecording] = useState(false),
     [transcription, setTranscription] = useState<{
       id: string;
@@ -166,8 +164,7 @@ export function StructuredEnglishPage() {
     };
   }, [data?.enrolled, activityId, busy]);
   useEffect(() => {
-    if (!data?.enrolled || !["map", "words", "study", "text"].includes(view))
-      return;
+    if (!data?.enrolled || !["map", "words", "text"].includes(view)) return;
     let active = true;
     void curriculumApi
       .unit(unitId)
@@ -419,57 +416,39 @@ export function StructuredEnglishPage() {
         unit: unitId,
         [kind === "text" ? "unit" : kind]: target,
       });
+    } else if (kind === "words" && game !== "context") {
+      openWordGames(
+        (
+          {
+            recognition: "flashcards",
+            matching: "matching",
+            recall: "recall",
+            listening: "listening",
+          } as Record<string, string>
+        )[game] ?? "smart",
+      );
     } else void start(id);
   };
-  const eligibleGames =
-    unit?.id === unitId ? unit.games.filter((game) => game.eligible > 0) : [];
-  const needsIntroduction = unit?.id === unitId && eligibleGames.length === 0;
-  const smartPractice = () => {
-    if (!data || unit?.id !== unitId || !selectedUnit?.unlocked) return;
-    const active = Object.entries(data.activeAttempts).find(([id]) =>
-      id.startsWith(`words:${unitId}:`),
-    );
-    if (active) {
-      go({ view: "attempt", attempt: active[1], unit: unitId });
+  const openWordGames = (type = "smart") => {
+    if (
+      !data ||
+      !selectedUnit?.unlocked ||
+      unit?.id !== unitId ||
+      busy ||
+      recording
+    )
       return;
-    }
-    const recommended =
-      data.nextAction?.kind === "words" && data.nextAction.id === unitId
-        ? data.nextAction.game
-        : undefined;
-    const game =
-      eligibleGames.find((item) => item.mode === recommended) ??
-      eligibleGames[0];
-    if (game) {
-      void start(`words:${unitId}:${game.mode}`);
-      return;
-    }
-    const index = unit.words.findIndex((word) => !word.evidence);
-    if (index >= 0) {
-      go({ view: "study", unit: unitId, word: unit.words[index].id });
-    }
-  };
-  const studyWord =
-    unit?.id === unitId
-      ? (unit.words.find((word) => word.id === params.get("word")) ??
-        unit.words.find((word) => !word.evidence))
-      : undefined;
-  const confirmAndPractise = async () => {
-    if (!studyWord || !selectedUnit?.unlocked || busy || recording) return;
-    if (studyWord.evidence || confirmedIntroduction.current === studyWord.id) {
-      void start(`words:${unitId}:recognition`);
-      return;
-    }
-    let confirmed = false;
-    await run(async () => {
-      const { revision, eventId } = await commandFor(`expose:${studyWord.id}`);
-      await curriculumApi.expose(revision, [studyWord.id], eventId);
-      confirmedIntroduction.current = studyWord.id;
-      await fresh();
-      confirmed = true;
+    const query = new URLSearchParams({
+      language: "en",
+      curriculumUnit: unitId,
+      count: String(unit.words.length),
+      return: `/english-learning?view=words&unit=${unitId}`,
     });
-    if (confirmed) void start(`words:${unitId}:recognition`);
+    if (type === "smart" && data.practiceSessions?.[unitId])
+      query.set("resume", data.practiceSessions[unitId]);
+    navigate(`/learn/session/${type}?${query}`);
   };
+  const smartPractice = () => openWordGames();
   const mapReady = data?.enrolled && unit?.id === unitId && displayPack;
   const showMap = view === "map" && data?.enrolled;
   const mapModel =
@@ -490,17 +469,15 @@ export function StructuredEnglishPage() {
           ? t("structuredUi.activities")
           : view === "words"
             ? t("structuredUi.words")
-            : view === "study"
-              ? t("gameUi.studyTitle")
-              : view === "attempt"
-                ? t("courses.homework")
-                : view === "teacher"
-                  ? t("c1.teacher")
-                  : view === "settings"
-                    ? t("lessonPrep.preferences")
-                    : t(`c1.tabs.${view}`, {
-                        defaultValue: t("c1.unitReading"),
-                      });
+            : view === "attempt"
+              ? t("courses.homework")
+              : view === "teacher"
+                ? t("c1.teacher")
+                : view === "settings"
+                  ? t("lessonPrep.preferences")
+                  : t(`c1.tabs.${view}`, {
+                      defaultValue: t("c1.unitReading"),
+                    });
   return (
     <div
       className={
@@ -549,24 +526,12 @@ export function StructuredEnglishPage() {
                 unit.id !== unitId ||
                 !selectedUnit?.unlocked
               }
-              aria-describedby={
-                needsIntroduction ? "practice-introduction-help" : undefined
-              }
               onClick={smartPractice}
             >
               {t("dashboard.smartPractice")}
             </button>
           )}
         </header>
-      )}
-      {view === "words" && needsIntroduction && selectedUnit?.unlocked && (
-        <p
-          className="course-note"
-          id="practice-introduction-help"
-          role="status"
-        >
-          {t("c1.wordInstructions")}
-        </p>
       )}
       <RemoteState
         loading={resource.loading && !data}
@@ -793,47 +758,6 @@ export function StructuredEnglishPage() {
               </aside>
             </div>
           )}
-          {view === "study" && studyWord && selectedUnit?.unlocked && (
-            <div className="live-session">
-              <section className="memorization-card live-panel practice-card">
-                <div className="memorization-copy">
-                  <h1 ref={focusRef} tabIndex={-1} lang="en" dir="ltr">
-                    {studyWord.en}
-                  </h1>
-                  <p className="memorization-translation" lang="he" dir="rtl">
-                    {studyWord.he}
-                  </p>
-                  <ReadAloud
-                    text={studyWord.en}
-                    language="en"
-                    label={t("pathUi.listenWord")}
-                    className="button secondary memorization-audio"
-                    showLabel
-                  />
-                  {displayEntries.find((entry) => entry.id === studyWord.id)
-                    ?.exampleText && (
-                    <blockquote lang="en" dir="ltr">
-                      {
-                        displayEntries.find(
-                          (entry) => entry.id === studyWord.id,
-                        )!.exampleText
-                      }
-                    </blockquote>
-                  )}
-                </div>
-                <p className="study-evidence-note">{t("gameUi.studyNote")}</p>
-                <div className="memorization-actions">
-                  <button
-                    className="button primary"
-                    disabled={busy || recording}
-                    onClick={() => void confirmAndPractise()}
-                  >
-                    {t("c1.introduceWord")} · {t("game.startReview")}
-                  </button>
-                </div>
-              </section>
-            </div>
-          )}
           {view === "words" && unit?.id === unitId && (
             <>
               <UnitWordBrowser
@@ -898,7 +822,20 @@ export function StructuredEnglishPage() {
                       busy ||
                       !unit.games.find((item) => item.mode === game)?.eligible
                     }
-                    onClick={() => void start(`words:${unitId}:${game}`)}
+                    onClick={() =>
+                      game === "context"
+                        ? void start(`words:${unitId}:${game}`)
+                        : openWordGames(
+                            (
+                              {
+                                recognition: "flashcards",
+                                matching: "matching",
+                                recall: "recall",
+                                listening: "listening",
+                              } as Record<string, string>
+                            )[game],
+                          )
+                    }
                   >
                     {t(`c1.games.${game}`)}{" "}
                     <span>

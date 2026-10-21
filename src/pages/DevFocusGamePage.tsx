@@ -95,9 +95,14 @@ export function DevFocusGamePage() {
   const resume = params.get("resume");
   if (!focusGamesEnabled(type)) return <LiveGameSessionPage />;
   // Sessions made by earlier clients retain their original engine and semantics.
-  if (resume && user && !readFocusCheckpoint(user.id, resume))
+  if (
+    resume &&
+    user &&
+    !params.has("curriculumUnit") &&
+    !readFocusCheckpoint(user.id, resume)
+  )
     return <LiveGameSessionPage />;
-  const key = `${type}:${params.get("language")}:${params.get("items")}:${params.get("pack")}`;
+  const key = `${type}:${params.get("language")}:${params.get("items")}:${params.get("pack")}:${params.get("curriculumUnit")}`;
   return <FocusGame key={key} type={type} />;
 }
 
@@ -1012,7 +1017,10 @@ function MatchingGame({
           <h1>{t("focusGames.matchPrompt")}</h1>
           <span className="cat">
             <Tag size={18} />
-            {state!.session.scope?.title ?? t("focusGames.yourWords")} ·{" "}
+            {state!.session.curriculumTitle ??
+              state!.session.scope?.title ??
+              t("focusGames.yourWords")}{" "}
+            ·{" "}
             {t("focusGames.board", {
               current: Math.ceil(boardStart / 4) + 1,
             })}
