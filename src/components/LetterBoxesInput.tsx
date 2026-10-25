@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import { Delete, Keyboard } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { letterKeyboard } from "../lib/letterKeyboard";
@@ -14,6 +14,7 @@ type LetterBoxesInputProps = {
   revealedValue?: string;
   language?: string;
   showLetters?: boolean;
+  onRemoveLetter?: (index: number) => void;
 };
 
 export function LetterBoxesInput({
@@ -27,6 +28,7 @@ export function LetterBoxesInput({
   revealedValue = "",
   language,
   showLetters = false,
+  onRemoveLetter,
 }: LetterBoxesInputProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +81,21 @@ export function LetterBoxesInput({
             ? "rtl"
             : "ltr"
         }
-        onClick={() => inputRef.current?.focus()}
+        onClick={(event) => {
+          inputRef.current?.focus();
+          if (!onRemoveLetter || disabled) return;
+          const boxes = event.currentTarget.querySelectorAll(".letter-box");
+          const index = [...boxes].findIndex((box) => {
+            const rect = box.getBoundingClientRect();
+            return (
+              event.clientX >= rect.left &&
+              event.clientX <= rect.right &&
+              event.clientY >= rect.top &&
+              event.clientY <= rect.bottom
+            );
+          });
+          if (index >= 0 && index < letters.length) onRemoveLetter(index);
+        }}
       >
         <div className="letter-boxes" aria-hidden="true">
           {groups.map((wordLength, groupIndex) => {
@@ -100,6 +116,7 @@ export function LetterBoxesInput({
                         revealed ? " revealed" : ""
                       }${index === letters.length && !disabled ? " active" : ""}`}
                       key={wordIndex}
+                      style={{ "--letter-index": index } as CSSProperties}
                     >
                       {entered || revealed}
                     </span>

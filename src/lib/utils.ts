@@ -59,13 +59,36 @@ export function shuffle<T>(values: T[]) {
   return copy;
 }
 
-export function speak(text: string, lang = "en-US", rate = 0.82) {
-  if (!("speechSynthesis" in window)) return false;
+// Keep utterances reachable until the browser finishes dispatching speech events.
+let activeUtterance: SpeechSynthesisUtterance | undefined;
+
+export function speak(
+  text: string,
+  lang = "en-US",
+  rate = 0.82,
+  onFinish?: () => void,
+) {
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return false;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
   utterance.rate = rate;
-  window.speechSynthesis.speak(utterance);
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    if (activeUtterance === utterance) activeUtterance = undefined;
+    onFinish?.();
+  };
+  utterance.onend = finish;
+  utterance.onerror = finish;
+  activeUtterance = utterance;
+  try {
+    window.speechSynthesis.speak(utterance);
+  } catch {
+    finish();
+    return false;
+  }
   return true;
 }
 

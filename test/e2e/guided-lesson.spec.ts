@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { guidedSession, guidedReport } from "../guided-lesson-fixtures";
 import { seedProfile } from "../../src/data/seed";
 import he from "../../src/locales/he/translation.json" with { type: "json" };
+import en from "../../src/locales/en/translation.json" with { type: "json" };
 
 const id = guidedSession.lesson.id;
 const activity = {
@@ -26,12 +27,14 @@ async function fixture(
     allowMicrophone?: boolean;
     conversation?: boolean;
     legacy?: boolean;
+    adaptive?: boolean;
+    locale?: "he" | "en";
   } = {},
 ) {
   const commands: Array<Record<string, unknown>> = [];
-  await page.addInitScript(({ allowMicrophone, legacy }) => {
+  await page.addInitScript(({ allowMicrophone, legacy, locale }) => {
     localStorage.removeItem("gotit.mode");
-    localStorage.setItem("gotit.uiLocale.v1", "he");
+    localStorage.setItem("gotit.uiLocale.v1", locale ?? "he");
     sessionStorage.setItem("gotit.refresh", "fixture-refresh");
     let microphoneCaptures = 0;
     Object.defineProperty(window, "gotitTestMicrophoneCaptures", {
@@ -179,6 +182,7 @@ async function fixture(
                 guidedTasks: true,
                 textAnswers: true,
                 billingPause: false,
+                adaptiveLessons: Boolean(options.adaptive),
               },
             }),
       };
@@ -221,6 +225,16 @@ async function fixture(
           ? null
           : {
               ...activity,
+              ...(options.adaptive
+                ? {
+                    protocolVersion: "adaptive-v1",
+                    activityId: "task-0",
+                    status: "active",
+                    reason: "opening",
+                    remainingSeconds: 300,
+                    completedActivities: 0,
+                  }
+                : {}),
               interactionMode: options.conversation ? "conversation" : "guided",
             },
       };
@@ -251,6 +265,8 @@ async function fixture(
           tasks: [],
         },
       };
+    else if (path.endsWith("/activity") && route.request().method() === "GET")
+      payload = { activity: { ...activity, protocolVersion: "adaptive-v1", activityId: "task-0", status: "active", reason: "opening", remainingSeconds: 280, completedActivities: 0 }, tutorEvent: guidedSession.realtime.openingEvent };
     else if (
       path.endsWith("/activity") &&
       route.request().method() === "POST"
@@ -266,6 +282,16 @@ async function fixture(
       payload = {
         activity: {
           ...activity,
+          ...(options.adaptive
+            ? {
+                protocolVersion: "adaptive-v1",
+                activityId: "task-1",
+                status: "active",
+                reason: "progress",
+                remainingSeconds: 270,
+                completedActivities: 1,
+              }
+            : {}),
           revision: 1,
           stage: "chat",
           tutorText: "יפה, ננסה בקשה חדשה.",
@@ -282,6 +308,139 @@ async function fixture(
   });
   return commands;
 }
+test("adaptive text lesson binds a stable retry to its server task without microphone access", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const commands = await fixture(page, { adaptive: true });
+  let requestedProtocol: string | undefined;
+  page.on("request", (request) => {
+    if (
+      new URL(request.url()).pathname.endsWith(
+        "/private-lessons/realtime-sessions",
+      )
+    )
+      requestedProtocol = request.postDataJSON().interactionProtocol;
+  });
+  await page.goto(`/private-lesson?pack=${id}`);
+  await page.getByLabel(he.lessonUi.answerMode).selectOption("text");
+  await page
+    .getByRole("button", { name: he.lessonPrep.startWithTeacher, exact: true })
+    .click();
+  await expect(page.locator(".lesson-session")).toBeVisible();
+  expect(requestedProtocol).toBe("adaptive-v1");
+  await expect(page.locator(".lesson-room-timer")).toHaveText(/4:\d{2}/);
+  await page.getByLabel(he.lessonUi.yourAnswer).fill("I want tea.");
+  await page
+    .getByRole("button", { name: he.lessonUi.send, exact: true })
+    .click();
+  await expect(page.locator(".lesson-room-composer .form-error")).toBeVisible();
+  await page
+    .getByRole("button", { name: he.lessonUi.send, exact: true })
+    .click();
+  await expect(page.getByLabel(he.lessonUi.yourAnswer)).toHaveValue("");
+  expect(commands).toHaveLength(2);
+  expect(commands[0].activityId).toBe("task-0");
+  expect(commands[1]).toEqual(commands[0]);
+  expect(
+    await page.evaluate(() =>
+      Reflect.get(window, "gotitTestMicrophoneCaptures"),
+    ),
+  ).toBe(0);
+  await page.screenshot({
+    path: "output/playwright/adaptive-lesson-text-390.png",
+    animations: "disabled",
+  });
+});
+for (const { width, height, locale } of [
+  { width: 1920, height: 905, locale: "he" as const },
+  { width: 320, height: 568, locale: "he" as const },
+  { width: 390, height: 844, locale: "en" as const },
+  { width: 844, height: 390, locale: "en" as const },
+])
+  test(`lesson summary scroll ${locale} ${width}x${height}: pending, error, expanded report and return`, async ({
+    page,
+  }) => {
+    const copy = locale === "he" ? he : en;
+    await page.setViewportSize({ width, height });
+    await fixture(page, { locale });
+    let releaseReport = () => {};
+    const reportReady = new Promise<void>((resolve) => {
+      releaseReport = resolve;
+    });
+    let attempts = 0;
+    await page.route("**/private-lessons/*/complete", async (route) => {
+      attempts += 1;
+      if (attempts === 1) {
+        await reportReady;
+        await route.fulfill({
+          status: 503,
+          json: { error: { code: "PROVIDER_UNAVAILABLE" } },
+        });
+      } else {
+        await route.fulfill({ json: { lesson: guidedReport } });
+      }
+    });
+    await page.goto(`/private-lesson?pack=${id}&return=/dashboard`);
+    await page.getByLabel(copy.lessonUi.answerMode).selectOption("text");
+    await page
+      .getByRole("button", {
+        name: copy.lessonPrep.startWithTeacher,
+        exact: true,
+      })
+      .click();
+    await expect(page.locator("body")).toHaveCSS("overflow-y", "hidden");
+    await page.locator(".lesson-room-exit").click();
+    await page
+      .getByRole("button", { name: copy.lessonUi.finishAndSave, exact: true })
+      .click();
+    try {
+      await expect(
+        page.locator(".lesson-report-status [role=status]"),
+      ).toBeVisible();
+      await expect(page.locator("body")).not.toHaveCSS("overflow-y", "hidden");
+      await page.mouse.move(width / 2, height / 2);
+      await page.mouse.wheel(0, 10000);
+      await expect(page.locator(".lesson-report-status > a")).toBeInViewport({
+        ratio: 1,
+      });
+    } finally {
+      releaseReport();
+    }
+    await expect(
+      page.locator(".lesson-report-status [role=alert]"),
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toHaveCSS("overflow-y", "hidden");
+    await page
+      .getByRole("button", {
+        name: copy.privateLesson.report.retry,
+        exact: true,
+      })
+      .click();
+    await expect(page.locator(".lesson-summary > header")).toBeVisible();
+    await page.locator(".lesson-summary > .ux-card > details > summary").click();
+    await expect(
+      page.locator(".lesson-summary > .ux-card > details"),
+    ).toHaveAttribute("open", "");
+    await page.mouse.move(width / 2, height / 2);
+    await page.mouse.wheel(0, 10000);
+    const returnLink = page.locator(".lesson-summary > a.secondary");
+    await expect(returnLink).toBeInViewport({ ratio: 1 });
+    await expect(page.locator("body")).not.toHaveCSS("overflow-y", "hidden");
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: `output/playwright/lesson-summary-scroll-${locale}-${width}.png`,
+      animations: "disabled",
+    });
+    await returnLink.click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.locator("body")).not.toHaveCSS("overflow-y", "hidden");
+  });
+
 for (const width of [320, 390, 1487])
   test(`guided lesson ${width}: canonical geometry, text without microphone, stable retry`, async ({
     page,

@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
+import {
+  completedEnglishUnit,
+  resolvedEnglishUnit,
+  englishPathLevels,
+} from "../lib/englishPath";
 import type { WordPack } from "../lib/product";
 import { PathArtwork } from "./PathArtwork";
 
@@ -10,12 +14,14 @@ export function UnitLevels({
   onOpen,
   onWords,
   initialLevel,
+  canOpen,
 }: {
   packs: WordPack[];
   current?: WordPack;
   onOpen: (pack: WordPack) => void;
   onWords: (pack: WordPack) => void;
   initialLevel?: string;
+  canOpen?: (pack: WordPack) => boolean;
 }) {
   const { t } = useTranslation();
   const levels = englishPathLevels(packs);
@@ -28,7 +34,7 @@ export function UnitLevels({
   const featured =
     visible.find((pack) => pack.id === selectedId) ??
     visible.find((pack) => pack.id === current?.id) ??
-    visible.find((pack) => !completedEnglishUnit(pack)) ??
+    visible.find((pack) => !resolvedEnglishUnit(pack)) ??
     visible[0];
   const upcoming = featured?.teacherStations?.find((step) => step.available);
   return (
@@ -134,9 +140,11 @@ export function UnitLevels({
                     {t(
                       completedEnglishUnit(pack)
                         ? "englishPath.completed"
-                        : pack.id === current?.id
-                          ? "courses.youAreHere"
-                          : "pathUi.canBrowse",
+                        : pack.progress.pathSkipped
+                          ? "pathChoices.skipped"
+                          : pack.id === current?.id
+                            ? "courses.youAreHere"
+                            : "pathUi.canBrowse",
                     )}
                   </span>
                 </button>
@@ -186,10 +194,18 @@ export function UnitLevels({
                   : t("pathUi.meetingAfterWords")}
               </p>
             </div>
-            <button className="button primary" onClick={() => onOpen(featured)}>
+            <button
+              className="button primary"
+              disabled={canOpen ? !canOpen(featured) : false}
+              onClick={() => onOpen(featured)}
+            >
               {t("pathUi.continueUnit")}
             </button>
-            <button className="button ghost" onClick={() => onWords(featured)}>
+            <button
+              className="button ghost"
+              disabled={canOpen ? !canOpen(featured) : false}
+              onClick={() => onWords(featured)}
+            >
               {t("structuredUi.words")}
             </button>
           </aside>

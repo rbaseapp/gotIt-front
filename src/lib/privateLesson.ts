@@ -94,6 +94,7 @@ export const privateLessonSetupSchema = z.object({
       guidedTasks: z.boolean(),
       textAnswers: z.boolean(),
       billingPause: z.boolean(),
+      adaptiveLessons: z.boolean().optional(),
     })
     .optional(),
   preferences: z
@@ -168,6 +169,12 @@ const instructionEventSchema = z
   .strict();
 
 export const lessonActivitySchema = z.object({
+  protocolVersion: z.literal("adaptive-v1").optional(),
+  activityId: z.string().min(1).max(60).optional(),
+  status: z.enum(["active", "closing", "exhausted"]).optional(),
+  reason: z.string().optional(),
+  remainingSeconds: z.number().int().nonnegative().optional(),
+  completedActivities: z.number().int().nonnegative().optional(),
   lastAnswer: z
     .object({
       question: z.string(),
@@ -185,11 +192,11 @@ export const lessonActivitySchema = z.object({
     .optional(),
   interactionMode: z.enum(["guided", "conversation"]).optional(),
   title: z.string().min(2).max(80).optional(),
-  revision: z.number().int().min(0).max(100),
+  revision: z.number().int().min(0).max(1000),
   stage: z.enum(["learn", "try", "chat"]),
   attempts: z.number().int().nonnegative(),
-  tutorText: z.string().min(1).max(2000),
-  question: z.string().min(1).max(350),
+  tutorText: z.string().min(1).max(2400),
+  question: z.string().min(1).max(700),
   example: z
     .object({
       targetText: z.string().max(240),
@@ -202,13 +209,14 @@ export const lessonActivitySchema = z.object({
     .array(
       z.object({
         role: z.enum(["learner", "tutor"]),
-        text: z.string().min(1).max(2000),
+        text: z.string().min(1).max(2400),
       }),
     )
-    .max(100),
+    .max(200),
 });
 export type LessonActivity = z.infer<typeof lessonActivitySchema>;
 export type LessonActivityCommand = {
+  activityId?: string;
   eventId: string;
   revision: number;
   action: "answer" | "hint" | "continue" | "review";
@@ -289,6 +297,10 @@ export const getLessonUnit = (id: string) =>
 export const privateLessonSessionSchema = z.object({
   activity: lessonActivitySchema.nullable().optional().default(null),
   lesson: z.object({
+    curriculum: z
+      .object({ lessonId: z.string(), version: z.string() })
+      .nullable()
+      .optional(),
     wordPack: lessonUnitSchema.nullable().optional().default(null),
     id: uuid,
     durationSeconds: z
@@ -342,8 +354,11 @@ export const privateLessonSessionSchema = z.object({
 export type PrivateLessonSession = z.infer<typeof privateLessonSessionSchema>;
 export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15 | 20;
 export type PrivateLessonInput = {
+  curriculumLessonId?: string;
+  interactionProtocol?: "adaptive-v1";
   interactionMode?: "guided" | "conversation";
   courseId?: string;
+  courseLesson?: { version: number; unitKey: string; lessonIndex: number };
   packId?: string;
   station?: "supported" | "midpoint" | "review";
   targetLanguageCode: string;
@@ -548,6 +563,10 @@ export const privateLessonReportSchema = z.object({
 });
 
 export const savedPrivateLessonSchema = z.object({
+  curriculum: z
+    .object({ lessonId: z.string(), version: z.string() })
+    .nullable()
+    .optional(),
   wordPack: lessonUnitSchema.nullable().optional(),
   id: uuid,
   course: z.object({ courseId: uuid }).passthrough().nullable().optional(),

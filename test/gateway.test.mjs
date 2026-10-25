@@ -21,6 +21,42 @@ it("allows long homework preparation without extending unrelated requests", () =
   );
 });
 
+it("allows bounded artwork generation without extending cache lookups", () => {
+  assert.equal(
+    upstreamTimeoutMs("/gotit-api", "/api/v1/courses/artwork/generate"),
+    110000,
+  );
+  assert.equal(
+    upstreamTimeoutMs("/gotit-api", "/api/v1/courses/artwork/lookup"),
+    80000,
+  );
+  assert.equal(
+    upstreamTimeoutMs("/core-api", "/api/v1/courses/artwork/generate"),
+    80000,
+  );
+});
+
+it("allows bounded adaptive lesson planning while keeping ordinary activity requests short", () => {
+  assert.equal(
+    upstreamTimeoutMs(
+      "/gotit-api",
+      "/api/v1/private-lessons/realtime-sessions",
+    ),
+    220000,
+  );
+  assert.equal(
+    upstreamTimeoutMs(
+      "/gotit-api",
+      "/api/v1/private-lessons/11111111-1111-4111-8111-111111111111/activity",
+    ),
+    80000,
+  );
+  assert.equal(
+    upstreamTimeoutMs("/core-api", "/api/v1/private-lessons/realtime-sessions"),
+    80000,
+  );
+});
+
 let upstream;
 let gateway;
 let upstreamOrigin;
@@ -144,6 +180,12 @@ after(async () => {
   await rm(directory, { recursive: true, force: true });
 });
 describe("production frontend gateway", () => {
+  it("serves lesson deep links with encoded return destinations while still rejecting encoded path separators", async () => {
+    const page = await fetch(`${gatewayOrigin}/private-lesson?curriculum=P01-L1&return=%2Fenglish-learning%3Funit%3DP01`);
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /GotIt/);
+    assert.equal((await fetch(`${gatewayOrigin}/gotit-api/api/v1%2fprofile?return=%2Fenglish-learning`)).status, 400);
+  });
   it("forwards only the named email verification and recovery routes", async () => {
     for (const path of [
       "verify-email",

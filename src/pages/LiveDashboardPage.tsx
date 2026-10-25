@@ -23,7 +23,7 @@ import {
   chooseHomeLanguage,
   smartSessionLink,
 } from "../lib/learningNavigation";
-import { completedEnglishUnit, englishPathLevels } from "../lib/englishPath";
+import { resolvedEnglishUnit, englishPathLevels } from "../lib/englishPath";
 import { LearningHero } from "../components/LearningHero";
 import wordCards from "../assets/ux/word-cards.png";
 import personalProgram from "../assets/ux/personal-program.png";
@@ -87,7 +87,7 @@ export function LiveDashboardPage() {
     programPacks.data?.packs ?? [],
   ).flatMap((level) => level.packs);
   const latestPack =
-    preparedPath.find((pack) => !completedEnglishUnit(pack)) ??
+    preparedPath.find((pack) => !resolvedEnglishUnit(pack)) ??
     preparedPath.at(-1);
   const programIds = [
     ...new Set(

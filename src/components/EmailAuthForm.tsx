@@ -21,6 +21,8 @@ export function EmailAuthForm({
   authenticate,
   onBusy,
   children,
+  startingMode,
+  initialEmail = "",
 }: {
   authenticate: (
     mode: "login" | "register",
@@ -29,17 +31,20 @@ export function EmailAuthForm({
   ) => Promise<void>;
   onBusy: (busy: boolean) => void;
   children?: ReactNode;
+  startingMode?: Mode;
+  initialEmail?: string;
 }) {
   const { t } = useTranslation();
   const initial = new URLSearchParams(window.location.search).get("auth");
   const [mode, setMode] = useState<Mode>(
-    initial === "register"
-      ? "register"
-      : initial === "reset"
-        ? "forgot"
-        : "login",
+    startingMode ??
+      (initial === "register"
+        ? "register"
+        : initial === "reset"
+          ? "forgot"
+          : "login"),
   );
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [confirm, setConfirm] = useState("");

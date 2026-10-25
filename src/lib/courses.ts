@@ -84,6 +84,15 @@ export const courseSchema = z.object({
   draftVersion: z.number().nullable(),
   activeVersion: z.number().nullable(),
   pendingPlanChange: z.string().optional(),
+  skippedLessons: z
+    .array(
+      z.object({
+        version: z.number(),
+        unitKey: z.string(),
+        lessonIndex: z.number(),
+      }),
+    )
+    .optional(),
   evidence: z.array(
     z.object({
       lessonId: uuid,
@@ -255,9 +264,15 @@ export const courseApi = {
       languageCode,
     }),
 };
-export function lessonLink(course: Course) {
+export function lessonLink(
+  course: Course,
+  selection?: { version: number; unitKey: string; lessonIndex: number },
+) {
   const preferences =
     course.versions.find((version) => version.version === course.activeVersion)
       ?.preferences ?? course.preferences;
-  return `/private-lesson?course=${course.id}&language=${encodeURIComponent(preferences.targetLanguageCode)}`;
+  const suffix = selection
+    ? `&version=${selection.version}&unit=${encodeURIComponent(selection.unitKey)}&lesson=${selection.lessonIndex}`
+    : "";
+  return `/private-lesson?course=${course.id}&language=${encodeURIComponent(preferences.targetLanguageCode)}${suffix}`;
 }

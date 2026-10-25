@@ -1,0 +1,42 @@
+{
+  "scope": "local shared map implementation and explicit in-memory visual review",
+  "release": "not deployed",
+  "baseDev": "9a95e23fa40549bcc19ab93cbf54e087cd59b5ec",
+  "preservedSummaryFix": "6ef43baa32a834d5ba38d0c128fecf89dc97c6c1",
+  "focusedTests": { "passed": 27, "files": 4 },
+  "fullVitest": {
+    "passed": 420,
+    "failed": 1,
+    "files": 67,
+    "pool": "forks",
+    "baselineFailureReproduced": true,
+    "failure": "test/live.test.tsx: dedicated English path waits on lazy loading; also fails on unmodified 9a95e23"
+  },
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "gateway": { "passed": 23 }
+  },
+  "browser": {
+    "tool": "Playwright CLI, explicitly authorized after CUA connection failed",
+    "cssViewportWidths": [320, 390, 768, 1490],
+    "documentWidths": [305, 375, 753, 1475],
+    "scrollWidths": [305, 375, 753, 1475],
+    "primaryActions": 2,
+    "newConsoleErrors": [],
+    "confirmedEntry": true,
+    "cancelFocus": true,
+    "lockedPractice": true,
+    "skipRestore": true,
+    "unchangedCompletion": true
+  },
+  "notRun": [
+    "authenticated DEV acceptance",
+    "full browser suite",
+    "paid providers",
+    "physical devices",
+    "production deployment"
+  ],
+  "contract": "Opening a different step does not automatically skip or complete prior steps. Existing explicit skip and restoration commands are retained."
+}

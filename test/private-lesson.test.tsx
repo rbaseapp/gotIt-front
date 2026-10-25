@@ -290,6 +290,62 @@ describe("private voice lesson", () => {
     mocks.setMicrophoneMuted.mockClear();
   });
 
+  it("uses the original unit preparation UI for a curriculum lesson", async () => {
+    const user = userEvent.setup();
+    const scroll = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    mocks.capture.mockImplementation(async (_schema, path) => {
+      if (path === "structured-english/teacher/P01-L1")
+        return {
+          id: "P01-L1",
+          title: "שלום, אני נועה",
+          band: "Pre-A1",
+          minutes: 10,
+          cursor: 0,
+          total: 14,
+          complete: false,
+          phase: null,
+        };
+      if (path === "structured-english/units/P01")
+        return { unit: { words: [{ en: "hello", he: "שלום" }] } };
+      return {};
+    });
+    const { container } = renderPage(
+      "/private-lesson?curriculum=P01-L1&language=en&minutes=10",
+    );
+    await screen.findByRole("heading", { name: "שלום, אני נועה" });
+    expect(
+      container.querySelector('[data-figma-desktop="43:6205"]'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(".unit-lesson-preferences .unit-help-language"),
+    ).toHaveTextContent("עברית");
+    expect(
+      screen.getByRole("button", { name: "מכירים את המילים קודם" }),
+    ).toBeVisible();
+    expect(
+      container.querySelector(".unit-lesson-word-preview"),
+    ).toHaveTextContent("hello");
+    mocks.create.mockRejectedValueOnce(
+      new Error("Synthetic provider unavailable"),
+    );
+    await user.click(screen.getByRole("button", { name: "מתחילים עם המורה" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          curriculumLessonId: "P01-L1",
+          interactionMode: "guided",
+          targetLanguageCode: "en",
+          supportLanguageCode: "he",
+          lessonMode: "absolute_beginner",
+          teachingLanguage: "support",
+          requestedDurationMinutes: 10,
+          vocabularyMode: "none",
+        }),
+      ),
+    );
+    scroll.mockRestore();
+  });
+
   it("offers one recommended roadmap action and keeps the full catalog optional", async () => {
     const user = userEvent.setup();
     renderPage();

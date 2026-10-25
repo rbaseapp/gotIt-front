@@ -7,6 +7,7 @@ import {
 } from "./contracts";
 import type { AuthTokens, AuthUser, ProfilePatch } from "../types";
 import i18n from "../i18n";
+import { invalidateResourceCache } from "./resourceCache";
 
 const coreUrl = (import.meta.env.VITE_CORE_API_URL || "/core-api").replace(
   /\/$/,
@@ -35,6 +36,11 @@ const messageCodes = new Set([
   "EMAIL_DELIVERY_UNAVAILABLE",
   "SUBSCRIPTION_REQUIRED",
   "PRIVATE_LESSON_MINUTES_REQUIRED",
+  "PRIVATE_LESSON_PLAN_INSUFFICIENT",
+  "PRIVATE_LESSON_ACTIVITY_UNAVAILABLE",
+  "PRIVATE_LESSON_ACTIVITY_CONFLICT",
+  "PRIVATE_LESSON_ACTIVITY_EXPIRED",
+  "PRIVATE_LESSON_ACTIVITY_LIMIT",
   "AI_MONTHLY_LIMIT_REACHED",
   "AI_DAILY_LIMIT_REACHED",
   "AI_SESSION_ACTIVE",
@@ -68,6 +74,10 @@ const messageCodes = new Set([
 ]);
 
 function localizedMessage(code: string): string {
+  if (code === "OAUTH_EMAIL_MISMATCH")
+    return i18n.t("settingsLive.emailMismatch");
+  if (code === "OAUTH_ALREADY_LINKED")
+    return i18n.t("settingsLive.alreadyLinked");
   if (code === "COURSE_SUPPORT_LANGUAGE_REQUIRED")
     return i18n.t("courses.supportLanguageError");
   if (code === "COURSE_TARGET_CHANGE_NEW" || code === "COURSE_REVISION_LIMIT")
@@ -96,16 +106,22 @@ async function request(
             path.endsWith("/image")
           ? 120000
           : path === "private-lessons/realtime-sessions"
-            ? 90000
-            : path.startsWith("courses/homework/") && path.endsWith("/prepare")
-              ? 230000
-              : path.startsWith("courses")
-                ? 120000
-                : path.startsWith("reading") ||
-                    path.endsWith("/complete") ||
-                    path === "import"
-                  ? 75000
-                  : 20000;
+            ? (body as { interactionProtocol?: string } | undefined)
+                ?.interactionProtocol === "adaptive-v1"
+              ? 225000
+              : 90000
+            : /^private-lessons\/[0-9a-f-]+\/activity$/i.test(path)
+              ? 35000
+              : path.startsWith("courses/homework/") &&
+                  path.endsWith("/prepare")
+                ? 230000
+                : path.startsWith("courses")
+                  ? 120000
+                  : path.startsWith("reading") ||
+                      path.endsWith("/complete") ||
+                      path === "import"
+                    ? 75000
+                    : 20000;
   const timeoutSignal = AbortSignal.timeout(timeoutMs);
   try {
     response = await fetch(`${base}/api/v1/${path}`, {
@@ -204,6 +220,7 @@ export function setTokens(value: AuthTokens) {
   }
 }
 export function clearTokens() {
+  invalidateResourceCache(true);
   generation++;
   tokens = null;
   expiresAt = 0;
@@ -397,7 +414,24 @@ export const api = {
     eventId?: string,
   ): Promise<unknown> {
     try {
-      return await this.authorized(productUrl, path, method, body, eventId);
+      const result = await this.authorized(
+        productUrl,
+        path,
+        method,
+        body,
+        eventId,
+      );
+      if (
+        method !== "GET" &&
+        !path.startsWith("courses/artwork/") &&
+        !(
+          method === "POST" &&
+          (path === "practice/sessions" ||
+            /^practice\/sessions\/[^/]+\/exercises$/u.test(path))
+        )
+      )
+        invalidateResourceCache();
+      return result;
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         clearTokens();
@@ -458,7 +492,7 @@ export const api = {
     return checked(parseProfile, await this.authorized(productUrl, "profile"));
   },
   async saveProfile(profile: ProfilePatch): Promise<ProfilePatch> {
-    return checked(
+    const result = checked(
       parseProfile,
       await this.authorized(
         productUrl,
@@ -467,6 +501,8 @@ export const api = {
         profilePayload(profile),
       ),
     );
+    invalidateResourceCache();
+    return result;
   },
   async logout() {
     const refreshToken = storedRefresh() || tokens?.refreshToken;

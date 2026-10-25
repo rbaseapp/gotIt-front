@@ -8,10 +8,17 @@ import { LanguageCombobox } from "../components/LanguageCombobox";
 import { useFeedback } from "../components/Feedback";
 import { courseApi, type Course } from "../lib/courses";
 import { useResource } from "../lib/useResource";
+import { useCachedResource } from "../lib/useCachedResource";
+import { resourceKey } from "../lib/resourceCache";
 import { product, wordPacksSchema, errorMessage } from "../lib/product";
-import { englishPathLevels, completedEnglishUnit } from "../lib/englishPath";
+import { englishPathLevels, resolvedEnglishUnit } from "../lib/englishPath";
 import { getLanguageOptions } from "../lib/languages";
 import { chooseProgram, selectedProgram } from "../lib/learningNavigation";
+import { programsDesignEnabled } from "../lib/programs";
+import { DevProgramsView } from "./DevProgramsView";
+import { ProgramChooser } from "../components/ProgramChooser";
+import { curriculumApi, structuredProgram } from "../lib/structuredEnglish";
+import { curriculumDisplayPacks } from "../lib/structuredEnglishPresentation";
 
 export function ProgramsPage() {
   const { t, i18n } = useTranslation();
@@ -31,7 +38,16 @@ export function ProgramsPage() {
     "he";
   const [completedOpen, setCompletedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const courses = useResource(useCallback(() => courseApi.list(), []));
+  const structured = useResource(
+    useCallback(async () => {
+      const catalog = await curriculumApi.catalog();
+      return catalog.programs.length ? curriculumApi.get() : null;
+    }, []),
+  );
+  const courses = useCachedResource(
+    useCallback(() => courseApi.list(), []),
+    resourceKey(user, "courses"),
+  );
   const [templateOperations] = useState(() => new Map<string,string>());
   const startTemplate = async(id:string) => {
     setBusy(true);
@@ -44,8 +60,9 @@ export function ProgramsPage() {
     } catch(reason) { toast(errorMessage(reason),{tone:'error'}); }
     finally { setBusy(false); }
   };
-  const packs = useResource(
+  const packs = useCachedResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
+    resourceKey(user, "word-packs"),
   );
   const prepared = useResource(
     useCallback(
@@ -79,7 +96,12 @@ export function ProgramsPage() {
       (profile.defaultTranslationLanguage !== null &&
         profile.defaultTranslationLanguage.split("-")[0].toLowerCase() !==
           "he"));
-  const pairAvailable = matchingPath || switchPublishedPair;
+  const structuredPair = Boolean(
+    structured.data &&
+    target.split("-")[0] === "en" &&
+    support.split("-")[0] === "he",
+  );
+  const pairAvailable = structuredPair || matchingPath || switchPublishedPair;
   const openPrepared = async () => {
     setBusy(true);
     try {
@@ -91,6 +113,10 @@ export function ProgramsPage() {
           defaultSourceLanguage: target,
           defaultTranslationLanguage: support,
         });
+      if (structuredPair) {
+        open("/english-learning", "english-zero-c1", target);
+        return;
+      }
       const catalog = await product(wordPacksSchema, "word-packs");
       if (!englishPathLevels(catalog.packs).some((level) => level.packs.length))
         throw new Error(t("englishPath.unavailableTitle"));
@@ -101,10 +127,12 @@ export function ProgramsPage() {
       setBusy(false);
     }
   };
-  const path = englishPathLevels(packs.data?.packs ?? []).flatMap(
-    (level) => level.packs,
-  );
-  const next = path.find((pack) => !completedEnglishUnit(pack));
+  const path = structured.data
+    ? curriculumDisplayPacks(structured.data)
+    : englishPathLevels(packs.data?.packs ?? []).flatMap(
+        (level) => level.packs,
+      );
+  const next = path.find((pack) => !resolvedEnglishUnit(pack));
   const groups = new Map<string, Course[]>();
   for (const course of courses.data?.courses ?? []) {
     const completed = course.activeVersion !== null && !course.nextLesson;
@@ -146,6 +174,22 @@ export function ProgramsPage() {
       setBusy(false);
     }
   };
+  if (newOpen && programsDesignEnabled())
+    return (
+      <ProgramChooser
+        target={target}
+        support={support}
+        onTarget={setTarget}
+        onSupport={setSupport}
+        busy={busy}
+        loading={prepared.loading}
+        error={prepared.error}
+        available={pairAvailable}
+        onRetry={() => void prepared.reload()}
+        onPrepared={() => void openPrepared()}
+        onBack={() => setNewOpen(false)}
+      />
+    );
   if (newOpen)
     return (
       <div
@@ -233,6 +277,26 @@ export function ProgramsPage() {
           </Link>
         </div>
       </div>
+    );
+  if (programsDesignEnabled())
+    return (
+      <DevProgramsView
+        structuredProgram={
+          structured.data ? structuredProgram(structured.data) : undefined
+        }
+        courses={courses.data?.courses ?? []}
+        homework={courses.data?.homework ?? []}
+        packs={packs.data?.packs ?? []}
+        coursesLoading={courses.loading}
+        packsLoading={packs.loading}
+        coursesError={courses.error}
+        packsError={packs.error}
+        retryCourses={() => void courses.reload()}
+        retryPacks={() => void packs.reload()}
+        busy={busy}
+        onRemove={remove}
+        onNew={() => setNewOpen(true)}
+      />
     );
   return (
     <div className="ux-page programs-page page-enter">
@@ -354,7 +418,9 @@ export function ProgramsPage() {
                       {course.nextLesson?.title ??
                         t(
                           course.activeVersion
-                            ? "courses.courseComplete"
+                            ? course.skippedLessons?.length
+                              ? "pathChoices.routeEnd"
+                              : "courses.courseComplete"
                             : course.draftVersion
                               ? "courses.awaitingApproval"
                               : "courses.intakeInProgress",

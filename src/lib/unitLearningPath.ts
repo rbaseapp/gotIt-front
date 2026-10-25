@@ -5,6 +5,22 @@ import { product, uuid } from "./product";
 const station = z.enum(["supported", "midpoint", "review"]);
 export const unitLearningPathSchema = z.object({
   packId: uuid,
+  navigationRevision: z.number().int().optional(),
+  navigationComplete: z.boolean().optional(),
+  skippedSteps: z.number().int().optional(),
+  steps: z
+    .array(
+      z.object({
+        key: z.string(),
+        kind: z.enum(["words", "meeting", "homework"]),
+        station,
+        complete: z.boolean(),
+        skipped: z.boolean(),
+        available: z.boolean(),
+        homeworkId: uuid.nullable(),
+      }),
+    )
+    .optional(),
   words: z.array(
     z.object({
       sourceText: z.string(),
@@ -37,6 +53,16 @@ export const getUnitLearningPath = (id: string) =>
   product(
     z.object({ path: unitLearningPathSchema }),
     `private-lessons/units/${id}/map`,
+  );
+export const chooseUnitPath = (
+  id: string,
+  input: { revision: number; eventId: string; skipped: boolean; step?: string },
+) =>
+  product(
+    z.object({ path: unitLearningPathSchema }),
+    `private-lessons/units/${id}/path-choices`,
+    "POST",
+    input,
   );
 export function homeworkTaskLink(
   id: string,
