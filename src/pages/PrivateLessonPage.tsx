@@ -823,7 +823,8 @@ export function PrivateLessonPage() {
     !sameBaseLanguage(lessonTargetLanguage, lessonSupportLanguage),
   );
 
-  const sessionFullscreen = phase !== "setup" && phase !== "preparing";
+  const sessionFullscreen =
+    phase === "connecting" || phase === "active" || phase === "wrapping";
   const childCourse =
     (
       courseData?.versions.find(
