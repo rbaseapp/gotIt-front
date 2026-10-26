@@ -1066,9 +1066,11 @@
 }
 
 /* Mascot: large, but not taller than the day's card. */
-.nd-hero {
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
-  gap: 32px;
+@media (min-width: 861px) {
+  .nd-hero {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    gap: 32px;
+  }
 }
 .nd-mascot img,
 .nd-moohi {
@@ -1145,4 +1147,37 @@
   background: #f7cf3d;
   border-radius: 0.3em 0.5em 0.35em 0.55em / 0.5em 0.4em 0.55em 0.4em;
   transform: skewX(-6deg);
+}
+
+/* Moochi sits at the top of his column, with the quick review right under him. */
+.nd-hero {
+  align-items: start;
+}
+.nd-mascot {
+  justify-content: flex-start;
+  gap: 12px;
+  align-items: center;
+}
+.nd-mascot > .nd-card,
+.nd-mascot > section {
+  align-self: stretch;
+}
+.nd-lower-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 860px) {
+  /* Phone: Moochi and his bubble share a row, the quick review takes the full width under them. */
+  .nd-mascot {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .nd-mascot > .moochi-loop {
+    flex: 0 0 150px;
+    max-width: 150px;
+  }
+  .nd-mascot > .nd-review {
+    flex: 1 1 100%;
+    order: 3;
+  }
 }

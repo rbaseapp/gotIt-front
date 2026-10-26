@@ -529,6 +529,16 @@ export function DevDashboardPage() {
                     {t("newDashboard.addWords")}
                   </Link>
                 )}
+                <DashboardQuickReview
+                  key={`review-${code}`}
+                  language={code}
+                  available={d.counts.total > 0}
+                  preview={
+                    personalWords.find((word) => word.learningStatus !== "new")
+                      ?.sourceText
+                  }
+                  onScored={refresh}
+                />
               </div>
             </section>
             {isProgram && otherPrograms.length > 0 && (
@@ -651,16 +661,6 @@ export function DevDashboardPage() {
                   reload={() => void words.reload()}
                 />
               )}
-              <DashboardQuickReview
-                key={`review-${code}`}
-                language={code}
-                available={d.counts.total > 0}
-                preview={
-                  personalWords.find((word) => word.learningStatus !== "new")
-                    ?.sourceText
-                }
-                onScored={refresh}
-              />
             </div>
             {!isProgram && (
               <Link
