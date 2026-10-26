@@ -1,0 +1,63 @@
+{
+  "note": "Hand-authored skill probes for the placement test. d is the curriculum unit position (1-84) the item is calibrated to: Pre-A1 3, A1 12, A2 25, B1 40, B2 57, C1 75. Answers are the index of the correct option. Hebrew questions and options keep the learner in their own language.",
+  "reading": [
+    { "id": "r-pa1-1", "d": 3, "text": "My name is Dan. I am a boy.", "q": "מה שם הילד?", "options": ["דן", "דנה", "אדם"], "a": 0 },
+    { "id": "r-pa1-2", "d": 3, "text": "EXIT", "q": "מה השלט אומר?", "options": ["כניסה", "יציאה", "עצור"], "a": 1 },
+    { "id": "r-pa1-3", "d": 3, "text": "I have a red bag.", "q": "מה צבע התיק?", "options": ["כחול", "ירוק", "אדום"], "a": 2 },
+    { "id": "r-pa1-4", "d": 3, "text": "Mum, I am hungry. I want bread.", "q": "מה הילד רוצה?", "options": ["לחם", "מים", "חלב"], "a": 0 },
+
+    { "id": "r-a1-1", "d": 12, "text": "Hi Sara! I am at the station. The train is at five o'clock. See you!", "q": "באיזו שעה הרכבת?", "options": ["בשש", "בחמש", "בשבע"], "a": 1 },
+    { "id": "r-a1-2", "d": 12, "text": "The shop opens at nine and closes at six. It is closed on Saturday.", "q": "מתי החנות סגורה?", "options": ["ביום ראשון", "בערב", "בשבת"], "a": 2 },
+    { "id": "r-a1-3", "d": 12, "text": "Dear Tom, thank you for the cake. It was very good. Love, Anna", "q": "על מה אנה מודה?", "options": ["על עוגה", "על ספר", "על ארוחת ערב"], "a": 0 },
+    { "id": "r-a1-4", "d": 12, "text": "I like tea with milk, but I don't like coffee.", "q": "מה הכותב לא אוהב?", "options": ["תה", "קפה", "חלב"], "a": 1 },
+
+    { "id": "r-a2-1", "d": 25, "text": "Hi Dan, I'm sorry, I can't come tomorrow. I have a doctor's appointment at four. Can we meet on Thursday instead?", "q": "למה הכותב לא יכול להגיע מחר?", "options": ["יש לו תור לרופא", "הוא עובד", "הוא נוסע"], "a": 0 },
+    { "id": "r-a2-2", "d": 25, "text": "The hotel is near the beach. Breakfast is included, but you need to pay extra for the parking.", "q": "על מה צריך לשלם בנפרד?", "options": ["ארוחת בוקר", "חדר", "חניה"], "a": 2 },
+    { "id": "r-a2-3", "d": 25, "text": "Last weekend we visited my grandmother. It rained all day, so we stayed inside and played cards.", "q": "מה עשו בגלל הגשם?", "options": ["הלכו לים", "נשארו בבית ושיחקו קלפים", "ביקרו במוזיאון"], "a": 1 },
+    { "id": "r-a2-4", "d": 25, "text": "To get to the airport, take bus 12 from the central station. It takes about forty minutes.", "q": "כמה זמן נמשכת הנסיעה?", "options": ["כשעתיים", "כ-12 דקות", "כ-40 דקות"], "a": 2 },
+
+    { "id": "r-b1-1", "d": 40, "text": "Dear customer, your order was delayed because of the bad weather. We are sorry for the trouble and will send it by Friday. You will not pay for delivery.", "q": "מה יקרה עם עלות המשלוח?", "options": ["תחויבו בה כרגיל", "לא תשלמו עליו", "תקבלו החזר רק לפי בקשה"], "a": 1 },
+    { "id": "r-b1-2", "d": 40, "text": "Although the film was long, most people in the cinema said it was worth watching. The ending, however, surprised many of them.", "q": "מה הדעה הכללית על הסרט?", "options": ["שהוא קצר ומשעמם", "שהסוף היה צפוי", "ששווה לצפות בו, אף שהוא ארוך"], "a": 2 },
+    { "id": "r-b1-3", "d": 40, "text": "I used to live in a small village, but I moved to the city to study. At first I missed my family, but now I enjoy living here.", "q": "איך הכותב מרגיש היום בעיר?", "options": ["נהנה", "מתגעגע מאוד", "רוצה לחזור לכפר"], "a": 0 },
+    { "id": "r-b1-4", "d": 40, "text": "If you want to save money, try to compare prices before you buy, and avoid shopping when you are hungry.", "q": "איזו עצה ניתנת?", "options": ["לקנות רק באינטרנט", "להשוות מחירים לפני הקנייה", "לקנות הרבה בהנחה"], "a": 1 },
+
+    { "id": "r-b2-1", "d": 57, "text": "Critics have argued that the new policy will reduce traffic in the city centre, yet early data suggest that congestion has simply moved to the surrounding neighbourhoods.", "q": "מה מראים הנתונים הראשוניים?", "options": ["שהעומס פחת בכל העיר", "שהעומס עבר לשכונות סמוכות", "שהמדיניות בוטלה"], "a": 1 },
+    { "id": "r-b2-2", "d": 57, "text": "Not only did the company miss its targets, but it also lost two key clients, which made the board reconsider the whole strategy.", "q": "מה גרם לדירקטוריון לשקול מחדש את האסטרטגיה?", "options": ["עלייה ברווחים", "החמצת יעדים ואובדן לקוחות", "התפטרות המנכ\"ל"], "a": 1 },
+    { "id": "r-b2-3", "d": 57, "text": "The researchers were careful to point out that correlation does not prove causation: people who sleep more may be healthier for other reasons.", "q": "מה החוקרים מדגישים?", "options": ["שינה גורמת לבריאות", "אין קשר בין שינה לבריאות", "קשר סטטיסטי אינו מוכיח סיבתיות"], "a": 2 },
+    { "id": "r-b2-4", "d": 57, "text": "Having been offered the job twice, she finally accepted, on the condition that she could work remotely two days a week.", "q": "באיזה תנאי קיבלה את העבודה?", "options": ["שכר גבוה יותר", "חופשה ארוכה", "עבודה מרחוק יומיים בשבוע"], "a": 2 },
+
+    { "id": "r-c1-1", "d": 75, "text": "Whilst the proposal is superficially appealing, it rests on assumptions that, upon closer inspection, are far from self-evident.", "q": "מה הכותב חושב על ההצעה?", "options": ["נראית משכנעת, אך מבוססת על הנחות שאינן מובנות מאליהן", "מצוינת וברורה", "לא רלוונטית כלל"], "a": 0 },
+    { "id": "r-c1-2", "d": 75, "text": "Far from being a setback, the delay afforded the team an opportunity to refine a design that would otherwise have been rushed.", "q": "איך הכותב רואה את העיכוב?", "options": ["כישלון חמור", "כהזדמנות לשפר את התכנון", "כסיבה לבטל את הפרויקט"], "a": 1 },
+    { "id": "r-c1-3", "d": 75, "text": "Her argument, though eloquently delivered, glossed over the very evidence that might have undermined it.", "q": "מה הבעיה בטיעון שלה?", "options": ["הוא נאמר בצורה גרועה", "הוא התעלם מראיות שעלולות לערער אותו", "הוא היה קצר מדי"], "a": 1 },
+    { "id": "r-c1-4", "d": 75, "text": "It would be naive to assume that regulation alone could curb practices which are, in many instances, deeply entrenched.", "q": "מה הכותב טוען?", "options": ["שרגולציה לבדה כנראה לא תספיק", "שרגולציה פותרת הכול", "שאין צורך ברגולציה"], "a": 0 }
+  ],
+  "listening": [
+    { "id": "l-pa1-1", "d": 3, "audio": "My name is Ben.", "q": "מה שם הדובר?", "options": ["Ken", "Ben", "Dan"], "a": 1 },
+    { "id": "l-pa1-2", "d": 3, "audio": "I have two books.", "q": "כמה ספרים יש לדובר?", "options": ["אחד", "שלושה", "שניים"], "a": 2 },
+    { "id": "l-pa1-3", "d": 3, "audio": "She is my mother.", "q": "מי היא?", "options": ["אמא", "אחות", "חברה"], "a": 0 },
+    { "id": "l-pa1-4", "d": 3, "audio": "The cup is red.", "q": "מה צבע הכוס?", "options": ["כחול", "אדום", "לבן"], "a": 1 },
+
+    { "id": "l-a1-1", "d": 12, "audio": "The shop opens at nine and closes at six.", "q": "מתי החנות נפתחת?", "options": ["בשש", "בחמש", "בתשע"], "a": 2 },
+    { "id": "l-a1-2", "d": 12, "audio": "I go to school by bus every morning.", "q": "איך הדובר מגיע לבית הספר?", "options": ["באוטובוס", "ברגל", "ברכבת"], "a": 0 },
+    { "id": "l-a1-3", "d": 12, "audio": "Can I have a coffee with milk, please?", "q": "מה מבקשים?", "options": ["תה", "קפה עם חלב", "מים"], "a": 1 },
+    { "id": "l-a1-4", "d": 12, "audio": "Today is Wednesday and it is sunny.", "q": "איזה יום היום?", "options": ["יום שלישי", "יום חמישי", "יום רביעי"], "a": 2 },
+
+    { "id": "l-a2-1", "d": 25, "audio": "I'm sorry I'm late. My train was twenty minutes late.", "q": "למה הדובר מאחר?", "options": ["הרכבת התעכבה", "הוא התעורר מאוחר", "הוא פספס אוטובוס"], "a": 0 },
+    { "id": "l-a2-2", "d": 25, "audio": "Let's meet on Friday at the cinema, not on Thursday.", "q": "מתי ואיפה נפגשים?", "options": ["בחמישי בקולנוע", "בשישי בקולנוע", "בשישי במסעדה"], "a": 1 },
+    { "id": "l-a2-3", "d": 25, "audio": "The room has a nice view, but there is no air conditioning.", "q": "מה חסר בחדר?", "options": ["חלון", "נוף", "מיזוג"], "a": 2 },
+    { "id": "l-a2-4", "d": 25, "audio": "I bought this jacket last week, but it's too small. Can I change it?", "q": "מה הדובר רוצה?", "options": ["להחליף את המעיל", "לקבל החזר כסף", "לתקן את המעיל"], "a": 0 },
+
+    { "id": "l-b1-1", "d": 40, "audio": "If the weather is bad tomorrow, we'll have the picnic indoors instead.", "q": "מה יקרה אם מזג האוויר יהיה גרוע?", "options": ["הפיקניק יבוטל", "הפיקניק ייערך בפנים", "הפיקניק יידחה"], "a": 1 },
+    { "id": "l-b1-2", "d": 40, "audio": "I've been working here for three years, and I'm thinking about changing jobs.", "q": "מה הדובר שוקל?", "options": ["לצאת לחופשה", "ללמוד", "להחליף עבודה"], "a": 2 },
+    { "id": "l-b1-3", "d": 40, "audio": "Although it was expensive, the trip was definitely worth it.", "q": "מה הדובר חושב על הטיול?", "options": ["שהיה שווה את זה", "שהיה זול", "שלא היה שווה"], "a": 0 },
+    { "id": "l-b1-4", "d": 40, "audio": "Could you send me the report before Thursday morning? The client wants to read it early.", "q": "עד מתי צריך לשלוח את הדוח?", "options": ["לפני שישי", "לפני יום חמישי בבוקר", "ביום שלישי"], "a": 1 },
+
+    { "id": "l-b2-1", "d": 57, "audio": "Had I known about the delay, I would have booked a different flight.", "q": "מה הדובר אומר?", "options": ["שלא ידע על העיכוב", "שביטל את הטיסה", "שהוא מחכה לטיסה"], "a": 0 },
+    { "id": "l-b2-2", "d": 57, "audio": "The new software is user-friendly, but it takes some time to get used to the interface.", "q": "מה הקושי עם התוכנה?", "options": ["היא יקרה", "צריך זמן להתרגל לממשק", "היא לא ידידותית"], "a": 1 },
+    { "id": "l-b2-3", "d": 57, "audio": "Despite the criticism, the mayor insisted that the project would go ahead as planned.", "q": "מה אמר ראש העיר?", "options": ["שהפרויקט בוטל", "שהתוכנית תשתנה", "שהפרויקט ימשיך כמתוכנן"], "a": 2 },
+    { "id": "l-b2-4", "d": 57, "audio": "I'd rather you didn't mention it to anyone until the contract is signed.", "q": "מה מבקש הדובר?", "options": ["לא לספר לאיש עד שהחוזה ייחתם", "לספר לכולם", "להכין חוזה מחר"], "a": 0 },
+
+    { "id": "l-c1-1", "d": 75, "audio": "Notwithstanding the initial setbacks, the initiative has gradually gained considerable traction.", "q": "מה קרה ליוזמה?", "options": ["נכשלה", "צברה תאוצה בהדרגה", "בוטלה"], "a": 1 },
+    { "id": "l-c1-2", "d": 75, "audio": "The findings, while preliminary, are by no means insignificant.", "q": "מה הדובר אומר על הממצאים?", "options": ["שהם חשובים למרות שהם ראשוניים", "שאין להם חשיבות", "שהם סופיים"], "a": 0 }
+  ]
+}

@@ -14,6 +14,7 @@ import { dashboardDesignEnabled } from "./lib/dashboardDesign";
 import { practiceDesignEnabled } from "./lib/practiceDesign";
 import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
+import { OnboardingClaimGate } from "./components/onboarding/OnboardingClaimGate";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 import {
   SubscriptionProvider,
@@ -142,6 +143,9 @@ const AchievementsPage = lazy(() =>
 const LandingPage = lazy(() =>
   import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })),
 );
+const StartPage = lazy(() =>
+  import("./pages/StartPage").then((m) => ({ default: m.StartPage })),
+);
 const HistoryPage = lazy(() =>
   import("./pages/HistoryPage").then((m) => ({ default: m.HistoryPage })),
 );
@@ -185,249 +189,267 @@ export default function App() {
         <p>{t("app.checkingSession")}</p>
       </div>
     );
-  if (mode === "signed-out")
-    return normalizedPath === "/" ? (
-      <Suspense
-        fallback={
-          <div className="empty-session" role="status">
-            <LoaderCircle className="spin" size={30} />
-            <p>{t("app.loadingScreen")}</p>
-          </div>
-        }
-      >
-        <LandingPage />
-      </Suspense>
-    ) : (
-      <AuthPage />
+  if (mode === "signed-out") {
+    const fallback = (
+      <div className="empty-session" role="status">
+        <LoaderCircle className="spin" size={30} />
+        <p>{t("app.loadingScreen")}</p>
+      </div>
     );
+    if (normalizedPath === "/")
+      return (
+        <Suspense fallback={fallback}>
+          <LandingPage />
+        </Suspense>
+      );
+    if (normalizedPath === "/start" || normalizedPath.startsWith("/start/"))
+      return (
+        <Suspense fallback={fallback}>
+          <StartPage />
+        </Suspense>
+      );
+    return (
+      <AuthPage
+        startingMode={normalizedPath === "/signup" ? "register" : undefined}
+      />
+    );
+  }
   return (
     <SubscriptionProvider
       enabled={mode === "live"}
       isAdmin={user?.role === "admin"}
     >
-      <Suspense
-        fallback={
-          <div className="empty-session" role="status">
-            <LoaderCircle className="spin" size={30} />
-            <p>{t("app.loadingScreen")}</p>
-          </div>
-        }
-      >
-        <Routes>
-          <Route
-            path="/learn/session/:type"
-            element={
-              mode === "live" ? (
-                <LiveGameAccess>
-                  {practiceDesignEnabled() ? (
-                    <DevFocusGamePage />
-                  ) : (
-                    <LiveGameSessionPage
-                      key={location.pathname + location.search}
+      <OnboardingClaimGate>
+        <Suspense
+          fallback={
+            <div className="empty-session" role="status">
+              <LoaderCircle className="spin" size={30} />
+              <p>{t("app.loadingScreen")}</p>
+            </div>
+          }
+        >
+          <Routes>
+            <Route
+              path="/learn/session/:type"
+              element={
+                mode === "live" ? (
+                  <LiveGameAccess>
+                    {practiceDesignEnabled() ? (
+                      <DevFocusGamePage />
+                    ) : (
+                      <LiveGameSessionPage
+                        key={location.pathname + location.search}
+                      />
+                    )}
+                  </LiveGameAccess>
+                ) : (
+                  <GameSessionPage />
+                )
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <AppShell onLogout={() => void logout()}>
+                  <Routes>
+                    <Route
+                      path="/courses/:id/units/:unitKey/words"
+                      element={<CourseUnitWordsPage />}
                     />
-                  )}
-                </LiveGameAccess>
-              ) : (
-                <GameSessionPage />
-              )
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <AppShell onLogout={() => void logout()}>
-                <Routes>
-                  <Route
-                    path="/courses/:id/units/:unitKey/words"
-                    element={<CourseUnitWordsPage />}
-                  />
-                  <Route path="/account" element={<AccountPage />} />
-                  <Route path="/billing/minutes" element={<MinutesPage />} />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      mode === "live" ? (
-                        dashboardDesignEnabled() ? (
-                          <DevDashboardPage />
-                        ) : (
-                          <LiveDashboardPage />
-                        )
-                      ) : (
-                        <DashboardPage />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/learn"
-                    element={
-                      mode === "live" ? (
-                        practiceDesignEnabled() ? (
-                          <DevPracticePage />
-                        ) : (
-                          <LiveLearnPage />
-                        )
-                      ) : (
-                        <LearnPage />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/vocabulary"
-                    element={
-                      mode === "live" ? (
-                        myWordsDesignEnabled() ? (
-                          <DevMyWordsPage />
-                        ) : (
-                          <LiveVocabularyPage />
-                        )
-                      ) : (
-                        <VocabularyPage />
-                      )
-                    }
-                  />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route
-                    path="/learn/smart"
-                    element={
-                      mode === "live" ? (
-                        <SmartPracticeReadyPage />
-                      ) : (
-                        <LearnPage />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/achievements"
-                    element={
-                      mode === "live" ? <AchievementsPage /> : <DashboardPage />
-                    }
-                  />
-                  <Route
-                    path="/history"
-                    element={mode === "live" ? <HistoryPage /> : <LearnPage />}
-                  />
-                  <Route
-                    path="/programs"
-                    element={<Navigate to="/courses" replace />}
-                  />
-                  <Route
-                    path="/reading"
-                    element={
-                      mode === "live" ? <LiveReadingPage /> : <ReadingPage />
-                    }
-                  />
-                  <Route path="/transfer" element={<TransferPage />} />
-                  <Route
-                    path="/private-lesson"
-                    element={
-                      mode === "live" ? (
-                        <PrivateLessonEntry
-                          preferLesson={
-                            location.search.includes("course=") ||
-                            location.search.includes("pack=") ||
-                            new URLSearchParams(location.search).has(
-                              "curriculum",
-                            ) ||
-                            location.search.includes("practice=free") ||
-                            location.search.includes("view=")
-                          }
-                        />
-                      ) : (
-                        <Navigate to="/learn" replace />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/courses"
-                    element={
-                      mode === "live" ? (
-                        <LiveGameAccess>
-                          {location.search.includes("new=1") ? (
-                            <CoursePage />
+                    <Route path="/account" element={<AccountPage />} />
+                    <Route path="/billing/minutes" element={<MinutesPage />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        mode === "live" ? (
+                          dashboardDesignEnabled() ? (
+                            <DevDashboardPage />
                           ) : (
-                            <ProgramsPage />
-                          )}
-                        </LiveGameAccess>
-                      ) : (
-                        <Navigate to="/learn" replace />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/courses/:courseId"
-                    element={
-                      mode === "live" ? (
-                        <LiveGameAccess>
-                          <CoursePage />
-                        </LiveGameAccess>
-                      ) : (
-                        <Navigate to="/learn" replace />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/homework/:homeworkId"
-                    element={
-                      mode === "live" ? (
-                        <LiveGameAccess>
-                          <HomeworkPage />
-                        </LiveGameAccess>
-                      ) : (
-                        <Navigate to="/learn" replace />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/word-packs"
-                    element={
-                      mode === "live" ? (
-                        <WordPacksPage />
-                      ) : (
-                        <Navigate to="/learn" replace />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/english-learning"
-                    element={
-                      mode === "live" ? (
-                        <EnglishLearningEntryPage />
-                      ) : (
-                        <Navigate to="/learn" replace />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/english-zero-c1"
-                    element={
-                      mode === "live" ? (
-                        <StructuredEnglishPage />
-                      ) : (
-                        <Navigate to="/learn" replace />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/billing"
-                    element={
-                      mode === "live" ? (
-                        <BillingPage />
-                      ) : (
-                        <Navigate to="/dashboard" replace />
-                      )
-                    }
-                  />
-                  <Route path="/help" element={<HelpPage />} />
-                  <Route
-                    path="*"
-                    element={<Navigate to="/dashboard" replace />}
-                  />
-                </Routes>
-              </AppShell>
-            }
-          />
-        </Routes>
-      </Suspense>
+                            <LiveDashboardPage />
+                          )
+                        ) : (
+                          <DashboardPage />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/learn"
+                      element={
+                        mode === "live" ? (
+                          practiceDesignEnabled() ? (
+                            <DevPracticePage />
+                          ) : (
+                            <LiveLearnPage />
+                          )
+                        ) : (
+                          <LearnPage />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/vocabulary"
+                      element={
+                        mode === "live" ? (
+                          myWordsDesignEnabled() ? (
+                            <DevMyWordsPage />
+                          ) : (
+                            <LiveVocabularyPage />
+                          )
+                        ) : (
+                          <VocabularyPage />
+                        )
+                      }
+                    />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route
+                      path="/learn/smart"
+                      element={
+                        mode === "live" ? (
+                          <SmartPracticeReadyPage />
+                        ) : (
+                          <LearnPage />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/achievements"
+                      element={
+                        mode === "live" ? (
+                          <AchievementsPage />
+                        ) : (
+                          <DashboardPage />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/history"
+                      element={
+                        mode === "live" ? <HistoryPage /> : <LearnPage />
+                      }
+                    />
+                    <Route
+                      path="/programs"
+                      element={<Navigate to="/courses" replace />}
+                    />
+                    <Route
+                      path="/reading"
+                      element={
+                        mode === "live" ? <LiveReadingPage /> : <ReadingPage />
+                      }
+                    />
+                    <Route path="/transfer" element={<TransferPage />} />
+                    <Route
+                      path="/private-lesson"
+                      element={
+                        mode === "live" ? (
+                          <PrivateLessonEntry
+                            preferLesson={
+                              location.search.includes("course=") ||
+                              location.search.includes("pack=") ||
+                              new URLSearchParams(location.search).has(
+                                "curriculum",
+                              ) ||
+                              location.search.includes("practice=free") ||
+                              location.search.includes("view=")
+                            }
+                          />
+                        ) : (
+                          <Navigate to="/learn" replace />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/courses"
+                      element={
+                        mode === "live" ? (
+                          <LiveGameAccess>
+                            {location.search.includes("new=1") ? (
+                              <CoursePage />
+                            ) : (
+                              <ProgramsPage />
+                            )}
+                          </LiveGameAccess>
+                        ) : (
+                          <Navigate to="/learn" replace />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/courses/:courseId"
+                      element={
+                        mode === "live" ? (
+                          <LiveGameAccess>
+                            <CoursePage />
+                          </LiveGameAccess>
+                        ) : (
+                          <Navigate to="/learn" replace />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/homework/:homeworkId"
+                      element={
+                        mode === "live" ? (
+                          <LiveGameAccess>
+                            <HomeworkPage />
+                          </LiveGameAccess>
+                        ) : (
+                          <Navigate to="/learn" replace />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/word-packs"
+                      element={
+                        mode === "live" ? (
+                          <WordPacksPage />
+                        ) : (
+                          <Navigate to="/learn" replace />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/english-learning"
+                      element={
+                        mode === "live" ? (
+                          <EnglishLearningEntryPage />
+                        ) : (
+                          <Navigate to="/learn" replace />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/english-zero-c1"
+                      element={
+                        mode === "live" ? (
+                          <StructuredEnglishPage />
+                        ) : (
+                          <Navigate to="/learn" replace />
+                        )
+                      }
+                    />
+                    <Route
+                      path="/billing"
+                      element={
+                        mode === "live" ? (
+                          <BillingPage />
+                        ) : (
+                          <Navigate to="/dashboard" replace />
+                        )
+                      }
+                    />
+                    <Route path="/help" element={<HelpPage />} />
+                    <Route
+                      path="*"
+                      element={<Navigate to="/dashboard" replace />}
+                    />
+                  </Routes>
+                </AppShell>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </OnboardingClaimGate>
     </SubscriptionProvider>
   );
 }

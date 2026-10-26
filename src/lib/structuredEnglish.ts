@@ -10,6 +10,26 @@ const completion = z.object({
   source: z.string().optional(),
 });
 export const curriculumSchema = z.object({
+  onboarding: z
+    .object({
+      theta: z.number(),
+      startUnit: z.number(),
+      goal: z.string(),
+      deadlineMonths: z.number(),
+      minutesPerDay: z.number(),
+      reliability: z.number(),
+      placedAt: z.string(),
+    })
+    .nullable()
+    .optional(),
+  tutor: z
+    .object({
+      unlocked: z.boolean(),
+      reason: z.string(),
+      done: z.number(),
+      required: z.number(),
+    })
+    .optional(),
   program: z.object({
     id: z.string(),
     version: z.string(),
@@ -282,7 +302,34 @@ const ack = z.object({
   enrolled: z.boolean().optional(),
 });
 const root = "structured-english";
+const placementResponse = z.object({
+  applied: z.boolean(),
+  reason: z.string().optional(),
+  startUnit: z.number().optional(),
+  unitId: z.string().optional(),
+  skippedUnits: z.number().optional(),
+  knownInSkippedUnits: z.number().optional(),
+  gapQueued: z.number().optional(),
+});
+export type PlacementClaimInput = {
+  eventId: string;
+  theta: number;
+  startUnit: number;
+  literacy: "starting" | "developing" | "independent";
+  minutesPerDay: number;
+  goal: string;
+  deadlineMonths: number;
+  reliability: number;
+  skills: {
+    vocabulary: { band: string; score: number };
+    reading: { band: string; score: number } | null;
+    listening: { band: string; score: number } | null;
+  };
+  knownWords: string[];
+};
 export const curriculumApi = {
+  place: (input: PlacementClaimInput) =>
+    product(placementResponse, `${root}/placement`, "POST", input),
   pathChoice: (input: {
     eventId: string;
     revision: number;

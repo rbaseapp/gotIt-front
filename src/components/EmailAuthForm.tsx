@@ -53,11 +53,20 @@ export function EmailAuthForm({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  // The password typed once at registration, kept in memory only so the verification step
+  // asks for the code alone and then signs the learner in.
+  const [remembered, setRemembered] = useState<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const completing = mode === "verify" || mode === "reset";
+  const codeOnly = mode === "verify" && remembered !== null;
   useEffect(() => {
     heading.current?.focus();
   }, [mode]);
+  // With nothing else to type, a full code submits itself.
+  useEffect(() => {
+    if (codeOnly && code.length === 6) formRef.current?.requestSubmit();
+  }, [codeOnly, code]);
   useEffect(() => {
     if (!cooldown) return;
     const timer = setTimeout(
@@ -74,6 +83,7 @@ export function EmailAuthForm({
     setPassword("");
     setShowPassword(false);
     setConfirm("");
+    setRemembered(null);
   };
   const requestCode = async (purpose: "verify" | "reset") => {
     const result = await api.requestEmailCode(email, purpose);
@@ -99,7 +109,15 @@ export function EmailAuthForm({
   const submit = (event: FormEvent) => {
     event.preventDefault();
     void run(async () => {
-      if (completing) {
+      if (codeOnly) {
+        await api.completeEmailCode(email, code, remembered, "verify");
+        try {
+          await authenticate("login", email, remembered);
+        } catch {
+          changeMode("login");
+          setNotice(t("auth.emailVerified"));
+        }
+      } else if (completing) {
         if (password !== confirm) {
           setError(t("auth.passwordMismatch"));
           return;
@@ -118,6 +136,8 @@ export function EmailAuthForm({
         const result = await api.registerEmail(email, password);
         setCooldown(result.retryAfter);
         setNotice(t("auth.emailCodeRequested"));
+        setRemembered(password);
+        setPassword("");
         setMode("verify");
       } else if (mode === "forgot") {
         await requestCode("reset");
@@ -154,7 +174,9 @@ export function EmailAuthForm({
       <p>
         {t(
           completing
-            ? "auth.codeInstructions"
+            ? codeOnly
+              ? "start.codeOnly"
+              : "auth.codeInstructions"
             : mode === "forgot"
               ? "auth.forgotInstructions"
               : mode === "login"
@@ -162,7 +184,12 @@ export function EmailAuthForm({
                 : "auth.registerDescription",
         )}
       </p>
-      <form onSubmit={submit} className="form-stack" aria-busy={busy}>
+      <form
+        ref={formRef}
+        onSubmit={submit}
+        className="form-stack"
+        aria-busy={busy}
+      >
         <label className="field">
           <span>{t("auth.email")}</span>
           <div className="input-with-icon">
@@ -194,12 +221,14 @@ export function EmailAuthForm({
               onChange={(event) =>
                 setCode(event.target.value.replace(/\D/g, ""))
               }
+              className="otp-input"
               dir="ltr"
               disabled={busy}
+              autoFocus={codeOnly}
             />
           </label>
         )}
-        {mode !== "forgot" && (
+        {mode !== "forgot" && !codeOnly && (
           <label className="field">
             <span>{t(completing ? "auth.newPassword" : "auth.password")}</span>
             <div className="input-with-icon">
@@ -231,7 +260,7 @@ export function EmailAuthForm({
             </div>
           </label>
         )}
-        {completing && (
+        {completing && !codeOnly && (
           <label className="field">
             <span>{t("auth.confirmPassword")}</span>
             <input

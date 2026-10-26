@@ -18,8 +18,8 @@ const click = (name: string) =>
   fireEvent.click(screen.getByRole("button", { name, exact: true }));
 const accepted = { retryAfter: 60, expiresIn: 600 };
 
-it("requires mailbox proof and matching password confirmation before returning to login", async () => {
-  const authenticate = vi.fn();
+it("asks for the code alone after registering, then signs the learner in with the password they typed", async () => {
+  const authenticate = vi.fn().mockResolvedValue(undefined);
   vi.spyOn(api, "registerEmail").mockResolvedValue(accepted);
   const complete = vi.spyOn(api, "completeEmailCode").mockResolvedValue();
   render(<EmailAuthForm authenticate={authenticate} onBusy={vi.fn()} />);
@@ -29,10 +29,55 @@ it("requires mailbox proof and matching password confirmation before returning t
   fireEvent.submit(screen.getByLabelText("Password").closest("form")!);
   await screen.findByLabelText("Email verification code");
   expect(authenticate).not.toHaveBeenCalled();
+  expect(screen.queryByLabelText("New password")).toBeNull();
+  expect(screen.queryByLabelText("Confirm password")).toBeNull();
   expect(
     screen.getByRole("button", { name: "Resend in 60 seconds" }),
   ).toBeDisabled();
   fill("Email verification code", "123456");
+  await vi.waitFor(() =>
+    expect(authenticate).toHaveBeenCalledWith(
+      "login",
+      "owner@example.com",
+      "long-password-123",
+    ),
+  );
+  expect(complete).toHaveBeenCalledWith(
+    "owner@example.com",
+    "123456",
+    "long-password-123",
+    "verify",
+  );
+});
+
+it("falls back to the sign-in form when the automatic sign-in fails after verification", async () => {
+  const authenticate = vi.fn().mockRejectedValue(new Error("offline"));
+  vi.spyOn(api, "registerEmail").mockResolvedValue(accepted);
+  vi.spyOn(api, "completeEmailCode").mockResolvedValue();
+  render(<EmailAuthForm authenticate={authenticate} onBusy={vi.fn()} />);
+  click("Register");
+  fill("Email address", "owner@example.com");
+  fill("Password", "long-password-123");
+  fireEvent.submit(screen.getByLabelText("Password").closest("form")!);
+  await screen.findByLabelText("Email verification code");
+  fill("Email verification code", "123456");
+  await screen.findByText("Email verified. You can now sign in.");
+  expect(screen.getByLabelText("Password")).toHaveValue("");
+});
+
+it("keeps password confirmation for accounts that verify after trying to sign in", async () => {
+  const authenticate = vi
+    .fn()
+    .mockRejectedValue(new ApiError(403, "EMAIL_VERIFICATION_REQUIRED", "Verify first"));
+  vi.spyOn(api, "requestEmailCode").mockResolvedValue(accepted);
+  const complete = vi.spyOn(api, "completeEmailCode").mockResolvedValue();
+  render(<EmailAuthForm authenticate={authenticate} onBusy={vi.fn()} />);
+  fill("Email address", "legacy@example.com");
+  fill("Password", "long-password-123");
+  fireEvent.submit(screen.getByLabelText("Password").closest("form")!);
+  await screen.findByLabelText("Email verification code");
+  fill("Email verification code", "123456");
+  fill("New password", "long-password-123");
   fill("Confirm password", "different-password");
   click("Verify email");
   await screen.findByRole("alert");
@@ -40,13 +85,7 @@ it("requires mailbox proof and matching password confirmation before returning t
   fill("Confirm password", "long-password-123");
   click("Verify email");
   await screen.findByText("Email verified. You can now sign in.");
-  expect(complete).toHaveBeenCalledWith(
-    "owner@example.com",
-    "123456",
-    "long-password-123",
-    "verify",
-  );
-  expect(authenticate).not.toHaveBeenCalled();
+  expect(complete).toHaveBeenCalledOnce();
 });
 
 it("handles forgot-password, an invalid code, retry and successful reset without auto-login", async () => {

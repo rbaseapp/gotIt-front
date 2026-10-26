@@ -1,0 +1,320 @@
+{
+  "start": {
+    "trialBadge": "14 days of Pro, free",
+    "codeOnly": "We sent a 6-digit code to your address. It is valid for 10 minutes, and you do not need another password.",
+    "back": "Back",
+    "continue": "Continue",
+    "exit": "Exit",
+    "stepOf": "Step {{current}} of {{total}}",
+    "resume": {
+      "title": "Pick up where you stopped?",
+      "body": "We saved what you already answered.",
+      "continue": "Continue",
+      "restart": "Start over"
+    },
+    "language": {
+      "title": "Which language are you learning?",
+      "body": "Pick one. You can add more later.",
+      "native": "My language:",
+      "change": "Change",
+      "soon": "For now this language has words and games. A full program is coming."
+    },
+    "focus": {
+      "title": "What matters most to you in English?",
+      "body": "We build your day from this. There is no wrong answer.",
+      "words": {
+        "title": "Remember words I meet online",
+        "body": "Read or watch things in English? Save a word with one click and practise it at the right time.",
+        "tag": "Chrome extension"
+      },
+      "goal": {
+        "title": "Reach a goal",
+        "body": "Travel, work, study or a move abroad. An AI teacher builds you a personal plan.",
+        "tag": "Plan + AI teacher"
+      },
+      "scratch": {
+        "title": "Learn from scratch",
+        "body": "Don't know a word yet? A ready-made program, step by step.",
+        "tag": "Ready-made program"
+      },
+      "note": "You can combine everything later: program, AI teacher and words from the extension."
+    },
+    "literacy": {
+      "title": "Do you read English?",
+      "body": "An honest answer helps us choose the first question.",
+      "yes": "Yes, I read",
+      "some": "A little",
+      "no": "Not yet",
+      "checkTitle": "Which picture matches the word?",
+      "checkBody": "One word, three pictures.",
+      "starting": "We'll start with the basics: letters and sounds, and speaking at the same time."
+    },
+    "pocket": {
+      "introTitle": "Let's see what's already in your pocket",
+      "introBody": "Know the word? Tap \"I know it\". Not yet? \"Not yet\". No score, no mistakes. About 3 minutes.",
+      "begin": "Start",
+      "know": "I know it",
+      "unknown": "Not yet",
+      "hear": "Hear the word",
+      "undo": "Undo the last answer",
+      "inPocket": "In your pocket",
+      "progress": {
+        "long": "A few more minutes",
+        "minute": "About a minute left",
+        "half": "About half a minute left",
+        "almost": "Almost done"
+      },
+      "slowDown": "Hold on, let's slow down a little.",
+      "fakeFound_one": "We caught one word that doesn't exist 😄 that's exactly what it's for.",
+      "fakeFound_other": "We caught {{count}} words that don't exist 😄 that's exactly what they're for.",
+      "skipAll": "I'm starting from zero, skip",
+      "verifyTitle": "Want to see some pocket words in action?",
+      "verifyBody": "Pick the right meaning.",
+      "verifyQuestion": "What does {{word}} mean?",
+      "notSure": "Not sure",
+      "probeTitle": "One more small puzzle",
+      "probeRead": "Read and choose.",
+      "probeListen": "Listen and choose.",
+      "play": "Play",
+      "playAgain": "Play again",
+      "noSound": "No sound? Skip",
+      "calculating": "Working out your level…"
+    },
+    "result": {
+      "title": "Here's what we found",
+      "level": "Your level",
+      "between": "Between {{low}} and {{high}}",
+      "inPocket": "In your pocket: about {{count}} words",
+      "outOf": "out of the {{total}} core words GotIt teaches. This is an estimate.",
+      "skills": "Skills",
+      "skill": {
+        "vocabulary": "Vocabulary",
+        "reading": "Reading",
+        "listening": "Listening"
+      },
+      "status": {
+        "strong": "Strong",
+        "ok": "On level",
+        "weak": "We'll strengthen",
+        "unknown": "Not checked"
+      },
+      "speaking": "Speaking: we'll check it in your first conversation with the teacher.",
+      "note": "This is a starting point, not a grade. The plan updates as you practise.",
+      "uncertain": "The estimate is a little wide; the first lessons will fine-tune it.",
+      "wrong": "Not accurate?",
+      "tooHigh": "Too high",
+      "tooLow": "Too low",
+      "adjusted": "We moved your starting point.",
+      "next": "Build my plan",
+      "band": {
+        "Pre-A1": "Starting from zero",
+        "A1": "Beginner",
+        "A2": "Elementary",
+        "B1": "Intermediate",
+        "B2": "Upper intermediate",
+        "C1": "Advanced"
+      },
+      "sub": {
+        "low": "early in the level",
+        "mid": "mid level",
+        "high": "late in the level"
+      },
+      "summary": {
+        "Pre-A1": "We'll start with the very first steps, gently.",
+        "A1": "You recognise simple words and sentences; now we build a solid base.",
+        "A2": "You get by in familiar everyday situations.",
+        "B1": "You follow the main points and can hold a conversation; now we sharpen.",
+        "B2": "You read and understand comfortably; now we work on precision and nuance.",
+        "C1": "You're at a high level; now we focus on accuracy and style."
+      }
+    },
+    "plan": {
+      "title": "Let's build your plan",
+      "body": "Three short choices, and the plan updates in front of you.",
+      "goalQuestion": "Where is English taking you?",
+      "deadlineQuestion": "By when, roughly?",
+      "minutesQuestion": "How much time a day?",
+      "goal": {
+        "travel": "Travel",
+        "work": "Work",
+        "study": "Study",
+        "talk": "Conversation and friends",
+        "abroad": "Moving abroad",
+        "other": "Something else"
+      },
+      "deadline": {
+        "1": "A month",
+        "3": "3 months",
+        "6": "Half a year",
+        "0": "No date"
+      },
+      "minutes": "{{count}} min",
+      "recommended": "Recommended",
+      "cardTitle": "English: {{goal}}",
+      "cardTarget": "Goal: {{band}}",
+      "cardRange": "From unit {{from}} to unit {{to}} ({{units}} units)",
+      "sim": "{{minutes}} min a day ← you reach the goal in {{low}}–{{high}} months",
+      "simShort": "{{minutes}} min a day ← about {{months}} months",
+      "needed": "For {{deadline}} you need about {{minutes}} min a day.",
+      "useNeeded": "Set {{minutes}} min",
+      "feasible": "That fits your goal.",
+      "dailyNote": "Words you save with the extension do not add to the daily goal.",
+      "next": "Continue",
+      "deadlineName": {
+        "1": "a month",
+        "3": "three months",
+        "6": "half a year"
+      }
+    },
+    "firstWords": {
+      "title": "Your first {{count}} words. Let's go!",
+      "body": "These are words not in your pocket yet, at your level.",
+      "flip": "Tap to see the meaning",
+      "got": "In pocket",
+      "counter": "{{done}} of {{total}} first words in your pocket",
+      "tomorrow": "Tomorrow they come back for a short review so they don't fade.",
+      "next": "Continue",
+      "none": "Let's begin your first day in the program."
+    },
+    "save": {
+      "title": "Saving what you built",
+      "body": "A free account, so your progress is never lost.",
+      "built": "What you've built",
+      "trialTitle": "14 days of full Pro, free",
+      "trialBody": "Program, AI teacher and extension. No credit card. Near the end we'll suggest the track that suits you best.",
+      "email": "Sign up with email",
+      "google": "Continue with Google",
+      "haveAccount": "I already have an account",
+      "terms": "By signing up you agree to the terms of use and the privacy policy.",
+      "saving": "Saving your plan…",
+      "existing": "You already started a program, so we left it as it is.",
+      "failed": "We couldn't save your plan. You can continue and rebuild it in settings.",
+      "chips": {
+        "language": "English",
+        "level": "Level: {{level}}",
+        "minutes": "{{count}} min a day",
+        "goal": "Goal: {{goal}}"
+      }
+    },
+    "today": {
+      "title": "Today's task",
+      "body": "Unit {{unit}} · about {{minutes}} min",
+      "go": "Continue",
+      "gap": "Words from the units you skipped come back for short reviews, 3 a day.",
+      "trial": "Pro is on · {{days}} days left"
+    },
+    "tutorLock": {
+      "title": "Conversation with the teacher opens soon",
+      "body": "To make the conversation truly useful we start with a small base. {{left}} more units and conversation opens.",
+      "progress": "{{done}} of {{required}} units",
+      "go": "Continue the program"
+    },
+    "locked": {
+      "courses": {
+        "title": "Learning programs are part of Pro",
+        "body": "A personal plan, graded units and an AI teacher. Words, the extension and games stay free, always."
+      },
+      "tutor": {
+        "title": "Conversation with the teacher is part of Pro",
+        "body": "Conversations with a real task, at your level. Words, the extension and games stay free, always."
+      },
+      "upgrade": "Upgrade",
+      "free": "Back to free practice",
+      "preview": "This is a preview. To study the units you need Pro or the trial."
+    }
+  },
+  "landingV2": {
+    "nav": {
+      "howItWorks": "How it works",
+      "extension": "Extension",
+      "pricing": "Pricing",
+      "login": "Sign in",
+      "startFree": "Start free trial"
+    },
+    "hero": {
+      "ctaPrimary": "Find out what's in your pocket · 3 min",
+      "ctaExtension": "Add to Chrome",
+      "promise": "No credit card · 14 days of Pro, free",
+      "mochiAlt": "Moochi, GotIt's learning companion, holding a word card"
+    },
+    "try": {
+      "title": "Try 3 words",
+      "hint": "Know it or not yet?",
+      "know": "I know it",
+      "unknown": "Not yet",
+      "doneTitle": "In your pocket: {{count}} of 3",
+      "doneBody": "Want to check the whole pocket? 3 minutes.",
+      "doneCta": "Continue the check"
+    },
+    "trust": {
+      "free": "Free forever: words and games",
+      "trial": "14 days of Pro, no card",
+      "hebrew": "Full Hebrew interface"
+    },
+    "pocket": {
+      "title": "How many words are already in your pocket?",
+      "body": "A 3-minute check that feels like a game. No score, no mistakes. At the end: your level, how many words you already have, and a plan that starts exactly in the right place.",
+      "counter": "Words in your pocket",
+      "cta": "Find out what's in your pocket"
+    },
+    "plan": {
+      "title": "A plan that fits you exactly",
+      "body": "Start at the right unit, skip what you already know without leaving gaps, and set the pace by your goal and your time.",
+      "level": "Your level",
+      "minutes": "Minutes a day",
+      "months": "Goal in about {{count}} months",
+      "unit": "Unit {{count}} of 84"
+    },
+    "tutor": {
+      "badge": "Paid plan · 14 days free",
+      "title": "A teacher who talks about what interests you",
+      "body": "Conversations with a real task: book a table, set up a meeting, tell about your weekend. A gentle correction at the end and three new phrases saved for you.",
+      "opens": "She opens up once you have a base to talk from.",
+      "task": "Task: book a table for four on Friday",
+      "teacher": "Good evening! How can I help you?",
+      "you": "I want a table for four, please.",
+      "done": "You did it ✅ · 3 phrases saved"
+    },
+    "pricing": {
+      "title": "Free forever, and more when you want it",
+      "body": "Prices are shown when you sign up. Cancel any time.",
+      "free": {
+        "name": "Free",
+        "line": "forever",
+        "items": ["Save words with the extension", "Practice and games", "Level check", "Streak and achievements"]
+      },
+      "pro": {
+        "name": "Pro",
+        "line": "14 days free",
+        "items": ["Personal learning programs", "AI teacher", "Articles from your words", "Weekly report"]
+      },
+      "tutor": {
+        "name": "Tutor",
+        "line": "for big talkers",
+        "items": ["Everything in Pro", "Monthly teacher minutes", "No daily conversation limit"]
+      },
+      "cta": "Start free trial",
+      "note": "No credit card"
+    },
+    "faq": {
+      "level": {
+        "q": "Do I need to read English?",
+        "a": "No. If you don't read yet, we start with letters and sounds and teach you to speak at the same time."
+      },
+      "test": {
+        "q": "How long does the level check take?",
+        "a": "About 3 minutes. No score, and you may answer \"not yet\" to any word."
+      },
+      "price": {
+        "q": "How much does it cost?",
+        "a": "Saving words with the extension, practice and games are free forever. Learning programs and the teacher are included in the 14-day trial, with no credit card, and after that in Pro."
+      }
+    },
+    "cta": {
+      "title": "3 minutes and you know exactly where to start",
+      "body": "No sign-up before the check. You only save the result and the plan if it suits you.",
+      "button": "Find out what's in your pocket"
+    },
+    "mobileBar": "Find out what's in your pocket · 3 min"
+  }
+}
