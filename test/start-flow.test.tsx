@@ -69,18 +69,14 @@ function Harness({
   );
 }
 
-it("asks for one of five levels and only continues once one is picked", () => {
+it("shows five levels and moves on as soon as one is tapped", () => {
   const next = vi.fn();
   render(<Harness>{(props) => <LevelStep {...props} next={next} />}</Harness>);
-  const continueButton = screen.getByRole("button", { name: "המשך" });
-  expect(continueButton).toBeDisabled();
-  // Five levels, each with its band.
   for (const band of ["Pre-A1", "A1 · A2", "B1", "B2", "C1"])
     expect(screen.getByText(band)).toBeInTheDocument();
+  expect(next).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: /בינוני/ }));
-  expect(continueButton).toBeEnabled();
-  fireEvent.click(continueButton);
-  expect(next).toHaveBeenCalledTimes(1);
+  expect(next).toHaveBeenCalledWith(false);
 });
 
 it("lets someone who only wants to save words skip the level", () => {
@@ -95,7 +91,7 @@ it("lets someone who only wants to save words skip the level", () => {
     screen.getByRole("button", { name: "אני רק רוצה לשמור מילים" }),
   );
   expect(latest!.focus).toBe("words");
-  expect(next).toHaveBeenCalled();
+  expect(next).toHaveBeenCalledWith(true);
 });
 
 it("keeps at most three interests and two things to improve", () => {

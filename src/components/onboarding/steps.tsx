@@ -139,28 +139,23 @@ export function LevelStep({
 }: {
   state: OnboardingState;
   update: Update;
-  next: () => void;
+  /** `words` is true when the learner only wants to save words. */
+  next: (words: boolean) => void;
   back?: () => void;
 }) {
   const { t } = useTranslation();
-  const chosen = state.focus === "words" ? null : state.selfLevel;
   return (
     <OnboardingFrame
       step="level"
       title={t("start.self.title")}
       body={t("start.self.body")}
       onBack={back}
-      primary={
-        <button className="ob-btn" disabled={chosen === null} onClick={next}>
-          {t("start.continue")}
-        </button>
-      }
       secondary={
         <button
           className="ob-link"
           onClick={() => {
             update({ focus: "words", goal: "other", selfLevel: null });
-            next();
+            next(true);
           }}
         >
           {t("start.self.justWords")}
@@ -176,8 +171,11 @@ export function LevelStep({
           <button
             key={level}
             className="ob-card ob-level-card"
-            aria-pressed={chosen === level}
-            onClick={() => update({ selfLevel: level, focus: "goal" })}
+            aria-pressed={state.focus !== "words" && state.selfLevel === level}
+            onClick={() => {
+              update({ selfLevel: level, focus: "goal" });
+              next(false);
+            }}
           >
             <span className="ob-meter" aria-hidden="true">
               {SELF_LEVELS.slice(1).map((bar) => (

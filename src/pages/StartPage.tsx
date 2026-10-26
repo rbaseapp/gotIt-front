@@ -152,10 +152,10 @@ function StartFlow({ account }: { account: boolean }) {
         state={state}
         update={update}
         back={account ? undefined : () => move(-1)}
-        next={() => {
+        next={(words) => {
           // Languages without a program yet have words and games only.
           if (!account && state.language !== "en") go("save");
-          else if (state.focus === "words") startCheck();
+          else if (words) startCheck();
           else go("interests");
         }}
       />
