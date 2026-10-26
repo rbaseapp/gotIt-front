@@ -822,3 +822,33 @@
     height: 32px;
   }
 }
+
+/* A shorter hero: the games below should be visible without scrolling. */
+.p3 .hero {
+  min-height: 0;
+}
+.p3 .hero-txt {
+  padding: 22px 32px;
+  gap: 10px;
+}
+.p3 .hero h1 {
+  font-size: calc(2.2rem * var(--text-scale, 1));
+}
+.p3 .hero p {
+  font-size: calc(1.05rem * var(--text-scale, 1));
+}
+.p3 .start {
+  margin-top: 4px;
+  min-height: 54px;
+}
+.p3 .hero-art img {
+  max-width: 300px;
+}
+@media (max-width: 860px) {
+  .p3 .hero-art {
+    max-height: 150px;
+  }
+  .p3 .hero-art img {
+    max-width: 240px;
+  }
+}

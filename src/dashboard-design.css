@@ -1016,3 +1016,110 @@
   outline: 3px solid #1f604c;
   outline-offset: 4px;
 }
+
+/* Tighter rhythm: the top of the page is the work, not the decoration. */
+.nd-dashboard {
+  min-height: calc(100dvh - 64px);
+}
+.nd-content {
+  padding-block: 20px 28px;
+  gap: 20px;
+}
+.nd-greeting {
+  margin-bottom: -8px !important;
+}
+.nd-content > .ob-today {
+  margin-bottom: 0;
+  padding: 10px 16px;
+  box-shadow: 0 3px 0 var(--ob-ink);
+}
+.nd-content > .ob-today img {
+  width: 44px;
+}
+.nd-content > .ob-today h2 {
+  font-size: 1.05em;
+}
+.nd-content > .ob-today p {
+  margin: 0;
+  line-height: 1.45;
+}
+@media (min-width: 1100px) {
+  /* Two columns: the day's card on one side; Moochi, the article and the quick review on the other. */
+  .nd-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    column-gap: 28px;
+    align-items: start;
+  }
+  .nd-hero,
+  .nd-lower-grid {
+    display: contents;
+  }
+  .nd-content > .ob-today,
+  .nd-content > .nd-greeting,
+  .nd-content > .nd-other-programs,
+  .nd-content > .nd-footer {
+    grid-column: 1 / -1;
+  }
+  .nd-content > .ob-today {
+    grid-row: 1;
+  }
+  .nd-content > .nd-greeting {
+    grid-row: 2;
+  }
+  .nd-hero > .nd-main-card {
+    grid-column: 1;
+    grid-row: 3 / span 3;
+  }
+  .nd-hero > .nd-mascot {
+    grid-column: 2;
+    grid-row: 3;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 14px;
+  }
+  .nd-hero > .nd-mascot .nd-moohi {
+    max-width: 150px;
+    padding-bottom: 0;
+  }
+  .nd-hero > .nd-mascot .nd-speech {
+    flex: 1;
+  }
+  .nd-lower-grid > * {
+    grid-column: 2;
+  }
+  .nd-lower-grid > :nth-child(1) {
+    grid-row: 4;
+  }
+  .nd-lower-grid > :nth-child(2) {
+    grid-row: 5;
+  }
+  .nd-content > .nd-other-programs,
+  .nd-content > .nd-footer {
+    grid-row: 6;
+  }
+  .nd-content > .nd-footer {
+    grid-row: 7;
+  }
+}
+@media (max-width: 860px) {
+  .nd-content > .ob-today {
+    flex-wrap: wrap;
+  }
+  .nd-content > .ob-today > div {
+    min-width: 0;
+    flex-basis: 60%;
+  }
+  .nd-content > .ob-today > div p:nth-of-type(n + 2) {
+    display: none;
+  }
+  .nd-content > .ob-today .ob-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* The mission banner is one line of task and one of context. */
+.nd-content > .ob-today p:nth-of-type(2) {
+  display: none;
+}

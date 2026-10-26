@@ -209,10 +209,24 @@ export function DevDashboardPage() {
   );
   const isPath = selected === "english-path" && code === "en" && !isStructured;
   const isProgram = !!course || isPath || isStructured;
+  // A learner placed by the level check starts partway: the units before their
+  // start count as behind them, so progress and "lesson N" agree with the level.
+  const placedIndex = isStructured
+    ? Math.max(
+        0,
+        structured.data!.units.findIndex(
+          (unit) => unit.id === structured.data!.currentUnit,
+        ),
+      )
+    : 0;
   const completed = isStructured
-    ? structured.data!.units.filter(
-        (unit) => unit.waived || structured.data!.completed[`gate:${unit.id}`],
-      ).length
+    ? Math.max(
+        placedIndex,
+        structured.data!.units.filter(
+          (unit) =>
+            unit.waived || structured.data!.completed[`gate:${unit.id}`],
+        ).length,
+      )
     : course
       ? course.progress.covered
       : path.filter(completedEnglishUnit).length;
@@ -313,7 +327,6 @@ export function DevDashboardPage() {
     <div
       className={`nd-dashboard${isProgram ? " nd-with-program" : " nd-words-only"}`}
     >
-      <TodayMission />
       <LearningStatusSource
         goal={d?.dailyGoal}
         streakDays={d?.gamification.currentStreakDays}
@@ -331,6 +344,7 @@ export function DevDashboardPage() {
         }}
       />
       <div className="nd-wrap nd-content">
+        <TodayMission />
         <RemoteState
           loading={
             language.loading ||
