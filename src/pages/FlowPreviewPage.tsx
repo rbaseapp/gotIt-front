@@ -4,7 +4,8 @@ import { PocketTest } from "../components/onboarding/PocketTest";
 import { TutorInvite } from "../components/onboarding/AccountFinish";
 import { LockedFeature, TutorLockCard } from "../components/onboarding/Gates";
 import {
-  GoalStep,
+  InterestsStep,
+  LevelStep,
   PlanStep,
   ResultStep,
   TalkStep,
@@ -21,7 +22,8 @@ import "../onboarding.css";
  * from the real components with sample answers. Nothing here is saved. Dev server only.
  */
 const SCREENS = [
-  ["goal", "1 · מטרה והערכה עצמית"],
+  ["level", "1 · רמת האנגלית (חמש רמות)"],
+  ["interests", "2 · תחומי עניין ומה לשפר"],
   ["pocket-intro", "5 · הבדיקה: פתיחה"],
   ["pocket-card", "5 · הבדיקה: שאלת פירוש"],
   ["talk-intro", "6 · שיחה עם רייצ'ל: פתיחה"],
@@ -68,12 +70,13 @@ const sample = (patch: Partial<OnboardingState>): OnboardingState => ({
 function Screen({ id }: { id: string }) {
   const [state, setState] = useState<OnboardingState>(() => {
     switch (id) {
-      case "goal":
+      case "level":
+        return sample({ step: "level", focus: "goal", selfLevel: 2 });
+      case "interests":
         return sample({
-          step: "goal",
-          focus: "goal",
-          goal: "work",
-          selfLevel: null,
+          step: "interests",
+          interests: ["travel", "music"],
+          priorities: ["speaking"],
         });
       case "pocket-intro":
         return sample({ step: "pocket", phase: "intro" });
@@ -102,8 +105,10 @@ function Screen({ id }: { id: string }) {
   const noop = () => {};
   const common = { state, update, next: noop };
   switch (id) {
-    case "goal":
-      return <GoalStep {...common} back={noop} />;
+    case "level":
+      return <LevelStep {...common} back={noop} />;
+    case "interests":
+      return <InterestsStep {...common} back={noop} />;
     case "pocket-intro":
     case "pocket-card":
       return bank ? (

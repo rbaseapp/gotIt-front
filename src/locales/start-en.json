@@ -31,39 +31,23 @@
     },
     "pocket": {
       "introTitle": "Let's see what's already in your pocket",
-      "introBody": "Know the word? Tap \"I know it\". Not yet? \"Not yet\". No score, no mistakes. About 3 minutes.",
+      "introBody": "Know the word? Tap \"I know it\". Not yet? \"Not yet\". No score, no mistakes. Up to {{count}} questions.",
       "begin": "Start",
       "know": "I know it",
       "unknown": "Not yet",
       "hear": "Hear the word",
       "undo": "Undo the last answer",
       "inPocket": "In your pocket",
-      "progress": {
-        "long": "A few more minutes",
-        "minute": "About a minute left",
-        "half": "About half a minute left",
-        "almost": "Almost done"
-      },
       "slowDown": "Hold on, let's slow down a little.",
       "fakeFound_one": "We caught one word that doesn't exist 😄 that's exactly what it's for.",
       "fakeFound_other": "We caught {{count}} words that don't exist 😄 that's exactly what they're for.",
-      "skipAll": "I'm starting from zero, skip",
-      "verifyTitle": "Want to see some pocket words in action?",
-      "verifyBody": "Pick the right meaning.",
-      "verifyQuestion": "What does {{word}} mean?",
-      "notSure": "Not sure",
-      "probeTitle": "One more small puzzle",
-      "probeRead": "Read and choose.",
-      "probeListen": "Listen and choose.",
-      "play": "Play",
-      "playAgain": "Play again",
-      "noSound": "No sound? Skip",
       "calculating": "Working out your level…",
-      "introBodyMeaning": "Pick the right meaning of each word. Not sure? Tap “I don't know”, no guessing. About 2 minutes.",
+      "introBodyMeaning": "Pick the right meaning of each word. Not sure? Tap “I don't know”, no guessing. Up to {{count}} questions.",
       "dontKnow": "I don't know",
       "pickMeaning": "Pick the meaning",
       "sampleRight": "apple",
-      "sampleOther": "window"
+      "sampleOther": "window",
+      "counter": "Question {{current}} of up to {{total}}"
     },
     "result": {
       "title": "Here's what we found",
@@ -120,18 +104,9 @@
     },
     "plan": {
       "title": "Let's build your plan",
-      "body": "Three short choices, and the plan updates in front of you.",
-      "goalQuestion": "Where is English taking you?",
+      "body": "A few short choices, and the plan updates in front of you.",
       "deadlineQuestion": "By when, roughly?",
       "minutesQuestion": "How much time a day?",
-      "goal": {
-        "travel": "Travel",
-        "work": "Work",
-        "study": "Study",
-        "talk": "Conversation and friends",
-        "abroad": "Moving abroad",
-        "other": "Something else"
-      },
       "deadline": {
         "1": "A month",
         "3": "3 months",
@@ -140,7 +115,7 @@
       },
       "minutes": "{{count}} min",
       "recommended": "Recommended",
-      "cardTitle": "English: {{goal}}",
+      "cardTitle": "Your English plan",
       "cardTarget": "Goal: {{band}}",
       "cardRange": "From unit {{from}} to unit {{to}} ({{units}} units)",
       "sim": "{{minutes}} min a day ← you reach the goal in {{low}}–{{high}} months",
@@ -154,7 +129,8 @@
         "1": "a month",
         "3": "three months",
         "6": "half a year"
-      }
+      },
+      "targetQuestion": "Which level do you want to reach?"
     },
     "save": {
       "title": "Saving what you built",
@@ -172,8 +148,7 @@
       "chips": {
         "language": "English",
         "level": "Level: {{level}}",
-        "minutes": "{{count}} min a day",
-        "goal": "Goal: {{goal}}"
+        "minutes": "{{count}} min a day"
       }
     },
     "today": {
@@ -243,58 +218,30 @@
       },
       "minorNote": "We recommend a grown-up sits with you for sign-up and the check. We use voice and pictures wherever we can."
     },
-    "goalStep": {
-      "title": "What matters most in English?",
-      "body": "This shapes the check, the plan and the conversations.",
-      "words": {
-        "title": "Remember words I meet online",
-        "body": "Save a word with the extension and practice it."
-      },
-      "travel": {
-        "title": "Travel",
-        "body": "Get by on trips and in short chats."
-      },
-      "work": {
-        "title": "Work",
-        "body": "Meetings, emails and professional talk."
-      },
-      "study": {
-        "title": "Study",
-        "body": "Academic reading, writing and listening."
-      },
-      "abroad": {
-        "title": "Moving abroad",
-        "body": "Live and work in the language."
-      },
-      "talk": {
-        "title": "Talking with friends",
-        "body": "Speak, watch and understand without translation."
-      },
-      "scratch": {
-        "title": "Start from zero",
-        "body": "Don't know a word yet? We begin at the start."
-      },
-      "note": "You can change your goal any time."
-    },
     "self": {
-      "title": "How would you describe your English?",
-      "body": "This only sets where the check starts. It doesn't decide your level.",
+      "title": "What is your English level?",
+      "body": "Pick the closest one. A short check will fine-tune it.",
+      "justWords": "I just want to save words",
       "level": {
         "0": {
-          "title": "Almost none",
-          "body": "Single words, if any."
+          "title": "Zero",
+          "body": "I'm just starting. Maybe a few words."
         },
         "1": {
-          "title": "Words and simple sentences",
-          "body": "I follow the gist of a short text."
+          "title": "Basic",
+          "body": "I understand simple sentences and short texts."
         },
         "2": {
-          "title": "Simple conversation",
-          "body": "I can tell and ask basic things."
+          "title": "Intermediate",
+          "body": "I manage everyday conversation and follow the gist."
         },
         "3": {
+          "title": "Advanced",
+          "body": "I speak and read comfortably, with the odd mistake."
+        },
+        "4": {
           "title": "Fluent",
-          "body": "I understand and speak about most topics."
+          "body": "I understand and speak about almost any topic."
         }
       }
     },
@@ -310,6 +257,32 @@
       "skip": "Skip this part",
       "pick": "Question {{current}} of {{total}} · pick the best reply",
       "dontKnow": "I don't know"
+    },
+    "interests": {
+      "title": "What do you like to read and talk about?",
+      "body": "Pick up to {{count}}. We'll choose topics and examples you enjoy.",
+      "item": {
+        "travel": "Travel",
+        "business": "Business and work",
+        "tech": "Technology",
+        "series": "Series and movies",
+        "food": "Food",
+        "sport": "Sport",
+        "studies": "Studies",
+        "news": "News",
+        "music": "Music"
+      }
+    },
+    "priorities": {
+      "title": "What should we improve first? (up to {{count}})",
+      "item": {
+        "vocabulary": "Vocabulary",
+        "grammar": "Grammar and tenses",
+        "speaking": "Speaking fluency",
+        "listening": "Pronunciation and listening",
+        "writing": "Reading and writing",
+        "teacher": "Let the teacher decide"
+      }
     }
   }
 }

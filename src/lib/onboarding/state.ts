@@ -4,17 +4,19 @@
  * (see claim.ts). A learner who closes the tab can pick up where they stopped.
  */
 import type { Deadline, Goal } from "../placement/plan";
+import type { Band } from "../placement/types";
 import type {
   Literacy,
   Observation,
   PlacementResult,
 } from "../placement/types";
 
-export const ONBOARDING_STORAGE_KEY = "gotit.onboarding.v1";
+export const ONBOARDING_STORAGE_KEY = "gotit.onboarding.v2";
 
 export const STEPS = [
   "language",
-  "goal",
+  "level",
+  "interests",
   "pocket",
   "talk",
   "result",
@@ -28,8 +30,38 @@ export type AnswerMode = "voice" | "text";
 /** A band, never a birth date. Under 9 is treated as not yet reading: pictures and voice first. */
 export type AgeBand = "under9" | "9-12" | "13-17" | "18+";
 export type ReadingComfort = "easy" | "some" | "hard";
-/** Self-assessed English: 0 almost none, 1 words and simple sentences, 2 simple talk, 3 fluent. */
-export type SelfLevel = 0 | 1 | 2 | 3;
+/** Self-assessed English: 0 zero, 1 basic (A1-A2), 2 intermediate (B1), 3 advanced (B2), 4 fluent (C1). */
+export type SelfLevel = 0 | 1 | 2 | 3 | 4;
+export const SELF_LEVELS: SelfLevel[] = [0, 1, 2, 3, 4];
+
+export const INTERESTS = [
+  "travel",
+  "business",
+  "tech",
+  "series",
+  "food",
+  "sport",
+  "studies",
+  "news",
+  "music",
+] as const;
+export type Interest = (typeof INTERESTS)[number];
+export const MAX_INTERESTS = 3;
+
+/** What the learner wants to get better at; "teacher" leaves the choice to the teacher. */
+export const PRIORITIES = [
+  "vocabulary",
+  "grammar",
+  "speaking",
+  "listening",
+  "writing",
+  "teacher",
+] as const;
+export type Priority = (typeof PRIORITIES)[number];
+export const MAX_PRIORITIES = 2;
+
+/** The most questions the check asks. */
+export const CHECK_QUESTIONS = 10;
 
 export type PocketPhase =
   "intro" | "literacy" | "cards" | "verify" | "probes" | "done";
@@ -54,6 +86,10 @@ export type OnboardingState = {
   readingComfort: ReadingComfort | null;
   selfLevel: SelfLevel | null;
   goal: Goal | null;
+  interests: Interest[];
+  priorities: Priority[];
+  /** The level the learner wants to reach; null until they choose (the plan suggests one). */
+  targetBand: Band | null;
   deadline: Deadline;
   minutes: number;
   firstWords: string[];
@@ -80,6 +116,9 @@ export const initialOnboarding = (): OnboardingState => ({
   readingComfort: null,
   selfLevel: null,
   goal: null,
+  interests: [],
+  priorities: [],
+  targetBand: null,
   deadline: 3,
   minutes: 10,
   firstWords: [],
@@ -120,11 +159,22 @@ export function clearOnboarding() {
 
 /** Where the first guess sits on the 0-84 scale, from what the learner wants. */
 export const SELF_LEVEL_UNITS: Record<SelfLevel, number> = {
-  0: 6,
-  1: 16,
-  2: 30,
-  3: 48,
+  0: 4,
+  1: 18,
+  2: 39,
+  3: 57,
+  4: 75,
 };
+
+/** The goal the server knows (it keeps the old list) follows from the first interest that matches. */
+export function goalFromInterests(interests: Interest[]): Goal {
+  for (const interest of interests) {
+    if (interest === "travel") return "travel";
+    if (interest === "business") return "work";
+    if (interest === "studies") return "study";
+  }
+  return "other";
+}
 
 /** A starting guess only: the check itself decides the level. */
 export const priorFor = (
@@ -132,7 +182,7 @@ export const priorFor = (
   selfLevel: SelfLevel | null = null,
 ) =>
   focus === "scratch"
-    ? 6
+    ? SELF_LEVEL_UNITS[0]
     : selfLevel === null
       ? 30
       : SELF_LEVEL_UNITS[selfLevel];

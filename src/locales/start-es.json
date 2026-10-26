@@ -31,35 +31,19 @@
     },
     "pocket": {
       "introTitle": "Veamos qué llevas ya en el bolsillo",
-      "introBody": "¿Conoces la palabra? Toca «La conozco». ¿Todavía no? «Aún no». Sin nota y sin errores. Unos 3 minutos.",
+      "introBody": "¿Conoces la palabra? Toca «La conozco». ¿Todavía no? «Aún no». Sin nota y sin errores. Hasta {{count}} preguntas.",
       "begin": "Empezar",
       "know": "La conozco",
       "unknown": "Aún no",
       "hear": "Escuchar la palabra",
       "undo": "Deshacer la última respuesta",
       "inPocket": "En tu bolsillo",
-      "progress": {
-        "long": "Unos minutos más",
-        "minute": "Queda cerca de un minuto",
-        "half": "Queda cerca de medio minuto",
-        "almost": "Casi terminamos"
-      },
       "slowDown": "Un momento, vamos un poco más despacio.",
       "fakeFound_one": "Descubrimos una palabra que no existe 😄 para eso sirve.",
       "fakeFound_other": "Descubrimos {{count}} palabras que no existen 😄 para eso sirven.",
-      "skipAll": "Empiezo desde cero, saltar",
-      "verifyTitle": "¿Quieres ver algunas palabras del bolsillo en acción?",
-      "verifyBody": "Elige el significado correcto.",
-      "verifyQuestion": "¿Qué significa {{word}}?",
-      "notSure": "No estoy seguro/a",
-      "probeTitle": "Un pequeño acertijo más",
-      "probeRead": "Lee y elige.",
-      "probeListen": "Escucha y elige.",
-      "play": "Reproducir",
-      "playAgain": "Reproducir de nuevo",
-      "noSound": "¿Sin sonido? Saltar",
       "calculating": "Calculando tu nivel…",
-      "dontKnow": "No lo sé"
+      "dontKnow": "No lo sé",
+      "counter": "Pregunta {{current}} de hasta {{total}}"
     },
     "result": {
       "title": "Esto es lo que encontramos",
@@ -116,18 +100,9 @@
     },
     "plan": {
       "title": "Construyamos tu plan",
-      "body": "Tres elecciones cortas, y el plan se actualiza ante tus ojos.",
-      "goalQuestion": "¿A dónde te lleva el inglés?",
+      "body": "Unas pocas elecciones cortas, y el plan se actualiza ante tus ojos.",
       "deadlineQuestion": "¿Para cuándo, más o menos?",
       "minutesQuestion": "¿Cuánto tiempo al día?",
-      "goal": {
-        "travel": "Viajes",
-        "work": "Trabajo",
-        "study": "Estudios",
-        "talk": "Conversación y amigos",
-        "abroad": "Mudarme al extranjero",
-        "other": "Otra cosa"
-      },
       "deadline": {
         "1": "Un mes",
         "3": "3 meses",
@@ -136,7 +111,7 @@
       },
       "minutes": "{{count}} min",
       "recommended": "Recomendado",
-      "cardTitle": "Inglés: {{goal}}",
+      "cardTitle": "Tu plan de inglés",
       "cardTarget": "Meta: {{band}}",
       "cardRange": "De la unidad {{from}} a la unidad {{to}} ({{units}} unidades)",
       "sim": "{{minutes}} min al día ← llegas a la meta en {{low}}–{{high}} meses",
@@ -150,7 +125,8 @@
         "1": "un mes",
         "3": "tres meses",
         "6": "medio año"
-      }
+      },
+      "targetQuestion": "¿Qué nivel quieres alcanzar?"
     },
     "save": {
       "title": "Guardando lo que construiste",
@@ -168,8 +144,7 @@
       "chips": {
         "language": "Inglés",
         "level": "Nivel: {{level}}",
-        "minutes": "{{count}} min al día",
-        "goal": "Meta: {{goal}}"
+        "minutes": "{{count}} min al día"
       }
     },
     "today": {
@@ -239,58 +214,30 @@
       },
       "minorNote": "Recomendamos que un adulto te acompañe en el registro y la prueba. Usamos voz e imágenes siempre que podemos."
     },
-    "goalStep": {
-      "title": "¿Qué es lo más importante del inglés para ti?",
-      "body": "Esto da forma a la prueba, al plan y a las conversaciones.",
-      "words": {
-        "title": "Recordar palabras que encuentro en internet",
-        "body": "Guarda una palabra con la extensión y practícala."
-      },
-      "travel": {
-        "title": "Viajes",
-        "body": "Desenvolverte de viaje y en charlas cortas."
-      },
-      "work": {
-        "title": "Trabajo",
-        "body": "Reuniones, correos y conversación profesional."
-      },
-      "study": {
-        "title": "Estudios",
-        "body": "Lectura, escritura y comprensión académicas."
-      },
-      "abroad": {
-        "title": "Mudarme al extranjero",
-        "body": "Vivir y trabajar en el idioma."
-      },
-      "talk": {
-        "title": "Hablar con amigos",
-        "body": "Hablar, ver y entender sin traducción."
-      },
-      "scratch": {
-        "title": "Empezar de cero",
-        "body": "¿Aún no sabes ni una palabra? Empezamos por el principio."
-      },
-      "note": "Puedes cambiar tu meta cuando quieras."
-    },
     "self": {
-      "title": "¿Cómo describirías tu inglés?",
-      "body": "Solo sirve para decidir dónde empieza la prueba. No decide tu nivel.",
+      "title": "¿Cuál es tu nivel de inglés?",
+      "body": "Elige el más cercano. Una prueba corta lo afinará.",
+      "justWords": "Solo quiero guardar palabras",
       "level": {
         "0": {
-          "title": "Casi nada",
-          "body": "Palabras sueltas, si acaso."
+          "title": "Cero",
+          "body": "Estoy empezando. Quizá conozca algunas palabras."
         },
         "1": {
-          "title": "Palabras y frases sencillas",
-          "body": "Entiendo la idea de un texto corto."
+          "title": "Básico",
+          "body": "Entiendo frases simples y textos cortos."
         },
         "2": {
-          "title": "Conversación sencilla",
-          "body": "Puedo contar y preguntar cosas básicas."
+          "title": "Intermedio",
+          "body": "Me defiendo en una conversación cotidiana y capto lo esencial."
         },
         "3": {
-          "title": "Con fluidez",
-          "body": "Entiendo y hablo de la mayoría de los temas."
+          "title": "Avanzado",
+          "body": "Hablo y leo con comodidad, con algún error."
+        },
+        "4": {
+          "title": "Fluido",
+          "body": "Entiendo y hablo de casi cualquier tema."
         }
       }
     },
@@ -306,6 +253,32 @@
       "skip": "Saltar esta parte",
       "pick": "Pregunta {{current}} de {{total}} · elige la mejor respuesta",
       "dontKnow": "No lo sé"
+    },
+    "interests": {
+      "title": "¿Sobre qué te gusta leer y hablar?",
+      "body": "Elige hasta {{count}}. Escogeremos temas y ejemplos que te gusten.",
+      "item": {
+        "travel": "Viajes",
+        "business": "Negocios y trabajo",
+        "tech": "Tecnología",
+        "series": "Series y películas",
+        "food": "Comida",
+        "sport": "Deporte",
+        "studies": "Estudios",
+        "news": "Noticias",
+        "music": "Música"
+      }
+    },
+    "priorities": {
+      "title": "¿Qué mejoramos primero? (hasta {{count}})",
+      "item": {
+        "vocabulary": "Vocabulario",
+        "grammar": "Gramática y tiempos",
+        "speaking": "Fluidez al hablar",
+        "listening": "Pronunciación y comprensión oral",
+        "writing": "Lectura y escritura",
+        "teacher": "Que decida el profesor"
+      }
     }
   }
 }

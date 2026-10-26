@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Backpack, Check, Undo2, Volume2 } from "lucide-react";
+import { Backpack, Check, LoaderCircle, Undo2, Volume2 } from "lucide-react";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { PlacementSession, seededRandom } from "../../lib/placement/engine";
 import { canSpeak, speak } from "../../lib/placement/speech";
@@ -9,11 +9,9 @@ import type {
   Literacy,
   PlacementBank,
   PlacementResult,
-  Probe,
-  Skill,
-  VerifyItem,
 } from "../../lib/placement/types";
 import {
+  CHECK_QUESTIONS,
   priorFor,
   type OnboardingState,
   type PocketPhase,
@@ -34,8 +32,6 @@ const LITERACY_ITEMS = [
   { word: "book", pictures: ["📖", "🍎", "🐶"], answer: "📖" },
 ];
 
-const EXPECTED_CARDS = 22;
-const EXPECTED_MEANING = 13;
 const HURRY_MS = 250;
 
 export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
@@ -53,6 +49,9 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           prior: priorFor(state.focus, state.selfLevel),
           mode: state.focus === "words" ? "quick" : "full",
           format: meaning ? "meaning" : "yesno",
+          maxQuestions: CHECK_QUESTIONS,
+          // A level the learner chose is a good first guess; without one we know little.
+          ...(state.selfLevel !== null ? { priorSd: 12 } : {}),
           rng: seededRandom((state.startedAt % 1_000_000) + state.log.length),
         },
         state.log.length ? state.log : state.landing,
@@ -69,20 +68,24 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       ? "cards"
       : state.phase,
   );
+
+  const fromZero = state.selfLevel === 0 && state.focus !== "words";
   const [card, setCard] = useState<Card | null>(null);
   const shownAt = useRef(0);
   const [version, setVersion] = useState(0);
   const [hurry, setHurry] = useState(false);
   const [popped, setPopped] = useState(0);
   const [literacy, setLiteracy] = useState<Literacy | null>(state.literacy);
-  const [verify, setVerify] = useState<VerifyItem[]>([]);
-  const [probe, setProbe] = useState<{ item: Probe; skill: Skill } | null>(
-    null,
-  );
-  const probeCount = useRef({ reading: 0, listening: 0 });
 
+  const finished = useRef(false);
+  const literacyRef = useRef(literacy);
+  useEffect(() => {
+    literacyRef.current = literacy;
+  }, [literacy]);
   const finish = useCallback(
     (kind: Literacy) => {
+      if (finished.current) return;
+      finished.current = true;
       const result = session.result({
         literacy: kind,
         seconds: Math.round((Date.now() - startedAt.current) / 1000),
@@ -92,6 +95,12 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
     },
     [onDone, session, update],
   );
+
+  // Someone who starts from zero has nothing to check: go straight to the plan.
+  useEffect(() => {
+    if (fromZero && !state.result) finish("starting");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromZero]);
 
   const known = session.log.filter(
     (o) => o.t === "card" && o.real && o.yes,
@@ -106,21 +115,9 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       return;
     }
     setCard(null);
-    const items = session.verifyItems(4);
-    if (items.length >= 2) {
-      setVerify(items);
-      setPhase("verify");
-      update({ log: [...session.log], phase: "verify" });
-    } else startProbes();
+    finish(literacyRef.current ?? "reader");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, update]);
-
-  function startProbes() {
-    const first = session.nextProbe("reading");
-    if (!first) return finish(literacy ?? "reader");
-    setProbe({ item: first, skill: "reading" });
-    setPhase("probes");
-  }
 
   useEffect(() => {
     if (phase === "cards" && !card) advance();
@@ -174,6 +171,15 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
   const swipe = useRef<number | null>(null);
 
   /* ----- screens ----- */
+  if (fromZero)
+    return (
+      <div className="ob" role="status">
+        <div className="ob-saving">
+          <LoaderCircle className="spin" size={30} />
+        </div>
+      </div>
+    );
+
   if (phase === "intro")
     return (
       <OnboardingFrame
@@ -181,6 +187,7 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
         title={t("start.pocket.introTitle")}
         body={t(
           meaning ? "start.pocket.introBodyMeaning" : "start.pocket.introBody",
+          { count: CHECK_QUESTIONS },
         )}
         onBack={onBack}
         primary={
@@ -188,9 +195,7 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
             className="ob-btn"
             onClick={() => {
               const next: PocketPhase =
-                state.focus === "scratch" || state.readingComfort === "hard"
-                  ? "literacy"
-                  : "cards";
+                state.readingComfort === "hard" ? "literacy" : "cards";
               setPhase(next);
               update({ phase: next });
             }}
@@ -236,54 +241,7 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       />
     );
 
-  if (phase === "verify")
-    return (
-      <VerifyStage
-        items={verify}
-        onDone={(answers) => {
-          verify.forEach((item, i) =>
-            session.answerVerify(item, answers[i] ?? null, 4000),
-          );
-          update({ log: [...session.log] });
-          startProbes();
-        }}
-      />
-    );
-
-  if (phase === "probes" && probe)
-    return (
-      <ProbeStage
-        key={probe.item.id}
-        probe={probe.item}
-        skill={probe.skill}
-        onSkip={() => finish(literacy ?? "reader")}
-        onAnswer={(picked) => {
-          session.answerProbe(probe.item, probe.skill, picked, 8000);
-          probeCount.current[probe.skill] += 1;
-          update({ log: [...session.log] });
-          const wantReading = probeCount.current.reading < 1;
-          const wantListening = probeCount.current.listening < 1 && canSpeak();
-          const nextSkill: Skill | null =
-            probe.skill === "reading" && wantReading
-              ? "reading"
-              : wantListening
-                ? "listening"
-                : null;
-          const nextItem = nextSkill ? session.nextProbe(nextSkill) : null;
-          if (nextSkill && nextItem)
-            setProbe({ item: nextItem, skill: nextSkill });
-          else finish(literacy ?? "reader");
-        }}
-      />
-    );
-
   // cards
-  const left = Math.max(
-    0,
-    (meaning ? EXPECTED_MEANING : EXPECTED_CARDS) - session.cards,
-  );
-  const progress =
-    left > 16 ? "long" : left > 8 ? "minute" : left > 3 ? "half" : "almost";
   return (
     <OnboardingFrame
       step="pocket"
@@ -308,7 +266,10 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           <b>{known}</b>
         </span>
         <span className="ob-note">
-          {t(`start.pocket.progress.${progress}`)}
+          {t("start.pocket.counter", {
+            current: Math.min(CHECK_QUESTIONS, session.cards + 1),
+            total: CHECK_QUESTIONS,
+          })}
         </span>
       </div>
       <div
@@ -383,19 +344,6 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
         <p className="ob-note" role="status">
           {t("start.pocket.slowDown")}
         </p>
-      )}
-      {session.cards >= 1 && session.cards < 5 && state.focus !== "scratch" && (
-        <button
-          className="ob-link"
-          style={{ alignSelf: "center" }}
-          onClick={() => {
-            setLiteracy(null);
-            setPhase("literacy");
-            update({ phase: "literacy" });
-          }}
-        >
-          {t("start.pocket.skipAll")}
-        </button>
       )}
     </OnboardingFrame>
   );
@@ -477,118 +425,6 @@ function LiteracyGate({
               <span className="pocket-emoji">{picture}</span>
             </button>
           ))}
-        </div>
-      </div>
-    </OnboardingFrame>
-  );
-}
-
-function VerifyStage({
-  items,
-  onDone,
-}: {
-  items: VerifyItem[];
-  onDone: (answers: Array<number | null>) => void;
-}) {
-  const { t } = useTranslation();
-  const [index, setIndex] = useState(0);
-  const answers = useRef<Array<number | null>>([]);
-  const item = items[index]!;
-  const choose = (picked: number | null) => {
-    answers.current[index] = picked;
-    if (index + 1 < items.length) setIndex(index + 1);
-    else onDone(answers.current);
-  };
-  return (
-    <OnboardingFrame
-      step="pocket"
-      title={t("start.pocket.verifyTitle")}
-      body={t("start.pocket.verifyBody")}
-    >
-      <div className="pocket-card" key={index}>
-        <p className="pocket-word" lang="en" dir="ltr">
-          {item.text}
-        </p>
-        <p className="ob-note">
-          {t("start.pocket.verifyQuestion", { word: item.text })}
-        </p>
-        <div className="pocket-options">
-          {item.options.map((option, i) => (
-            <button
-              key={option}
-              className="pocket-option"
-              onClick={() => choose(i)}
-            >
-              {option}
-            </button>
-          ))}
-          <button className="ob-link" onClick={() => choose(null)}>
-            {t("start.pocket.notSure")}
-          </button>
-        </div>
-      </div>
-    </OnboardingFrame>
-  );
-}
-
-function ProbeStage({
-  probe,
-  skill,
-  onAnswer,
-  onSkip,
-}: {
-  probe: Probe;
-  skill: Skill;
-  onAnswer: (picked: number | null) => void;
-  onSkip: () => void;
-}) {
-  const { t } = useTranslation();
-  const [played, setPlayed] = useState(false);
-  const listening = skill === "listening";
-  useEffect(() => {
-    if (listening && probe.audio) setPlayed(speak(probe.audio));
-  }, [listening, probe]);
-  return (
-    <OnboardingFrame
-      step="pocket"
-      title={t("start.pocket.probeTitle")}
-      body={t(
-        listening ? "start.pocket.probeListen" : "start.pocket.probeRead",
-      )}
-    >
-      <div className="pocket-card">
-        {listening ? (
-          <button
-            className="ob-btn ghost"
-            onClick={() => probe.audio && speak(probe.audio, 0.85)}
-          >
-            <Volume2 size={18} aria-hidden="true" />
-            {played ? t("start.pocket.playAgain") : t("start.pocket.play")}
-          </button>
-        ) : (
-          <p className="pocket-passage" lang="en">
-            {probe.text}
-          </p>
-        )}
-        <p className="ob-big">{probe.q}</p>
-        <div className="pocket-options">
-          {probe.options.map((option, i) => (
-            <button
-              key={option}
-              className="pocket-option"
-              onClick={() => onAnswer(i)}
-            >
-              {option}
-            </button>
-          ))}
-          <button className="ob-link" onClick={() => onAnswer(null)}>
-            {t("start.pocket.dontKnow")}
-          </button>
-          {listening && (
-            <button className="ob-link" onClick={onSkip}>
-              {t("start.pocket.noSound")}
-            </button>
-          )}
         </div>
       </div>
     </OnboardingFrame>

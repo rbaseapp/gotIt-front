@@ -45,7 +45,24 @@ export const GOAL_TARGET_BAND: Record<Goal, Band> = {
   other: "B1",
 };
 
-export function targetUnitFor(goal: Goal, startUnit: number): number {
+/** The levels a learner can aim for from where they stand: always above the start, up to C1. */
+export function targetChoices(startUnit: number): Band[] {
+  const above = BAND_ORDER.filter((band) => BAND_END[band] > startUnit + 3);
+  return above.length ? above : ["C1"];
+}
+
+/** A sensible default aim: the usual B1 for most, the next band for those already there. */
+export function suggestedTarget(startUnit: number): Band {
+  const choices = targetChoices(startUnit);
+  return choices.find((band) => band === "B1") ?? choices[0]!;
+}
+
+export function targetUnitFor(
+  goal: Goal,
+  startUnit: number,
+  chosen?: Band | null,
+): number {
+  if (chosen && BAND_END[chosen] > startUnit) return BAND_END[chosen];
   let band = GOAL_TARGET_BAND[goal];
   // A learner already at or past the usual target aims for the next band.
   while (BAND_END[band] <= startUnit + 3 && band !== "C1")
@@ -74,12 +91,18 @@ export type Plan = {
 export function buildPlan(input: {
   startUnit: number;
   goal: Goal;
+  /** The level the learner picked; it wins over the goal's usual target. */
+  targetBand?: Band | null;
   minutesPerDay: number;
   deadlineMonths: Deadline;
   daysPerWeek?: number;
 }): Plan {
   const days = input.daysPerWeek ?? DAYS_PER_WEEK;
-  const targetUnit = targetUnitFor(input.goal, input.startUnit);
+  const targetUnit = targetUnitFor(
+    input.goal,
+    input.startUnit,
+    input.targetBand,
+  );
   const targetBand = BAND_ORDER.find((b) => BAND_END[b] === targetUnit) ?? "C1";
   const units = Math.max(1, targetUnit - input.startUnit);
   const totalMinutes = units * MINUTES_PER_UNIT;

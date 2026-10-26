@@ -5,7 +5,7 @@
 import { curriculumApi, type PlacementClaimInput } from "../structuredEnglish";
 import { buildPlan, type Goal } from "../placement/plan";
 import type { Band, SkillStatus } from "../placement/types";
-import type { OnboardingState } from "./state";
+import { goalFromInterests, type OnboardingState } from "./state";
 
 const BANDS: Band[] = ["Pre-A1", "A1", "A2", "B1", "B2", "C1"];
 const bandOfUnit = (unit: number): Band => {
@@ -31,10 +31,11 @@ export function claimPayload(
   if (!result) return null;
   const theta = Math.min(84, Math.max(0, result.theta + state.adjust));
   const startUnit = Math.min(84, Math.max(1, Math.round(theta - 2)));
-  const goal: Goal = state.goal ?? "other";
+  const goal: Goal = state.goal ?? goalFromInterests(state.interests);
   const plan = buildPlan({
     startUnit,
     goal,
+    targetBand: state.targetBand,
     minutesPerDay: state.minutes,
     deadlineMonths: state.deadline,
   });
@@ -57,11 +58,20 @@ export function claimPayload(
       reading: skill(result.skills.reading, theta),
       listening: skill(result.skills.listening, theta),
     },
-    ...(state.selfLevel !== null || state.talk
+    ...(state.selfLevel !== null ||
+    state.talk ||
+    state.interests.length ||
+    state.priorities.length ||
+    state.targetBand
       ? {
           profile: {
             ...(state.selfLevel !== null ? { selfLevel: state.selfLevel } : {}),
             ...(state.talk ? { talk: state.talk } : {}),
+            ...(state.interests.length ? { interests: state.interests } : {}),
+            ...(state.priorities.length
+              ? { priorities: state.priorities }
+              : {}),
+            ...(state.targetBand ? { targetBand: state.targetBand } : {}),
           },
         }
       : {}),

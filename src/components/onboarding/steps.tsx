@@ -2,17 +2,17 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Backpack,
-  Bookmark,
-  BookOpen,
   Briefcase,
+  Clapperboard,
+  Cpu,
+  Dumbbell,
   GraduationCap,
-  Globe,
   type LucideIcon,
   Mail,
-  MessageCircle,
+  Music,
+  Newspaper,
   Plane,
-  Rocket,
-  Sprout,
+  Utensils,
 } from "lucide-react";
 import {
   TALK_QUESTIONS,
@@ -30,15 +30,24 @@ import {
   DEADLINES,
   bandInfo,
   buildPlan,
+  suggestedTarget,
+  targetChoices,
   type Deadline,
   type Goal,
 } from "../../lib/placement/plan";
 import type { Band, PlacementResult, Skill } from "../../lib/placement/types";
 import {
+  INTERESTS,
+  MAX_INTERESTS,
+  MAX_PRIORITIES,
+  PRIORITIES,
+  SELF_LEVELS,
   SELF_LEVEL_UNITS,
   clearOnboarding,
+  goalFromInterests,
+  type Interest,
   type OnboardingState,
-  type SelfLevel,
+  type Priority,
 } from "../../lib/onboarding/state";
 
 type Update = (patch: Partial<OnboardingState>) => void;
@@ -119,32 +128,10 @@ export function LanguageStep({
 }
 
 /* ---------------------------------------------------------------- 2 */
-const GOAL_ICONS: Record<string, LucideIcon> = {
-  words: Bookmark,
-  travel: Plane,
-  work: Briefcase,
-  study: GraduationCap,
-  abroad: Globe,
-  talk: MessageCircle,
-  scratch: Sprout,
-};
-const SELF_ICONS: LucideIcon[] = [Sprout, BookOpen, MessageCircle, Rocket];
+const LEVEL_BANDS = ["Pre-A1", "A1 · A2", "B1", "B2", "C1"];
 
-const SELF_LEVELS: SelfLevel[] = [0, 1, 2, 3];
-
-const GOAL_CHOICES = [
-  "words",
-  "travel",
-  "work",
-  "study",
-  "abroad",
-  "talk",
-  "scratch",
-] as const;
-type GoalChoice = (typeof GOAL_CHOICES)[number];
-
-/** One question about what the learner wants; it sets the focus and the goal together. */
-export function GoalStep({
+/** Five levels, each with a meter that fills as the level rises. */
+export function LevelStep({
   state,
   update,
   next,
@@ -156,83 +143,164 @@ export function GoalStep({
   back?: () => void;
 }) {
   const { t } = useTranslation();
-  const chosen: GoalChoice | null =
-    state.focus === "words"
-      ? "words"
-      : state.focus === "scratch"
-        ? "scratch"
-        : ((state.goal as GoalChoice | null) ?? null);
-  const choose = (choice: GoalChoice) =>
-    update(
-      choice === "words"
-        ? { focus: "words", goal: "other" }
-        : choice === "scratch"
-          ? { focus: "scratch", goal: "other" }
-          : { focus: "goal", goal: choice },
-    );
+  const chosen = state.focus === "words" ? null : state.selfLevel;
   return (
     <OnboardingFrame
-      step="goal"
-      title={t("start.goalStep.title")}
-      body={t("start.goalStep.body")}
+      step="level"
+      title={t("start.self.title")}
+      body={t("start.self.body")}
+      onBack={back}
+      primary={
+        <button className="ob-btn" disabled={chosen === null} onClick={next}>
+          {t("start.continue")}
+        </button>
+      }
+      secondary={
+        <button
+          className="ob-link"
+          onClick={() => {
+            update({ focus: "words", goal: "other", selfLevel: null });
+            next();
+          }}
+        >
+          {t("start.self.justWords")}
+        </button>
+      }
+    >
+      <div
+        className="ob-levels"
+        role="group"
+        aria-label={t("start.self.title")}
+      >
+        {SELF_LEVELS.map((level) => (
+          <button
+            key={level}
+            className="ob-card ob-level-card"
+            aria-pressed={chosen === level}
+            onClick={() => update({ selfLevel: level, focus: "goal" })}
+          >
+            <span className="ob-meter" aria-hidden="true">
+              {SELF_LEVELS.slice(1).map((bar) => (
+                <i key={bar} data-on={bar <= level || undefined} />
+              ))}
+            </span>
+            <span className="ob-level-text">
+              <h3>{t(`start.self.level.${level}.title`)}</h3>
+              <p>{t(`start.self.level.${level}.body`)}</p>
+            </span>
+            <span className="ob-tag" dir="ltr">
+              {LEVEL_BANDS[level]}
+            </span>
+          </button>
+        ))}
+      </div>
+    </OnboardingFrame>
+  );
+}
+
+const INTEREST_ICONS: Record<Interest, LucideIcon> = {
+  travel: Plane,
+  business: Briefcase,
+  tech: Cpu,
+  series: Clapperboard,
+  food: Utensils,
+  sport: Dumbbell,
+  studies: GraduationCap,
+  news: Newspaper,
+  music: Music,
+};
+
+/** Toggles a value in a list, keeping at most `max`; the oldest pick makes room for a new one. */
+function toggle<T>(list: T[], value: T, max: number): T[] {
+  if (list.includes(value)) return list.filter((item) => item !== value);
+  return [...list, value].slice(-max);
+}
+
+/** What the learner likes to read about, and what to improve first. Both feed the teacher. */
+export function InterestsStep({
+  state,
+  update,
+  next,
+  back,
+}: {
+  state: OnboardingState;
+  update: Update;
+  next: () => void;
+  back: () => void;
+}) {
+  const { t } = useTranslation();
+  const pickPriority = (value: Priority) =>
+    update({
+      priorities:
+        value === "teacher"
+          ? state.priorities.includes("teacher")
+            ? []
+            : ["teacher"]
+          : toggle(
+              state.priorities.filter((item) => item !== "teacher"),
+              value,
+              MAX_PRIORITIES,
+            ),
+    });
+  return (
+    <OnboardingFrame
+      step="interests"
+      title={t("start.interests.title")}
+      body={t("start.interests.body", { count: MAX_INTERESTS })}
       onBack={back}
       primary={
         <button
           className="ob-btn"
-          disabled={
-            !chosen || (chosen !== "scratch" && state.selfLevel === null)
-          }
-          onClick={next}
+          onClick={() => {
+            update({ goal: goalFromInterests(state.interests) });
+            next();
+          }}
         >
           {t("start.continue")}
         </button>
       }
     >
-      <div className="ob-grid two">
-        {GOAL_CHOICES.map((choice) => (
-          <button
-            key={choice}
-            className="ob-card ob-row"
-            aria-pressed={chosen === choice}
-            onClick={() => choose(choice)}
-          >
-            <span className="ob-ico" aria-hidden="true">
-              {(() => {
-                const Icon = GOAL_ICONS[choice]!;
-                return <Icon size={22} strokeWidth={1.8} />;
-              })()}
-            </span>
-            <span>
-              <h3>{t(`start.goalStep.${choice}.title`)}</h3>
-              <p>{t(`start.goalStep.${choice}.body`)}</p>
-            </span>
-          </button>
-        ))}
+      <div
+        className="ob-grid three ob-interests"
+        role="group"
+        aria-label={t("start.interests.title")}
+      >
+        {INTERESTS.map((interest) => {
+          const Icon = INTEREST_ICONS[interest];
+          return (
+            <button
+              key={interest}
+              className="ob-card ob-row"
+              aria-pressed={state.interests.includes(interest)}
+              onClick={() =>
+                update({
+                  interests: toggle(state.interests, interest, MAX_INTERESTS),
+                })
+              }
+            >
+              <span className="ob-ico" aria-hidden="true">
+                <Icon size={22} strokeWidth={1.8} />
+              </span>
+              <h3>{t(`start.interests.item.${interest}`)}</h3>
+            </button>
+          );
+        })}
       </div>
-      {chosen && chosen !== "scratch" && (
-        <div className="ob-section">
-          <h3>{t("start.self.title")}</h3>
-          <div className="ob-grid four">
-            {SELF_LEVELS.map((level) => (
-              <button
-                key={level}
-                className="ob-card ob-mini"
-                aria-pressed={state.selfLevel === level}
-                onClick={() => update({ selfLevel: level })}
-              >
-                <span className="ob-ico" aria-hidden="true">
-                  {(() => {
-                    const Icon = SELF_ICONS[level]!;
-                    return <Icon size={22} strokeWidth={1.8} />;
-                  })()}
-                </span>
-                <h3>{t(`start.self.level.${level}.title`)}</h3>
-              </button>
-            ))}
-          </div>
+      <div className="ob-section">
+        <h3>{t("start.priorities.title", { count: MAX_PRIORITIES })}</h3>
+        <div className="ob-chips" role="group">
+          {PRIORITIES.map((priority) => (
+            <button
+              key={priority}
+              className="ob-chip"
+              aria-pressed={state.priorities.includes(priority)}
+              onClick={() => pickPriority(priority)}
+            >
+              {t(`start.priorities.item.${priority}`)}
+            </button>
+          ))}
         </div>
-      )}
-      <p className="ob-note">{t("start.goalStep.note")}</p>
+      </div>
     </OnboardingFrame>
   );
 }
@@ -493,15 +561,21 @@ export function PlanStep({
   const theta = Math.min(84, Math.max(1, state.result!.theta + state.adjust));
   const startUnit = Math.min(84, Math.max(1, Math.round(theta - 2)));
   const goal: Goal = state.goal ?? "other";
+  const choices = targetChoices(startUnit);
+  const target =
+    state.targetBand && choices.includes(state.targetBand)
+      ? state.targetBand
+      : suggestedTarget(startUnit);
   const plan = useMemo(
     () =>
       buildPlan({
         startUnit,
         goal,
+        targetBand: target,
         minutesPerDay: state.minutes,
         deadlineMonths: state.deadline,
       }),
-    [startUnit, goal, state.minutes, state.deadline],
+    [startUnit, goal, target, state.minutes, state.deadline],
   );
   // Daily time that reaches the deadline, rounded up to a clean number of minutes.
   const suggested = Math.min(
@@ -518,11 +592,34 @@ export function PlanStep({
       body={t("start.plan.body")}
       onBack={back}
       primary={
-        <button className="ob-btn" disabled={!state.goal} onClick={next}>
+        <button
+          className="ob-btn"
+          onClick={() => {
+            update({ targetBand: target });
+            next();
+          }}
+        >
           {t("start.plan.next")}
         </button>
       }
     >
+      <div className="ob-section">
+        <h3>{t("start.plan.targetQuestion")}</h3>
+        <div className="ob-chips">
+          {choices.map((band) => (
+            <button
+              key={band}
+              className="ob-chip"
+              aria-pressed={target === band}
+              onClick={() => update({ targetBand: band })}
+            >
+              <span dir="ltr">{band}</span> · {t(`start.result.band.${band}`)}
+              {band === suggestedTarget(startUnit) &&
+                ` · ${t("start.plan.recommended")}`}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="ob-section">
         <h3>{t("start.plan.deadlineQuestion")}</h3>
         <div className="ob-chips">
@@ -558,9 +655,7 @@ export function PlanStep({
         </div>
       </div>
       <section className="ob-plan-card" aria-live="polite">
-        <h3>
-          {t("start.plan.cardTitle", { goal: t(`start.plan.goal.${goal}`) })}
-        </h3>
+        <h3>{t("start.plan.cardTitle")}</h3>
         <span className="ob-tag">
           {t("start.plan.cardTarget", {
             band: `${plan.targetBand} · ${t(`start.result.band.${plan.targetBand}`)}`,
@@ -637,10 +732,10 @@ export function SaveStep({
           <span className="ob-tag">
             {t("start.save.chips.minutes", { count: state.minutes })}
           </span>
-          {state.goal && (
+          {state.targetBand && (
             <span className="ob-tag">
-              {t("start.save.chips.goal", {
-                goal: t(`start.plan.goal.${state.goal}`),
+              {t("start.plan.cardTarget", {
+                band: `${state.targetBand} · ${t(`start.result.band.${state.targetBand}`)}`,
               })}
             </span>
           )}

@@ -69,6 +69,13 @@ export type SessionOptions = {
   rng?: Rng;
   /** Posterior spread (in units) at which the check stops. Tuned by simulation. */
   sdTarget?: number;
+  /**
+   * A hard cap on all questions of the check (the start flow uses 10). It also stops the
+   * check early once the estimate is steady, and skips the separate verification and probes.
+   */
+  maxQuestions?: number;
+  /** How sure the first guess is, in units. A self-reported level is worth about 12. */
+  priorSd?: number;
 };
 
 export class PlacementSession {
@@ -78,6 +85,8 @@ export class PlacementSession {
   private readonly format: "yesno" | "meaning";
   private readonly priorMean: number;
   private readonly sdOverride?: number;
+  private readonly maxQuestions?: number;
+  private readonly priorSd: number;
   private readonly seen = new Set<string>();
   private readonly askedProbes = new Set<string>();
   private pseudoShown = 0;
@@ -93,6 +102,8 @@ export class PlacementSession {
     this.format = options.format ?? "yesno";
     this.priorMean = clamp(options.prior, 0, 84);
     this.sdOverride = options.sdTarget;
+    this.maxQuestions = options.maxQuestions;
+    this.priorSd = options.priorSd ?? PRIOR_SD;
   }
 
   /** Rebuilds a session from a saved log, so a learner can close the tab and come back. */
@@ -116,20 +127,25 @@ export class PlacementSession {
 
   /* ---------------- limits ---------------- */
   private get maxCards() {
+    if (this.maxQuestions) return this.maxQuestions;
     if (this.format === "meaning") return this.mode === "full" ? 20 : 14;
     return this.mode === "full" ? 40 : 22;
   }
   private get maxPseudo() {
+    if (this.maxQuestions)
+      return this.format === "meaning" ? 0 : Math.floor(this.maxQuestions / 5);
     if (this.format === "meaning") return 0;
     return this.mode === "full" ? 10 : 6;
   }
   private get sdTarget() {
+    if (this.maxQuestions) return this.sdOverride ?? 7;
     // Chosen by simulation (see test/placement-engine.test.ts): about 22 cards, +-4 units.
     if (this.format === "meaning" && this.sdOverride === undefined)
       return this.mode === "full" ? 6 : 7.5;
     return this.sdOverride ?? (this.mode === "full" ? 5 : 6.5);
   }
   private get minCards() {
+    if (this.maxQuestions) return Math.min(this.maxQuestions, 6);
     const beginner = this.estimate().median < 8;
     if (this.format === "meaning") {
       if (this.mode === "full") return beginner ? 8 : 10;
@@ -198,7 +214,7 @@ export class PlacementSession {
     return this.posteriorFor(
       this.log.filter((o) => o.t !== "probe"),
       this.priorMean,
-      PRIOR_SD,
+      this.priorSd,
     );
   }
 

@@ -31,34 +31,18 @@
     },
     "pocket": {
       "introTitle": "来看看你口袋里已经有什么",
-      "introBody": "认识这个词吗？点“认识”。还不认识？点“还不认识”。没有分数，没有错误。大约 3 分钟。",
+      "introBody": "认识这个词吗？点“认识”。还不认识？点“还不认识”。没有分数，没有错误。最多 {{count}} 道题。",
       "begin": "开始",
       "know": "认识",
       "unknown": "还不认识",
       "hear": "听这个词",
       "undo": "撤销上一个回答",
       "inPocket": "你的口袋里",
-      "progress": {
-        "long": "还有几分钟",
-        "minute": "大约还剩一分钟",
-        "half": "大约还剩半分钟",
-        "almost": "快好了"
-      },
       "slowDown": "等一下，我们慢一点。",
       "fakeFound_other": "我们发现了 {{count}} 个不存在的词 😄 它们正是为此而设。",
-      "skipAll": "我从零开始，跳过",
-      "verifyTitle": "想看看口袋里的几个词怎么用吗？",
-      "verifyBody": "选出正确的意思。",
-      "verifyQuestion": "{{word}} 是什么意思？",
-      "notSure": "不确定",
-      "probeTitle": "再来一个小谜题",
-      "probeRead": "阅读并选择。",
-      "probeListen": "听并选择。",
-      "play": "播放",
-      "playAgain": "再播放一次",
-      "noSound": "没有声音？跳过",
       "calculating": "正在计算你的水平…",
-      "dontKnow": "我不知道"
+      "dontKnow": "我不知道",
+      "counter": "第 {{current}} 题，最多 {{total}} 题"
     },
     "result": {
       "title": "这是我们的发现",
@@ -115,18 +99,9 @@
     },
     "plan": {
       "title": "来制定你的计划",
-      "body": "三个简短的选择，计划会即时更新。",
-      "goalQuestion": "英语将带你去哪里？",
+      "body": "几个简短的选择，计划会即时更新。",
       "deadlineQuestion": "大概什么时候？",
       "minutesQuestion": "每天多长时间？",
-      "goal": {
-        "travel": "旅行",
-        "work": "工作",
-        "study": "学习",
-        "talk": "聊天和交友",
-        "abroad": "移居国外",
-        "other": "其他"
-      },
       "deadline": {
         "1": "一个月",
         "3": "3 个月",
@@ -135,7 +110,7 @@
       },
       "minutes": "{{count}} 分钟",
       "recommended": "推荐",
-      "cardTitle": "英语：{{goal}}",
+      "cardTitle": "你的英语计划",
       "cardTarget": "目标：{{band}}",
       "cardRange": "从第 {{from}} 单元到第 {{to}} 单元（共 {{units}} 个单元）",
       "sim": "每天 {{minutes}} 分钟 ← {{low}}–{{high}} 个月达到目标",
@@ -149,7 +124,8 @@
         "1": "一个月",
         "3": "三个月",
         "6": "半年"
-      }
+      },
+      "targetQuestion": "你想达到哪个水平？"
     },
     "save": {
       "title": "正在保存你制定的内容",
@@ -167,8 +143,7 @@
       "chips": {
         "language": "英语",
         "level": "水平：{{level}}",
-        "minutes": "每天 {{count}} 分钟",
-        "goal": "目标：{{goal}}"
+        "minutes": "每天 {{count}} 分钟"
       }
     },
     "today": {
@@ -238,58 +213,30 @@
       },
       "minorNote": "建议注册和测试时有大人陪同。我们会尽量使用语音和图片。"
     },
-    "goalStep": {
-      "title": "英语对你最重要的是什么？",
-      "body": "这决定测试、计划和对话的内容。",
-      "words": {
-        "title": "记住我在网上遇到的单词",
-        "body": "用扩展保存单词并练习。"
-      },
-      "travel": {
-        "title": "旅行",
-        "body": "在旅途和简短交谈中应付自如。"
-      },
-      "work": {
-        "title": "工作",
-        "body": "会议、邮件和职场交流。"
-      },
-      "study": {
-        "title": "学习",
-        "body": "学术阅读、写作和听力。"
-      },
-      "abroad": {
-        "title": "移居国外",
-        "body": "用这门语言生活和工作。"
-      },
-      "talk": {
-        "title": "和朋友聊天",
-        "body": "说、看，并且无需翻译就能理解。"
-      },
-      "scratch": {
-        "title": "从零开始",
-        "body": "还一个词都不会？我们从头开始。"
-      },
-      "note": "你可以随时更改目标。"
-    },
     "self": {
-      "title": "你怎样描述自己的英语？",
-      "body": "这只决定测试从哪里开始，不决定你的水平。",
+      "title": "你的英语水平如何？",
+      "body": "选最接近的一项，之后的简短测试会再微调。",
+      "justWords": "我只想保存单词",
       "level": {
         "0": {
-          "title": "几乎不会",
-          "body": "只会零星的单词，甚至没有。"
+          "title": "零基础",
+          "body": "我刚开始，可能只会几个单词。"
         },
         "1": {
-          "title": "单词和简单句子",
-          "body": "我能看懂短文的大意。"
+          "title": "基础",
+          "body": "能看懂简单的句子和短文。"
         },
         "2": {
-          "title": "简单对话",
-          "body": "我能讲述和询问基本的事情。"
+          "title": "中级",
+          "body": "能应付日常对话，听懂大意。"
         },
         "3": {
+          "title": "高级",
+          "body": "说和读都比较自如，偶尔出错。"
+        },
+        "4": {
           "title": "流利",
-          "body": "我能听懂并谈论大多数话题。"
+          "body": "几乎任何话题都能听懂、能说。"
         }
       }
     },
@@ -305,6 +252,32 @@
       "skip": "跳过这一步",
       "pick": "第 {{current}} 个问题，共 {{total}} 个 · 选出最好的回答",
       "dontKnow": "我不知道"
+    },
+    "interests": {
+      "title": "你喜欢读什么、聊什么？",
+      "body": "最多选 {{count}} 项，我们会挑你感兴趣的话题和例子。",
+      "item": {
+        "travel": "旅行",
+        "business": "商务与工作",
+        "tech": "科技",
+        "series": "剧集与电影",
+        "food": "美食",
+        "sport": "运动",
+        "studies": "学习",
+        "news": "新闻",
+        "music": "音乐"
+      }
+    },
+    "priorities": {
+      "title": "先提高什么？（最多 {{count}} 项）",
+      "item": {
+        "vocabulary": "词汇",
+        "grammar": "语法与时态",
+        "speaking": "口语流利度",
+        "listening": "发音与听力",
+        "writing": "阅读与写作",
+        "teacher": "让老师决定"
+      }
     }
   }
 }

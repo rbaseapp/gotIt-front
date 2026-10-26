@@ -327,8 +327,11 @@ export type PlacementClaimInput = {
   };
   knownWords: string[];
   profile?: {
-    selfLevel?: 0 | 1 | 2 | 3;
+    selfLevel?: 0 | 1 | 2 | 3 | 4;
     talk?: { correct: number; total: number; unknown?: number };
+    interests?: string[];
+    priorities?: string[];
+    targetBand?: string;
   };
 };
 export const curriculumApi = {
