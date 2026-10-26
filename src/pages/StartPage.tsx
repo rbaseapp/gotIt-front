@@ -9,7 +9,6 @@ import { markFirstRunSkipped } from "../lib/onboarding/firstRun";
 import { OnboardingFrame } from "../components/onboarding/OnboardingFrame";
 import { PocketTest } from "../components/onboarding/PocketTest";
 import {
-  AboutStep,
   GoalStep,
   LanguageStep,
   PlanStep,
@@ -64,7 +63,7 @@ function StartFlow({ account }: { account: boolean }) {
     () =>
       saved ??
       (account
-        ? { ...initialOnboarding(), step: "about" as Step }
+        ? { ...initialOnboarding(), step: "goal" as Step }
         : initialOnboarding()),
   );
   const [resume, setResume] = useState(
@@ -138,21 +137,12 @@ function StartFlow({ account }: { account: boolean }) {
 
   if (state.step === "language")
     return <LanguageStep state={state} update={update} next={() => move(1)} />;
-  if (state.step === "about")
-    return (
-      <AboutStep
-        state={state}
-        update={update}
-        back={() => move(-1)}
-        next={() => move(1)}
-      />
-    );
   if (state.step === "goal")
     return (
       <GoalStep
         state={state}
         update={update}
-        back={() => move(-1)}
+        back={account ? undefined : () => move(-1)}
         next={() => {
           // Languages without a program yet have words and games only.
           if (!account && state.language !== "en") go("save");
@@ -198,7 +188,7 @@ function StartFlow({ account }: { account: boolean }) {
   if (!state.result) {
     // A resumed session that lost its result goes back to the check.
     return (
-      <LanguageStep state={state} update={update} next={() => go("about")} />
+      <LanguageStep state={state} update={update} next={() => go("goal")} />
     );
   }
   if (state.step === "talk")

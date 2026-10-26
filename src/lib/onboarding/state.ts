@@ -14,7 +14,6 @@ export const ONBOARDING_STORAGE_KEY = "gotit.onboarding.v1";
 
 export const STEPS = [
   "language",
-  "about",
   "goal",
   "pocket",
   "talk",

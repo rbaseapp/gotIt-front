@@ -4,7 +4,6 @@ import { PocketTest } from "../components/onboarding/PocketTest";
 import { TutorInvite } from "../components/onboarding/AccountFinish";
 import { LockedFeature, TutorLockCard } from "../components/onboarding/Gates";
 import {
-  AboutStep,
   GoalStep,
   PlanStep,
   ResultStep,
@@ -22,9 +21,7 @@ import "../onboarding.css";
  * from the real components with sample answers. Nothing here is saved. Dev server only.
  */
 const SCREENS = [
-  ["about", "1 · עליך: גיל וקריאה"],
-  ["about-kid", "1 · עד גיל 8 (בלי שאלת קריאה)"],
-  ["goal", "2 · מטרה והערכה עצמית"],
+  ["goal", "1 · מטרה והערכה עצמית"],
   ["pocket-intro", "5 · הבדיקה: פתיחה"],
   ["pocket-card", "5 · הבדיקה: שאלת פירוש"],
   ["talk-intro", "6 · שיחה עם רייצ'ל: פתיחה"],
@@ -71,18 +68,6 @@ const sample = (patch: Partial<OnboardingState>): OnboardingState => ({
 function Screen({ id }: { id: string }) {
   const [state, setState] = useState<OnboardingState>(() => {
     switch (id) {
-      case "about":
-        return sample({
-          step: "about",
-          ageBand: null,
-          readingComfort: null,
-        });
-      case "about-kid":
-        return sample({
-          step: "about",
-          ageBand: "under9",
-          readingComfort: "hard",
-        });
       case "goal":
         return sample({
           step: "goal",
@@ -117,9 +102,6 @@ function Screen({ id }: { id: string }) {
   const noop = () => {};
   const common = { state, update, next: noop };
   switch (id) {
-    case "about":
-    case "about-kid":
-      return <AboutStep {...common} back={noop} />;
     case "goal":
       return <GoalStep {...common} back={noop} />;
     case "pocket-intro":

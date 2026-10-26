@@ -18,7 +18,6 @@ import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
  */
 /** Moochi in a pose that matches the step (the game illustrations already shipped with the app). */
 const STEP_ART: Partial<Record<Step, string>> = {
-  about: "ac2043dc49a4f45c8fa8996719ca255e.png",
   goal: "733b27676bf58853b6acebeed59264ef.png",
   pocket: "a67fd6c3d45b63c8f34e39a5dea8f8ed.png",
   talk: "8e5757cae684c7eacfb7443c14cdd330.png",

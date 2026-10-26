@@ -327,10 +327,7 @@ export type PlacementClaimInput = {
   };
   knownWords: string[];
   profile?: {
-    answerMode: "voice" | "text";
-    ageBand: "under9" | "9-12" | "13-17" | "18+";
-    readingComfort: "easy" | "some" | "hard";
-    selfLevel: 0 | 1 | 2 | 3 | null;
+    selfLevel?: 0 | 1 | 2 | 3;
     talk?: { correct: number; total: number; unknown?: number };
   };
 };

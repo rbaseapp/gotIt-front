@@ -57,13 +57,10 @@ export function claimPayload(
       reading: skill(result.skills.reading, theta),
       listening: skill(result.skills.listening, theta),
     },
-    ...(state.answerMode && state.ageBand && state.readingComfort
+    ...(state.selfLevel !== null || state.talk
       ? {
           profile: {
-            answerMode: state.answerMode,
-            ageBand: state.ageBand,
-            readingComfort: state.readingComfort,
-            selfLevel: state.selfLevel,
+            ...(state.selfLevel !== null ? { selfLevel: state.selfLevel } : {}),
             ...(state.talk ? { talk: state.talk } : {}),
           },
         }

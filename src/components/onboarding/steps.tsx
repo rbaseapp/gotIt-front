@@ -2,13 +2,10 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Backpack,
-  Baby,
   Bookmark,
   BookOpen,
   Briefcase,
-  Coffee,
   GraduationCap,
-  Headphones,
   Globe,
   type LucideIcon,
   Mail,
@@ -40,9 +37,7 @@ import type { Band, PlacementResult, Skill } from "../../lib/placement/types";
 import {
   SELF_LEVEL_UNITS,
   clearOnboarding,
-  type AgeBand,
   type OnboardingState,
-  type ReadingComfort,
   type SelfLevel,
 } from "../../lib/onboarding/state";
 
@@ -124,8 +119,6 @@ export function LanguageStep({
 }
 
 /* ---------------------------------------------------------------- 2 */
-const AGES: AgeBand[] = ["under9", "9-12", "13-17", "18+"];
-const READING: ReadingComfort[] = ["easy", "some", "hard"];
 const GOAL_ICONS: Record<string, LucideIcon> = {
   words: Bookmark,
   travel: Plane,
@@ -136,100 +129,6 @@ const GOAL_ICONS: Record<string, LucideIcon> = {
   scratch: Sprout,
 };
 const SELF_ICONS: LucideIcon[] = [Sprout, BookOpen, MessageCircle, Rocket];
-const AGE_ICONS: Record<AgeBand, LucideIcon> = {
-  under9: Baby,
-  "9-12": Backpack,
-  "13-17": Headphones,
-  "18+": Coffee,
-};
-
-/** Age band (never a birth date) and how easy reading is. Nobody is turned away. */
-export function AboutStep({
-  state,
-  update,
-  next,
-  back,
-}: {
-  state: OnboardingState;
-  update: Update;
-  next: () => void;
-  back: () => void;
-}) {
-  const { t } = useTranslation();
-  const young = state.ageBand === "under9" || state.ageBand === "9-12";
-  const readingKnown = state.ageBand === "under9" || state.readingComfort;
-  return (
-    <OnboardingFrame
-      step="about"
-      title={t("start.about.title")}
-      body={t("start.about.body")}
-      onBack={back}
-      primary={
-        <button
-          className="ob-btn"
-          disabled={!state.ageBand || !readingKnown}
-          onClick={next}
-        >
-          {t("start.continue")}
-        </button>
-      }
-    >
-      <div className="ob-section">
-        <h3>{t("start.about.ageQuestion")}</h3>
-        <div className="ob-grid four">
-          {AGES.map((age) => (
-            <button
-              key={age}
-              className="ob-card ob-mini"
-              aria-pressed={state.ageBand === age}
-              onClick={() =>
-                update(
-                  age === "under9"
-                    ? { ageBand: age, readingComfort: "hard" }
-                    : {
-                        ageBand: age,
-                        readingComfort:
-                          state.ageBand === "under9"
-                            ? null
-                            : state.readingComfort,
-                      },
-                )
-              }
-            >
-              <span className="ob-ico" aria-hidden="true">
-                {(() => {
-                  const Icon = AGE_ICONS[age];
-                  return <Icon size={22} strokeWidth={1.8} />;
-                })()}
-              </span>
-              <h3>
-                <bdi>{t(`start.about.age.${age}`)}</bdi>
-              </h3>
-            </button>
-          ))}
-        </div>
-        {young && <p className="ob-note">{t("start.about.minorNote")}</p>}
-      </div>
-      {state.ageBand && state.ageBand !== "under9" && (
-        <div className="ob-section">
-          <h3>{t("start.about.readingQuestion")}</h3>
-          <div className="ob-chips">
-            {READING.map((level) => (
-              <button
-                key={level}
-                className="ob-chip"
-                aria-pressed={state.readingComfort === level}
-                onClick={() => update({ readingComfort: level })}
-              >
-                {t(`start.about.reading.${level}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </OnboardingFrame>
-  );
-}
 
 const SELF_LEVELS: SelfLevel[] = [0, 1, 2, 3];
 
@@ -254,7 +153,7 @@ export function GoalStep({
   state: OnboardingState;
   update: Update;
   next: () => void;
-  back: () => void;
+  back?: () => void;
 }) {
   const { t } = useTranslation();
   const chosen: GoalChoice | null =
