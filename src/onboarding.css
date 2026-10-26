@@ -1164,3 +1164,17 @@ button.ob-card:hover {
   min-height: 46px;
   font-weight: 700;
 }
+
+/* a compact card: icon beside the text */
+.ob-card.ob-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+.ob-card.ob-row .ob-ico {
+  margin: 0;
+  flex: none;
+}
+.ob-card.ob-row h3 {
+  margin: 0;
+}

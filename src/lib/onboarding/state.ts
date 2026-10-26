@@ -14,10 +14,8 @@ export const ONBOARDING_STORAGE_KEY = "gotit.onboarding.v1";
 
 export const STEPS = [
   "language",
-  "mode",
   "about",
   "goal",
-  "self",
   "pocket",
   "talk",
   "result",
@@ -140,3 +138,14 @@ export const priorFor = (
       : SELF_LEVEL_UNITS[selfLevel];
 
 export const stepIndex = (step: Step) => STEPS.indexOf(step) + 1;
+
+/**
+ * The steps the progress bar counts. The conversation check is part of the check, and a
+ * signed-in learner has no language screen and no sign-up screen.
+ */
+export function progressSteps(account: boolean): Step[] {
+  return STEPS.filter(
+    (name) =>
+      name !== "talk" && (!account || (name !== "language" && name !== "save")),
+  );
+}

@@ -12,11 +12,9 @@ import {
   AboutStep,
   GoalStep,
   LanguageStep,
-  ModeStep,
   PlanStep,
   ResultStep,
   SaveStep,
-  SelfStep,
   TalkStep,
 } from "../components/onboarding/steps";
 import {
@@ -66,7 +64,7 @@ function StartFlow({ account }: { account: boolean }) {
     () =>
       saved ??
       (account
-        ? { ...initialOnboarding(), step: "mode" as Step }
+        ? { ...initialOnboarding(), step: "about" as Step }
         : initialOnboarding()),
   );
   const [resume, setResume] = useState(
@@ -140,15 +138,6 @@ function StartFlow({ account }: { account: boolean }) {
 
   if (state.step === "language")
     return <LanguageStep state={state} update={update} next={() => move(1)} />;
-  if (state.step === "mode")
-    return (
-      <ModeStep
-        state={state}
-        update={update}
-        back={account ? undefined : () => move(-1)}
-        next={() => move(1)}
-      />
-    );
   if (state.step === "about")
     return (
       <AboutStep
@@ -167,25 +156,15 @@ function StartFlow({ account }: { account: boolean }) {
         next={() => {
           // Languages without a program yet have words and games only.
           if (!account && state.language !== "en") go("save");
-          else go(state.focus === "scratch" ? "pocket" : "self");
+          else
+            update({
+              step: "pocket",
+              log: [],
+              phase: "intro",
+              result: null,
+              literacy: null,
+            });
         }}
-      />
-    );
-  if (state.step === "self")
-    return (
-      <SelfStep
-        state={state}
-        update={update}
-        back={() => move(-1)}
-        next={() =>
-          update({
-            step: "pocket",
-            log: [],
-            phase: "intro",
-            result: null,
-            literacy: null,
-          })
-        }
       />
     );
   if (state.step === "pocket") {
@@ -202,7 +181,7 @@ function StartFlow({ account }: { account: boolean }) {
         bank={bank}
         state={state}
         update={update}
-        onBack={() => go(state.focus === "scratch" ? "goal" : "self")}
+        onBack={() => go("goal")}
         onDone={(result: PlacementResult) =>
           update({
             result,
@@ -219,7 +198,7 @@ function StartFlow({ account }: { account: boolean }) {
   if (!state.result) {
     // A resumed session that lost its result goes back to the check.
     return (
-      <LanguageStep state={state} update={update} next={() => go("mode")} />
+      <LanguageStep state={state} update={update} next={() => go("about")} />
     );
   }
   if (state.step === "talk")

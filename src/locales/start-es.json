@@ -222,7 +222,7 @@
       "note": "Puedes cambiarlo cuando quieras en los ajustes."
     },
     "about": {
-      "title": "Dos preguntas rápidas sobre ti",
+      "title": "Unas preguntas rápidas sobre ti",
       "body": "Para que la prueba y las lecciones se adapten a ti.",
       "ageQuestion": "¿Cuántos años tienes?",
       "age": {
@@ -301,7 +301,7 @@
     },
     "talk": {
       "title": "Ahora hablemos un poco en inglés",
-      "body": "Te haré 4 preguntas cortas. Elige la mejor respuesta. No hay respuestas incorrectas, y puedes saltar.",
+      "body": "Te haré 3 preguntas cortas. Elige la mejor respuesta. No hay respuestas incorrectas, y puedes saltar.",
       "begin": "Hablemos",
       "skip": "Saltar esta parte",
       "pick": "Pregunta {{current}} de {{total}} · elige la mejor respuesta",

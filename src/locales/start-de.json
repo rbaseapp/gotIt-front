@@ -222,7 +222,7 @@
       "note": "Du kannst das jederzeit in den Einstellungen ändern."
     },
     "about": {
-      "title": "Zwei kurze Fragen zu dir",
+      "title": "Ein paar kurze Fragen zu dir",
       "body": "Damit Test und Lektionen zu dir passen.",
       "ageQuestion": "Wie alt bist du?",
       "age": {
@@ -301,7 +301,7 @@
     },
     "talk": {
       "title": "Jetzt sprechen wir ein bisschen Englisch",
-      "body": "Ich stelle dir 4 kurze Fragen. Wähle die beste Antwort. Es gibt keine falschen Antworten, und du kannst überspringen.",
+      "body": "Ich stelle dir 3 kurze Fragen. Wähle die beste Antwort. Es gibt keine falschen Antworten, und du kannst überspringen.",
       "begin": "Los geht's",
       "skip": "Diesen Teil überspringen",
       "pick": "Frage {{current}} von {{total}} · wähle die beste Antwort",

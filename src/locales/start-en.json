@@ -59,7 +59,7 @@
       "playAgain": "Play again",
       "noSound": "No sound? Skip",
       "calculating": "Working out your level…",
-      "introBodyMeaning": "Pick the right meaning of each word. Not sure? Tap “I don't know”, no guessing. About 3 minutes.",
+      "introBodyMeaning": "Pick the right meaning of each word. Not sure? Tap “I don't know”, no guessing. About 2 minutes.",
       "dontKnow": "I don't know",
       "pickMeaning": "Pick the meaning",
       "sampleRight": "apple",
@@ -226,7 +226,7 @@
       "note": "You can change this any time in settings."
     },
     "about": {
-      "title": "Two quick questions about you",
+      "title": "A few quick questions about you",
       "body": "So the check and the lessons fit you.",
       "ageQuestion": "How old are you?",
       "age": {
@@ -305,7 +305,7 @@
     },
     "talk": {
       "title": "Now let's talk a little in English",
-      "body": "I'll ask you 4 short questions. Pick the best reply. There are no wrong answers, and you can skip.",
+      "body": "I'll ask you 3 short questions. Pick the best reply. There are no wrong answers, and you can skip.",
       "begin": "Let's talk",
       "skip": "Skip this part",
       "pick": "Question {{current}} of {{total}} · pick the best reply",

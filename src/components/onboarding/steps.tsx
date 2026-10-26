@@ -129,55 +129,6 @@ export function LanguageStep({
 /* ---------------------------------------------------------------- 2 */
 const MODES: AnswerMode[] = ["voice", "text"];
 
-/** First question: how the learner is comfortable answering. No microphone is asked for here. */
-export function ModeStep({
-  state,
-  update,
-  next,
-  back,
-}: {
-  state: OnboardingState;
-  update: Update;
-  next: () => void;
-  back?: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <OnboardingFrame
-      step="mode"
-      title={t("start.mode.title")}
-      body={t("start.mode.body")}
-      onBack={back}
-      primary={
-        <button className="ob-btn" disabled={!state.answerMode} onClick={next}>
-          {t("start.continue")}
-        </button>
-      }
-    >
-      <div className="ob-grid two">
-        {MODES.map((mode) => (
-          <button
-            key={mode}
-            className="ob-card"
-            aria-pressed={state.answerMode === mode}
-            onClick={() => update({ answerMode: mode })}
-          >
-            <span className="ob-ico big" aria-hidden="true">
-              {(() => {
-                const Icon = MODE_ICONS[mode];
-                return <Icon size={26} strokeWidth={1.8} />;
-              })()}
-            </span>
-            <h3>{t(`start.mode.${mode}.title`).replace(LEADING_EMOJI, "")}</h3>
-            <p>{t(`start.mode.${mode}.body`)}</p>
-          </button>
-        ))}
-      </div>
-      <p className="ob-note">{t("start.mode.note")}</p>
-    </OnboardingFrame>
-  );
-}
-
 const AGES: AgeBand[] = ["under9", "9-12", "13-17", "18+"];
 const READING: ReadingComfort[] = ["easy", "some", "hard"];
 const GOAL_ICONS: Record<string, LucideIcon> = {
@@ -227,13 +178,39 @@ export function AboutStep({
       primary={
         <button
           className="ob-btn"
-          disabled={!state.ageBand || !readingKnown}
+          disabled={!state.answerMode || !state.ageBand || !readingKnown}
           onClick={next}
         >
           {t("start.continue")}
         </button>
       }
     >
+      <div className="ob-section">
+        <h3>{t("start.mode.title")}</h3>
+        <div className="ob-grid two">
+          {MODES.map((mode) => (
+            <button
+              key={mode}
+              className="ob-card ob-row"
+              aria-pressed={state.answerMode === mode}
+              onClick={() => update({ answerMode: mode })}
+            >
+              <span className="ob-ico" aria-hidden="true">
+                {(() => {
+                  const Icon = MODE_ICONS[mode];
+                  return <Icon size={22} strokeWidth={1.8} />;
+                })()}
+              </span>
+              <span>
+                <h3>
+                  {t(`start.mode.${mode}.title`).replace(LEADING_EMOJI, "")}
+                </h3>
+                <p>{t(`start.mode.${mode}.body`)}</p>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="ob-section">
         <h3>{t("start.about.ageQuestion")}</h3>
         <div className="ob-grid four">
@@ -291,6 +268,8 @@ export function AboutStep({
   );
 }
 
+const SELF_LEVELS: SelfLevel[] = [0, 1, 2, 3];
+
 const GOAL_CHOICES = [
   "words",
   "travel",
@@ -336,16 +315,22 @@ export function GoalStep({
       body={t("start.goalStep.body")}
       onBack={back}
       primary={
-        <button className="ob-btn" disabled={!chosen} onClick={next}>
+        <button
+          className="ob-btn"
+          disabled={
+            !chosen || (chosen !== "scratch" && state.selfLevel === null)
+          }
+          onClick={next}
+        >
           {t("start.continue")}
         </button>
       }
     >
-      <div className="ob-grid three">
+      <div className="ob-grid two">
         {GOAL_CHOICES.map((choice) => (
           <button
             key={choice}
-            className="ob-card"
+            className="ob-card ob-row"
             aria-pressed={chosen === choice}
             onClick={() => choose(choice)}
           >
@@ -355,66 +340,37 @@ export function GoalStep({
                 return <Icon size={22} strokeWidth={1.8} />;
               })()}
             </span>
-            <h3>{t(`start.goalStep.${choice}.title`)}</h3>
-            <p>{t(`start.goalStep.${choice}.body`)}</p>
-          </button>
-        ))}
-      </div>
-      <p className="ob-note">{t("start.goalStep.note")}</p>
-    </OnboardingFrame>
-  );
-}
-
-const SELF_LEVELS: SelfLevel[] = [0, 1, 2, 3];
-
-/** The learner's own view of their English. It only sets where the check starts. */
-export function SelfStep({
-  state,
-  update,
-  next,
-  back,
-}: {
-  state: OnboardingState;
-  update: Update;
-  next: () => void;
-  back: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <OnboardingFrame
-      step="self"
-      title={t("start.self.title")}
-      body={t("start.self.body")}
-      onBack={back}
-      primary={
-        <button
-          className="ob-btn"
-          disabled={state.selfLevel === null}
-          onClick={next}
-        >
-          {t("start.continue")}
-        </button>
-      }
-    >
-      <div className="ob-grid two">
-        {SELF_LEVELS.map((level) => (
-          <button
-            key={level}
-            className="ob-card"
-            aria-pressed={state.selfLevel === level}
-            onClick={() => update({ selfLevel: level })}
-          >
-            <span className="ob-ico" aria-hidden="true">
-              {(() => {
-                const Icon = SELF_ICONS[level]!;
-                return <Icon size={22} strokeWidth={1.8} />;
-              })()}
+            <span>
+              <h3>{t(`start.goalStep.${choice}.title`)}</h3>
+              <p>{t(`start.goalStep.${choice}.body`)}</p>
             </span>
-            <h3>{t(`start.self.level.${level}.title`)}</h3>
-            <p>{t(`start.self.level.${level}.body`)}</p>
           </button>
         ))}
       </div>
+      {chosen && chosen !== "scratch" && (
+        <div className="ob-section">
+          <h3>{t("start.self.title")}</h3>
+          <div className="ob-grid four">
+            {SELF_LEVELS.map((level) => (
+              <button
+                key={level}
+                className="ob-card ob-mini"
+                aria-pressed={state.selfLevel === level}
+                onClick={() => update({ selfLevel: level })}
+              >
+                <span className="ob-ico" aria-hidden="true">
+                  {(() => {
+                    const Icon = SELF_ICONS[level]!;
+                    return <Icon size={22} strokeWidth={1.8} />;
+                  })()}
+                </span>
+                <h3>{t(`start.self.level.${level}.title`)}</h3>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="ob-note">{t("start.goalStep.note")}</p>
     </OnboardingFrame>
   );
 }
@@ -561,8 +517,8 @@ export function ResultStep({
   const range =
     result.upperBand && result.upperBand !== band
       ? t("start.result.between", {
-          low: t(`start.result.band.${band}`),
-          high: t(`start.result.band.${result.upperBand}`),
+          low: band,
+          high: result.upperBand,
         })
       : null;
   return (

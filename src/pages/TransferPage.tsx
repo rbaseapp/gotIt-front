@@ -97,10 +97,10 @@ export function TransferPage() {
           a.download = `gotit-library-${new Date().toISOString().slice(0, 10)}.json`;
           a.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-          toast(
-            t("transfer.exported", { count: items.length }),
-            { tone: "success", duration: 6500 },
-          );
+          toast(t("transfer.exported", { count: items.length }), {
+            tone: "success",
+            duration: 6500,
+          });
           return;
         }
         if (seen.has(response.nextCursor))
@@ -108,9 +108,7 @@ export function TransferPage() {
         seen.add(response.nextCursor);
         cursor = response.nextCursor;
       }
-      throw new Error(
-        t("transfer.exportLimit"),
-      );
+      throw new Error(t("transfer.exportLimit"));
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
@@ -158,7 +156,9 @@ export function TransferPage() {
               </label>
               {input && (
                 <>
-                  <p>{t("transfer.readyCount", { count: input.entries.length })}</p>
+                  <p>
+                    {t("transfer.readyCount", { count: input.entries.length })}
+                  </p>
                   <ul>
                     {input.entries.slice(0, 10).map((e) => (
                       <li key={e.eventId}>
@@ -231,7 +231,10 @@ export function TransferPage() {
                 input?.entries.find((e) => e.eventId === r.eventId)?.capture
                   .item.sourceText
               }{" "}
-              · {r.status === "succeeded" ? t("transfer.saved") : t("transfer.failed", { code: r.error.code })}
+              ·{" "}
+              {r.status === "succeeded"
+                ? t("transfer.saved")
+                : t("transfer.failed", { code: r.error.code })}
             </p>
           ))}
           {result.results.some((r) => r.status === "failed") && (

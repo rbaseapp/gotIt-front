@@ -50,9 +50,7 @@ export function BillingCheckoutPage() {
       .catch((reason: unknown) => {
         if (cancelled) return;
         setError(
-          reason instanceof Error
-            ? reason.message
-            : t("checkout.loadFailed"),
+          reason instanceof Error ? reason.message : t("checkout.loadFailed"),
         );
         setState("error");
       });
@@ -78,9 +76,7 @@ export function BillingCheckoutPage() {
       setState("ready");
     } catch (reason) {
       setError(
-        reason instanceof Error
-          ? reason.message
-          : t("checkout.openFailed"),
+        reason instanceof Error ? reason.message : t("checkout.openFailed"),
       );
       setState("error");
     }

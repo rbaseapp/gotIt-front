@@ -6,10 +6,8 @@ import { LockedFeature, TutorLockCard } from "../components/onboarding/Gates";
 import {
   AboutStep,
   GoalStep,
-  ModeStep,
   PlanStep,
   ResultStep,
-  SelfStep,
   TalkStep,
 } from "../components/onboarding/steps";
 import {
@@ -24,11 +22,9 @@ import "../onboarding.css";
  * from the real components with sample answers. Nothing here is saved. Dev server only.
  */
 const SCREENS = [
-  ["mode", "1 · איך נוח לך לענות"],
-  ["about", "2 · גיל וקריאה"],
-  ["about-kid", "2 · עד גיל 8 (בלי שאלת קריאה)"],
-  ["goal", "3 · מטרה"],
-  ["self", "4 · הערכה עצמית"],
+  ["about", "1 · עליך: אופן מענה, גיל וקריאה"],
+  ["about-kid", "1 · עד גיל 8 (בלי שאלת קריאה)"],
+  ["goal", "2 · מטרה והערכה עצמית"],
   ["pocket-intro", "5 · הבדיקה: פתיחה"],
   ["pocket-card", "5 · הבדיקה: שאלת פירוש"],
   ["talk-intro", "6 · שיחה עם רייצ'ל: פתיחה"],
@@ -75,10 +71,13 @@ const sample = (patch: Partial<OnboardingState>): OnboardingState => ({
 function Screen({ id }: { id: string }) {
   const [state, setState] = useState<OnboardingState>(() => {
     switch (id) {
-      case "mode":
-        return sample({ step: "mode", answerMode: null });
       case "about":
-        return sample({ step: "about", ageBand: null, readingComfort: null });
+        return sample({
+          step: "about",
+          answerMode: null,
+          ageBand: null,
+          readingComfort: null,
+        });
       case "about-kid":
         return sample({
           step: "about",
@@ -86,9 +85,12 @@ function Screen({ id }: { id: string }) {
           readingComfort: "hard",
         });
       case "goal":
-        return sample({ step: "goal", focus: null, goal: null });
-      case "self":
-        return sample({ step: "self", selfLevel: null });
+        return sample({
+          step: "goal",
+          focus: "goal",
+          goal: "work",
+          selfLevel: null,
+        });
       case "pocket-intro":
         return sample({ step: "pocket", phase: "intro" });
       case "pocket-card":
@@ -116,15 +118,11 @@ function Screen({ id }: { id: string }) {
   const noop = () => {};
   const common = { state, update, next: noop };
   switch (id) {
-    case "mode":
-      return <ModeStep {...common} />;
     case "about":
     case "about-kid":
       return <AboutStep {...common} back={noop} />;
     case "goal":
       return <GoalStep {...common} back={noop} />;
-    case "self":
-      return <SelfStep {...common} back={noop} />;
     case "pocket-intro":
     case "pocket-card":
       return bank ? (

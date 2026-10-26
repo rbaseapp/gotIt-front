@@ -224,7 +224,7 @@ export const TALK_ITEMS: TalkItem[] = [
 ];
 
 const BANDS: TalkBand[] = ["A1", "A2", "B1", "B2"];
-export const TALK_QUESTIONS = 4;
+export const TALK_QUESTIONS = 3;
 
 export const topicForGoal = (goal: Goal | null): TalkTopic =>
   goal === "work" || goal === "study" || goal === "abroad"
@@ -237,9 +237,9 @@ export const topicForGoal = (goal: Goal | null): TalkTopic =>
 export const talkBandFor = (theta: number): TalkBand =>
   theta < 19 ? "A1" : theta < 31 ? "A2" : theta < 49 ? "B1" : "B2";
 
-/** Nudge, in units, from the number of right answers out of four. */
+/** Nudge, in units, from the number of right answers out of three. */
 export const talkDelta = (correct: number) =>
-  Math.max(-2, Math.min(2, correct - 2));
+  ([-2, -1, 1, 2] as const)[Math.max(0, Math.min(3, correct))]!;
 
 type Rng = () => number;
 

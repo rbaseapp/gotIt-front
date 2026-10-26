@@ -44,7 +44,7 @@ describe("conversation check", () => {
     }
     return { check, asked };
   };
-  it("asks four questions and never repeats one", () => {
+  it("asks three questions and never repeats one", () => {
     const check = new TalkCheck(25, "travel", seededRandom(1));
     const ids = new Set<string>();
     for (let i = 0; i < TALK_QUESTIONS; i++) {
@@ -57,20 +57,18 @@ describe("conversation check", () => {
     expect(check.next()).toBeNull();
   });
   it("moves up after a right answer and down after a wrong one", () => {
-    expect(run(25, [true, true, true, true]).asked).toEqual([
+    expect(run(25, [true, true, true]).asked).toEqual([
       "A2",
       "B1",
       "B2",
-      "B2",
     ]);
-    expect(run(25, [false, false, false, false]).asked).toEqual([
+    expect(run(25, [false, false, false]).asked).toEqual([
       "A2",
-      "A1",
       "A1",
       "A1",
     ]);
   });
   it("nudges the level by at most two units", () => {
-    expect([0, 1, 2, 3, 4].map(talkDelta)).toEqual([-2, -1, 0, 1, 2]);
+    expect([0, 1, 2, 3].map(talkDelta)).toEqual([-2, -1, 1, 2]);
   });
 });

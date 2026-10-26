@@ -116,7 +116,7 @@ export class PlacementSession {
 
   /* ---------------- limits ---------------- */
   private get maxCards() {
-    if (this.format === "meaning") return this.mode === "full" ? 30 : 20;
+    if (this.format === "meaning") return this.mode === "full" ? 20 : 14;
     return this.mode === "full" ? 40 : 22;
   }
   private get maxPseudo() {
@@ -125,13 +125,15 @@ export class PlacementSession {
   }
   private get sdTarget() {
     // Chosen by simulation (see test/placement-engine.test.ts): about 22 cards, +-4 units.
+    if (this.format === "meaning" && this.sdOverride === undefined)
+      return this.mode === "full" ? 6 : 7.5;
     return this.sdOverride ?? (this.mode === "full" ? 5 : 6.5);
   }
   private get minCards() {
     const beginner = this.estimate().median < 8;
     if (this.format === "meaning") {
-      if (this.mode === "full") return beginner ? 12 : 16;
-      return beginner ? 10 : 12;
+      if (this.mode === "full") return beginner ? 8 : 10;
+      return beginner ? 8 : 8;
     }
     if (this.mode === "full") return beginner ? 14 : 20;
     return beginner ? 10 : 12;

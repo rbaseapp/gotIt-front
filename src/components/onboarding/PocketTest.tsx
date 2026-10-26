@@ -35,7 +35,7 @@ const LITERACY_ITEMS = [
 ];
 
 const EXPECTED_CARDS = 22;
-const EXPECTED_MEANING = 18;
+const EXPECTED_MEANING = 13;
 const HURRY_MS = 250;
 
 export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
@@ -261,7 +261,7 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           session.answerProbe(probe.item, probe.skill, picked, 8000);
           probeCount.current[probe.skill] += 1;
           update({ log: [...session.log] });
-          const wantReading = probeCount.current.reading < 2;
+          const wantReading = probeCount.current.reading < 1;
           const wantListening = probeCount.current.listening < 1 && canSpeak();
           const nextSkill: Skill | null =
             probe.skill === "reading" && wantReading

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Volume2, VolumeX, X } from "lucide-react";
 import logoUrl from "../../assets/gotit-logo.svg";
 import moochi from "../../assets/ux/dashboard-moohi.png";
@@ -8,7 +8,8 @@ import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
 import { useAvatarVoice } from "../../lib/onboarding/avatarVoice";
 import { loadOnboarding } from "../../lib/onboarding/state";
 import { useApp } from "../../context/AppContext";
-import { STEPS as ALL_STEPS, type Step } from "../../lib/onboarding/state";
+import { progressSteps, type Step } from "../../lib/onboarding/state";
+import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
 
 /**
  * The page every onboarding screen sits in: brand, progress, the trial badge and
@@ -17,10 +18,8 @@ import { STEPS as ALL_STEPS, type Step } from "../../lib/onboarding/state";
  */
 /** Moochi in a pose that matches the step (the game illustrations already shipped with the app). */
 const STEP_ART: Partial<Record<Step, string>> = {
-  mode: "703fa3e9006db9a761d4d5213c3bd2f0.png",
   about: "ac2043dc49a4f45c8fa8996719ca255e.png",
   goal: "733b27676bf58853b6acebeed59264ef.png",
-  self: "7ff4938f80f89b8a21791ae3d201a5f4.png",
   pocket: "a67fd6c3d45b63c8f34e39a5dea8f8ed.png",
   talk: "8e5757cae684c7eacfb7443c14cdd330.png",
   result: "bde805db24f53a66deb4ebb27c828b6d.png",
@@ -52,12 +51,12 @@ export function OnboardingFrame({
   voiceLang?: string;
 }) {
   const { t, i18n } = useTranslation();
-  // A learner who is already signed in does not pick a language first.
   const { user } = useApp();
-  const STEPS: readonly Step[] = user
-    ? ALL_STEPS.filter((name) => name !== "language")
-    : ALL_STEPS;
-  const index = Math.max(1, STEPS.indexOf(step) + 1);
+  const STEPS = progressSteps(Boolean(user));
+  const index = Math.max(
+    1,
+    STEPS.indexOf(step === "talk" ? "pocket" : step) + 1,
+  );
   // Signed in: Rachel asks the questions and the screen below is her board.
   const avatar = Boolean(user);
   const line =
@@ -172,9 +171,7 @@ export function OnboardingFrame({
               {t("start.back")}
             </button>
           ) : (
-            <Link className="ob-link" to="/">
-              <X size={14} aria-hidden="true" /> {t("start.exit")}
-            </Link>
+            <ExitLink />
           )}
           <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
             {secondary}
@@ -183,5 +180,30 @@ export function OnboardingFrame({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Signed in, "exit" means "not now": back to the dashboard, without being sent here again. */
+function ExitLink() {
+  const { t } = useTranslation();
+  const { user } = useApp();
+  const navigate = useNavigate();
+  if (!user)
+    return (
+      <Link className="ob-link" to="/">
+        <X size={14} aria-hidden="true" /> {t("start.exit")}
+      </Link>
+    );
+  return (
+    <button
+      type="button"
+      className="ob-link"
+      onClick={() => {
+        markFirstRunSkipped(user.id);
+        navigate("/dashboard", { replace: true });
+      }}
+    >
+      <X size={14} aria-hidden="true" /> {t("start.exit")}
+    </button>
   );
 }

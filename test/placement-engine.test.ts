@@ -317,7 +317,7 @@ describe("placement engine, meaning questions", () => {
     expect(session.verifyItems(4)).toEqual([]);
   });
 
-  it("places honest learners within a few units in under 30 questions", () => {
+  it("places honest learners within a few units in at most 20 questions", () => {
     const errors: number[] = [];
     const counts: number[] = [];
     for (const theta of [4, 10, 20, 32, 45, 60, 72]) {
@@ -328,7 +328,8 @@ describe("placement engine, meaning questions", () => {
       }
     }
     expect(percentile(errors, 0.5)).toBeLessThanOrEqual(5);
-    expect(percentile(counts, 0.9)).toBeLessThanOrEqual(30);
+    expect(percentile(counts, 0.9)).toBeLessThanOrEqual(20);
+    expect(percentile(counts, 0.5)).toBeLessThanOrEqual(16);
   });
 
   it("cannot be inflated by saying 'know' - only right answers count", () => {
@@ -358,6 +359,7 @@ describe("'I don't know' answers", () => {
     const session = new PlacementSession(bank, {
       prior: 30,
       format: "meaning",
+      rng: seededRandom(9),
     });
     // A couple of right answers at a mid level, then one probe on an easy item.
     for (let i = 0; i < 4; i++) {
@@ -374,7 +376,8 @@ describe("'I don't know' answers", () => {
     expect(last.dk).toBe(true);
     expect(last.correct).toBe(false);
   });
-  it("says more than a wrong guess about someone who should know the item", () => {
-    expect(level(null).after).toBeLessThanOrEqual(level(1).after);
+  it("is skill evidence only: the vocabulary estimate does not move", () => {
+    const dk = level(null);
+    expect(dk.after).toBe(dk.before);
   });
 });

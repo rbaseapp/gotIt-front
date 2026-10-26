@@ -519,9 +519,13 @@ export function VocabularyPage() {
             emptyLabel={t("demoVocabulary.allLanguages")}
             options={pairs.map((value) => {
               const names = getBilingualLanguageOptions();
-              const label = value.split(" → ").map((code) =>
-                names.find(([known]) => known === code)?.[1] ?? code,
-              ).join(" → ");
+              const label = value
+                .split(" → ")
+                .map(
+                  (code) =>
+                    names.find(([known]) => known === code)?.[1] ?? code,
+                )
+                .join(" → ");
               return [value, label] as const;
             })}
           />

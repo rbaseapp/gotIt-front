@@ -16,15 +16,19 @@ export function OnboardingClaimGate({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const { toast } = useFeedback();
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<"claiming" | "done">(() =>
-    loadOnboarding()?.result ? "claiming" : "done",
-  );
+  // Only a flow that reached the sign-up screen is saved here. A signed-in learner who
+  // reloaded in the middle of the check goes back to it (the resume screen), not to a
+  // half-answered plan.
+  const [phase, setPhase] = useState<"claiming" | "done">(() => {
+    const saved = loadOnboarding();
+    return saved?.result && saved.step === "save" ? "claiming" : "done";
+  });
   const started = useRef(false);
   useEffect(() => {
     if (phase !== "claiming" || started.current) return;
     started.current = true;
     const state = loadOnboarding();
-    if (!state?.result) {
+    if (!state?.result || state.step !== "save") {
       setPhase("done");
       return;
     }
