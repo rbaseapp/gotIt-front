@@ -1074,3 +1074,75 @@
 .nd-moohi {
   max-width: 310px;
 }
+
+/* Moochi tossing his marker (looping video, greeting written on his card). */
+.moochi-loop {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  container-type: inline-size;
+}
+.moochi-loop video,
+.moochi-loop img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent),
+    linear-gradient(transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent),
+    linear-gradient(transparent, #000 3%, #000 97%, transparent);
+  mask-composite: intersect;
+}
+.moochi-loop-card {
+  position: absolute;
+  left: 25%;
+  top: 62.7%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  font-size: 7.6cqw;
+  transform: translate(-50%, -50%) rotate(-18deg);
+}
+.moochi-loop-word {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.moochi-loop-word:first-child {
+  display: flex;
+}
+.moochi-loop-word b {
+  position: relative;
+  isolation: isolate;
+  font-family: "Rubik", "Assistant", system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #173f35;
+  white-space: nowrap;
+  padding: 0.06em 0.26em 0.1em;
+}
+.moochi-loop-word b.small {
+  font-size: 0.8em;
+}
+.moochi-loop-word b::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 18% -4% 4%;
+  background: #f7cf3d;
+  border-radius: 0.3em 0.5em 0.35em 0.55em / 0.5em 0.4em 0.55em 0.4em;
+  transform: skewX(-6deg);
+}

@@ -42,9 +42,8 @@ import {
   sessionSchema,
   wordPacksSchema,
 } from "../lib/product";
-import moohi from "../assets/ux/dashboard-moohi.png";
 import { TodayMission } from "../components/onboarding/TodayMission";
-import { DashboardMoohi } from "../components/DashboardMoohi";
+import { MoochiLoop } from "../components/MoochiLoop";
 import "../dashboard-design.css";
 
 function Segments({
@@ -524,7 +523,7 @@ export function DevDashboardPage() {
                         : "newDashboard.wordEncouragement",
                   )}
                 </p>
-                <DashboardMoohi src={moohi} label={t("newDashboard.moohi")} />
+                <MoochiLoop label={t("newDashboard.moohi")} />
                 {inactive && (
                   <Link className="nd-text-link" to="/vocabulary">
                     {t("newDashboard.addWords")}
