@@ -42,13 +42,15 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
   const { t, i18n } = useTranslation();
   // Meaning questions need glosses in the learner's language; only Hebrew has them so far.
   const meaning =
-    (i18n.resolvedLanguage ?? "en") === "he" && bank.words.some((w) => w[2]);
+    (i18n.resolvedLanguage ?? "en") === "he" &&
+    state.readingComfort !== "hard" &&
+    bank.words.some((w) => w[2]);
   const session = useMemo(
     () =>
       PlacementSession.restore(
         bank,
         {
-          prior: priorFor(state.focus),
+          prior: priorFor(state.focus, state.selfLevel),
           mode: state.focus === "words" ? "quick" : "full",
           format: meaning ? "meaning" : "yesno",
           rng: seededRandom((state.startedAt % 1_000_000) + state.log.length),

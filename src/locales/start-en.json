@@ -131,6 +131,11 @@
         "B1": "You follow the main points and can hold a conversation; now we sharpen.",
         "B2": "You read and understand comfortably; now we work on precision and nuance.",
         "C1": "You're at a high level; now we focus on accuracy and style."
+      },
+      "gap": {
+        "more": "You know more than you thought. We'll start higher and skip what you already have.",
+        "less": "Your level is below what you expected, and that's fine. We start in the right place and move fast.",
+        "same": "You judged yourself accurately."
       }
     },
     "plan": {
@@ -206,7 +211,10 @@
       "body": "Unit {{unit}} · about {{minutes}} min",
       "go": "Continue",
       "gap": "Words from the units you skipped come back for short reviews, 3 a day.",
-      "trial": "Pro is on · {{days}} days left"
+      "trial": "Pro is on · {{days}} days left",
+      "checkTitle": "A 3-minute level check",
+      "checkBody": "So we can fit the plan to you and start in the right place.",
+      "checkGo": "Let's start"
     },
     "tutorLock": {
       "title": "Conversation with the teacher opens soon",
@@ -233,6 +241,93 @@
       "body": "Want to meet Rachel, your teacher? A 3–5 minute conversation about things you already know. No pressure, and you can stop any time.",
       "go": "Let's meet",
       "later": "Maybe later"
+    },
+    "mode": {
+      "title": "How are you comfortable answering?",
+      "body": "You can always tap. You never have to speak.",
+      "voice": {
+        "title": "🎤 Talk to me",
+        "body": "I'll answer out loud. The microphone is only asked for if we get to a conversation."
+      },
+      "text": {
+        "title": "✍️ Write and choose",
+        "body": "Everything is a tap. No microphone, no speaking."
+      },
+      "note": "You can change this any time in settings."
+    },
+    "about": {
+      "title": "Two quick questions about you",
+      "body": "So the check and the lessons fit you.",
+      "ageQuestion": "How old are you?",
+      "age": {
+        "under13": "Under 13",
+        "13-17": "13–17",
+        "18+": "18 or older"
+      },
+      "readingQuestion": "Is reading Hebrew easy for you?",
+      "reading": {
+        "easy": "Yes, easily",
+        "some": "A little",
+        "hard": "It's hard"
+      },
+      "stopTitle": "See you in a bit 🙂",
+      "stopBody": "GotIt is for ages 13 and up for now. Come back with a parent when we add a path for your age.",
+      "stopHome": "Back to home"
+    },
+    "goalStep": {
+      "title": "What matters most in English?",
+      "body": "This shapes the check, the plan and the conversations.",
+      "words": {
+        "title": "Remember words I meet online",
+        "body": "Save a word with the extension and practice it."
+      },
+      "travel": {
+        "title": "Travel",
+        "body": "Get by on trips and in short chats."
+      },
+      "work": {
+        "title": "Work",
+        "body": "Meetings, emails and professional talk."
+      },
+      "study": {
+        "title": "Study",
+        "body": "Academic reading, writing and listening."
+      },
+      "abroad": {
+        "title": "Moving abroad",
+        "body": "Live and work in the language."
+      },
+      "talk": {
+        "title": "Talking with friends",
+        "body": "Speak, watch and understand without translation."
+      },
+      "scratch": {
+        "title": "Start from zero",
+        "body": "Don't know a word yet? We begin at the start."
+      },
+      "note": "You can change your goal any time."
+    },
+    "self": {
+      "title": "How would you describe your English?",
+      "body": "This only sets where the check starts. It doesn't decide your level.",
+      "level": {
+        "0": {
+          "title": "Almost none",
+          "body": "Single words, if any."
+        },
+        "1": {
+          "title": "Words and simple sentences",
+          "body": "I follow the gist of a short text."
+        },
+        "2": {
+          "title": "Simple conversation",
+          "body": "I can tell and ask basic things."
+        },
+        "3": {
+          "title": "Fluent",
+          "body": "I understand and speak about most topics."
+        }
+      }
     }
   },
   "landingV2": {

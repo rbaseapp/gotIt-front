@@ -326,6 +326,12 @@ export type PlacementClaimInput = {
     listening: { band: string; score: number } | null;
   };
   knownWords: string[];
+  profile?: {
+    answerMode: "voice" | "text";
+    ageBand: "13-17" | "18+";
+    readingComfort: "easy" | "some" | "hard";
+    selfLevel: 0 | 1 | 2 | 3 | null;
+  };
 };
 export const curriculumApi = {
   place: (input: PlacementClaimInput) =>

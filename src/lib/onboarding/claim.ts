@@ -57,6 +57,19 @@ export function claimPayload(
       reading: skill(result.skills.reading, theta),
       listening: skill(result.skills.listening, theta),
     },
+    ...(state.answerMode &&
+    state.ageBand &&
+    state.ageBand !== "under13" &&
+    state.readingComfort
+      ? {
+          profile: {
+            answerMode: state.answerMode,
+            ageBand: state.ageBand,
+            readingComfort: state.readingComfort,
+            selfLevel: state.selfLevel,
+          },
+        }
+      : {}),
     knownWords: result.knownWords
       .filter((word) => /^[A-Za-z]{2,40}$/.test(word))
       .slice(0, 1500),

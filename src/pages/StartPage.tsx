@@ -8,12 +8,14 @@ import { markFirstRunSkipped } from "../lib/onboarding/firstRun";
 import { OnboardingFrame } from "../components/onboarding/OnboardingFrame";
 import { PocketTest } from "../components/onboarding/PocketTest";
 import {
-  FirstWordsStep,
-  FocusStep,
+  AboutStep,
+  GoalStep,
   LanguageStep,
+  ModeStep,
   PlanStep,
   ResultStep,
   SaveStep,
+  SelfStep,
 } from "../components/onboarding/steps";
 import {
   STEPS,
@@ -24,7 +26,6 @@ import {
   type OnboardingState,
   type Step,
 } from "../lib/onboarding/state";
-import { firstWordsFor } from "../lib/onboarding/firstWords";
 import type { PlacementBank, PlacementResult } from "../lib/placement/types";
 import "../onboarding.css";
 
@@ -57,13 +58,13 @@ export function StartPage() {
 }
 
 function StartFlow({ account }: { account: boolean }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const saved = useMemo(() => loadOnboarding(), []);
   const [state, setState] = useState<OnboardingState>(
     () =>
       saved ??
       (account
-        ? { ...initialOnboarding(), step: "focus" as Step }
+        ? { ...initialOnboarding(), step: "mode" as Step }
         : initialOnboarding()),
   );
   const [resume, setResume] = useState(
@@ -107,12 +108,6 @@ function StartFlow({ account }: { account: boolean }) {
       ]!,
     );
 
-  const hebrew = (i18n.resolvedLanguage ?? "en") === "he";
-  const firstWords = useMemo(
-    () => (bank && state.result ? firstWordsFor(state, bank) : []),
-    [bank, state],
-  );
-
   if (resume)
     return (
       <OnboardingFrame
@@ -143,26 +138,52 @@ function StartFlow({ account }: { account: boolean }) {
 
   if (state.step === "language")
     return <LanguageStep state={state} update={update} next={() => move(1)} />;
-  if (state.step === "focus")
+  if (state.step === "mode")
     return (
-      <FocusStep
+      <ModeStep
+        state={state}
+        update={update}
+        back={account ? undefined : () => move(-1)}
+        next={() => move(1)}
+      />
+    );
+  if (state.step === "about")
+    return (
+      <AboutStep
+        state={state}
+        update={update}
+        back={() => move(-1)}
+        next={() => move(1)}
+      />
+    );
+  if (state.step === "goal")
+    return (
+      <GoalStep
         state={state}
         update={update}
         back={() => move(-1)}
         next={() => {
           // Languages without a program yet have words and games only.
-          if (state.language !== "en") go("save");
-          else {
-            update({
-              goal: state.focus === "words" ? "other" : state.goal,
-              step: "pocket",
-              log: [],
-              phase: "intro",
-              result: null,
-              literacy: null,
-            });
-          }
+          if (!account && state.language !== "en") go("save");
+          else go(state.focus === "scratch" ? "pocket" : "self");
         }}
+      />
+    );
+  if (state.step === "self")
+    return (
+      <SelfStep
+        state={state}
+        update={update}
+        back={() => move(-1)}
+        next={() =>
+          update({
+            step: "pocket",
+            log: [],
+            phase: "intro",
+            result: null,
+            literacy: null,
+          })
+        }
       />
     );
   if (state.step === "pocket") {
@@ -179,7 +200,7 @@ function StartFlow({ account }: { account: boolean }) {
         bank={bank}
         state={state}
         update={update}
-        onBack={() => move(-1)}
+        onBack={() => go(state.focus === "scratch" ? "goal" : "self")}
         onDone={(result: PlacementResult) => update({ result, step: "result" })}
       />
     );
@@ -188,7 +209,7 @@ function StartFlow({ account }: { account: boolean }) {
   if (!state.result) {
     // A resumed session that lost its result goes back to the check.
     return (
-      <LanguageStep state={state} update={update} next={() => go("focus")} />
+      <LanguageStep state={state} update={update} next={() => go("mode")} />
     );
   }
   if (state.step === "result")
@@ -208,26 +229,8 @@ function StartFlow({ account }: { account: boolean }) {
         state={state}
         update={update}
         back={() => move(-1)}
-        next={() => go(hebrew && firstWords.length ? "firstWords" : "save")}
+        next={() => go("save")}
       />
     );
-  if (state.step === "firstWords")
-    return (
-      <FirstWordsStep
-        state={state}
-        update={update}
-        words={firstWords}
-        back={() => move(-1)}
-        next={() => {
-          update({ firstWords: firstWords.map((w) => `${w.en}|${w.he}`) });
-          go("save");
-        }}
-      />
-    );
-  return (
-    <SaveStep
-      state={state}
-      back={() => go(hebrew && firstWords.length ? "firstWords" : "plan")}
-    />
-  );
+  return <SaveStep state={state} back={() => go("plan")} />;
 }

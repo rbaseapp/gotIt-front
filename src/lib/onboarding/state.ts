@@ -14,15 +14,24 @@ export const ONBOARDING_STORAGE_KEY = "gotit.onboarding.v1";
 
 export const STEPS = [
   "language",
-  "focus",
+  "mode",
+  "about",
+  "goal",
+  "self",
   "pocket",
   "result",
   "plan",
-  "firstWords",
   "save",
 ] as const;
 export type Step = (typeof STEPS)[number];
 export type Focus = "words" | "goal" | "scratch";
+/** How the learner prefers to answer: by talking to the avatar or by tapping choices. */
+export type AnswerMode = "voice" | "text";
+/** Only 13 and over continue in this version; younger visitors are stopped kindly. */
+export type AgeBand = "under13" | "13-17" | "18+";
+export type ReadingComfort = "easy" | "some" | "hard";
+/** Self-assessed English: 0 almost none, 1 words and simple sentences, 2 simple talk, 3 fluent. */
+export type SelfLevel = 0 | 1 | 2 | 3;
 
 export type PocketPhase =
   "intro" | "literacy" | "cards" | "verify" | "probes" | "done";
@@ -40,6 +49,10 @@ export type OnboardingState = {
   result: PlacementResult | null;
   /** Manual correction, in units, when the learner says the level is off. */
   adjust: number;
+  answerMode: AnswerMode | null;
+  ageBand: AgeBand | null;
+  readingComfort: ReadingComfort | null;
+  selfLevel: SelfLevel | null;
   goal: Goal | null;
   deadline: Deadline;
   minutes: number;
@@ -60,6 +73,10 @@ export const initialOnboarding = (): OnboardingState => ({
   startedAt: Date.now(),
   result: null,
   adjust: 0,
+  answerMode: null,
+  ageBand: null,
+  readingComfort: null,
+  selfLevel: null,
   goal: null,
   deadline: 3,
   minutes: 10,
@@ -76,6 +93,7 @@ export function loadOnboarding(): OnboardingState | null {
     if (value?.v !== 1 || !STEPS.includes(value.step)) return null;
     // A week-old, unfinished check is stale: levels change.
     if (Date.now() - value.startedAt > 7 * 86_400_000) return null;
+    // Older saved sessions used other step names.
     return { ...initialOnboarding(), ...value };
   } catch {
     return null;
@@ -99,6 +117,22 @@ export function clearOnboarding() {
 }
 
 /** Where the first guess sits on the 0-84 scale, from what the learner wants. */
-export const priorFor = (focus: Focus | null) => (focus === "scratch" ? 6 : 30);
+export const SELF_LEVEL_UNITS: Record<SelfLevel, number> = {
+  0: 6,
+  1: 16,
+  2: 30,
+  3: 48,
+};
+
+/** A starting guess only: the check itself decides the level. */
+export const priorFor = (
+  focus: Focus | null,
+  selfLevel: SelfLevel | null = null,
+) =>
+  focus === "scratch"
+    ? 6
+    : selfLevel === null
+      ? 30
+      : SELF_LEVEL_UNITS[selfLevel];
 
 export const stepIndex = (step: Step) => STEPS.indexOf(step) + 1;

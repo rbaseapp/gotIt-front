@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { EmailAuthForm } from "../EmailAuthForm";
 import { GoogleSignIn } from "../GoogleSignIn";
@@ -9,7 +10,6 @@ import { LANGUAGE_CODES } from "../../lib/languages";
 import {
   BAND_END,
   DEADLINES,
-  GOALS,
   bandInfo,
   buildPlan,
   type Deadline,
@@ -17,9 +17,13 @@ import {
 } from "../../lib/placement/plan";
 import type { Band, PlacementResult, Skill } from "../../lib/placement/types";
 import {
+  SELF_LEVEL_UNITS,
   clearOnboarding,
-  type Focus,
+  type AgeBand,
+  type AnswerMode,
   type OnboardingState,
+  type ReadingComfort,
+  type SelfLevel,
 } from "../../lib/onboarding/state";
 
 type Update = (patch: Partial<OnboardingState>) => void;
@@ -100,7 +104,56 @@ export function LanguageStep({
 }
 
 /* ---------------------------------------------------------------- 2 */
-export function FocusStep({
+const MODES: AnswerMode[] = ["voice", "text"];
+
+/** First question: how the learner is comfortable answering. No microphone is asked for here. */
+export function ModeStep({
+  state,
+  update,
+  next,
+  back,
+}: {
+  state: OnboardingState;
+  update: Update;
+  next: () => void;
+  back?: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <OnboardingFrame
+      step="mode"
+      title={t("start.mode.title")}
+      body={t("start.mode.body")}
+      onBack={back}
+      primary={
+        <button className="ob-btn" disabled={!state.answerMode} onClick={next}>
+          {t("start.continue")}
+        </button>
+      }
+    >
+      <div className="ob-grid two">
+        {MODES.map((mode) => (
+          <button
+            key={mode}
+            className="ob-card"
+            aria-pressed={state.answerMode === mode}
+            onClick={() => update({ answerMode: mode })}
+          >
+            <h3>{t(`start.mode.${mode}.title`)}</h3>
+            <p>{t(`start.mode.${mode}.body`)}</p>
+          </button>
+        ))}
+      </div>
+      <p className="ob-note">{t("start.mode.note")}</p>
+    </OnboardingFrame>
+  );
+}
+
+const AGES: AgeBand[] = ["under13", "13-17", "18+"];
+const READING: ReadingComfort[] = ["easy", "some", "hard"];
+
+/** Age band (never a birth date) and how easy reading Hebrew is. Under 13 is stopped for now. */
+export function AboutStep({
   state,
   update,
   next,
@@ -112,34 +165,184 @@ export function FocusStep({
   back: () => void;
 }) {
   const { t } = useTranslation();
-  const options: Focus[] = ["words", "goal", "scratch"];
+  if (state.ageBand === "under13")
+    return (
+      <OnboardingFrame
+        step="about"
+        title={t("start.about.stopTitle")}
+        body={t("start.about.stopBody")}
+        onBack={() => update({ ageBand: null })}
+        primary={
+          <Link className="ob-btn" to="/">
+            {t("start.about.stopHome")}
+          </Link>
+        }
+      >
+        <span />
+      </OnboardingFrame>
+    );
   return (
     <OnboardingFrame
-      step="focus"
-      title={t("start.focus.title")}
-      body={t("start.focus.body")}
+      step="about"
+      title={t("start.about.title")}
+      body={t("start.about.body")}
       onBack={back}
       primary={
-        <button className="ob-btn" disabled={!state.focus} onClick={next}>
+        <button
+          className="ob-btn"
+          disabled={!state.ageBand || !state.readingComfort}
+          onClick={next}
+        >
+          {t("start.continue")}
+        </button>
+      }
+    >
+      <div className="ob-section">
+        <h3>{t("start.about.ageQuestion")}</h3>
+        <div className="ob-chips">
+          {AGES.map((age) => (
+            <button
+              key={age}
+              className="ob-chip"
+              aria-pressed={state.ageBand === age}
+              onClick={() => update({ ageBand: age })}
+            >
+              {t(`start.about.age.${age}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="ob-section">
+        <h3>{t("start.about.readingQuestion")}</h3>
+        <div className="ob-chips">
+          {READING.map((level) => (
+            <button
+              key={level}
+              className="ob-chip"
+              aria-pressed={state.readingComfort === level}
+              onClick={() => update({ readingComfort: level })}
+            >
+              {t(`start.about.reading.${level}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+    </OnboardingFrame>
+  );
+}
+
+const GOAL_CHOICES = [
+  "words",
+  "travel",
+  "work",
+  "study",
+  "abroad",
+  "talk",
+  "scratch",
+] as const;
+type GoalChoice = (typeof GOAL_CHOICES)[number];
+
+/** One question about what the learner wants; it sets the focus and the goal together. */
+export function GoalStep({
+  state,
+  update,
+  next,
+  back,
+}: {
+  state: OnboardingState;
+  update: Update;
+  next: () => void;
+  back: () => void;
+}) {
+  const { t } = useTranslation();
+  const chosen: GoalChoice | null =
+    state.focus === "words"
+      ? "words"
+      : state.focus === "scratch"
+        ? "scratch"
+        : ((state.goal as GoalChoice | null) ?? null);
+  const choose = (choice: GoalChoice) =>
+    update(
+      choice === "words"
+        ? { focus: "words", goal: "other" }
+        : choice === "scratch"
+          ? { focus: "scratch", goal: "other" }
+          : { focus: "goal", goal: choice },
+    );
+  return (
+    <OnboardingFrame
+      step="goal"
+      title={t("start.goalStep.title")}
+      body={t("start.goalStep.body")}
+      onBack={back}
+      primary={
+        <button className="ob-btn" disabled={!chosen} onClick={next}>
           {t("start.continue")}
         </button>
       }
     >
       <div className="ob-grid three">
-        {options.map((focus) => (
+        {GOAL_CHOICES.map((choice) => (
           <button
-            key={focus}
+            key={choice}
             className="ob-card"
-            aria-pressed={state.focus === focus}
-            onClick={() => update({ focus })}
+            aria-pressed={chosen === choice}
+            onClick={() => choose(choice)}
           >
-            <h3>{t(`start.focus.${focus}.title`)}</h3>
-            <p>{t(`start.focus.${focus}.body`)}</p>
-            <span className="ob-tag">{t(`start.focus.${focus}.tag`)}</span>
+            <h3>{t(`start.goalStep.${choice}.title`)}</h3>
+            <p>{t(`start.goalStep.${choice}.body`)}</p>
           </button>
         ))}
       </div>
-      <p className="ob-note">{t("start.focus.note")}</p>
+      <p className="ob-note">{t("start.goalStep.note")}</p>
+    </OnboardingFrame>
+  );
+}
+
+const SELF_LEVELS: SelfLevel[] = [0, 1, 2, 3];
+
+/** The learner's own view of their English. It only sets where the check starts. */
+export function SelfStep({
+  state,
+  update,
+  next,
+  back,
+}: {
+  state: OnboardingState;
+  update: Update;
+  next: () => void;
+  back: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <OnboardingFrame
+      step="self"
+      title={t("start.self.title")}
+      body={t("start.self.body")}
+      onBack={back}
+      primary={
+        <button
+          className="ob-btn"
+          disabled={state.selfLevel === null}
+          onClick={next}
+        >
+          {t("start.continue")}
+        </button>
+      }
+    >
+      <div className="ob-grid two">
+        {SELF_LEVELS.map((level) => (
+          <button
+            key={level}
+            className="ob-card"
+            aria-pressed={state.selfLevel === level}
+            onClick={() => update({ selfLevel: level })}
+          >
+            <h3>{t(`start.self.level.${level}.title`)}</h3>
+            <p>{t(`start.self.level.${level}.body`)}</p>
+          </button>
+        ))}
+      </div>
     </OnboardingFrame>
   );
 }
@@ -163,6 +366,16 @@ export function ResultStep({
   const result = state.result!;
   const theta = Math.min(84, Math.max(1, result.theta + state.adjust));
   const { band, sub } = bandInfo(theta);
+  const gapUnits =
+    state.selfLevel === null ? 0 : theta - SELF_LEVEL_UNITS[state.selfLevel];
+  const gap =
+    state.selfLevel === null
+      ? null
+      : gapUnits >= 12
+        ? "more"
+        : gapUnits <= -12
+          ? "less"
+          : "same";
   const fake = state.log.filter(
     (o) => o.t === "card" && !o.real && o.yes,
   ).length;
@@ -212,6 +425,7 @@ export function ResultStep({
         {(range || result.uncertain) && (
           <small>{range ?? t("start.result.uncertain")}</small>
         )}
+        {gap && <p className="ob-note">{t(`start.result.gap.${gap}`)}</p>}
         <div>
           <p className="ob-big" style={{ margin: 0 }}>
             🎒{" "}
@@ -316,21 +530,6 @@ export function PlanStep({
       }
     >
       <div className="ob-section">
-        <h3>{t("start.plan.goalQuestion")}</h3>
-        <div className="ob-chips">
-          {GOALS.map((g) => (
-            <button
-              key={g}
-              className="ob-chip"
-              aria-pressed={state.goal === g}
-              onClick={() => update({ goal: g })}
-            >
-              {t(`start.plan.goal.${g}`)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="ob-section">
         <h3>{t("start.plan.deadlineQuestion")}</h3>
         <div className="ob-chips">
           {DEADLINES.map((d) => (
@@ -405,70 +604,6 @@ export function PlanStep({
           {t("start.plan.dailyNote")}
         </small>
       </section>
-    </OnboardingFrame>
-  );
-}
-
-/* ---------------------------------------------------------------- 6 */
-export function FirstWordsStep({
-  state,
-  update,
-  words,
-  next,
-  back,
-}: {
-  state: OnboardingState;
-  update: Update;
-  words: Array<{ en: string; he: string }>;
-  next: () => void;
-  back: () => void;
-}) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState<string | null>(null);
-  const done = state.firstWordsDone;
-  const mark = (en: string) => {
-    setOpen(en);
-    if (!done.includes(en)) update({ firstWordsDone: [...done, en] });
-  };
-  return (
-    <OnboardingFrame
-      step="firstWords"
-      title={t("start.firstWords.title", { count: words.length })}
-      body={t("start.firstWords.body")}
-      onBack={back}
-      primary={
-        <button className="ob-btn" onClick={next}>
-          {t("start.firstWords.next")}
-        </button>
-      }
-    >
-      <div className="ob-grid three">
-        {words.map((word) => (
-          <button
-            key={word.en}
-            className="ob-card ob-word"
-            data-done={done.includes(word.en) || undefined}
-            onClick={() => mark(word.en)}
-          >
-            <strong lang="en">{word.en}</strong>
-            {open === word.en || done.includes(word.en) ? (
-              <span>
-                <Check size={16} aria-hidden="true" /> {word.he}
-              </span>
-            ) : (
-              <small>{t("start.firstWords.flip")}</small>
-            )}
-          </button>
-        ))}
-      </div>
-      <p className="ob-note" aria-live="polite">
-        🎒{" "}
-        {t("start.firstWords.counter", {
-          done: done.length,
-          total: words.length,
-        })}
-      </p>
-      <p className="ob-note">{t("start.firstWords.tomorrow")}</p>
     </OnboardingFrame>
   );
 }
