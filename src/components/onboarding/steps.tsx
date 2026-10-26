@@ -1,6 +1,24 @@
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Mail } from "lucide-react";
+import {
+  Backpack,
+  Baby,
+  Bookmark,
+  BookOpen,
+  Briefcase,
+  Coffee,
+  GraduationCap,
+  Headphones,
+  Globe,
+  type LucideIcon,
+  Mail,
+  MessageCircle,
+  Mic,
+  PencilLine,
+  Plane,
+  Rocket,
+  Sprout,
+} from "lucide-react";
 import {
   TALK_QUESTIONS,
   TalkCheck,
@@ -145,9 +163,12 @@ export function ModeStep({
             onClick={() => update({ answerMode: mode })}
           >
             <span className="ob-ico big" aria-hidden="true">
-              {t(`start.mode.${mode}.title`).match(MODE_ICON)?.[0].trim() ?? ""}
+              {(() => {
+                const Icon = MODE_ICONS[mode];
+                return <Icon size={26} strokeWidth={1.8} />;
+              })()}
             </span>
-            <h3>{t(`start.mode.${mode}.title`).replace(MODE_ICON, "")}</h3>
+            <h3>{t(`start.mode.${mode}.title`).replace(LEADING_EMOJI, "")}</h3>
             <p>{t(`start.mode.${mode}.body`)}</p>
           </button>
         ))}
@@ -159,22 +180,27 @@ export function ModeStep({
 
 const AGES: AgeBand[] = ["under9", "9-12", "13-17", "18+"];
 const READING: ReadingComfort[] = ["easy", "some", "hard"];
-const GOAL_ICONS: Record<string, string> = {
-  words: "🔖",
-  travel: "✈️",
-  work: "💼",
-  study: "🎓",
-  abroad: "🌍",
-  talk: "💬",
-  scratch: "🌱",
+const GOAL_ICONS: Record<string, LucideIcon> = {
+  words: Bookmark,
+  travel: Plane,
+  work: Briefcase,
+  study: GraduationCap,
+  abroad: Globe,
+  talk: MessageCircle,
+  scratch: Sprout,
 };
-const SELF_ICONS = ["🌱", "🌿", "🌳", "🚀"];
-const MODE_ICON = /^[\p{Extended_Pictographic}\uFE0F\u200D]+\s*/u;
-const AGE_ICONS: Record<AgeBand, string> = {
-  under9: "🧒",
-  "9-12": "🎒",
-  "13-17": "🎧",
-  "18+": "☕",
+const SELF_ICONS: LucideIcon[] = [Sprout, BookOpen, MessageCircle, Rocket];
+const MODE_ICONS: Record<AnswerMode, LucideIcon> = {
+  voice: Mic,
+  text: PencilLine,
+};
+/** Titles in the language files start with an emoji; the screens use line icons instead. */
+const LEADING_EMOJI = /^[\p{Extended_Pictographic}\uFE0F\u200D]+\s*/u;
+const AGE_ICONS: Record<AgeBand, LucideIcon> = {
+  under9: Baby,
+  "9-12": Backpack,
+  "13-17": Headphones,
+  "18+": Coffee,
 };
 
 /** Age band (never a birth date) and how easy reading is. Nobody is turned away. */
@@ -231,9 +257,14 @@ export function AboutStep({
               }
             >
               <span className="ob-ico" aria-hidden="true">
-                {AGE_ICONS[age]}
+                {(() => {
+                  const Icon = AGE_ICONS[age];
+                  return <Icon size={22} strokeWidth={1.8} />;
+                })()}
               </span>
-              <h3>{t(`start.about.age.${age}`)}</h3>
+              <h3>
+                <bdi>{t(`start.about.age.${age}`)}</bdi>
+              </h3>
             </button>
           ))}
         </div>
@@ -319,7 +350,10 @@ export function GoalStep({
             onClick={() => choose(choice)}
           >
             <span className="ob-ico" aria-hidden="true">
-              {GOAL_ICONS[choice]}
+              {(() => {
+                const Icon = GOAL_ICONS[choice]!;
+                return <Icon size={22} strokeWidth={1.8} />;
+              })()}
             </span>
             <h3>{t(`start.goalStep.${choice}.title`)}</h3>
             <p>{t(`start.goalStep.${choice}.body`)}</p>
@@ -371,7 +405,10 @@ export function SelfStep({
             onClick={() => update({ selfLevel: level })}
           >
             <span className="ob-ico" aria-hidden="true">
-              {SELF_ICONS[level]}
+              {(() => {
+                const Icon = SELF_ICONS[level]!;
+                return <Icon size={22} strokeWidth={1.8} />;
+              })()}
             </span>
             <h3>{t(`start.self.level.${level}.title`)}</h3>
             <p>{t(`start.self.level.${level}.body`)}</p>
@@ -559,7 +596,11 @@ export function ResultStep({
         {gap && <p className="ob-note">{t(`start.result.gap.${gap}`)}</p>}
         <div>
           <p className="ob-big" style={{ margin: 0 }}>
-            🎒{" "}
+            <Backpack
+              size={20}
+              aria-hidden="true"
+              style={{ verticalAlign: "-3px" }}
+            />{" "}
             {t("start.result.inPocket", {
               count: result.knownEstimate.toLocaleString(i18n.resolvedLanguage),
             })}

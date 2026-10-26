@@ -807,88 +807,313 @@ button.ob-card:hover {
 }
 
 /* ====================================================================
-   Visual lift: colour, illustration and contrast for every screen.
+   Modern, clean layer: the same language as the dashboard (cream page,
+   hairline borders, soft shadows, one green accent, line icons).
    ==================================================================== */
 .ob {
-  --tone-1: #eef4ff;
-  --tone-1-line: #a9c4f5;
-  --tone-2: #f4effe;
-  --tone-2-line: #cbb8f7;
-  --tone-3: #fff4e0;
-  --tone-3-line: #f0c27a;
-  --tone-4: #ffeef4;
-  --tone-4-line: #eea9c4;
-  --tone-5: #e4f5ec;
-  --tone-5-line: #93cfb0;
-  background:
-    radial-gradient(820px 460px at 92% -8%, #fde9a2 0%, transparent 62%),
-    radial-gradient(760px 480px at -8% 6%, #c9ecdc 0%, transparent 60%),
-    radial-gradient(720px 560px at 55% 108%, #e3d9fb 0%, transparent 62%),
-    #faf9f5;
+  --ob-brand: #286f5c;
+  --ob-brand-dark: #1c5244;
+  --ob-line: #e3e8e2;
+  --ob-soft: #eaf3ef;
+  --ob-shadow: 0 18px 32px -24px rgb(34 50 44 / 0.45);
+  background: linear-gradient(180deg, #eef6f1 0, #faf9f5 360px) #faf9f5;
 }
+.ob h1,
+.ob h2,
+.ob h3 {
+  font-family: "Rubik", "Assistant", system-ui, sans-serif;
+}
+
+/* header + progress */
 .ob-top {
   padding-top: 20px;
 }
 .ob-bars span {
-  height: 9px;
-  background: #d7dfd8;
+  height: 6px;
+  background: #dfe6e0;
 }
 .ob-bars span[data-done] {
-  background: linear-gradient(90deg, #1f7a5f, #2fa584);
+  background: var(--ob-brand);
 }
 .ob-bars span[data-now] {
-  background: linear-gradient(90deg, #f6c244, #ffd978);
-  box-shadow: 0 0 0 3px #fff3cf;
+  background: #f5c542;
+  box-shadow: none;
 }
 .ob-trial {
-  background: linear-gradient(135deg, #fff0bf, #ffe08a);
+  background: #fff8e1;
+  border: 1px solid #f0dc9a;
+  color: #7a5a06;
+  font-weight: 700;
 }
 
-/* hero panel */
+/* hero: one clean card, character on the side, no heavy frame */
 .ob-head {
-  position: relative;
-  padding: 20px 22px;
-  background: linear-gradient(135deg, #d7f1e6 0%, #fff1c4 100%);
-  border: 2px solid var(--ob-ink);
-  border-radius: 30px;
-  box-shadow: 0 7px 0 var(--ob-ink);
+  background: #fff;
+  border: 1px solid var(--ob-line);
+  border-radius: 24px;
+  box-shadow: var(--ob-shadow);
+  padding: 18px 22px;
   grid-template-columns: auto 1fr auto;
   gap: 18px;
   overflow: visible;
 }
 .ob-head .ob-bubble {
-  background: #fff;
-  border-color: var(--ob-ink);
-  box-shadow: 0 4px 0 rgb(34 50 44 / 0.25);
-  border-radius: 22px 22px 22px 6px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
 }
 .ob-bubble h1 {
-  font-size: clamp(1.55rem, 4.6vw, 2.4rem);
+  font-size: clamp(1.45rem, 4.2vw, 2.1rem);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0;
 }
+.ob-bubble p {
+  color: var(--ob-muted);
+  font-weight: 600;
+  margin-top: 4px;
+}
+.ob-head .ob-moochi,
 .ob-sticker {
-  width: clamp(92px, 20vw, 168px);
+  width: clamp(84px, 16vw, 128px);
   height: auto;
-  margin-block: -34px -14px;
-  transform: rotate(6deg);
-  filter: drop-shadow(0 10px 12px rgb(34 50 44 / 0.22));
-  user-select: none;
-  animation: ob-float 4.5s ease-in-out infinite;
-}
-.ob-head .ob-moochi {
-  width: clamp(110px, 22vw, 180px);
-  margin-block: -26px -12px;
-  filter: drop-shadow(0 10px 12px rgb(34 50 44 / 0.22));
+  margin: -10px 0;
+  transform: none;
+  filter: none;
+  animation: none;
 }
 .ob-avatar {
-  width: clamp(92px, 17vw, 136px);
+  width: clamp(76px, 14vw, 104px);
   box-shadow:
-    0 0 0 4px #fff,
-    0 0 0 7px #2fa584;
+    0 0 0 3px #fff,
+    0 0 0 5px #cfe3da;
 }
+.ob-avatar-controls .ob-link {
+  color: var(--ob-muted);
+  font-weight: 600;
+}
+
+/* choice cards */
+.ob-grid {
+  gap: 14px;
+}
+.ob-grid.two {
+  grid-template-columns: repeat(2, 1fr);
+}
+.ob-grid.four {
+  grid-template-columns: repeat(4, 1fr);
+}
+.ob-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--ob-line);
+  border-radius: 20px;
+  box-shadow: var(--ob-shadow);
+  padding: 20px;
+  gap: 6px;
+  transition:
+    transform 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+button.ob-card:hover {
+  transform: translateY(-2px);
+  border-color: #b9d3c8;
+}
+.ob-card[aria-pressed="true"] {
+  background: #f1f8f4;
+  border: 2px solid var(--ob-brand);
+  padding: 19px;
+  box-shadow: 0 14px 28px -22px rgb(40 111 92 / 0.7);
+  color: inherit;
+  transform: none;
+}
+.ob-card[aria-pressed="true"] h3 {
+  color: var(--ob-brand-dark);
+}
+.ob-card[aria-pressed="true"] p {
+  color: var(--ob-muted);
+}
+.ob-card[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-end: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ob-brand)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E")
+    center / 13px no-repeat;
+}
+.ob-ico {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--ob-soft);
+  color: var(--ob-brand);
+  border: 0;
+  margin-bottom: 6px;
+  font-size: inherit;
+}
+.ob-ico.big {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+}
+.ob-card[aria-pressed="true"] .ob-ico {
+  background: var(--ob-brand);
+  color: #fff;
+  border: 0;
+}
+.ob-card h3 {
+  font-size: 1.12em;
+  font-weight: 800;
+}
+.ob-mini {
+  align-items: center;
+  text-align: center;
+  padding: 16px 10px;
+}
+.ob-mini[aria-pressed="true"] {
+  padding: 15px 9px;
+}
+.ob-mini h3 {
+  font-size: 1.02em;
+}
+
+/* chips */
+.ob-chip {
+  background: #fff;
+  border: 1px solid var(--ob-line);
+  box-shadow: none;
+  padding: 11px 20px;
+  font-weight: 700;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.ob-chip:hover {
+  border-color: #b9d3c8;
+}
+.ob-chip[aria-pressed="true"] {
+  background: var(--ob-brand);
+  border-color: var(--ob-brand);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* buttons */
+.ob-btn {
+  border: 1px solid var(--ob-brand);
+  border-radius: 14px;
+  background: var(--ob-brand);
+  color: #fff;
+  box-shadow: 0 10px 20px -12px rgb(40 111 92 / 0.8);
+  padding: 13px 28px;
+  font-size: 1.04em;
+  font-weight: 800;
+}
+.ob-btn:hover:not(:disabled) {
+  background: var(--ob-brand-dark);
+  border-color: var(--ob-brand-dark);
+}
+.ob-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+.ob-btn.ghost {
+  background: #fff;
+  color: var(--ob-ink);
+  border: 1px solid var(--ob-line);
+  box-shadow: none;
+}
+.ob-btn.ghost:hover:not(:disabled) {
+  background: #f4f8f5;
+  border-color: #b9d3c8;
+}
+.ob-btn.yellow {
+  background: #f5c542;
+  border-color: #f5c542;
+  color: var(--ob-ink);
+  box-shadow: 0 10px 20px -12px rgb(201 155 30 / 0.8);
+}
+.ob-actions {
+  background: linear-gradient(to top, #faf9f5 62%, transparent);
+}
+
+/* the check */
+.pocket-card {
+  background: #fff;
+  border: 1px solid var(--ob-line);
+  border-radius: 24px;
+  box-shadow: var(--ob-shadow);
+  min-height: 260px;
+}
+.pocket-word {
+  font-family: "Rubik", "Assistant", system-ui, sans-serif;
+  font-size: clamp(2.4rem, 8vw, 3.4rem);
+  font-weight: 800;
+  color: var(--ob-ink);
+}
+.pocket-options .ob-btn.ghost,
+.ob-replies .ob-btn.ghost {
+  background: #fff;
+  border: 1px solid var(--ob-line);
+  box-shadow: none;
+  min-height: 54px;
+}
+.pocket-options .ob-btn.ghost:hover,
+.ob-replies .ob-btn.ghost:hover {
+  border-color: var(--ob-brand);
+  background: #f1f8f4;
+}
+.pocket-bag {
+  background: #fff8e1;
+  border: 1px solid #f0dc9a;
+  box-shadow: none;
+}
+.pocket-hear {
+  background: var(--ob-soft);
+  color: var(--ob-brand);
+}
+
+/* result */
+.ob-result {
+  background: linear-gradient(160deg, #1c5244 0%, #286f5c 100%);
+  border: 0;
+  border-radius: 24px;
+  box-shadow: 0 24px 40px -28px rgb(28 82 68 / 0.9);
+}
+
+/* the question screens stay compact so the answer is always on screen */
+.ob[data-step="pocket"] .ob-head,
+.ob[data-step="talk"] .ob-head {
+  padding: 12px 18px;
+}
+.ob[data-step="pocket"] .ob-sticker,
+.ob[data-step="talk"] .ob-sticker {
+  width: 76px;
+  margin: -6px 0;
+}
+.ob[data-step="pocket"] .ob-avatar,
+.ob[data-step="talk"] .ob-avatar {
+  width: 68px;
+}
+.ob[data-step="pocket"] .ob-bubble h1,
+.ob[data-step="talk"] .ob-bubble h1 {
+  font-size: clamp(1.15rem, 3.2vw, 1.55rem);
+}
+
 @keyframes ob-pop {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.98);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -896,186 +1121,19 @@ button.ob-card:hover {
   }
 }
 .ob-main > * {
-  animation: ob-pop 0.45s ease both;
+  animation: ob-pop 0.3s ease both;
 }
 .ob-main > *:nth-child(2) {
-  animation-delay: 0.08s;
+  animation-delay: 0.05s;
 }
 .ob-main > *:nth-child(3) {
-  animation-delay: 0.16s;
-}
-
-/* choice cards: coloured, with an icon, bold when chosen */
-.ob-grid.four {
-  grid-template-columns: repeat(4, 1fr);
-}
-.ob-card {
-  position: relative;
-  background: var(--tone, #fff);
-  border: 2px solid var(--tone-line, var(--ob-line));
-  box-shadow: 0 6px 0 var(--tone-line, #d3dbd2);
-  border-radius: 22px;
-  padding: 20px 18px 18px;
-  gap: 6px;
-}
-.ob-grid > .ob-card:nth-child(5n + 1) {
-  --tone: var(--tone-1);
-  --tone-line: var(--tone-1-line);
-}
-.ob-grid > .ob-card:nth-child(5n + 2) {
-  --tone: var(--tone-2);
-  --tone-line: var(--tone-2-line);
-}
-.ob-grid > .ob-card:nth-child(5n + 3) {
-  --tone: var(--tone-3);
-  --tone-line: var(--tone-3-line);
-}
-.ob-grid > .ob-card:nth-child(5n + 4) {
-  --tone: var(--tone-4);
-  --tone-line: var(--tone-4-line);
-}
-.ob-grid > .ob-card:nth-child(5n + 5) {
-  --tone: var(--tone-5);
-  --tone-line: var(--tone-5-line);
-}
-button.ob-card:hover {
-  transform: translateY(-3px) rotate(-0.4deg);
-  box-shadow: 0 9px 0 var(--tone-line, #d3dbd2);
-}
-.ob-card[aria-pressed="true"] {
-  background: linear-gradient(150deg, #1f7a5f, #2a9a79);
-  border-color: #134a39;
-  box-shadow: 0 6px 0 #134a39;
-  color: #fff;
-  transform: translateY(-2px);
-}
-.ob-card[aria-pressed="true"] p,
-.ob-card[aria-pressed="true"] h3 {
-  color: #fff;
-}
-.ob-card[aria-pressed="true"]::after {
-  content: "✓";
-  position: absolute;
-  inset-block-start: 10px;
-  inset-inline-end: 12px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #ffd45e;
-  color: #134a39;
-  font-weight: 900;
-  font-size: 15px;
-}
-.ob-ico {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
-  font-size: 26px;
-  background: rgb(255 255 255 / 0.85);
-  border: 2px solid var(--tone-line, #d3dbd2);
-  margin-bottom: 4px;
-}
-.ob-ico.big {
-  width: 64px;
-  height: 64px;
-  font-size: 34px;
-  border-radius: 20px;
-}
-.ob-card[aria-pressed="true"] .ob-ico {
-  background: #fff;
-  border-color: #ffd45e;
-}
-.ob-mini {
-  align-items: center;
-  text-align: center;
-  padding: 16px 10px 14px;
-}
-.ob-mini h3 {
-  font-size: 1.05em;
-}
-.ob-chip {
-  padding: 12px 20px;
-  font-size: 1.02em;
-  background: #fff;
-  border: 2px solid var(--tone-5-line);
-  box-shadow: 0 4px 0 var(--tone-5-line);
-}
-.ob-chip[aria-pressed="true"] {
-  background: linear-gradient(150deg, #1f7a5f, #2a9a79);
-  border-color: #134a39;
-  box-shadow: 0 4px 0 #134a39;
-}
-
-/* buttons */
-.ob-btn {
-  font-size: 1.08em;
-  padding: 14px 32px;
-  background: linear-gradient(180deg, #2f9a7a, #1f7a5f);
-}
-.ob-btn.ghost {
-  background: #fff;
-}
-.ob-actions {
-  background: linear-gradient(to top, #faf9f5 62%, transparent);
-}
-
-/* the check: word card and tiles */
-.pocket-card {
-  background: linear-gradient(165deg, #ffffff 0%, #eefaf4 100%);
-  border-radius: 30px;
-  min-height: 280px;
-}
-.pocket-word {
-  font-size: clamp(2.6rem, 9vw, 3.8rem);
-  color: #15382c;
-}
-.pocket-options .ob-btn.ghost,
-.ob-replies .ob-btn.ghost {
-  border-width: 2px;
-  background: var(--tone, #fff);
-  border-color: var(--tone-line, var(--ob-ink));
-  box-shadow: 0 5px 0 var(--tone-line, var(--ob-ink));
-  color: var(--ob-ink);
-}
-.pocket-options .ob-btn.ghost:nth-of-type(4n + 1),
-.ob-replies .ob-btn.ghost:nth-of-type(4n + 1) {
-  --tone: var(--tone-1);
-  --tone-line: var(--tone-1-line);
-}
-.pocket-options .ob-btn.ghost:nth-of-type(4n + 2),
-.ob-replies .ob-btn.ghost:nth-of-type(4n + 2) {
-  --tone: var(--tone-2);
-  --tone-line: var(--tone-2-line);
-}
-.pocket-options .ob-btn.ghost:nth-of-type(4n + 3),
-.ob-replies .ob-btn.ghost:nth-of-type(4n + 3) {
-  --tone: var(--tone-3);
-  --tone-line: var(--tone-3-line);
-}
-.pocket-options .ob-btn.ghost:nth-of-type(4n + 4),
-.ob-replies .ob-btn.ghost:nth-of-type(4n + 4) {
-  --tone: var(--tone-4);
-  --tone-line: var(--tone-4-line);
-}
-.pocket-bag {
-  background: linear-gradient(135deg, #fff0bf, #ffe08a);
-  border: 2px solid #e8c25a;
-}
-
-/* result */
-.ob-result {
-  background: linear-gradient(150deg, #1d7459 0%, #2a9a79 100%);
-  box-shadow: 0 8px 0 #134a39;
+  animation-delay: 0.1s;
 }
 
 @media (max-width: 640px) {
   .ob-head {
     grid-template-columns: auto 1fr;
-    padding: 16px;
+    padding: 14px 16px;
   }
   .ob-head .ob-sticker {
     display: none;
@@ -1084,38 +1142,13 @@ button.ob-card:hover {
     grid-template-columns: 1fr 1fr;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .ob-main > *,
-  .ob-sticker {
-    animation: none;
-  }
-}
-
-.ob-grid.two {
-  grid-template-columns: repeat(2, 1fr);
-}
 @media (max-width: 520px) {
   .ob-grid.two {
     grid-template-columns: 1fr;
   }
 }
-
-/* the question screens stay compact so the answer is always on screen */
-.ob[data-step="pocket"] .ob-head,
-.ob[data-step="talk"] .ob-head {
-  padding: 10px 16px;
-  border-radius: 24px;
-}
-.ob[data-step="pocket"] .ob-sticker,
-.ob[data-step="talk"] .ob-sticker {
-  width: 84px;
-  margin-block: -14px -6px;
-}
-.ob[data-step="pocket"] .ob-avatar,
-.ob[data-step="talk"] .ob-avatar {
-  width: 78px;
-}
-.ob[data-step="pocket"] .ob-bubble h1,
-.ob[data-step="talk"] .ob-bubble h1 {
-  font-size: clamp(1.2rem, 3.4vw, 1.7rem);
+@media (prefers-reduced-motion: reduce) {
+  .ob-main > * {
+    animation: none;
+  }
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Undo2, Volume2 } from "lucide-react";
+import { Backpack, Check, Undo2, Volume2 } from "lucide-react";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { PlacementSession, seededRandom } from "../../lib/placement/engine";
 import { canSpeak, speak } from "../../lib/placement/speech";
@@ -304,7 +304,8 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           data-pop={popped ? "" : undefined}
           key={popped}
         >
-          🎒 {t("start.pocket.inPocket")} <b>{known}</b>
+          <Backpack size={16} aria-hidden="true" /> {t("start.pocket.inPocket")}{" "}
+          <b>{known}</b>
         </span>
         <span className="ob-note">
           {t(`start.pocket.progress.${progress}`)}
