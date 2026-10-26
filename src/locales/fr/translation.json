@@ -2518,7 +2518,6 @@
     "nextWord": "Mot suivant",
     "finishReview": "Terminer la révision",
     "fullReview": "Ouvrir la révision complète",
-    "noReviewWords": "Aucun mot à réviser pour le moment. Ajoutez des mots ou ouvrez la révision complète.",
     "inactiveArticle": "Pas de nouveaux mots depuis 3 jours ?",
     "articleTitle": "Un article avec vos mots",
     "articleHelp": "Un sujet qui vous plaît, avec vos mots enregistrés.",
@@ -2574,7 +2573,10 @@
       "series": "Séries et films",
       "travel": "Voyages",
       "food": "Cuisine"
-    }
+    },
+    "emptyReviewTitle": "Pas encore de mots à réviser",
+    "emptyReviewBody": "Enregistrez des mots avec l'extension pendant que vous lisez en ligne, ou choisissez des mots dans la bibliothèque. Ils apparaîtront ici pour une révision rapide.",
+    "noReviewWords": "Aucun mot à réviser pour le moment. Ajoutez des mots ou ouvrez la révision complète."
   },
   "practiceDesign": {
     "title": "Prêts à pratiquer ?",

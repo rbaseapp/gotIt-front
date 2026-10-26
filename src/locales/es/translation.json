@@ -2518,7 +2518,6 @@
     "nextWord": "Siguiente palabra",
     "finishReview": "Terminar el repaso",
     "fullReview": "Abrir el repaso completo",
-    "noReviewWords": "No hay palabras disponibles para repasar ahora. Añade palabras o abre el repaso completo.",
     "inactiveArticle": "¿Sin palabras nuevas desde hace 3 días?",
     "articleTitle": "Un artículo con tus palabras",
     "articleHelp": "Un tema que te gusta, con tus palabras guardadas.",
@@ -2574,7 +2573,10 @@
       "series": "Series y películas",
       "travel": "Viajes",
       "food": "Comida"
-    }
+    },
+    "emptyReviewTitle": "Todavía no hay palabras para repasar",
+    "emptyReviewBody": "Guarda palabras con la extensión mientras lees en internet, o elige palabras de la biblioteca. Aparecerán aquí para un repaso rápido.",
+    "noReviewWords": "No hay palabras disponibles para repasar ahora. Añade palabras o abre el repaso completo."
   },
   "practiceDesign": {
     "title": "¿Listos para practicar?",

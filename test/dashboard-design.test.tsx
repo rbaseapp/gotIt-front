@@ -323,10 +323,15 @@ describe("dashboard quick review", () => {
       />,
     );
     expect(fetch).not.toHaveBeenCalled();
-    expect(screen.getByRole("link", { name: "לחזרה המלאה" })).toHaveAttribute(
+    // No fake word card: it says where words come from and sends the learner to add some.
+    expect(screen.getByText("עוד אין מילים לחזרה")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "הוספת מילים" })).toHaveAttribute(
       "href",
-      "/learn/smart?language=en&return=%2Fdashboard",
+      "/vocabulary",
     );
+    expect(
+      screen.queryByRole("link", { name: "לחזרה המלאה" }),
+    ).not.toBeInTheDocument();
   });
   it("reuses session creation after an ambiguous failure and keeps full review separate", async () => {
     const creations: RequestInit[] = [];
@@ -599,11 +604,7 @@ describe("dashboard context", () => {
     expect(
       screen.getByRole("link", { name: "מוסיפים מילה ראשונה" }),
     ).toHaveAttribute("href", "/vocabulary");
-    expect(
-      screen.getByText(
-        "אין כרגע מילים זמינות לחזרה. אפשר להוסיף מילים או לפתוח את התרגול המלא.",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText("עוד אין מילים לחזרה")).toBeInTheDocument();
   });
   it("shows words-only content when no program has been chosen and does not promise gifts", async () => {
     server();

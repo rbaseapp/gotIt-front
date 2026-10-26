@@ -1189,3 +1189,29 @@
 .nd-main-card .nd-main-action {
   min-height: 52px;
 }
+
+/* Quick review before any word is saved: where words come from, and one next step. */
+.nd-review-empty {
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 14px 20px -22px #22322c;
+}
+.nd-review-empty svg {
+  color: var(--nd-brand);
+}
+.nd-review-empty h3 {
+  font-size: calc(18px * var(--text-scale, 1));
+  font-weight: 800;
+}
+.nd-review-empty p {
+  font-size: calc(14px * var(--text-scale, 1));
+  color: var(--nd-muted);
+  line-height: 1.55;
+  max-width: 34ch;
+}

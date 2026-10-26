@@ -2518,7 +2518,6 @@
     "nextWord": "Nächstes Wort",
     "finishReview": "Wiederholung abschließen",
     "fullReview": "Vollständige Wiederholung öffnen",
-    "noReviewWords": "Gerade sind keine Wörter zur Wiederholung verfügbar. Füge Wörter hinzu oder öffne die vollständige Übung.",
     "inactiveArticle": "Seit 3 Tagen keine neuen Wörter?",
     "articleTitle": "Ein Artikel mit deinen Wörtern",
     "articleHelp": "Ein spannendes Thema mit deinen gespeicherten Wörtern.",
@@ -2574,7 +2573,10 @@
       "series": "TV und Filme",
       "travel": "Reisen",
       "food": "Essen"
-    }
+    },
+    "emptyReviewTitle": "Noch keine Wörter zum Wiederholen",
+    "emptyReviewBody": "Speichere Wörter mit der Erweiterung, während du online liest, oder wähle Wörter aus der Bibliothek. Sie erscheinen hier für eine kurze Wiederholung.",
+    "noReviewWords": "Gerade sind keine Wörter zur Wiederholung verfügbar. Füge Wörter hinzu oder öffne die vollständige Übung."
   },
   "practiceDesign": {
     "title": "Bereit zum Üben?",

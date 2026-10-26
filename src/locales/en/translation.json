@@ -2517,7 +2517,6 @@
     "nextWord": "Next word",
     "finishReview": "Finish review",
     "fullReview": "Open full review",
-    "noReviewWords": "No review words are available right now. Add words or open full review.",
     "inactiveArticle": "No new words for 3 days?",
     "articleTitle": "An article from your words",
     "articleHelp": "Something you enjoy, using words you have saved.",
@@ -2573,7 +2572,10 @@
       "series": "TV and movies",
       "travel": "Travel",
       "food": "Food"
-    }
+    },
+    "emptyReviewTitle": "No words to review yet",
+    "emptyReviewBody": "Save words with the extension while you read online, or pick words from the library. They show up here for a quick review.",
+    "noReviewWords": "No review words are available right now. Add words or open full review."
   },
   "practiceDesign": {
     "title": "Ready to practice?",

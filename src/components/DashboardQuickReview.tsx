@@ -6,7 +6,14 @@ import {
   type CSSProperties,
 } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, CircleAlert, Gamepad2, Play, X } from "lucide-react";
+import {
+  BookmarkPlus,
+  CheckCircle2,
+  CircleAlert,
+  Gamepad2,
+  Play,
+  X,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { useSubscription } from "../context/SubscriptionContext";
@@ -187,6 +194,10 @@ export function DashboardQuickReview({
     const timer = window.setTimeout(() => setFeedback(undefined), 4000);
     return () => window.clearTimeout(timer);
   }, [feedback]);
+  // With no saved words there is nothing to review: say where words come from instead of
+  // showing a practice card that cannot start.
+  const empty =
+    !available && !exercises.length && session?.status !== "completed";
   const result = receipt?.attempt.result;
   const correct = feedback?.attempt.result === "correct";
   return (
@@ -200,79 +211,95 @@ export function DashboardQuickReview({
           <p>{t("newDashboard.reviewHelp")}</p>
         </div>
       </header>
-      <div
-        className="nd-segments"
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={exercises.length || 5}
-        aria-valuenow={receipt ? index + 1 : index}
-        aria-label={t("newDashboard.reviewProgress", {
-          current: receipt ? index + 1 : index,
-          total: exercises.length || 5,
-        })}
-      >
-        {Array.from({ length: exercises.length || 5 }, (_, i) => (
-          <span
-            key={i}
-            className={i < index || (i === index && receipt) ? "done" : ""}
-          />
-        ))}
-      </div>
-      <div
-        className={`nd-word-card${result ? ` ${result}` : ""}`}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {session?.status === "completed" ? (
-          <>
-            <h3>{t("game.completed")}</h3>
-            <p>{t("newDashboard.savedXp", { xp: session.xpEarned })}</p>
-          </>
-        ) : (
-          <>
-            <strong dir="auto">
-              {current?.prompt.text ?? preview ?? t("newDashboard.yourWords")}
-            </strong>
-            <p>{t("newDashboard.meaningQuestion")}</p>
-          </>
-        )}
-      </div>
-      {current && session?.status !== "completed" && (
-        <div className="nd-choices">
-          {current.prompt.choices?.map((choice) => (
-            <button
-              type="button"
-              key={choice.id}
-              disabled={busy || !!pending || !!receipt}
-              className={
-                receipt
-                  ? choice.text === receipt.attempt.expectedAnswer
-                    ? "correct"
-                    : choice.id === selectedChoice
-                      ? "incorrect"
-                      : undefined
-                  : undefined
-              }
-              onClick={() => void submit(choice.id)}
-              dir="auto"
-            >
-              {choice.text}
-            </button>
-          ))}
+      {empty ? (
+        <div className="nd-review-empty">
+          <BookmarkPlus size={28} aria-hidden="true" />
+          <h3>{t("newDashboard.emptyReviewTitle")}</h3>
+          <p>{t("newDashboard.emptyReviewBody")}</p>
         </div>
-      )}
-      {!available && !exercises.length && (
-        <p className="nd-fine-print">{t("newDashboard.noReviewWords")}</p>
+      ) : (
+        <>
+          <div
+            className="nd-segments"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={exercises.length || 5}
+            aria-valuenow={receipt ? index + 1 : index}
+            aria-label={t("newDashboard.reviewProgress", {
+              current: receipt ? index + 1 : index,
+              total: exercises.length || 5,
+            })}
+          >
+            {Array.from({ length: exercises.length || 5 }, (_, i) => (
+              <span
+                key={i}
+                className={i < index || (i === index && receipt) ? "done" : ""}
+              />
+            ))}
+          </div>
+          <div
+            className={`nd-word-card${result ? ` ${result}` : ""}`}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {session?.status === "completed" ? (
+              <>
+                <h3>{t("game.completed")}</h3>
+                <p>{t("newDashboard.savedXp", { xp: session.xpEarned })}</p>
+              </>
+            ) : (
+              <>
+                <strong dir="auto">
+                  {current?.prompt.text ??
+                    preview ??
+                    t("newDashboard.yourWords")}
+                </strong>
+                <p>{t("newDashboard.meaningQuestion")}</p>
+              </>
+            )}
+          </div>
+          {current && session?.status !== "completed" && (
+            <div className="nd-choices">
+              {current.prompt.choices?.map((choice) => (
+                <button
+                  type="button"
+                  key={choice.id}
+                  disabled={busy || !!pending || !!receipt}
+                  className={
+                    receipt
+                      ? choice.text === receipt.attempt.expectedAnswer
+                        ? "correct"
+                        : choice.id === selectedChoice
+                          ? "incorrect"
+                          : undefined
+                      : undefined
+                  }
+                  onClick={() => void submit(choice.id)}
+                  dir="auto"
+                >
+                  {choice.text}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
       )}
       <RemoteState
         loading={busy}
         error={error}
         retry={() => void (pending ? submit() : receipt ? next() : start())}
       />
-      <Link className="nd-button" to={canPlay ? fullReview : "/billing"}>
-        <Play size={16} />
-        {t(canPlay ? "newDashboard.fullReview" : "shell.upgradePro")}
-      </Link>
+      {empty ? (
+        <Link className="nd-button" to="/vocabulary">
+          <BookmarkPlus size={16} />
+          {t("newDashboard.addWords")}
+        </Link>
+      ) : (
+        <Link className="nd-button" to={canPlay ? fullReview : "/billing"}>
+          <Play size={16} />
+          {t(canPlay ? "newDashboard.fullReview" : "shell.upgradePro")}
+        </Link>
+      )}
       {feedback && (
         <div
           key={feedback.attempt.id}

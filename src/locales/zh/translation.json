@@ -2518,7 +2518,6 @@
     "nextWord": "下一个单词",
     "finishReview": "完成复习",
     "fullReview": "打开完整复习",
-    "noReviewWords": "目前没有可复习的单词。请添加单词或打开完整练习。",
     "inactiveArticle": "已经3天没有新单词了？",
     "articleTitle": "用你的单词生成文章",
     "articleHelp": "用已保存的单词阅读你感兴趣的主题。",
@@ -2574,7 +2573,10 @@
       "series": "影视",
       "travel": "旅行",
       "food": "美食"
-    }
+    },
+    "emptyReviewTitle": "还没有可复习的单词",
+    "emptyReviewBody": "上网阅读时用扩展保存单词，或从词库中挑选单词，它们会出现在这里供快速复习。",
+    "noReviewWords": "目前没有可复习的单词。请添加单词或打开完整练习。"
   },
   "practiceDesign": {
     "title": "准备好练习了吗？",
