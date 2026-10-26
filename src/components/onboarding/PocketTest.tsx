@@ -66,7 +66,11 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       state.phase === "probes" ||
       state.phase === "done"
       ? "cards"
-      : state.phase,
+      : state.phase === "intro"
+        ? state.readingComfort === "hard"
+          ? "literacy"
+          : "cards"
+        : state.phase,
   );
 
   const fromZero = state.selfLevel === 0 && state.focus !== "words";
@@ -180,56 +184,6 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       </div>
     );
 
-  if (phase === "intro")
-    return (
-      <OnboardingFrame
-        step="pocket"
-        title={t("start.pocket.introTitle")}
-        body={t(
-          meaning ? "start.pocket.introBodyMeaning" : "start.pocket.introBody",
-          { count: CHECK_QUESTIONS },
-        )}
-        onBack={onBack}
-        primary={
-          <button
-            className="ob-btn"
-            onClick={() => {
-              const next: PocketPhase =
-                state.readingComfort === "hard" ? "literacy" : "cards";
-              setPhase(next);
-              update({ phase: next });
-            }}
-          >
-            {t("start.pocket.begin")}
-          </button>
-        }
-      >
-        <p className="ob-note pocket-example">{t("start.pocket.example")}</p>
-        <div className="pocket-card pocket-sample" aria-hidden="true">
-          <p className="pocket-word">apple</p>
-          {meaning ? (
-            <div className="pocket-options">
-              <span className="ob-btn ghost">
-                {t("start.pocket.sampleRight")}
-              </span>
-              <span className="ob-btn ghost">
-                {t("start.pocket.sampleOther")}
-              </span>
-              <span className="ob-btn ghost">{t("start.pocket.dontKnow")}</span>
-            </div>
-          ) : (
-            <div className="pocket-answers">
-              <span className="ob-btn">{t("start.pocket.know")}</span>
-              <span className="ob-btn ghost">{t("start.pocket.unknown")}</span>
-            </div>
-          )}
-        </div>
-        <p className="ob-big pocket-press-start">
-          {t("start.pocket.pressStart")}
-        </p>
-      </OnboardingFrame>
-    );
-
   if (phase === "literacy")
     return (
       <LiteracyGate
@@ -250,6 +204,10 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
     <OnboardingFrame
       step="pocket"
       title={t("start.pocket.introTitle")}
+      body={t(
+        meaning ? "start.pocket.introBodyMeaning" : "start.pocket.introBody",
+        { count: CHECK_QUESTIONS },
+      )}
       onBack={onBack}
       primary={null}
       secondary={

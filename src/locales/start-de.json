@@ -32,7 +32,6 @@
     "pocket": {
       "introTitle": "Sehen wir, was schon in deiner Tasche ist",
       "introBody": "Kennst du das Wort? Tippe auf „Kenne ich“. Noch nicht? „Noch nicht“. Ohne Note, ohne Fehler. Bis zu {{count}} Fragen.",
-      "begin": "Starten",
       "know": "Kenne ich",
       "unknown": "Noch nicht",
       "hear": "Wort anhören",
@@ -43,9 +42,7 @@
       "fakeFound_other": "Wir haben {{count}} Wörter erwischt, die es nicht gibt 😄 dafür sind sie genau da.",
       "calculating": "Wir ermitteln dein Niveau…",
       "dontKnow": "Ich weiß es nicht",
-      "counter": "Frage {{current}} von höchstens {{total}}",
-      "example": "Nur ein Beispiel, so funktioniert es",
-      "pressStart": "Tippe unten auf „Start“, um zu beginnen."
+      "counter": "Frage {{current}} von höchstens {{total}}"
     },
     "result": {
       "title": "Das haben wir gefunden",

@@ -32,7 +32,6 @@
     "pocket": {
       "introTitle": "Veamos qué llevas ya en el bolsillo",
       "introBody": "¿Conoces la palabra? Toca «La conozco». ¿Todavía no? «Aún no». Sin nota y sin errores. Hasta {{count}} preguntas.",
-      "begin": "Empezar",
       "know": "La conozco",
       "unknown": "Aún no",
       "hear": "Escuchar la palabra",
@@ -43,9 +42,7 @@
       "fakeFound_other": "Descubrimos {{count}} palabras que no existen 😄 para eso sirven.",
       "calculating": "Calculando tu nivel…",
       "dontKnow": "No lo sé",
-      "counter": "Pregunta {{current}} de hasta {{total}}",
-      "example": "Solo un ejemplo de cómo funciona",
-      "pressStart": "Toca «Empezar» abajo para comenzar."
+      "counter": "Pregunta {{current}} de hasta {{total}}"
     },
     "result": {
       "title": "Esto es lo que encontramos",

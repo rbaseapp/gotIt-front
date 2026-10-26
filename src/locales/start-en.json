@@ -32,7 +32,6 @@
     "pocket": {
       "introTitle": "Let's see what's already in your pocket",
       "introBody": "Know the word? Tap \"I know it\". Not yet? \"Not yet\". No score, no mistakes. Up to {{count}} questions.",
-      "begin": "Start",
       "know": "I know it",
       "unknown": "Not yet",
       "hear": "Hear the word",
@@ -45,11 +44,7 @@
       "introBodyMeaning": "Pick the right meaning of each word. Not sure? Tap “I don't know”, no guessing. Up to {{count}} questions.",
       "dontKnow": "I don't know",
       "pickMeaning": "Pick the meaning",
-      "sampleRight": "apple",
-      "sampleOther": "window",
-      "counter": "Question {{current}} of up to {{total}}",
-      "example": "Example, just to show how it works",
-      "pressStart": "Tap \"Start\" below to begin."
+      "counter": "Question {{current}} of up to {{total}}"
     },
     "result": {
       "title": "Here's what we found",

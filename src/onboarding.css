@@ -1246,20 +1246,3 @@ button.ob-card:hover {
     display: none;
   }
 }
-
-/* the intro sample only shows how a question looks: it must not look pressable */
-.pocket-sample {
-  opacity: 0.55;
-  pointer-events: none;
-  user-select: none;
-}
-.pocket-example {
-  margin: 0;
-  text-align: center;
-  font-weight: 700;
-}
-.pocket-press-start {
-  margin: 0;
-  text-align: center;
-  color: var(--ob-brand-dark);
-}

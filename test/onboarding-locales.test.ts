@@ -20,12 +20,7 @@ const base = (key: string) => key.replace(plural, "");
 const placeholders = (text: string) =>
   (text.match(/\{\{\w+\}\}/g) ?? []).sort().join(",");
 // Meaning questions exist only in Hebrew, where the word bank has glosses.
-const HEBREW_ONLY = new Set([
-  "pocket.introBodyMeaning",
-  "pocket.pickMeaning",
-  "pocket.sampleRight",
-  "pocket.sampleOther",
-]);
+const HEBREW_ONLY = new Set(["pocket.introBodyMeaning", "pocket.pickMeaning"]);
 
 describe("onboarding translations", () => {
   const english = flat(en.start as Tree);

@@ -32,7 +32,6 @@
     "pocket": {
       "introTitle": "来看看你口袋里已经有什么",
       "introBody": "认识这个词吗？点“认识”。还不认识？点“还不认识”。没有分数，没有错误。最多 {{count}} 道题。",
-      "begin": "开始",
       "know": "认识",
       "unknown": "还不认识",
       "hear": "听这个词",
@@ -42,9 +41,7 @@
       "fakeFound_other": "我们发现了 {{count}} 个不存在的词 😄 它们正是为此而设。",
       "calculating": "正在计算你的水平…",
       "dontKnow": "我不知道",
-      "counter": "第 {{current}} 题，最多 {{total}} 题",
-      "example": "仅为示例，演示玩法",
-      "pressStart": "点下方的“开始”即可开始。"
+      "counter": "第 {{current}} 题，最多 {{total}} 题"
     },
     "result": {
       "title": "这是我们的发现",

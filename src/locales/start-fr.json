@@ -32,7 +32,6 @@
     "pocket": {
       "introTitle": "Voyons ce que vous avez déjà en poche",
       "introBody": "Vous connaissez le mot ? Touchez « Je le connais ». Pas encore ? « Pas encore ». Sans note, sans erreur. Jusqu'à {{count}} questions.",
-      "begin": "Commencer",
       "know": "Je le connais",
       "unknown": "Pas encore",
       "hear": "Écouter le mot",
@@ -43,9 +42,7 @@
       "fakeFound_other": "Nous avons repéré {{count}} mots qui n'existent pas 😄 c'est exactement à ça qu'ils servent.",
       "calculating": "Calcul de votre niveau…",
       "dontKnow": "Je ne sais pas",
-      "counter": "Question {{current}} sur {{total}} au plus",
-      "example": "Simple exemple du fonctionnement",
-      "pressStart": "Touchez « Commencer » en bas pour commencer."
+      "counter": "Question {{current}} sur {{total}} au plus"
     },
     "result": {
       "title": "Voici ce que nous avons trouvé",
