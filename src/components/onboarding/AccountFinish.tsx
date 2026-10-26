@@ -1,8 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LoaderCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
+import { useSubscription } from "../../context/SubscriptionContext";
+import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
+import { canMeetTutor } from "../../lib/onboarding/tutorIntro";
 import { useFeedback } from "../Feedback";
 import { claimOnboarding, saveFirstWords } from "../../lib/onboarding/claim";
 import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
@@ -21,6 +24,10 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
   const { toast } = useFeedback();
   const { user } = useApp();
   const navigate = useNavigate();
+  const { status, hasEntitlement } = useSubscription();
+  const tutorOpen = useRef(false);
+  tutorOpen.current = Boolean(status) && hasEntitlement("tutor.session");
+  const [phase, setPhase] = useState<"saving" | "tutor">("saving");
   const started = useRef(false);
   useEffect(() => {
     if (started.current) return;
@@ -41,10 +48,31 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
         // Kept on failure so the next visit retries the save instead of asking again.
         if (saved) clearOnboarding();
         if (user) markFirstRunSkipped(user.id);
-        navigate("/dashboard", { replace: true });
+        // Someone who can already hold a short conversation meets the teacher now.
+        if (saved && canMeetTutor(state.result) && tutorOpen.current)
+          setPhase("tutor");
+        else navigate("/dashboard", { replace: true });
       }
     })();
   }, [state, t, toast, navigate, user]);
+  if (phase === "tutor")
+    return (
+      <div className="ob ob-lock" style={{ minHeight: 0 }}>
+        <img className="ob-moochi" src={rachel} alt="" draggable={false} />
+        <div className="ob-bubble">
+          <h1 tabIndex={-1} data-ob-title>
+            {t("start.tutorIntro.title")}
+          </h1>
+          <p>{t("start.tutorIntro.body")}</p>
+        </div>
+        <Link className="ob-btn" to="/private-lesson?practice=free&intro=1">
+          {t("start.tutorIntro.go")}
+        </Link>
+        <Link className="ob-link" to="/dashboard" replace>
+          {t("start.tutorIntro.later")}
+        </Link>
+      </div>
+    );
   return (
     <div className="ob-saving" role="status">
       <div>

@@ -222,7 +222,13 @@
       "free": "Back to free practice",
       "preview": "This is a preview. To study the units you need Pro or the trial."
     },
-    "skip": "Skip for now"
+    "skip": "Skip for now",
+    "tutorIntro": {
+      "title": "You already know enough for a short chat",
+      "body": "Want to meet Rachel, your teacher? A 3–5 minute conversation about things you already know. No pressure, and you can stop any time.",
+      "go": "Let's meet",
+      "later": "Maybe later"
+    }
   },
   "landingV2": {
     "nav": {
