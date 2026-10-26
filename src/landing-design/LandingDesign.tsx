@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { CHROME_EXTENSION_URL } from "../config";
 import { testimonials } from "../data/testimonials";
 import { supportEmailHref } from "../lib/supportContact";
-import { UiLanguageSelect } from "../components/UiLanguageSelect";
+import { setUiLocale, type UiLocale } from "../i18n";
 import designCss from "./design.css?inline";
+import pickerCss from "./picker.css?inline";
 import bodyHtml from "./body.html?raw";
 import { initLanding } from "./init";
 import "./fonts.css";
@@ -41,9 +42,10 @@ export default function LandingDesign() {
     if (!host) return;
     const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
     const body = bodyHtml.replace("<!--TESTIMONIALS-->", testimonialsHtml());
-    shadow.innerHTML = `<style>${designCss}</style><div class="gl-root js-motion">${body}</div>`;
+    shadow.innerHTML = `<style>${designCss}${pickerCss}</style><div class="gl-root js-motion">${body}</div>`;
     return initLanding(shadow, {
       navigate,
+      setLanguage: (code: string) => void setUiLocale(code as UiLocale),
       destinations: {
         signup: START_PATH,
         login: "/login",
@@ -54,12 +56,5 @@ export default function LandingDesign() {
       },
     });
   }, [navigate]);
-  return (
-    <>
-      <div ref={hostRef} data-testid="landing-design" />
-      <div className="gl-language">
-        <UiLanguageSelect compact />
-      </div>
-    </>
-  );
+  return <div ref={hostRef} data-testid="landing-design" />;
 }

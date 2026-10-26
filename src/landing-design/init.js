@@ -197,6 +197,18 @@ $('#conversation-demo').addEventListener('click', () => { showingSummary = !show
 
 cleanups.push(() => { if (matchResizeObserver) matchResizeObserver.disconnect(); if ('speechSynthesis' in window) speechSynthesis.cancel(); clearTimeout(toastTimer); });
 
+// Language picker: closes on outside click / Escape; the choice switches the whole interface.
+{
+ const picker = $('.lang-picker');
+ const button = $('.lang-button');
+ const menu = $('.lang-menu');
+ const setOpen = open => { menu.hidden = !open; button.setAttribute('aria-expanded', String(open)); };
+ on(button, 'click', e => { e.stopPropagation(); setOpen(menu.hidden); if (!menu.hidden) $('[aria-selected="true"]', menu).focus(); });
+ on(root, 'click', e => { if (!picker.contains(e.target)) setOpen(false); });
+ on(root, 'keydown', e => { if (e.key === 'Escape') { setOpen(false); button.focus(); } });
+ $$('[data-lang]', menu).forEach(option => on(option, 'click', () => { setOpen(false); ctx.setLanguage(option.dataset.lang); }));
+}
+
 // Real destinations: in-app routes go through the router, the rest open normally.
 on(root, 'click', e => {
  const link = e.target.closest('[data-destination], a[href^="#"]');
