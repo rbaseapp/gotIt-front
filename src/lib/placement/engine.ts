@@ -33,6 +33,8 @@ const PROBE_SCALE = 10;
 const SLIP = 0.05;
 const VERIFY_SLIP = 0.06;
 const GUESS_CHANCE = 1 / 3;
+/** Chance of picking the right meaning of a word one does not know (4 options, plus a "don't know" button). */
+const MEANING_GUESS = 0.18;
 const PRIOR_SD = 18;
 
 type Rng = () => number;
@@ -55,6 +57,12 @@ export type SessionOptions = {
   prior: number;
   /** "quick" is used for learners who only want to save words from the web. */
   mode?: "full" | "quick";
+  /**
+   * "meaning": every word is a multiple-choice meaning question (needs glosses in the
+   * learner's language), so the answer is checked, not claimed.
+   * "yesno": "I know it / not yet", with non-words to estimate guessing.
+   */
+  format?: "yesno" | "meaning";
   rng?: Rng;
   /** Posterior spread (in units) at which the check stops. Tuned by simulation. */
   sdTarget?: number;
@@ -64,6 +72,7 @@ export class PlacementSession {
   readonly log: Observation[] = [];
   private readonly rng: Rng;
   private readonly mode: "full" | "quick";
+  private readonly format: "yesno" | "meaning";
   private readonly priorMean: number;
   private readonly sdOverride?: number;
   private readonly seen = new Set<string>();
@@ -78,6 +87,7 @@ export class PlacementSession {
   ) {
     this.rng = options.rng ?? Math.random;
     this.mode = options.mode ?? "full";
+    this.format = options.format ?? "yesno";
     this.priorMean = clamp(options.prior, 0, 84);
     this.sdOverride = options.sdTarget;
   }
@@ -103,9 +113,11 @@ export class PlacementSession {
 
   /* ---------------- limits ---------------- */
   private get maxCards() {
+    if (this.format === "meaning") return this.mode === "full" ? 30 : 20;
     return this.mode === "full" ? 40 : 22;
   }
   private get maxPseudo() {
+    if (this.format === "meaning") return 0;
     return this.mode === "full" ? 10 : 6;
   }
   private get sdTarget() {
@@ -114,6 +126,10 @@ export class PlacementSession {
   }
   private get minCards() {
     const beginner = this.estimate().median < 8;
+    if (this.format === "meaning") {
+      if (this.mode === "full") return beginner ? 12 : 16;
+      return beginner ? 10 : 12;
+    }
     if (this.mode === "full") return beginner ? 14 : 20;
     return beginner ? 10 : 12;
   }
@@ -139,6 +155,11 @@ export class PlacementSession {
         if (o.t === "card") {
           if (!o.real) continue;
           const know = sigmoid((theta - o.d) / WORD_SCALE);
+          if (o.mc) {
+            const pCorrect = know * (1 - SLIP) + (1 - know) * MEANING_GUESS;
+            p *= o.yes ? pCorrect : 1 - pCorrect;
+            continue;
+          }
           const pYes = know * (1 - SLIP) + (1 - know) * fa;
           p *= o.yes ? pYes : 1 - pYes;
         } else if (o.t === "verify") {
@@ -220,14 +241,48 @@ export class PlacementSession {
       index < 2 ? Math.max(1, median - 10) : median - 4 + this.rng() * 10;
     let best: { word: PlacementBank["words"][number]; score: number } | null =
       null;
+    const meaning = this.format === "meaning";
     for (const word of this.bank.words) {
       const key = word[0].toLowerCase();
       if (this.seen.has(key)) continue;
+      if (meaning && !word[2]) continue;
       let score = Math.abs(word[1] - target) + this.rng() * 1.5;
       if (word[1] === this.lastD) score += 4;
       if (!best || score < best.score) best = { word, score };
     }
     if (!best) return null;
+    if (meaning) {
+      const gloss = best.word[2]!;
+      // Hebrew infinitives start with lamed: keep verbs among verbs so the
+      // part of speech does not give the answer away.
+      const looksLikeVerb = (g: string) =>
+        g.startsWith("ל") && !g.includes(" ");
+      const verb = looksLikeVerb(gloss);
+      const candidates = this.bank.words.filter(
+        (other) =>
+          other[2] &&
+          other[2] !== gloss &&
+          other[0] !== best!.word[0] &&
+          Math.abs(other[1] - best!.word[1]) <= 16,
+      );
+      const sameKind = candidates.filter(
+        (other) => looksLikeVerb(other[2]!) === verb,
+      );
+      const distractors = this.shuffle(
+        sameKind.length >= 6 ? sameKind : candidates,
+      )
+        .map((other) => other[2]!)
+        .filter((g, i, all) => all.indexOf(g) === i)
+        .slice(0, 3);
+      const options = this.shuffle([gloss, ...distractors]);
+      return {
+        kind: "word",
+        text: best.word[0],
+        d: best.word[1],
+        options,
+        answer: options.indexOf(gloss),
+      };
+    }
     return { kind: "word", text: best.word[0], d: best.word[1] };
   }
 
@@ -237,7 +292,15 @@ export class PlacementSession {
     this.cardCount += 1;
     if (!real) this.pseudoShown += 1;
     else this.lastD = card.d;
-    this.log.push({ t: "card", text: card.text, real, d: card.d, yes, ms });
+    this.log.push({
+      t: "card",
+      text: card.text,
+      real,
+      d: card.d,
+      yes,
+      ms,
+      ...(card.options ? { mc: true } : {}),
+    });
   }
 
   /** Undo the last card answer (the learner tapped back). */
@@ -265,6 +328,8 @@ export class PlacementSession {
   }
 
   verifyItems(count = 4): VerifyItem[] {
+    // Meaning questions already check every answer; no separate verification.
+    if (this.format === "meaning") return [];
     const { median } = this.estimate();
     const glosses = new Map(
       this.bank.words.filter((w) => w[2]).map((w) => [w[0].toLowerCase(), w]),

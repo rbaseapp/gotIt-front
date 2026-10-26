@@ -35,10 +35,14 @@ const LITERACY_ITEMS = [
 ];
 
 const EXPECTED_CARDS = 22;
+const EXPECTED_MEANING = 18;
 const HURRY_MS = 250;
 
 export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Meaning questions need glosses in the learner's language; only Hebrew has them so far.
+  const meaning =
+    (i18n.resolvedLanguage ?? "en") === "he" && bank.words.some((w) => w[2]);
   const session = useMemo(
     () =>
       PlacementSession.restore(
@@ -46,6 +50,7 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
         {
           prior: priorFor(state.focus),
           mode: state.focus === "words" ? "quick" : "full",
+          format: meaning ? "meaning" : "yesno",
           rng: seededRandom((state.startedAt % 1_000_000) + state.log.length),
         },
         state.log.length ? state.log : state.landing,
@@ -172,7 +177,9 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       <OnboardingFrame
         step="pocket"
         title={t("start.pocket.introTitle")}
-        body={t("start.pocket.introBody")}
+        body={t(
+          meaning ? "start.pocket.introBodyMeaning" : "start.pocket.introBody",
+        )}
         onBack={onBack}
         primary={
           <button
@@ -190,10 +197,22 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       >
         <div className="pocket-card" aria-hidden="true">
           <p className="pocket-word">apple</p>
-          <div className="pocket-answers">
-            <span className="ob-btn">{t("start.pocket.know")}</span>
-            <span className="ob-btn ghost">{t("start.pocket.unknown")}</span>
-          </div>
+          {meaning ? (
+            <div className="pocket-options">
+              <span className="ob-btn ghost">
+                {t("start.pocket.sampleRight")}
+              </span>
+              <span className="ob-btn ghost">
+                {t("start.pocket.sampleOther")}
+              </span>
+              <span className="ob-btn ghost">{t("start.pocket.dontKnow")}</span>
+            </div>
+          ) : (
+            <div className="pocket-answers">
+              <span className="ob-btn">{t("start.pocket.know")}</span>
+              <span className="ob-btn ghost">{t("start.pocket.unknown")}</span>
+            </div>
+          )}
         </div>
       </OnboardingFrame>
     );
@@ -255,7 +274,10 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
     );
 
   // cards
-  const left = Math.max(0, EXPECTED_CARDS - session.cards);
+  const left = Math.max(
+    0,
+    (meaning ? EXPECTED_MEANING : EXPECTED_CARDS) - session.cards,
+  );
   const progress =
     left > 16 ? "long" : left > 8 ? "minute" : left > 3 ? "half" : "almost";
   return (
@@ -294,7 +316,7 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           if (swipe.current === null) return;
           const dx = e.clientX - swipe.current;
           swipe.current = null;
-          if (Math.abs(dx) < 90) return;
+          if (Math.abs(dx) < 90 || card?.options) return;
           const rtl = document.documentElement.dir === "rtl";
           answerCard(rtl ? dx > 0 : dx < 0);
         }}
@@ -313,18 +335,42 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
             <p className="pocket-word" lang="en" dir="ltr" key={card.text}>
               {card.text}
             </p>
-            <div className="pocket-answers">
-              <button className="ob-btn" onClick={() => answerCard(true)}>
-                <Check size={18} aria-hidden="true" />
-                {t("start.pocket.know")}
-              </button>
-              <button
-                className="ob-btn ghost"
-                onClick={() => answerCard(false)}
+            {card.options ? (
+              <div
+                className="pocket-options"
+                role="group"
+                aria-label={t("start.pocket.pickMeaning")}
               >
-                {t("start.pocket.unknown")}
-              </button>
-            </div>
+                {card.options.map((option, index) => (
+                  <button
+                    key={option}
+                    className="ob-btn ghost"
+                    onClick={() => answerCard(index === card.answer)}
+                  >
+                    {option}
+                  </button>
+                ))}
+                <button
+                  className="ob-link pocket-dont-know"
+                  onClick={() => answerCard(false)}
+                >
+                  {t("start.pocket.dontKnow")}
+                </button>
+              </div>
+            ) : (
+              <div className="pocket-answers">
+                <button className="ob-btn" onClick={() => answerCard(true)}>
+                  <Check size={18} aria-hidden="true" />
+                  {t("start.pocket.know")}
+                </button>
+                <button
+                  className="ob-btn ghost"
+                  onClick={() => answerCard(false)}
+                >
+                  {t("start.pocket.unknown")}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

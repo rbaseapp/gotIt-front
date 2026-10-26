@@ -78,7 +78,12 @@
       "play": "Play",
       "playAgain": "Play again",
       "noSound": "No sound? Skip",
-      "calculating": "Working out your level…"
+      "calculating": "Working out your level…",
+      "introBodyMeaning": "Pick the right meaning of each word. Not sure? Tap “I don't know”, no guessing. About 3 minutes.",
+      "dontKnow": "I don't know",
+      "pickMeaning": "Pick the meaning",
+      "sampleRight": "apple",
+      "sampleOther": "window"
     },
     "result": {
       "title": "Here's what we found",

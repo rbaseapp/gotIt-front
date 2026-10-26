@@ -19,14 +19,19 @@ type Learner = {
   slip?: number;
 };
 
-function runLearner(learner: Learner, seed: number, mode: "full" | "quick" = "full") {
+function runLearner(
+  learner: Learner,
+  seed: number,
+  mode: "full" | "quick" = "full",
+) {
   const rng = seededRandom(seed);
   const session = new PlacementSession(bank, {
     prior: 30,
     mode,
     rng: seededRandom(seed + 7),
   });
-  const knows = (d: number) => rng() < sigmoid((learner.theta - d) / learner.scale);
+  const knows = (d: number) =>
+    rng() < sigmoid((learner.theta - d) / learner.scale);
   for (let card = session.nextCard(); card; card = session.nextCard()) {
     const yes =
       card.kind === "pseudo"
@@ -38,7 +43,10 @@ function runLearner(learner: Learner, seed: number, mode: "full" | "quick" = "fu
   }
   for (const item of session.verifyItems(4)) {
     const truly = knows(item.d);
-    const picked = truly && rng() > 0.05 ? item.answer : (item.answer + 1) % item.options.length;
+    const picked =
+      truly && rng() > 0.05
+        ? item.answer
+        : (item.answer + 1) % item.options.length;
     session.answerVerify(item, picked, 4000);
   }
   for (const skill of ["reading", "listening"] as const) {
@@ -46,14 +54,21 @@ function runLearner(learner: Learner, seed: number, mode: "full" | "quick" = "fu
       const probe = session.nextProbe(skill);
       if (!probe) break;
       const p = 1 / 3 + (2 / 3) * sigmoid((learner.theta - probe.d) / 10);
-      session.answerProbe(probe, skill, rng() < p ? probe.a : (probe.a + 1) % 3, 9000);
+      session.answerProbe(
+        probe,
+        skill,
+        rng() < p ? probe.a : (probe.a + 1) % 3,
+        9000,
+      );
     }
   }
   return session;
 }
 
 const percentile = (values: number[], q: number) =>
-  [...values].sort((a, b) => a - b)[Math.min(values.length - 1, Math.floor(values.length * q))]!;
+  [...values].sort((a, b) => a - b)[
+    Math.min(values.length - 1, Math.floor(values.length * q))
+  ]!;
 
 describe("placement bank", () => {
   it("covers every band, with no loanwords and unique words", () => {
@@ -103,7 +118,10 @@ describe("placement engine (simulated learners)", () => {
 
   it("does not hand a high level to someone who says 'know' to everything", () => {
     for (let seed = 0; seed < 10; seed++) {
-      const s = runLearner({ theta: 0, scale: 10, overclaim: 1, slip: 0 }, 9000 + seed);
+      const s = runLearner(
+        { theta: 0, scale: 10, overclaim: 1, slip: 0 },
+        9000 + seed,
+      );
       const r = s.result({ literacy: "reader", seconds: 120 });
       expect(r.uncertain).toBe(true);
       expect(r.reliability).toBeLessThan(0.5);
@@ -112,7 +130,10 @@ describe("placement engine (simulated learners)", () => {
 
   it("ends early and low for someone who knows almost nothing", () => {
     for (let seed = 0; seed < 8; seed++) {
-      const s = runLearner({ theta: 0, scale: 8, overclaim: 0.02 }, 12000 + seed);
+      const s = runLearner(
+        { theta: 0, scale: 8, overclaim: 0.02 },
+        12000 + seed,
+      );
       expect(s.estimate().median).toBeLessThanOrEqual(9);
       expect(s.cards).toBeLessThanOrEqual(22);
     }
@@ -123,7 +144,11 @@ describe("placement engine (simulated learners)", () => {
     const errors: number[] = [];
     for (let k = 0; k < 40; k++) {
       const theta = 8 + (k % 8) * 9;
-      const s = runLearner({ theta, scale: 10, overclaim: 0.05 }, 15000 + k, "quick");
+      const s = runLearner(
+        { theta, scale: 10, overclaim: 0.05 },
+        15000 + k,
+        "quick",
+      );
       cards.push(s.cards);
       errors.push(Math.abs(s.estimate().median - theta));
     }
@@ -167,7 +192,10 @@ describe("placement engine (simulated learners)", () => {
     const first = up.nextProbe("reading")!;
     up.answerProbe(first, "reading", first.a, 5000);
     expect(up.nextProbe("reading")!.d).toBeGreaterThan(first.d);
-    const down = new PlacementSession(bank, { prior: 30, rng: seededRandom(5) });
+    const down = new PlacementSession(bank, {
+      prior: 30,
+      rng: seededRandom(5),
+    });
     const same = down.nextProbe("reading")!;
     down.answerProbe(same, "reading", (same.a + 1) % 3, 5000);
     expect(down.nextProbe("reading")!.d).toBeLessThan(same.d);
@@ -238,13 +266,81 @@ describe("plan", () => {
   });
 
   it("marks plans as open when there is no deadline", () => {
-    const plan = buildPlan({ startUnit: 10, goal: "talk", minutesPerDay: 15, deadlineMonths: 0 });
+    const plan = buildPlan({
+      startUnit: 10,
+      goal: "talk",
+      minutesPerDay: 15,
+      deadlineMonths: 0,
+    });
     expect(plan.feasibility).toBe("open");
     expect(plan.minutesForDeadline).toBeNull();
   });
 
   it("calls a deadline realistic when the daily time is enough", () => {
-    const plan = buildPlan({ startUnit: 25, goal: "travel", minutesPerDay: 20, deadlineMonths: 3 });
+    const plan = buildPlan({
+      startUnit: 25,
+      goal: "travel",
+      minutesPerDay: 20,
+      deadlineMonths: 3,
+    });
     expect(plan.feasibility).toBe("ok");
+  });
+});
+
+describe("placement engine, meaning questions", () => {
+  function runMeaning(theta: number, seed: number) {
+    const rng = seededRandom(seed);
+    const session = new PlacementSession(bank, {
+      prior: 30,
+      mode: "full",
+      format: "meaning",
+      rng: seededRandom(seed + 7),
+    });
+    for (let card = session.nextCard(); card; card = session.nextCard()) {
+      expect(card.options).toHaveLength(4);
+      expect(
+        card.options!.filter((o) => o === card.options![card.answer!]),
+      ).toHaveLength(1);
+      const knows = rng() < sigmoid((theta - card.d) / 6);
+      // Guessing the meaning of an unknown word is rare: most say "don't know".
+      const correct = knows ? rng() > 0.04 : rng() < 0.15;
+      session.answerCard(card, correct, 3000);
+    }
+    return session;
+  }
+
+  it("never shows non-words and asks for a checked answer every time", () => {
+    const session = runMeaning(30, 3);
+    expect(session.log.every((o) => o.t !== "card" || (o.real && o.mc))).toBe(
+      true,
+    );
+    expect(session.verifyItems(4)).toEqual([]);
+  });
+
+  it("places honest learners within a few units in under 30 questions", () => {
+    const errors: number[] = [];
+    const counts: number[] = [];
+    for (const theta of [4, 10, 20, 32, 45, 60, 72]) {
+      for (let seed = 1; seed <= 10; seed++) {
+        const session = runMeaning(theta, seed * 31 + theta);
+        errors.push(Math.abs(session.estimate().median - theta));
+        counts.push(session.cards);
+      }
+    }
+    expect(percentile(errors, 0.5)).toBeLessThanOrEqual(5);
+    expect(percentile(counts, 0.9)).toBeLessThanOrEqual(30);
+  });
+
+  it("cannot be inflated by saying 'know' - only right answers count", () => {
+    const session = new PlacementSession(bank, {
+      prior: 30,
+      mode: "full",
+      format: "meaning",
+      rng: seededRandom(5),
+    });
+    // Someone who always picks the first option (a blind guess).
+    for (let card = session.nextCard(); card; card = session.nextCard())
+      session.answerCard(card, card.answer === 0, 3000);
+    expect(session.estimate().median).toBeLessThan(25);
   });
 });

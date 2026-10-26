@@ -26,7 +26,14 @@ export type PlacementBank = {
   probes: { reading: Probe[]; listening: Probe[] };
 };
 
-export type Card = { kind: "word" | "pseudo"; text: string; d: number };
+export type Card = {
+  kind: "word" | "pseudo";
+  text: string;
+  d: number;
+  /** Meaning question: the gloss options and the index of the right one. */
+  options?: string[];
+  answer?: number;
+};
 
 export type VerifyItem = {
   text: string;
@@ -43,6 +50,8 @@ export type Observation =
       d: number;
       yes: boolean;
       ms: number;
+      /** Answered as a meaning question: `yes` then means "picked the right meaning". */
+      mc?: boolean;
     }
   | { t: "verify"; text: string; d: number; correct: boolean; ms: number }
   | {

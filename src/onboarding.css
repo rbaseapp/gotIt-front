@@ -715,3 +715,25 @@ button.ob-card:hover {
 .ob-skip:hover {
   color: var(--ink, #22322c);
 }
+
+.pocket-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.pocket-options .ob-btn {
+  min-height: 52px;
+  justify-content: center;
+  font-size: 1.05rem;
+}
+.pocket-dont-know {
+  grid-column: 1 / -1;
+  justify-self: center;
+  padding: 8px 14px;
+}
+@media (max-width: 520px) {
+  .pocket-options {
+    grid-template-columns: 1fr;
+  }
+}
