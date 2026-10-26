@@ -204,7 +204,8 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           </button>
         }
       >
-        <div className="pocket-card" aria-hidden="true">
+        <p className="ob-note pocket-example">{t("start.pocket.example")}</p>
+        <div className="pocket-card pocket-sample" aria-hidden="true">
           <p className="pocket-word">apple</p>
           {meaning ? (
             <div className="pocket-options">
@@ -223,6 +224,9 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
             </div>
           )}
         </div>
+        <p className="ob-big pocket-press-start">
+          {t("start.pocket.pressStart")}
+        </p>
       </OnboardingFrame>
     );
 

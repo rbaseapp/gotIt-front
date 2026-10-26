@@ -49,7 +49,9 @@
       "pickMeaning": "בחרו את הפירוש",
       "sampleRight": "תפוח",
       "sampleOther": "חלון",
-      "counter": "שאלה {{current}} מתוך עד {{total}}"
+      "counter": "שאלה {{current}} מתוך עד {{total}}",
+      "example": "דוגמה בלבד, כך זה עובד",
+      "pressStart": "לחצו על \"מתחילים\" למטה כדי להתחיל."
     },
     "result": {
       "title": "זה מה שמצאנו",

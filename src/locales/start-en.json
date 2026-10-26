@@ -47,7 +47,9 @@
       "pickMeaning": "Pick the meaning",
       "sampleRight": "apple",
       "sampleOther": "window",
-      "counter": "Question {{current}} of up to {{total}}"
+      "counter": "Question {{current}} of up to {{total}}",
+      "example": "Example, just to show how it works",
+      "pressStart": "Tap \"Start\" below to begin."
     },
     "result": {
       "title": "Here's what we found",

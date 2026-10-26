@@ -47,7 +47,9 @@
       "fakeFound_other": "اكتشفنا {{count}} كلمة غير موجودة 😄 لهذا وُضعت.",
       "calculating": "نحدد مستواك…",
       "dontKnow": "لا أعرف",
-      "counter": "السؤال {{current}} من أصل {{total}} كحد أقصى"
+      "counter": "السؤال {{current}} من أصل {{total}} كحد أقصى",
+      "example": "مثال فقط لتوضيح الطريقة",
+      "pressStart": "اضغط «ابدأ» في الأسفل للبدء."
     },
     "result": {
       "title": "هذا ما وجدناه",

@@ -43,7 +43,9 @@
       "fakeFound_other": "Wir haben {{count}} Wörter erwischt, die es nicht gibt 😄 dafür sind sie genau da.",
       "calculating": "Wir ermitteln dein Niveau…",
       "dontKnow": "Ich weiß es nicht",
-      "counter": "Frage {{current}} von höchstens {{total}}"
+      "counter": "Frage {{current}} von höchstens {{total}}",
+      "example": "Nur ein Beispiel, so funktioniert es",
+      "pressStart": "Tippe unten auf „Start“, um zu beginnen."
     },
     "result": {
       "title": "Das haben wir gefunden",

@@ -43,7 +43,9 @@
       "fakeFound_other": "Nous avons repéré {{count}} mots qui n'existent pas 😄 c'est exactement à ça qu'ils servent.",
       "calculating": "Calcul de votre niveau…",
       "dontKnow": "Je ne sais pas",
-      "counter": "Question {{current}} sur {{total}} au plus"
+      "counter": "Question {{current}} sur {{total}} au plus",
+      "example": "Simple exemple du fonctionnement",
+      "pressStart": "Touchez « Commencer » en bas pour commencer."
     },
     "result": {
       "title": "Voici ce que nous avons trouvé",

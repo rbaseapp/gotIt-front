@@ -42,7 +42,9 @@
       "fakeFound_other": "我们发现了 {{count}} 个不存在的词 😄 它们正是为此而设。",
       "calculating": "正在计算你的水平…",
       "dontKnow": "我不知道",
-      "counter": "第 {{current}} 题，最多 {{total}} 题"
+      "counter": "第 {{current}} 题，最多 {{total}} 题",
+      "example": "仅为示例，演示玩法",
+      "pressStart": "点下方的“开始”即可开始。"
     },
     "result": {
       "title": "这是我们的发现",
