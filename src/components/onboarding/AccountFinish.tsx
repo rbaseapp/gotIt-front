@@ -55,30 +55,35 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
       }
     })();
   }, [state, t, toast, navigate, user]);
-  if (phase === "tutor")
-    return (
-      <div className="ob ob-lock" style={{ minHeight: 0 }}>
-        <img className="ob-moochi" src={rachel} alt="" draggable={false} />
-        <div className="ob-bubble">
-          <h1 tabIndex={-1} data-ob-title>
-            {t("start.tutorIntro.title")}
-          </h1>
-          <p>{t("start.tutorIntro.body")}</p>
-        </div>
-        <Link className="ob-btn" to="/private-lesson?practice=free&intro=1">
-          {t("start.tutorIntro.go")}
-        </Link>
-        <Link className="ob-link" to="/dashboard" replace>
-          {t("start.tutorIntro.later")}
-        </Link>
-      </div>
-    );
+  if (phase === "tutor") return <TutorInvite />;
   return (
     <div className="ob-saving" role="status">
       <div>
         <LoaderCircle className="spin" size={34} />
         <p>{t("start.save.saving")}</p>
       </div>
+    </div>
+  );
+}
+
+/** The invitation to a first short conversation with the teacher, shown to learners who can hold one. */
+export function TutorInvite() {
+  const { t } = useTranslation();
+  return (
+    <div className="ob ob-lock" style={{ minHeight: 0 }}>
+      <img className="ob-moochi" src={rachel} alt="" draggable={false} />
+      <div className="ob-bubble">
+        <h1 tabIndex={-1} data-ob-title>
+          {t("start.tutorIntro.title")}
+        </h1>
+        <p>{t("start.tutorIntro.body")}</p>
+      </div>
+      <Link className="ob-btn" to="/private-lesson?practice=free&intro=1">
+        {t("start.tutorIntro.go")}
+      </Link>
+      <Link className="ob-link" to="/dashboard" replace>
+        {t("start.tutorIntro.later")}
+      </Link>
     </div>
   );
 }

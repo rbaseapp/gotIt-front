@@ -358,16 +358,23 @@ export function TalkStep({
   state,
   update,
   next,
+  startAtQuestion = false,
 }: {
   state: OnboardingState;
   update: Update;
   next: () => void;
+  /** Skips the intro screen (the flow preview uses it). */
+  startAtQuestion?: boolean;
 }) {
   const { t } = useTranslation();
-  const check = useRef<TalkCheck | null>(null);
-  const [started, setStarted] = useState(false);
-  const [question, setQuestion] = useState<ReturnType<TalkCheck["next"]>>(null);
   const theta = Math.min(84, Math.max(1, state.result!.theta + state.adjust));
+  const check = useRef<TalkCheck | null>(
+    startAtQuestion ? new TalkCheck(theta, topicForGoal(state.goal)) : null,
+  );
+  const [started, setStarted] = useState(startAtQuestion);
+  const [question, setQuestion] = useState<ReturnType<TalkCheck["next"]>>(() =>
+    startAtQuestion ? (check.current?.next() ?? null) : null,
+  );
   const begin = () => {
     check.current = new TalkCheck(theta, topicForGoal(state.goal));
     setQuestion(check.current.next());

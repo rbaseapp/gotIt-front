@@ -149,6 +149,11 @@ const AchievementsPage = lazy(() =>
 const LandingPage = lazy(() =>
   import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })),
 );
+const FlowPreviewPage = lazy(() =>
+  import("./pages/FlowPreviewPage").then((m) => ({
+    default: m.FlowPreviewPage,
+  })),
+);
 const StartPage = lazy(() =>
   import("./pages/StartPage").then((m) => ({ default: m.StartPage })),
 );
@@ -208,6 +213,15 @@ export default function App() {
           <LandingPage />
         </Suspense>
       );
+    if (import.meta.env.DEV && normalizedPath.startsWith("/flow-preview"))
+      return (
+        <Suspense fallback={fallback}>
+          <Routes>
+            <Route path="/flow-preview" element={<FlowPreviewPage />} />
+            <Route path="/flow-preview/:screen" element={<FlowPreviewPage />} />
+          </Routes>
+        </Suspense>
+      );
     if (normalizedPath === "/start" || normalizedPath.startsWith("/start/"))
       return (
         <Suspense fallback={fallback}>
@@ -237,6 +251,15 @@ export default function App() {
           >
             <Routes>
               <Route path="/start" element={<StartPage />} />
+              {import.meta.env.DEV && (
+                <>
+                  <Route path="/flow-preview" element={<FlowPreviewPage />} />
+                  <Route
+                    path="/flow-preview/:screen"
+                    element={<FlowPreviewPage />}
+                  />
+                </>
+              )}
               <Route
                 path="/learn/session/:type"
                 element={
