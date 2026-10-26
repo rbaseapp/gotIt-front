@@ -498,21 +498,23 @@ export function ResultStep({
             })}
           </small>
         </div>
-        <div className="ob-section">
-          <small>{t("start.result.skills")}</small>
-          {skills.map(([name, status]) => (
-            <div
-              key={name}
-              className="ob-skill-row"
-              style={{ ["--w" as string]: SKILL_WIDTH[status] }}
-            >
-              <span>{t(`start.result.skill.${name}`)}</span>
-              <span>{t(`start.result.status.${status}`)}</span>
-              <i />
-            </div>
-          ))}
-          <small>{t("start.result.speaking")}</small>
-        </div>
+        {result.cards > 0 && (
+          <div className="ob-section">
+            <small>{t("start.result.skills")}</small>
+            {skills.map(([name, status]) => (
+              <div
+                key={name}
+                className="ob-skill-row"
+                style={{ ["--w" as string]: SKILL_WIDTH[status] }}
+              >
+                <span>{t(`start.result.skill.${name}`)}</span>
+                <span>{t(`start.result.status.${status}`)}</span>
+                <i />
+              </div>
+            ))}
+            <small>{t("start.result.speaking")}</small>
+          </div>
+        )}
         <small>{t("start.result.note")}</small>
         {fake > 0 && (
           <small>{t("start.pocket.fakeFound", { count: fake })}</small>

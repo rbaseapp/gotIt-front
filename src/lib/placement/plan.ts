@@ -47,7 +47,10 @@ export const GOAL_TARGET_BAND: Record<Goal, Band> = {
 
 /** The levels a learner can aim for from where they stand: always above the start, up to C1. */
 export function targetChoices(startUnit: number): Band[] {
-  const above = BAND_ORDER.filter((band) => BAND_END[band] > startUnit + 3);
+  // Nobody sets Pre-A1 as a goal, so the choices begin at A1.
+  const above = BAND_ORDER.filter(
+    (band) => band !== "Pre-A1" && BAND_END[band] > startUnit + 3,
+  );
   return above.length ? above : ["C1"];
 }
 

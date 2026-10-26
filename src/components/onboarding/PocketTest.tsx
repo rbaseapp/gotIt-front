@@ -51,7 +51,10 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           format: meaning ? "meaning" : "yesno",
           maxQuestions: CHECK_QUESTIONS,
           // A level the learner chose is a good first guess; without one we know little.
-          ...(state.selfLevel !== null ? { priorSd: 12 } : {}),
+          ...(state.selfLevel !== null
+            ? // Nothing is asked from "zero", so the first guess is the answer.
+              { priorSd: state.selfLevel === 0 ? 3 : 12 }
+            : {}),
           rng: seededRandom((state.startedAt % 1_000_000) + state.log.length),
         },
         state.log.length ? state.log : state.landing,

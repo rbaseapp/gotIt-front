@@ -73,3 +73,17 @@ describe("the 10-question check", () => {
     });
   }
 });
+
+it("keeps someone who says 'zero' at the very start without asking anything", () => {
+  const session = new PlacementSession(bank, {
+    prior: SELF_UNITS[0]!,
+    format: "yesno",
+    maxQuestions: 10,
+    priorSd: 3,
+    rng: seededRandom(1),
+  });
+  const result = session.result({ literacy: "starting", seconds: 0 });
+  expect(result.band).toBe("Pre-A1");
+  expect(result.startUnit).toBeLessThanOrEqual(3);
+  expect(result.knownEstimate).toBeLessThanOrEqual(300);
+});
