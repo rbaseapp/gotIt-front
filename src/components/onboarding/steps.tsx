@@ -25,6 +25,8 @@ import {
   talkDelta,
   topicForGoal,
 } from "../../lib/placement/conversationCheck";
+import { useVoiceQuestion } from "../../lib/onboarding/voiceAnswer";
+import { VoiceStatus } from "./VoiceStatus";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { EmailAuthForm } from "../EmailAuthForm";
 import { GoogleSignIn } from "../GoogleSignIn";
@@ -444,6 +446,33 @@ export function TalkStep({
     );
   const done = check.current?.answers.length ?? 0;
   return (
+    <TalkQuestion state={state} question={question} done={done} reply={reply} />
+  );
+}
+
+function TalkQuestion({
+  state,
+  question,
+  done,
+  reply,
+}: {
+  state: OnboardingState;
+  question: NonNullable<ReturnType<TalkCheck["next"]>>;
+  done: number;
+  reply: (index: number | null) => void;
+}) {
+  const { t } = useTranslation();
+  const voiceMode = state.answerMode === "voice";
+  const voice = useVoiceQuestion({
+    enabled: voiceMode,
+    promptKey: question.item.id,
+    say: [{ text: question.item.prompt, lang: "en-US" }],
+    choices: question.replies,
+    listenLanguage: "en-US",
+    dkLanguage: "en",
+    onAnswer: (answer) => reply(answer.kind === "dk" ? null : answer.index),
+  });
+  return (
     <OnboardingFrame
       step="talk"
       title={
@@ -452,7 +481,7 @@ export function TalkStep({
         </span>
       }
       body={t("start.talk.pick", { current: done + 1, total: TALK_QUESTIONS })}
-      voiceText={question.item.prompt}
+      voiceText={voiceMode ? undefined : question.item.prompt}
       voiceLang="en"
     >
       <div className="ob-replies" role="group">
@@ -471,6 +500,13 @@ export function TalkStep({
           {t("start.talk.dontKnow")}
         </button>
       </div>
+      {voiceMode && (
+        <VoiceStatus
+          state={voice.state}
+          heard={voice.heard}
+          retry={voice.retry}
+        />
+      )}
     </OnboardingFrame>
   );
 }

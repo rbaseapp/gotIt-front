@@ -4,6 +4,12 @@ import { Backpack, Check, Undo2, Volume2 } from "lucide-react";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { PlacementSession, seededRandom } from "../../lib/placement/engine";
 import { canSpeak, speak } from "../../lib/placement/speech";
+import {
+  RECOGNITION_LANGUAGE,
+  useVoiceQuestion,
+  type VoiceChoice,
+} from "../../lib/onboarding/voiceAnswer";
+import { VoiceStatus } from "./VoiceStatus";
 import type {
   Card,
   Literacy,
@@ -173,6 +179,45 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
 
   const swipe = useRef<number | null>(null);
 
+  // Voice mode: Rachel says the word, then listens for the meaning (or "I know it" / "not yet").
+  const uiLanguage = i18n.resolvedLanguage ?? "en";
+  const voiceCards = state.answerMode === "voice" && phase === "cards";
+  const cardChoices = card?.options ?? [
+    t("start.pocket.know"),
+    t("start.pocket.unknown"),
+  ];
+  const cardVoice = useVoiceQuestion({
+    enabled: voiceCards && Boolean(card),
+    promptKey: card ? card.text : null,
+    say: card
+      ? [
+          { text: card.text, lang: "en-US" },
+          ...(session.cards === 0
+            ? [
+                {
+                  text: t(
+                    card.options
+                      ? "start.voice.askMeaning"
+                      : "start.voice.askKnow",
+                  ),
+                  lang: RECOGNITION_LANGUAGE[uiLanguage] ?? "en-US",
+                },
+              ]
+            : []),
+        ]
+      : [],
+    choices: cardChoices,
+    listenLanguage: RECOGNITION_LANGUAGE[uiLanguage] ?? "en-US",
+    dkLanguage: uiLanguage,
+    onAnswer: (answer: VoiceChoice) => {
+      if (!card) return;
+      if (answer.kind === "dk") return answerCard(false);
+      answerCard(
+        card.options ? answer.index === card.answer : answer.index === 0,
+      );
+    },
+  });
+
   /* ----- screens ----- */
   if (phase === "intro")
     return (
@@ -256,6 +301,7 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
         key={probe.item.id}
         probe={probe.item}
         skill={probe.skill}
+        voice={state.answerMode === "voice"}
         onSkip={() => finish(literacy ?? "reader")}
         onAnswer={(picked) => {
           session.answerProbe(probe.item, probe.skill, picked, 8000);
@@ -379,6 +425,13 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
           </>
         )}
       </div>
+      {voiceCards && card && (
+        <VoiceStatus
+          state={cardVoice.state}
+          heard={cardVoice.heard}
+          retry={cardVoice.retry}
+        />
+      )}
       {hurry && (
         <p className="ob-note" role="status">
           {t("start.pocket.slowDown")}
@@ -534,20 +587,37 @@ function VerifyStage({
 function ProbeStage({
   probe,
   skill,
+  voice,
   onAnswer,
   onSkip,
 }: {
   probe: Probe;
   skill: Skill;
+  voice: boolean;
   onAnswer: (picked: number | null) => void;
   onSkip: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [played, setPlayed] = useState(false);
   const listening = skill === "listening";
+  const uiLanguage = i18n.resolvedLanguage ?? "en";
+  // In voice mode the voice turn plays the audio itself, then listens.
+  const spoken = useVoiceQuestion({
+    enabled: voice,
+    promptKey: probe.id,
+    say: listening
+      ? probe.audio
+        ? [{ text: probe.audio, lang: "en-US" }]
+        : []
+      : [{ text: probe.q, lang: RECOGNITION_LANGUAGE[uiLanguage] ?? "en-US" }],
+    choices: probe.options,
+    listenLanguage: RECOGNITION_LANGUAGE[uiLanguage] ?? "en-US",
+    dkLanguage: uiLanguage,
+    onAnswer: (answer) => onAnswer(answer.kind === "dk" ? null : answer.index),
+  });
   useEffect(() => {
-    if (listening && probe.audio) setPlayed(speak(probe.audio));
-  }, [listening, probe]);
+    if (!voice && listening && probe.audio) setPlayed(speak(probe.audio));
+  }, [voice, listening, probe]);
   return (
     <OnboardingFrame
       step="pocket"
@@ -590,6 +660,13 @@ function ProbeStage({
             </button>
           )}
         </div>
+        {voice && (
+          <VoiceStatus
+            state={spoken.state}
+            heard={spoken.heard}
+            retry={spoken.retry}
+          />
+        )}
       </div>
     </OnboardingFrame>
   );

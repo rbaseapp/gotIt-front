@@ -305,6 +305,17 @@
       "skip": "跳过这一步",
       "pick": "第 {{current}} 个问题，共 {{total}} 个 · 选出最好的回答",
       "dontKnow": "我不知道"
+    },
+    "voice": {
+      "speaking": "Rachel 正在提问…",
+      "listening": "正在听… 你可以大声回答",
+      "nomatch": "我没听清。请再试一次，或点选答案。",
+      "nomatchHeard": "我听到的是“{{heard}}”。不太确定，请再试一次或点选。",
+      "unsupported": "此浏览器不支持语音识别，请点选答案。",
+      "denied": "无法使用麦克风，请点选答案。",
+      "retry": "再试一次",
+      "askMeaning": "这个词是什么意思？",
+      "askKnow": "你认识这个词吗？"
     }
   }
 }

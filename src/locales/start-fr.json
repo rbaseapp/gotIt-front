@@ -306,6 +306,17 @@
       "skip": "Passer cette partie",
       "pick": "Question {{current}} sur {{total}} · choisissez la meilleure réponse",
       "dontKnow": "Je ne sais pas"
+    },
+    "voice": {
+      "speaking": "Rachel pose la question…",
+      "listening": "J'écoute… vous pouvez répondre à voix haute",
+      "nomatch": "Je n'ai pas compris. Réessayez ou touchez la réponse.",
+      "nomatchHeard": "J'ai entendu « {{heard}} ». Pas sûre ; réessayez ou touchez.",
+      "unsupported": "Ce navigateur ne reconnaît pas la voix ; touchez votre réponse.",
+      "denied": "Pas d'accès au micro ; touchez votre réponse.",
+      "retry": "Réessayer",
+      "askMeaning": "Que signifie le mot ?",
+      "askKnow": "Connaissez-vous le mot ?"
     }
   }
 }

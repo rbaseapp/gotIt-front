@@ -310,6 +310,17 @@
       "skip": "Skip this part",
       "pick": "Question {{current}} of {{total}} · pick the best reply",
       "dontKnow": "I don't know"
+    },
+    "voice": {
+      "speaking": "Rachel is asking…",
+      "listening": "Listening… you can answer out loud",
+      "nomatch": "I didn't catch that. Try again or tap the answer.",
+      "nomatchHeard": "I heard “{{heard}}”. Not sure, try again or tap.",
+      "unsupported": "This browser can't recognise speech, so tap your answer.",
+      "denied": "No microphone access, so tap your answer.",
+      "retry": "Try again",
+      "askMeaning": "What does the word mean?",
+      "askKnow": "Do you know the word?"
     }
   }
 }
