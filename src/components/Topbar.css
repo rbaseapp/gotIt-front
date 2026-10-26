@@ -20,12 +20,12 @@ body:has(.shared-header-shell) {
 .app-layout.shared-header-shell > .main-column > .app-topbar {
   position: relative;
   z-index: 20;
-  min-height: 64px;
+  min-height: 68px;
   padding: 8px 24px;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   background: #fff;
   color: #22322c;
   border-bottom: 1px solid #e3e8e2;
@@ -35,7 +35,7 @@ body:has(.shared-header-shell) {
   box-sizing: border-box;
 }
 .shared-header-shell .app-topbar .app-header-brand .brand-logo {
-  width: 140px;
+  width: 150px;
 }
 .shared-header-shell .app-topbar .app-top-navigation {
   display: flex;
@@ -48,7 +48,7 @@ body:has(.shared-header-shell) {
 }
 .shared-header-shell .app-topbar .app-top-navigation a {
   text-decoration: none;
-  padding: 9px 14px;
+  padding: 10px 16px;
   border-radius: 999px;
   white-space: nowrap;
   color: #22322c;
@@ -165,105 +165,5 @@ body:has(.shared-header-shell) {
   [data-text-scale="large"] .shared-header-shell .app-topbar .app-header-menu {
     display: inline-flex;
     justify-self: start;
-  }
-}
-
-/* Daily goal, streak and language sit in the same row as the navigation, in the header's own light style. */
-.shared-header-shell .app-topbar .app-header-status {
-  min-width: 0;
-}
-.shared-header-shell .app-topbar .learning-status-bar {
-  --status-chip-background: #f4f7f4;
-  --status-chip-border: #e3e8e2;
-  --status-chip-size: calc(13px * var(--text-scale, 1));
-  --status-chip-padding: 6px 12px;
-  --status-chip-weight: 600;
-  --status-language-border: #e3e8e2;
-  --status-language-height: 38px;
-  --status-select-height: 34px;
-  --status-select-color: #286f5c;
-  --status-language-size: calc(13px * var(--text-scale, 1));
-  --status-select-width: 130px;
-  --status-flame: #e8892b;
-  background: transparent;
-  color: #22322c;
-}
-.shared-header-shell .app-topbar .learning-status-chip {
-  color: #22322c;
-}
-.shared-header-shell .app-topbar .learning-status-chip svg {
-  color: #286f5c;
-}
-.shared-header-shell .app-topbar .learning-status-chip .learning-status-flame {
-  color: var(--status-flame);
-}
-.shared-header-shell .app-topbar .learning-status-progress {
-  background: #dfe8e3;
-  --status-gold: #286f5c;
-}
-.shared-header-shell
-  .app-topbar
-  .learning-status-progress::-webkit-progress-value {
-  background: #286f5c;
-}
-.shared-header-shell .app-topbar .learning-status-progress::-moz-progress-bar {
-  background: #286f5c;
-}
-.shared-header-shell
-  .app-topbar
-  .learning-status-language
-  select:focus-visible {
-  outline-color: #286f5c;
-}
-.shared-header-shell .app-topbar .learning-status-bar .learning-status-inner {
-  padding: 0;
-  flex-wrap: nowrap;
-  gap: 8px;
-}
-.shared-header-shell .app-topbar .learning-status-language {
-  margin-inline-start: 0;
-}
-.shared-header-shell .app-topbar .nd-account-label {
-  display: none;
-}
-@media (min-width: 1500px) {
-  .shared-header-shell .app-topbar .nd-account-label {
-    display: inline;
-  }
-}
-@media (max-width: 1499px) {
-  .shared-header-shell .app-topbar .learning-status-progress {
-    display: none;
-  }
-}
-/* Not enough room for everything in one row: the status moves to a slim second row. */
-@media (max-width: 1240px) {
-  .app-layout.shared-header-shell > .main-column > .app-topbar {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    row-gap: 6px;
-  }
-  .shared-header-shell .app-topbar .app-header-status {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    padding-block: 2px 2px;
-  }
-  .shared-header-shell .app-topbar .learning-status-bar .learning-status-inner {
-    flex-wrap: wrap;
-  }
-}
-@media (max-width: 560px) {
-  .shared-header-shell .app-topbar .learning-status-progress {
-    display: none;
-  }
-}
-@media (max-width: 560px) {
-  /* On a phone the row keeps what changes the day: the streak and the language. */
-  .shared-header-shell
-    .app-topbar
-    .learning-status-chip:not(.learning-status-streak) {
-    display: none;
-  }
-  .shared-header-shell .app-topbar .learning-status-language label > span {
-    display: none;
   }
 }

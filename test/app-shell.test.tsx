@@ -236,12 +236,9 @@ it("keeps the bar and metrics mounted while route controllers unmount and reload
   const status = document.querySelector(".learning-status-bar");
   const goal = screen.getByRole("progressbar");
   const streak = document.querySelector(".learning-status-streak");
-  // The status shares the header's row instead of a bar of its own.
   expect(status?.parentElement).toBe(
-    document.querySelector(".app-header-status"),
+    document.querySelector(".app-learning-status"),
   );
-  expect(header?.contains(status ?? null)).toBe(true);
-  expect(document.querySelector(".app-learning-status")).toBeNull();
   expect(
     document.querySelector(".page-content .learning-status-bar"),
   ).toBeNull();

@@ -4,9 +4,9 @@
   --status-gold: #f5c542;
   --status-content-width: none;
   --status-content-padding: 24px;
-  --status-padding: 12px;
+  --status-padding: 6px;
   --status-gap: 8px;
-  --status-chip-padding: 8px 14px;
+  --status-chip-padding: 6px 14px;
   --status-chip-size: calc(14px * var(--text-scale, 1));
   --status-chip-weight: 400;
   --status-chip-background: #ffffff0c;
@@ -14,8 +14,8 @@
   --status-track-width: 56px;
   --status-track-height: 6px;
   --status-language-padding: 0 12px;
-  --status-language-height: 44px;
-  --status-select-height: 42px;
+  --status-language-height: 38px;
+  --status-select-height: 34px;
   --status-language-size: calc(14px * var(--text-scale, 1));
   --status-language-border: #ffffff50;
   --status-select-width: 180px;

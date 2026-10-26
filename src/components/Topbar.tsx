@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from "react";
+import type { RefObject } from "react";
 import { BarChart3, Flame, Menu, Zap } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -19,8 +19,6 @@ type TopbarProps = {
   onOpenMenu: () => void;
   onLogout: () => void;
   onAddWord: () => void;
-  /** The learning status (daily goal, streak, language) shares the one header row. */
-  status?: ReactNode;
 };
 
 export function Topbar({
@@ -32,7 +30,6 @@ export function Topbar({
   onOpenMenu,
   onLogout,
   onAddWord,
-  status,
 }: TopbarProps) {
   const { t } = useTranslation();
   const { mode, stats } = useApp();
@@ -74,7 +71,6 @@ export function Topbar({
         >
           <Menu size={22} />
         </button>
-        {status && <div className="app-header-status">{status}</div>}
         <div className="app-header-actions">
           <TopbarAccountMenu
             showAccountLink

@@ -274,8 +274,12 @@ export function AppShell({
             onOpenMenu={() => setMobileOpen(true)}
             onLogout={onLogout}
             onAddWord={openAddWord}
-            status={sharedHeader ? <PersistentLearningStatusBar /> : null}
           />
+          {sharedHeader && (
+            <div className="app-learning-status">
+              <PersistentLearningStatusBar />
+            </div>
+          )}
           {sharedHeader && !dashboardShell && <DefaultLearningStatusBar />}
           <div className="page-content">
             {sharedHeader &&
