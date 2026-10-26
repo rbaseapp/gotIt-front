@@ -1,0 +1,311 @@
+{
+  "start": {
+    "trialBadge": "14 Tage Pro kostenlos",
+    "codeOnly": "Wir haben einen 6-stelligen Code an deine Adresse geschickt. Er gilt 10 Minuten, ein weiteres Passwort brauchst du nicht.",
+    "back": "Zurück",
+    "continue": "Weiter",
+    "exit": "Beenden",
+    "stepOf": "Schritt {{current}} von {{total}}",
+    "resume": {
+      "title": "Dort weitermachen, wo du aufgehört hast?",
+      "body": "Wir haben gespeichert, was du schon beantwortet hast.",
+      "continue": "Weiter",
+      "restart": "Von vorn beginnen"
+    },
+    "language": {
+      "title": "Welche Sprache lernst du?",
+      "body": "Wähle eine. Weitere kannst du später hinzufügen.",
+      "native": "Meine Sprache:",
+      "change": "Ändern",
+      "soon": "Für diese Sprache gibt es vorerst Wörter und Spiele. Ein vollständiges Programm kommt."
+    },
+    "literacy": {
+      "title": "Liest du Englisch?",
+      "body": "Eine ehrliche Antwort hilft uns, die erste Frage zu wählen.",
+      "yes": "Ja, ich lese",
+      "some": "Ein bisschen",
+      "no": "Noch nicht",
+      "checkTitle": "Welches Bild passt zum Wort?",
+      "checkBody": "Ein Wort, drei Bilder.",
+      "starting": "Wir beginnen mit den Grundlagen: Buchstaben und Laute, dazu gleichzeitig Sprechen."
+    },
+    "pocket": {
+      "introTitle": "Sehen wir, was schon in deiner Tasche ist",
+      "introBody": "Kennst du das Wort? Tippe auf „Kenne ich“. Noch nicht? „Noch nicht“. Ohne Note, ohne Fehler. Etwa 3 Minuten.",
+      "begin": "Starten",
+      "know": "Kenne ich",
+      "unknown": "Noch nicht",
+      "hear": "Wort anhören",
+      "undo": "Letzte Antwort rückgängig machen",
+      "inPocket": "In deiner Tasche",
+      "progress": {
+        "long": "Noch ein paar Minuten",
+        "minute": "Noch etwa eine Minute",
+        "half": "Noch etwa eine halbe Minute",
+        "almost": "Fast geschafft"
+      },
+      "slowDown": "Moment, lass uns etwas langsamer machen.",
+      "fakeFound_one": "Wir haben ein Wort erwischt, das es nicht gibt 😄 dafür ist es genau da.",
+      "fakeFound_other": "Wir haben {{count}} Wörter erwischt, die es nicht gibt 😄 dafür sind sie genau da.",
+      "skipAll": "Ich fange bei null an, überspringen",
+      "verifyTitle": "Willst du ein paar Wörter aus der Tasche in Aktion sehen?",
+      "verifyBody": "Wähle die richtige Bedeutung.",
+      "verifyQuestion": "Was bedeutet {{word}}?",
+      "notSure": "Nicht sicher",
+      "probeTitle": "Noch ein kleines Rätsel",
+      "probeRead": "Lesen und wählen.",
+      "probeListen": "Zuhören und wählen.",
+      "play": "Abspielen",
+      "playAgain": "Nochmal abspielen",
+      "noSound": "Kein Ton? Überspringen",
+      "calculating": "Wir ermitteln dein Niveau…"
+    },
+    "result": {
+      "title": "Das haben wir gefunden",
+      "level": "Dein Niveau",
+      "between": "Zwischen {{low}} und {{high}}",
+      "inPocket": "In deiner Tasche: etwa {{count}} Wörter",
+      "outOf": "von den {{total}} Kernwörtern, die GotIt lehrt. Das ist eine Schätzung.",
+      "skills": "Fähigkeiten",
+      "skill": {
+        "vocabulary": "Wortschatz",
+        "reading": "Lesen",
+        "listening": "Hören"
+      },
+      "status": {
+        "strong": "Stark",
+        "ok": "Auf Niveau",
+        "weak": "Wird gestärkt",
+        "unknown": "Nicht geprüft"
+      },
+      "speaking": "Sprechen: Das prüfen wir im ersten Gespräch mit der Lehrerin.",
+      "note": "Das ist ein Ausgangspunkt, keine Note. Der Plan passt sich an, während du übst.",
+      "uncertain": "Die Schätzung ist etwas breit; die ersten Lektionen stellen sie genauer ein.",
+      "wrong": "Nicht genau?",
+      "tooHigh": "Zu hoch",
+      "tooLow": "Zu niedrig",
+      "adjusted": "Wir haben deinen Startpunkt verschoben.",
+      "next": "Meinen Plan erstellen",
+      "band": {
+        "Pre-A1": "Start bei null",
+        "A1": "Anfänger",
+        "A2": "Grundlagen",
+        "B1": "Mittelstufe",
+        "B2": "Gehobene Mittelstufe",
+        "C1": "Fortgeschritten"
+      },
+      "sub": {
+        "low": "Anfang des Niveaus",
+        "mid": "Mitte des Niveaus",
+        "high": "Ende des Niveaus"
+      },
+      "summary": {
+        "Pre-A1": "Wir beginnen mit den allerersten Schritten, in Ruhe.",
+        "A1": "Du erkennst einfache Wörter und Sätze; jetzt bauen wir eine solide Basis.",
+        "A2": "Du kommst in vertrauten Alltagssituationen zurecht.",
+        "B1": "Du verstehst die Hauptpunkte und kannst ein Gespräch führen; jetzt schärfen wir nach.",
+        "B2": "Du liest und verstehst sicher; jetzt arbeiten wir an Genauigkeit und Nuancen.",
+        "C1": "Du bist auf hohem Niveau; jetzt konzentrieren wir uns auf Genauigkeit und Stil."
+      },
+      "gap": {
+        "more": "Du kannst mehr, als du dachtest. Wir starten höher und überspringen, was du schon hast.",
+        "less": "Dein Niveau liegt unter deiner Erwartung, und das ist in Ordnung. Wir starten an der richtigen Stelle und kommen schnell voran.",
+        "same": "Du hast dich genau eingeschätzt."
+      }
+    },
+    "plan": {
+      "title": "Bauen wir deinen Plan",
+      "body": "Drei kurze Entscheidungen, und der Plan aktualisiert sich vor deinen Augen.",
+      "goalQuestion": "Wohin führt dich Englisch?",
+      "deadlineQuestion": "Bis wann ungefähr?",
+      "minutesQuestion": "Wie viel Zeit pro Tag?",
+      "goal": {
+        "travel": "Reisen",
+        "work": "Beruf",
+        "study": "Studium",
+        "talk": "Gespräche und Freunde",
+        "abroad": "Umzug ins Ausland",
+        "other": "Etwas anderes"
+      },
+      "deadline": {
+        "1": "Ein Monat",
+        "3": "3 Monate",
+        "6": "Ein halbes Jahr",
+        "0": "Kein Datum"
+      },
+      "minutes": "{{count}} Min.",
+      "recommended": "Empfohlen",
+      "cardTitle": "Englisch: {{goal}}",
+      "cardTarget": "Ziel: {{band}}",
+      "cardRange": "Von Einheit {{from}} bis Einheit {{to}} ({{units}} Einheiten)",
+      "sim": "{{minutes}} Min. pro Tag ← du erreichst das Ziel in {{low}}–{{high}} Monaten",
+      "simShort": "{{minutes}} Min. pro Tag ← etwa {{months}} Monate",
+      "needed": "Für {{deadline}} brauchst du etwa {{minutes}} Min. pro Tag.",
+      "useNeeded": "{{minutes}} Min. einstellen",
+      "feasible": "Das passt zu deinem Ziel.",
+      "dailyNote": "Wörter, die du mit der Erweiterung speicherst, zählen nicht zum Tagesziel.",
+      "next": "Weiter",
+      "deadlineName": {
+        "1": "einen Monat",
+        "3": "drei Monate",
+        "6": "ein halbes Jahr"
+      }
+    },
+    "save": {
+      "title": "Wir speichern, was du aufgebaut hast",
+      "body": "Ein kostenloses Konto, damit dein Fortschritt nie verloren geht.",
+      "built": "Das hast du aufgebaut",
+      "trialTitle": "14 Tage volles Pro, kostenlos",
+      "trialBody": "Programm, KI-Lehrerin und Erweiterung. Ohne Kreditkarte. Gegen Ende schlagen wir dir den passenden Tarif vor.",
+      "email": "Mit E-Mail registrieren",
+      "google": "Weiter mit Google",
+      "haveAccount": "Ich habe schon ein Konto",
+      "terms": "Mit der Registrierung stimmst du den Nutzungsbedingungen und der Datenschutzerklärung zu.",
+      "saving": "Dein Plan wird gespeichert…",
+      "existing": "Du hast schon ein Programm begonnen, deshalb lassen wir es unverändert.",
+      "failed": "Wir konnten deinen Plan nicht speichern. Du kannst weitermachen und ihn in den Einstellungen neu erstellen.",
+      "chips": {
+        "language": "Englisch",
+        "level": "Niveau: {{level}}",
+        "minutes": "{{count}} Min. pro Tag",
+        "goal": "Ziel: {{goal}}"
+      }
+    },
+    "today": {
+      "title": "Die Aufgabe für heute",
+      "body": "Einheit {{unit}} · etwa {{minutes}} Min.",
+      "go": "Weiter",
+      "gap": "Wörter aus übersprungenen Einheiten kommen in kurzen Wiederholungen zurück, 3 pro Tag.",
+      "trial": "Pro aktiv · noch {{days}} Tage",
+      "checkTitle": "Ein Niveautest in 3 Minuten",
+      "checkBody": "Damit wir den Plan auf dich abstimmen und an der richtigen Stelle starten.",
+      "checkGo": "Los geht's"
+    },
+    "tutorLock": {
+      "title": "Das Gespräch mit der Lehrerin öffnet bald",
+      "body": "Damit das Gespräch wirklich nützlich ist, starten wir mit einer kleinen Basis. Noch {{left}} Einheiten, dann öffnet es.",
+      "progress": "{{done}} von {{required}} Einheiten",
+      "go": "Programm fortsetzen"
+    },
+    "locked": {
+      "courses": {
+        "title": "Lernprogramme gehören zu Pro",
+        "body": "Ein persönlicher Plan, abgestufte Einheiten und eine KI-Lehrerin. Wörter, Erweiterung und Spiele bleiben immer kostenlos."
+      },
+      "tutor": {
+        "title": "Das Gespräch mit der Lehrerin gehört zu Pro",
+        "body": "Gespräche mit einer echten Aufgabe, auf deinem Niveau. Wörter, Erweiterung und Spiele bleiben immer kostenlos."
+      },
+      "upgrade": "Upgrade",
+      "free": "Zurück zum kostenlosen Üben",
+      "preview": "Das ist eine Vorschau. Zum Lernen der Einheiten brauchst du Pro oder die Testphase."
+    },
+    "skip": "Vorerst überspringen",
+    "tutorIntro": {
+      "title": "Du kannst schon genug für ein kurzes Gespräch",
+      "body": "Willst du Rachel kennenlernen, deine Lehrerin? Ein Gespräch von 3–5 Minuten über Dinge, die du schon kennst. Ohne Druck, und du kannst jederzeit aufhören.",
+      "go": "Lernen wir uns kennen",
+      "later": "Vielleicht später"
+    },
+    "mode": {
+      "title": "Wie antwortest du am liebsten?",
+      "body": "Du kannst immer tippen. Du musst nie sprechen.",
+      "voice": {
+        "title": "🎤 Sprich mit mir",
+        "body": "Ich antworte laut. Das Mikrofon wird nur angefragt, wenn wir zu einem Gespräch kommen."
+      },
+      "text": {
+        "title": "✍️ Schreiben und auswählen",
+        "body": "Alles mit einem Tipp. Ohne Mikrofon und ohne Sprechen."
+      },
+      "note": "Du kannst das jederzeit in den Einstellungen ändern."
+    },
+    "about": {
+      "title": "Zwei kurze Fragen zu dir",
+      "body": "Damit Test und Lektionen zu dir passen.",
+      "ageQuestion": "Wie alt bist du?",
+      "age": {
+        "under13": "Unter 13",
+        "13-17": "13–17",
+        "18+": "18 oder älter"
+      },
+      "readingQuestion": "Fällt dir das Lesen in deiner Sprache leicht?",
+      "reading": {
+        "easy": "Ja, leicht",
+        "some": "Ein bisschen",
+        "hard": "Es fällt mir schwer"
+      },
+      "stopTitle": "Bis bald 🙂",
+      "stopBody": "GotIt ist vorerst für Personen ab 13 Jahren. Komm mit einem Elternteil wieder, wenn wir einen Weg für dein Alter ergänzen.",
+      "stopHome": "Zur Startseite"
+    },
+    "goalStep": {
+      "title": "Was ist dir an Englisch am wichtigsten?",
+      "body": "Das prägt Test, Plan und Gespräche.",
+      "words": {
+        "title": "Wörter merken, die ich online treffe",
+        "body": "Speichere ein Wort mit der Erweiterung und übe es."
+      },
+      "travel": {
+        "title": "Reisen",
+        "body": "Auf Reisen und in kurzen Gesprächen zurechtkommen."
+      },
+      "work": {
+        "title": "Beruf",
+        "body": "Meetings, E-Mails und Fachgespräche."
+      },
+      "study": {
+        "title": "Studium",
+        "body": "Akademisches Lesen, Schreiben und Hören."
+      },
+      "abroad": {
+        "title": "Umzug ins Ausland",
+        "body": "In der Sprache leben und arbeiten."
+      },
+      "talk": {
+        "title": "Mit Freunden sprechen",
+        "body": "Sprechen, schauen und ohne Übersetzung verstehen."
+      },
+      "scratch": {
+        "title": "Bei null anfangen",
+        "body": "Kennst du noch kein Wort? Wir beginnen ganz am Anfang."
+      },
+      "note": "Du kannst dein Ziel jederzeit ändern."
+    },
+    "self": {
+      "title": "Wie würdest du dein Englisch beschreiben?",
+      "body": "Das legt nur fest, wo der Test beginnt. Es entscheidet nicht über dein Niveau.",
+      "level": {
+        "0": {
+          "title": "Fast nichts",
+          "body": "Einzelne Wörter, wenn überhaupt."
+        },
+        "1": {
+          "title": "Wörter und einfache Sätze",
+          "body": "Ich verstehe den Kern eines kurzen Textes."
+        },
+        "2": {
+          "title": "Einfaches Gespräch",
+          "body": "Ich kann Grundlegendes erzählen und fragen."
+        },
+        "3": {
+          "title": "Fließend",
+          "body": "Ich verstehe und spreche über die meisten Themen."
+        }
+      }
+    },
+    "avatar": {
+      "replay": "Nochmal hören",
+      "mute": "Ohne Ton",
+      "unmute": "Mit Ton"
+    },
+    "talk": {
+      "title": "Jetzt sprechen wir ein bisschen Englisch",
+      "body": "Ich stelle dir 4 kurze Fragen. Wähle die beste Antwort. Es gibt keine falschen Antworten, und du kannst überspringen.",
+      "begin": "Los geht's",
+      "skip": "Diesen Teil überspringen",
+      "pick": "Frage {{current}} von {{total}} · wähle die beste Antwort",
+      "notSure": "Nicht sicher"
+    }
+  }
+}

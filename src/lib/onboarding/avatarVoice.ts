@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { canSpeak } from "../placement/speech";
 
+const VOICE_LANGUAGE: Record<string, string> = {
+  he: "he-IL",
+  en: "en-US",
+  ru: "ru-RU",
+  ar: "ar-SA",
+  es: "es-ES",
+  fr: "fr-FR",
+  de: "de-DE",
+  zh: "zh-CN",
+};
 const MUTE_KEY = "gotit.onboarding.avatarMuted";
 const readMuted = () => {
   try {
@@ -29,7 +39,7 @@ export function useAvatarVoice(
       try {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(line);
-        utterance.lang = options.language === "he" ? "he-IL" : "en-US";
+        utterance.lang = VOICE_LANGUAGE[options.language] ?? "en-US";
         utterance.rate = 0.95;
         utterance.onstart = () => setSpeaking(true);
         utterance.onend = () => setSpeaking(false);

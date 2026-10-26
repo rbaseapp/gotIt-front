@@ -19,26 +19,6 @@
       "change": "Change",
       "soon": "For now this language has words and games. A full program is coming."
     },
-    "focus": {
-      "title": "What matters most to you in English?",
-      "body": "We build your day from this. There is no wrong answer.",
-      "words": {
-        "title": "Remember words I meet online",
-        "body": "Read or watch things in English? Save a word with one click and practise it at the right time.",
-        "tag": "Chrome extension"
-      },
-      "goal": {
-        "title": "Reach a goal",
-        "body": "Travel, work, study or a move abroad. An AI teacher builds you a personal plan.",
-        "tag": "Plan + AI teacher"
-      },
-      "scratch": {
-        "title": "Learn from scratch",
-        "body": "Don't know a word yet? A ready-made program, step by step.",
-        "tag": "Ready-made program"
-      },
-      "note": "You can combine everything later: program, AI teacher and words from the extension."
-    },
     "literacy": {
       "title": "Do you read English?",
       "body": "An honest answer helps us choose the first question.",
@@ -175,16 +155,6 @@
         "3": "three months",
         "6": "half a year"
       }
-    },
-    "firstWords": {
-      "title": "Your first {{count}} words. Let's go!",
-      "body": "These are words not in your pocket yet, at your level.",
-      "flip": "Tap to see the meaning",
-      "got": "In pocket",
-      "counter": "{{done}} of {{total}} first words in your pocket",
-      "tomorrow": "Tomorrow they come back for a short review so they don't fade.",
-      "next": "Continue",
-      "none": "Let's begin your first day in the program."
     },
     "save": {
       "title": "Saving what you built",
@@ -341,153 +311,6 @@
       "skip": "Skip this part",
       "pick": "Question {{current}} of {{total}} · pick the best reply",
       "notSure": "Not sure"
-    }
-  },
-  "landingV2": {
-    "nav": {
-      "howItWorks": "How it works",
-      "extension": "Extension",
-      "pricing": "Pricing",
-      "login": "Sign in",
-      "startFree": "Start free trial"
-    },
-    "hero": {
-      "ctaPrimary": "Find out what's in your pocket · 3 min",
-      "ctaExtension": "Add to Chrome",
-      "promise": "No credit card · 14 days of Pro, free",
-      "mochiAlt": "Moochi, GotIt's learning companion, holding a word card"
-    },
-    "try": {
-      "title": "Try 3 words",
-      "hint": "Know it or not yet?",
-      "know": "I know it",
-      "unknown": "Not yet",
-      "doneTitle": "In your pocket: {{count}} of 3",
-      "doneBody": "Want to check the whole pocket? 3 minutes.",
-      "doneCta": "Continue the check"
-    },
-    "trust": {
-      "free": "Free forever: words and games",
-      "trial": "14 days of Pro, no card",
-      "hebrew": "Full Hebrew interface"
-    },
-    "pocket": {
-      "title": "How many words are already in your pocket?",
-      "body": "A 3-minute check that feels like a game. No score, no mistakes. At the end: your level, how many words you already have, and a plan that starts exactly in the right place.",
-      "counter": "Words in your pocket",
-      "cta": "Find out what's in your pocket"
-    },
-    "plan": {
-      "title": "A plan that fits you exactly",
-      "body": "Start at the right unit, skip what you already know without leaving gaps, and set the pace by your goal and your time.",
-      "level": "Your level",
-      "minutes": "Minutes a day",
-      "months": "Goal in about {{count}} months",
-      "unit": "Unit {{count}} of 84"
-    },
-    "tutor": {
-      "badge": "Paid plan · 14 days free",
-      "title": "A teacher who talks about what interests you",
-      "body": "Conversations with a real task: book a table, set up a meeting, tell about your weekend. A gentle correction at the end and three new phrases saved for you.",
-      "opens": "She opens up once you have a base to talk from.",
-      "task": "Task: book a table for four on Friday",
-      "teacher": "Good evening! How can I help you?",
-      "you": "I want a table for four, please.",
-      "done": "You did it ✅ · 3 phrases saved"
-    },
-    "pricing": {
-      "title": "Free forever, and more when you want it",
-      "body": "Prices are shown when you sign up. Cancel any time.",
-      "free": {
-        "name": "Free",
-        "line": "forever",
-        "items": [
-          "Save words with the extension",
-          "Practice and games",
-          "Level check",
-          "Streak and achievements"
-        ]
-      },
-      "pro": {
-        "name": "Pro",
-        "line": "14 days free",
-        "items": [
-          "Personal learning programs",
-          "AI teacher",
-          "Articles from your words",
-          "Weekly report"
-        ]
-      },
-      "tutor": {
-        "name": "Tutor",
-        "line": "for big talkers",
-        "items": [
-          "Everything in Pro",
-          "Monthly teacher minutes",
-          "No daily conversation limit"
-        ]
-      },
-      "cta": "Start free trial",
-      "note": "No credit card"
-    },
-    "faq": {
-      "level": {
-        "q": "Do I need to read English?",
-        "a": "No. If you don't read yet, we start with letters and sounds and teach you to speak at the same time."
-      },
-      "test": {
-        "q": "How long does the level check take?",
-        "a": "About 3 minutes. No score, and you may answer \"not yet\" to any word."
-      },
-      "price": {
-        "q": "How much does it cost?",
-        "a": "Saving words with the extension, practice and games are free forever. Learning programs and the teacher are included in the 14-day trial, with no credit card, and after that in Pro."
-      }
-    },
-    "cta": {
-      "title": "3 minutes and you know exactly where to start",
-      "body": "No sign-up before the check. You only save the result and the plan if it suits you.",
-      "button": "Find out what's in your pocket"
-    },
-    "mobileBar": "Find out what's in your pocket · 3 min",
-    "how": {
-      "title": "How it works: mark, play, remember",
-      "intro": "Two small steps a day, and every word you meet actually stays.",
-      "mark": {
-        "title": "Mark a word on any site",
-        "body": "The Chrome extension saves the word with its sentence and the site you found it on, so you remember where you met it.",
-        "points": [
-          "Works on any site",
-          "Automatic, dictionary or AI translation",
-          "Keeps the sentence and link"
-        ]
-      },
-      "games": {
-        "title": "Turn it into a short game",
-        "body": "Your saved words come back as flashcards, matching and fill-in-the-gap, right when you start forgetting them.",
-        "points": [
-          "Flashcards",
-          "Matching",
-          "Fill the gap",
-          "Listening and speaking"
-        ],
-        "free": "Games and the extension are free, always.",
-        "tabs": "Pick a game",
-        "mode": {
-          "flashcards": "Flashcards",
-          "matching": "Matching",
-          "drag_drop": "Fill the gap"
-        },
-        "flashPrompt": "What does this word mean?",
-        "show": "Show translation",
-        "know": "I knew it",
-        "again": "Not yet",
-        "matchPrompt": "Match each word to its translation",
-        "matchHint": "Tap a word, then its translation",
-        "gapPrompt": "Which word is missing?",
-        "gapHint": "Pick the word that fits the meaning",
-        "finished": "Well done! 3 words in your memory"
-      }
     }
   }
 }
