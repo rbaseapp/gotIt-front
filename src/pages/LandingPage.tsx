@@ -8,17 +8,12 @@ import { testimonials } from "../data/testimonials";
 import { useInView } from "../hooks/useInView";
 import { LANGUAGE_CODES } from "../lib/languages";
 import { supportEmailHref, supportWhatsappHref } from "../lib/supportContact";
-import {
-  ExtensionPanel,
-  LessonRoom,
-  MatchingBoard,
-  ReadingArticle,
-  ScaledScreen,
-} from "../components/LandingReplicas";
+import { ExtensionPanel, ScaledScreen } from "../components/LandingReplicas";
 import logoClearUrl from "../assets/gotit-logo-clear.svg";
 import tutorThinking from "../assets/private-lesson/tutor-female-thinking.png";
 import {
   FinalCta,
+  HowItWorks,
   LandingHeader,
   MobileBar,
   NewHero,
@@ -29,9 +24,6 @@ import {
   TutorTeaser,
 } from "../components/landing/LandingV2";
 import "../landing.css";
-
-const STEPS = ["mark", "practice", "speak", "read"] as const;
-type Step = (typeof STEPS)[number];
 
 function prefersReducedMotion() {
   return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -45,7 +37,7 @@ export function LandingPage() {
         <NewHero />
         <TrustBar />
         <PocketTeaser />
-        <Journey />
+        <HowItWorks markDemo={<MarkDemo />} />
         <PlanTeaser />
         <TutorTeaser />
         <PricingTeaser />
@@ -147,165 +139,6 @@ function MarkDemo({ active }: { active?: boolean }) {
         </div>
       </div>
     </figure>
-  );
-}
-
-function Journey() {
-  const { t } = useTranslation();
-  const [active, setActive] = useState<Step>("mark");
-  const listRef = useRef<HTMLOListElement>(null);
-  useEffect(() => {
-    const items = listRef.current?.querySelectorAll<HTMLElement>("[data-step]");
-    if (!items?.length || !("IntersectionObserver" in window)) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries)
-          if (entry.isIntersecting)
-            setActive((entry.target as HTMLElement).dataset.step as Step);
-      },
-      { rootMargin: "-45% 0px -45% 0px" },
-    );
-    items.forEach((item) => observer.observe(item));
-    return () => observer.disconnect();
-  }, []);
-  return (
-    <section className="landing-journey" id="how">
-      <div className="landing-section-head">
-        <h2>{t("landing.journey.title")}</h2>
-        <p>{t("landing.journey.intro")}</p>
-      </div>
-      <div className="journey-grid">
-        <ol className="journey-steps" ref={listRef}>
-          {STEPS.map((step, index) => (
-            <li
-              key={step}
-              data-step={step}
-              data-active={active === step || undefined}
-            >
-              <span className="journey-number" aria-hidden="true">
-                {index + 1}
-              </span>
-              <h3>{t(`landing.journey.${step}.title`)}</h3>
-              <p>{t(`landing.journey.${step}.body`)}</p>
-              <ul className="journey-points">
-                {(
-                  t(`landing.journey.${step}.points`, {
-                    returnObjects: true,
-                  }) as string[]
-                ).map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-              {step === "mark" && (
-                <a
-                  className="landing-button journey-cta"
-                  href={CHROME_EXTENSION_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t("landing.hero.addToChrome")}
-                </a>
-              )}
-              <div className="journey-inline-visual" aria-hidden="true">
-                {step === "mark" ? (
-                  <MarkDemo />
-                ) : (
-                  <StepVisual step={step} compact />
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-        <div className="journey-stage" aria-hidden="true">
-          {STEPS.map((step) => (
-            <div
-              key={step}
-              className="journey-stage-item"
-              data-active={active === step || undefined}
-            >
-              <StageWords step={step} />
-              {step === "mark" ? (
-                <MarkDemo active={active === step} />
-              ) : (
-                <StepVisual step={step} maxHeight={STAGE_FIT_HEIGHT} />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/** Room for a screen inside the 480px desktop stage. */
-const STAGE_FIT_HEIGHT = 420;
-
-const STAGE_WORDS: Record<Step, string[]> = {
-  mark: ["regulars", "living room", "warm"],
-  practice: ["regulars", "cozy", "remember"],
-  speak: ["owner", "neighborhood", "thrive"],
-  read: ["bakery", "secret", "quiet"],
-};
-
-/** Saved words drifting behind the active visual on the desktop stage. */
-function StageWords({ step }: { step: Step }) {
-  return (
-    <ul className="stage-words" dir="ltr" lang="en">
-      {STAGE_WORDS[step].map((word) => (
-        <li key={word}>{word}</li>
-      ))}
-    </ul>
-  );
-}
-
-function StepVisual({
-  step,
-  maxHeight,
-  compact = false,
-}: {
-  step: Step;
-  maxHeight?: number;
-  /** Phone-width rendering for the inline (mobile) visuals. */
-  compact?: boolean;
-}) {
-  if (step === "mark")
-    return (
-      <ScaledScreen
-        width={430}
-        maxHeight={maxHeight}
-        className="visual-screen visual-mark"
-      >
-        <ExtensionPanel saved />
-      </ScaledScreen>
-    );
-  if (step === "practice")
-    return (
-      <ScaledScreen
-        width={compact ? 380 : 640}
-        maxHeight={maxHeight}
-        className="visual-screen"
-      >
-        <MatchingBoard />
-      </ScaledScreen>
-    );
-  if (step === "speak")
-    return (
-      <ScaledScreen
-        width={compact ? 380 : 560}
-        maxHeight={maxHeight}
-        className="visual-screen"
-      >
-        <LessonRoom />
-      </ScaledScreen>
-    );
-  return (
-    <ScaledScreen
-      width={compact ? 380 : 640}
-      maxHeight={maxHeight}
-      className="visual-screen"
-    >
-      <ReadingArticle />
-    </ScaledScreen>
   );
 }
 

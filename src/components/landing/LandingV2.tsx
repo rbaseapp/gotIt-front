@@ -12,6 +12,7 @@ import type { Observation, PlacementBank } from "../../lib/placement/types";
 import logoUrl from "../../assets/gotit-logo.svg";
 import moochi from "../../assets/ux/dashboard-moohi.png";
 import tutorPortrait from "../../assets/private-lesson/tutor-female-speaking-wide.png";
+import { GamesShowcase } from "./GamesShowcase";
 import "../../landing2.css";
 
 export const START_PATH = "/start";
@@ -448,5 +449,69 @@ export function MobileBar() {
         {t("landingV2.mobileBar")}
       </Link>
     </div>
+  );
+}
+
+/* ---------------------------------------------------------- how it works */
+/** The extension saves the word, then the games and the teacher make it stay. */
+export function HowItWorks({ markDemo }: { markDemo: ReactNode }) {
+  const { t } = useTranslation();
+  const points = t("landingV2.how.mark.points", {
+    returnObjects: true,
+  }) as string[];
+  return (
+    <section className="l2-how" id="how">
+      <div className="l2-how-head">
+        <h2>{t("landingV2.how.title")}</h2>
+        <p>{t("landingV2.how.intro")}</p>
+      </div>
+      <div className="l2-how-row" id="extension">
+        <Reveal>
+          <span className="l2-step-no">1</span>
+          <h3>{t("landingV2.how.mark.title")}</h3>
+          <p>{t("landingV2.how.mark.body")}</p>
+          <ul className="l2-chips">
+            {points.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
+          <a
+            className="l2-btn ghost"
+            href={CHROME_EXTENSION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("landingV2.hero.ctaExtension")}
+          </a>
+        </Reveal>
+        <Reveal delay={120}>
+          <div className="l2-demo-frame" aria-hidden="true">
+            {markDemo}
+          </div>
+        </Reveal>
+      </div>
+      <div className="l2-how-row l2-how-flip">
+        <Reveal delay={120}>
+          <GamesShowcase />
+        </Reveal>
+        <Reveal>
+          <span className="l2-step-no">2</span>
+          <h3>{t("landingV2.how.games.title")}</h3>
+          <p>{t("landingV2.how.games.body")}</p>
+          <ul className="l2-chips">
+            {(
+              t("landingV2.how.games.points", {
+                returnObjects: true,
+              }) as string[]
+            ).map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
+          <small className="l2-free-note">
+            {t("landingV2.how.games.free")}
+          </small>
+        </Reveal>
+      </div>
+    </section>
   );
 }

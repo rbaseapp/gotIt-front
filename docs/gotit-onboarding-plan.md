@@ -829,7 +829,7 @@
 ### 19.1 מה מוכן ופועל מקצה לקצה
 | אזור | מה נבנה | איפה |
 |---|---|---|
-| **דף נחיתה** | Hero עם מוחי ו"נסו 3 מילים", פס אמון, "הכיס" עם גלילה, מסע, סימולטור תוכנית, המורה, מחירים, שאלות נפוצות, CTA סופי, סרגל מובייל. הסקשנים הישנים (מסע, שפות, המלצות אמיתיות) נשמרו | `src/components/landing/LandingV2.tsx`, `src/landing2.css`, `src/pages/LandingPage.tsx` |
+| **דף נחיתה** | Hero עם מוחי ו"נסו 3 מילים", פס אמון, "הכיס" עם גלילה, "איך זה עובד" (דמו התוסף + **משחקים שאפשר לשחק בהם**: כרטיסיות, התאמה, השלמת משפט, בעיצוב המשחקים החדש), סימולטור תוכנית, המורה, מחירים, שאלות נפוצות, CTA סופי, סרגל מובייל. הסקשנים הישנים (מסע, שפות, המלצות אמיתיות) נשמרו | `src/components/landing/LandingV2.tsx`, `src/landing2.css`, `src/pages/LandingPage.tsx` |
 | **מבחן "הכיס"** | מנוע בייסיאני אדפטיבי על סקאלה 0–84 (= יחידת תוכנית), כרטיסי מילים, מילים מומצאות לכיול ניחושים, 4 אימותים, בדיקות קריאה והקשבה, עצירה לפי סטיית תקן (≤5 מלא / ≤6.5 קצר; 20–40 כרטיסים) | `src/lib/placement/*`, `src/components/onboarding/PocketTest.tsx` |
 | **בנק המבחן** | 2,953 מילים (מתוך לקסיקון של 3,424, אחרי הסרת ביטויים ומילים עבריות), 320 מילים מומצאות, 24 בדיקות קריאה ו-22 הקשבה | `src/data/placement/bank.json`, `scripts/build-placement-bank.mjs` |
 | **תוכנית** | סימולטור: דקות ליחידה 70, 5 ימים בשבוע, טווח ±25%, יעד לפי מטרה | `src/lib/placement/plan.ts` |
@@ -860,6 +860,7 @@
 - **מייל:** מקומית, ללא Resend, Core כותב את קוד האימות ללוג תחת `devOneTimeDigits` (רק ב-`NODE_ENV=development`).
 
 ### 19.5 הרצה ובדיקות מקומיות
+- **Front מקומית בעיצוב החדש (כמו gotit-dev):** העיצוב החדש של המשחקים, לוח הבקרה, המילים שלי, התוכניות וההגדרות מופעל לפי hostname של gotit-dev. מקומית יש להפעיל אותו עם `VITE_PRACTICE_DESIGN=true VITE_DASHBOARD_DESIGN=true VITE_MYWORDS_DESIGN=true VITE_PROGRAMS_DESIGN=true VITE_SETTINGS_DESIGN=true npm run dev`. בלי זה רואים את הממשק הישן.
 - Front: `npm run dev` · `npx vitest run` · `npx tsc -b` · `npx eslint src test`.
 - Backend: `npm test` (351). בדיקות אינטגרציה: `npm run test:integration -- --test-concurrency=1` (דורש מסד Postgres ו-junction `core-platform` ל-`rbase-core-platforms`).
 - Core: `npx tsx --test test/email-delivery.test.ts` ובדיקת `test/integration/onboarding-access.test.ts`.

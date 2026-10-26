@@ -281,17 +281,31 @@
       "free": {
         "name": "Free",
         "line": "forever",
-        "items": ["Save words with the extension", "Practice and games", "Level check", "Streak and achievements"]
+        "items": [
+          "Save words with the extension",
+          "Practice and games",
+          "Level check",
+          "Streak and achievements"
+        ]
       },
       "pro": {
         "name": "Pro",
         "line": "14 days free",
-        "items": ["Personal learning programs", "AI teacher", "Articles from your words", "Weekly report"]
+        "items": [
+          "Personal learning programs",
+          "AI teacher",
+          "Articles from your words",
+          "Weekly report"
+        ]
       },
       "tutor": {
         "name": "Tutor",
         "line": "for big talkers",
-        "items": ["Everything in Pro", "Monthly teacher minutes", "No daily conversation limit"]
+        "items": [
+          "Everything in Pro",
+          "Monthly teacher minutes",
+          "No daily conversation limit"
+        ]
       },
       "cta": "Start free trial",
       "note": "No credit card"
@@ -315,6 +329,45 @@
       "body": "No sign-up before the check. You only save the result and the plan if it suits you.",
       "button": "Find out what's in your pocket"
     },
-    "mobileBar": "Find out what's in your pocket · 3 min"
+    "mobileBar": "Find out what's in your pocket · 3 min",
+    "how": {
+      "title": "How it works: mark, play, remember",
+      "intro": "Two small steps a day, and every word you meet actually stays.",
+      "mark": {
+        "title": "Mark a word on any site",
+        "body": "The Chrome extension saves the word with its sentence and the site you found it on, so you remember where you met it.",
+        "points": [
+          "Works on any site",
+          "Automatic, dictionary or AI translation",
+          "Keeps the sentence and link"
+        ]
+      },
+      "games": {
+        "title": "Turn it into a short game",
+        "body": "Your saved words come back as flashcards, matching and fill-in-the-gap, right when you start forgetting them.",
+        "points": [
+          "Flashcards",
+          "Matching",
+          "Fill the gap",
+          "Listening and speaking"
+        ],
+        "free": "Games and the extension are free, always.",
+        "tabs": "Pick a game",
+        "mode": {
+          "flashcards": "Flashcards",
+          "matching": "Matching",
+          "drag_drop": "Fill the gap"
+        },
+        "flashPrompt": "What does this word mean?",
+        "show": "Show translation",
+        "know": "I knew it",
+        "again": "Not yet",
+        "matchPrompt": "Match each word to its translation",
+        "matchHint": "Tap a word, then its translation",
+        "gapPrompt": "Which word is missing?",
+        "gapHint": "Pick the word that fits the meaning",
+        "finished": "Well done! 3 words in your memory"
+      }
+    }
   }
 }
