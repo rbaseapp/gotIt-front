@@ -613,7 +613,7 @@ describe("live server-backed flows", () => {
     // The Hebrew landing page lives in a shadow root so its styles stay isolated.
     const host = await screen.findByTestId("landing-design");
     await waitFor(() =>
-      expect(host.shadowRoot?.querySelector("h1")).not.toBeNull(),
+      expect(host.shadowRoot?.querySelector("h1")).toBeTruthy(),
     );
     const root = host.shadowRoot!;
     expect(root.querySelector("h1")?.textContent).toContain("המילים שלכם");

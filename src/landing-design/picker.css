@@ -8,3 +8,5 @@
 .lang-menu button:hover,.lang-menu button:focus-visible{background:#e9eee2}
 .lang-menu button[aria-selected=true]{background:#dcefe4;font-weight:700}
 @media(max-width:650px){.lang-button span,.lang-button i{display:none}.lang-button{padding:8px 10px}.lang-menu{inset-inline-end:auto;inset-inline-start:0}}
+.gl-root[lang=ar] *,.gl-root[lang=zh] *{letter-spacing:0!important}
+.gl-root[lang=ar],.gl-root[lang=ru],.gl-root[lang=zh]{font-family:Heebo,"Segoe UI",Tahoma,"Noto Sans Arabic","Microsoft YaHei",Arial,sans-serif}
