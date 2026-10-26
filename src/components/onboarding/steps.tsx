@@ -43,7 +43,6 @@ import {
   PRIORITIES,
   SELF_LEVELS,
   SELF_LEVEL_UNITS,
-  clearOnboarding,
   goalFromInterests,
   type Interest,
   type OnboardingState,
@@ -782,12 +781,7 @@ export function SaveStep({
           </button>
         )}
         <p className="ob-note">{t("start.save.terms")}</p>
-        <a
-          className="ob-link"
-          style={{ textAlign: "center" }}
-          href="/login"
-          onClick={() => clearOnboarding()}
-        >
+        <a className="ob-link" style={{ textAlign: "center" }} href="/login">
           {t("start.save.haveAccount")}
         </a>
       </div>
