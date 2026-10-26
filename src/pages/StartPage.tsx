@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { LoaderCircle } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { canTalkCheck } from "../lib/onboarding/tutorIntro";
 import { AccountFinish } from "../components/onboarding/AccountFinish";
 import { markFirstRunSkipped } from "../lib/onboarding/firstRun";
 import { OnboardingFrame } from "../components/onboarding/OnboardingFrame";
@@ -16,6 +17,7 @@ import {
   ResultStep,
   SaveStep,
   SelfStep,
+  TalkStep,
 } from "../components/onboarding/steps";
 import {
   STEPS,
@@ -201,7 +203,15 @@ function StartFlow({ account }: { account: boolean }) {
         state={state}
         update={update}
         onBack={() => go(state.focus === "scratch" ? "goal" : "self")}
-        onDone={(result: PlacementResult) => update({ result, step: "result" })}
+        onDone={(result: PlacementResult) =>
+          update({
+            result,
+            step:
+              state.focus !== "words" && canTalkCheck(result)
+                ? "talk"
+                : "result",
+          })
+        }
       />
     );
   }
@@ -212,6 +222,8 @@ function StartFlow({ account }: { account: boolean }) {
       <LanguageStep state={state} update={update} next={() => go("mode")} />
     );
   }
+  if (state.step === "talk")
+    return <TalkStep state={state} update={update} next={() => go("result")} />;
   if (state.step === "result")
     return (
       <ResultStep

@@ -333,6 +333,14 @@
       "replay": "Hear again",
       "mute": "Mute",
       "unmute": "Unmute"
+    },
+    "talk": {
+      "title": "Now let's talk a little in English",
+      "body": "I'll ask you 4 short questions. Pick the best reply. There are no wrong answers, and you can skip.",
+      "begin": "Let's talk",
+      "skip": "Skip this part",
+      "pick": "Question {{current}} of {{total}} · pick the best reply",
+      "notSure": "Not sure"
     }
   },
   "landingV2": {

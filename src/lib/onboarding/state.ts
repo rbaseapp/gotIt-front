@@ -19,6 +19,7 @@ export const STEPS = [
   "goal",
   "self",
   "pocket",
+  "talk",
   "result",
   "plan",
   "save",
@@ -49,6 +50,8 @@ export type OnboardingState = {
   result: PlacementResult | null;
   /** Manual correction, in units, when the learner says the level is off. */
   adjust: number;
+  /** Answers to the tap-to-answer conversation check, when it was done. */
+  talk: { correct: number; total: number } | null;
   answerMode: AnswerMode | null;
   ageBand: AgeBand | null;
   readingComfort: ReadingComfort | null;
@@ -73,6 +76,7 @@ export const initialOnboarding = (): OnboardingState => ({
   startedAt: Date.now(),
   result: null,
   adjust: 0,
+  talk: null,
   answerMode: null,
   ageBand: null,
   readingComfort: null,

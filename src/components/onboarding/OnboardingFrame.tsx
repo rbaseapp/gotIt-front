@@ -24,6 +24,8 @@ export function OnboardingFrame({
   secondary,
   onBack,
   hideMoochi,
+  voiceText,
+  voiceLang,
 }: {
   step: Step;
   title: ReactNode;
@@ -33,6 +35,9 @@ export function OnboardingFrame({
   secondary?: ReactNode;
   onBack?: () => void;
   hideMoochi?: boolean;
+  /** What Rachel says aloud when it differs from the caption (e.g. an English question). */
+  voiceText?: string;
+  voiceLang?: string;
 }) {
   const { t, i18n } = useTranslation();
   // A learner who is already signed in does not pick a language first.
@@ -44,14 +49,15 @@ export function OnboardingFrame({
   // Signed in: Rachel asks the questions and the screen below is her board.
   const avatar = Boolean(user);
   const line =
-    typeof title === "string"
+    voiceText ??
+    (typeof title === "string"
       ? typeof body === "string"
         ? `${title}. ${body}`
         : title
-      : null;
+      : null);
   const voice = useAvatarVoice(avatar ? line : null, {
     auto: loadOnboarding()?.answerMode === "voice",
-    language: i18n.resolvedLanguage ?? "en",
+    language: voiceLang ?? i18n.resolvedLanguage ?? "en",
   });
   return (
     <div className="ob" data-step={step}>

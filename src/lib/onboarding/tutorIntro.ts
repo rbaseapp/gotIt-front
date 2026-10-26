@@ -16,3 +16,13 @@ export function canMeetTutor(result: PlacementResult | null | undefined) {
     result.skills.listening !== "weak"
   );
 }
+
+/** The tap-to-answer conversation check: for learners who can read simple English. */
+export function canTalkCheck(result: PlacementResult | null | undefined) {
+  if (!result) return false;
+  return (
+    result.theta >= 7 &&
+    result.knownEstimate >= TUTOR_INTRO_MIN_WORDS &&
+    result.literacy !== "starting"
+  );
+}

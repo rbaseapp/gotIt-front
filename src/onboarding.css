@@ -788,3 +788,20 @@ button.ob-card:hover {
     animation: none;
   }
 }
+
+.ob-replies {
+  display: grid;
+  gap: 10px;
+}
+.ob-replies .ob-btn {
+  justify-content: flex-start;
+  text-align: start;
+  min-height: 52px;
+  font-size: 1.02rem;
+}
+
+.ob-result .ob-note {
+  color: rgb(255 255 255 / 0.9);
+  font-weight: 700;
+  margin: 0;
+}

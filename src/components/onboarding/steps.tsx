@@ -1,6 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Mail } from "lucide-react";
+import {
+  TALK_QUESTIONS,
+  TalkCheck,
+  talkDelta,
+  topicForGoal,
+} from "../../lib/placement/conversationCheck";
 import { Link } from "react-router-dom";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { EmailAuthForm } from "../EmailAuthForm";
@@ -340,6 +346,95 @@ export function SelfStep({
           >
             <h3>{t(`start.self.level.${level}.title`)}</h3>
             <p>{t(`start.self.level.${level}.body`)}</p>
+          </button>
+        ))}
+      </div>
+    </OnboardingFrame>
+  );
+}
+
+/** Rachel asks four short English questions; the learner taps the best reply. */
+export function TalkStep({
+  state,
+  update,
+  next,
+}: {
+  state: OnboardingState;
+  update: Update;
+  next: () => void;
+}) {
+  const { t } = useTranslation();
+  const check = useRef<TalkCheck | null>(null);
+  const [started, setStarted] = useState(false);
+  const [question, setQuestion] = useState<ReturnType<TalkCheck["next"]>>(null);
+  const theta = Math.min(84, Math.max(1, state.result!.theta + state.adjust));
+  const begin = () => {
+    check.current = new TalkCheck(theta, topicForGoal(state.goal));
+    setQuestion(check.current.next());
+    setStarted(true);
+  };
+  const reply = (index: number | null) => {
+    const session = check.current;
+    if (!session || !question) return;
+    session.answer(index === question.answer);
+    if (session.done) {
+      update({
+        adjust: state.adjust + talkDelta(session.correct),
+        talk: { correct: session.correct, total: TALK_QUESTIONS },
+      });
+      next();
+      return;
+    }
+    setQuestion(session.next());
+  };
+  if (!started || !question)
+    return (
+      <OnboardingFrame
+        step="talk"
+        title={t("start.talk.title")}
+        body={t("start.talk.body")}
+        primary={
+          <button className="ob-btn" onClick={begin}>
+            {t("start.talk.begin")}
+          </button>
+        }
+        secondary={
+          <button className="ob-link" onClick={next}>
+            {t("start.talk.skip")}
+          </button>
+        }
+      >
+        <span />
+      </OnboardingFrame>
+    );
+  const done = check.current?.answers.length ?? 0;
+  return (
+    <OnboardingFrame
+      step="talk"
+      title={
+        <span dir="ltr" lang="en">
+          {question.item.prompt}
+        </span>
+      }
+      body={t("start.talk.pick", { current: done + 1, total: TALK_QUESTIONS })}
+      voiceText={question.item.prompt}
+      voiceLang="en"
+      secondary={
+        <button className="ob-link" onClick={() => reply(null)}>
+          {t("start.talk.notSure")}
+        </button>
+      }
+    >
+      <div className="ob-replies" role="group">
+        {question.replies.map((text, index) => (
+          <button
+            key={text}
+            className="ob-btn ghost"
+            dir="ltr"
+            lang="en"
+            onClick={() => reply(index)}
+          >
+            {text}
           </button>
         ))}
       </div>

@@ -67,6 +67,7 @@ export function claimPayload(
             ageBand: state.ageBand,
             readingComfort: state.readingComfort,
             selfLevel: state.selfLevel,
+            ...(state.talk ? { talk: state.talk } : {}),
           },
         }
       : {}),
