@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Volume2, VolumeX, X } from "lucide-react";
 import logoUrl from "../../assets/gotit-logo.svg";
 import moochi from "../../assets/ux/dashboard-moohi.png";
+import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
+import { useAvatarVoice } from "../../lib/onboarding/avatarVoice";
+import { loadOnboarding } from "../../lib/onboarding/state";
 import { useApp } from "../../context/AppContext";
 import { STEPS as ALL_STEPS, type Step } from "../../lib/onboarding/state";
 
@@ -31,13 +34,25 @@ export function OnboardingFrame({
   onBack?: () => void;
   hideMoochi?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // A learner who is already signed in does not pick a language first.
   const { user } = useApp();
   const STEPS: readonly Step[] = user
     ? ALL_STEPS.filter((name) => name !== "language")
     : ALL_STEPS;
   const index = Math.max(1, STEPS.indexOf(step) + 1);
+  // Signed in: Rachel asks the questions and the screen below is her board.
+  const avatar = Boolean(user);
+  const line =
+    typeof title === "string"
+      ? typeof body === "string"
+        ? `${title}. ${body}`
+        : title
+      : null;
+  const voice = useAvatarVoice(avatar ? line : null, {
+    auto: loadOnboarding()?.answerMode === "voice",
+    language: i18n.resolvedLanguage ?? "en",
+  });
   return (
     <div className="ob" data-step={step}>
       <header className="ob-top">
@@ -75,8 +90,50 @@ export function OnboardingFrame({
             </h1>
             {body && <p>{body}</p>}
           </div>
-          {!hideMoochi && (
-            <img className="ob-moochi" src={moochi} alt="" draggable={false} />
+          {avatar ? (
+            <div className="ob-avatar-wrap">
+              <div
+                className="ob-avatar"
+                data-speaking={voice.speaking || undefined}
+              >
+                <img src={rachel} alt="" draggable={false} />
+              </div>
+              {voice.available && (
+                <span className="ob-avatar-controls">
+                  <button
+                    type="button"
+                    className="ob-link"
+                    aria-label={t("start.avatar.replay")}
+                    onClick={voice.replay}
+                  >
+                    <Volume2 size={14} aria-hidden="true" />{" "}
+                    {t("start.avatar.replay")}
+                  </button>
+                  <button
+                    type="button"
+                    className="ob-link"
+                    aria-pressed={voice.muted}
+                    onClick={voice.toggleMute}
+                  >
+                    {voice.muted ? (
+                      <VolumeX size={14} aria-hidden="true" />
+                    ) : null}
+                    {voice.muted
+                      ? t("start.avatar.unmute")
+                      : t("start.avatar.mute")}
+                  </button>
+                </span>
+              )}
+            </div>
+          ) : (
+            !hideMoochi && (
+              <img
+                className="ob-moochi"
+                src={moochi}
+                alt=""
+                draggable={false}
+              />
+            )
           )}
         </div>
         {children}

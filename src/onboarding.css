@@ -737,3 +737,54 @@ button.ob-card:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Rachel on the board: round portrait with a ring that pulses while she speaks. */
+.ob-avatar-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.ob-avatar {
+  width: clamp(84px, 16vw, 124px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e4eedc;
+  box-shadow:
+    0 0 0 3px #fffefa,
+    0 0 0 5px #8fc9a8;
+  transition: box-shadow 0.3s;
+}
+.ob-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 12%;
+  user-select: none;
+}
+.ob-avatar[data-speaking] {
+  animation: ob-speak 1.1s ease-in-out infinite;
+}
+@keyframes ob-speak {
+  50% {
+    box-shadow:
+      0 0 0 3px #fffefa,
+      0 0 0 10px #cfe8da;
+  }
+}
+.ob-avatar-controls {
+  display: flex;
+  gap: 10px;
+  font-size: 0.78rem;
+}
+@media (max-width: 640px) {
+  .ob-avatar-wrap {
+    justify-self: end;
+    order: -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ob-avatar[data-speaking] {
+    animation: none;
+  }
+}

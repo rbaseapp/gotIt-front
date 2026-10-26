@@ -328,6 +328,11 @@
           "body": "I understand and speak about most topics."
         }
       }
+    },
+    "avatar": {
+      "replay": "Hear again",
+      "mute": "Mute",
+      "unmute": "Unmute"
     }
   },
   "landingV2": {
