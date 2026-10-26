@@ -15,12 +15,7 @@ import {
   type Deadline,
   type Goal,
 } from "../../lib/placement/plan";
-import type {
-  Band,
-  PlacementBank,
-  PlacementResult,
-  Skill,
-} from "../../lib/placement/types";
+import type { Band, PlacementResult, Skill } from "../../lib/placement/types";
 import {
   clearOnboarding,
   type Focus,
@@ -415,38 +410,6 @@ export function PlanStep({
 }
 
 /* ---------------------------------------------------------------- 6 */
-export function firstWordsFor(state: OnboardingState, bank: PlacementBank) {
-  const gloss = new Map(
-    bank.words.filter((w) => w[2]).map((w) => [w[0].toLowerCase(), w]),
-  );
-  const picked: Array<{ en: string; he: string }> = [];
-  for (const word of state.result?.seedWords ?? []) {
-    const entry = gloss.get(word.toLowerCase());
-    if (entry && picked.length < 3)
-      picked.push({ en: entry[0], he: entry[2]! });
-  }
-  if (picked.length < 3) {
-    const theta = (state.result?.theta ?? 20) + state.adjust;
-    const known = new Set(
-      (state.result?.knownWords ?? []).map((w) => w.toLowerCase()),
-    );
-    for (const entry of bank.words
-      .filter(
-        (w) =>
-          w[2] &&
-          w[1] >= theta &&
-          w[1] <= theta + 10 &&
-          !known.has(w[0].toLowerCase()),
-      )
-      .sort((a, b) => a[1] - b[1])) {
-      if (picked.length >= 3) break;
-      if (!picked.some((p) => p.en === entry[0]))
-        picked.push({ en: entry[0], he: entry[2]! });
-    }
-  }
-  return picked;
-}
-
 export function FirstWordsStep({
   state,
   update,

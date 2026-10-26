@@ -1,12 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Check, Flame, Mail, MessageCircle, Star, Zap } from "lucide-react";
+import { Mail, MessageCircle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
 import { CHROME_EXTENSION_URL } from "../config";
 import { testimonials } from "../data/testimonials";
 import { useInView } from "../hooks/useInView";
-import { useScrolled } from "../hooks/useScrolled";
 import { LANGUAGE_CODES } from "../lib/languages";
 import { supportEmailHref, supportWhatsappHref } from "../lib/supportContact";
 import {
@@ -17,12 +16,20 @@ import {
   ScaledScreen,
 } from "../components/LandingReplicas";
 import logoClearUrl from "../assets/gotit-logo-clear.svg";
-import logoOnDarkUrl from "../assets/gotit-logo-on-dark.svg";
-import tutorPortrait from "../assets/private-lesson/tutor-female-speaking-wide.png";
 import tutorThinking from "../assets/private-lesson/tutor-female-thinking.png";
+import {
+  FinalCta,
+  LandingHeader,
+  MobileBar,
+  NewHero,
+  PlanTeaser,
+  PocketTeaser,
+  PricingTeaser,
+  TrustBar,
+  TutorTeaser,
+} from "../components/landing/LandingV2";
 import "../landing.css";
 
-const REGISTER_PATH = "/login?auth=register";
 const STEPS = ["mark", "practice", "speak", "read"] as const;
 type Step = (typeof STEPS)[number];
 
@@ -31,106 +38,24 @@ function prefersReducedMotion() {
 }
 
 export function LandingPage() {
-  const { t } = useTranslation();
-  const scrolled = useScrolled();
   return (
-    <div className="landing">
-      <header className="landing-header" data-scrolled={scrolled || undefined}>
-        <div className="landing-header-inner">
-          <LandingLogo src={logoClearUrl} />
-          <nav className="landing-nav" aria-label={t("landing.nav.primary")}>
-            <a href="#how">{t("landing.nav.howItWorks")}</a>
-            <a href="#languages">{t("landing.nav.languages")}</a>
-          </nav>
-          <div className="landing-header-actions">
-            <UiLanguageSelect compact />
-            <Link className="landing-login" to="/login">
-              {t("landing.nav.login")}
-            </Link>
-            <Link className="landing-button" to={REGISTER_PATH}>
-              {t("landing.nav.createAccount")}
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="landing l2">
+      <LandingHeader />
       <main>
-        <Hero />
+        <NewHero />
+        <TrustBar />
+        <PocketTeaser />
         <Journey />
+        <PlanTeaser />
+        <TutorTeaser />
+        <PricingTeaser />
         <Languages />
         <Testimonials />
         <Faq />
+        <FinalCta />
       </main>
-
       <Closing />
-    </div>
-  );
-}
-
-function Hero() {
-  const { t } = useTranslation();
-  return (
-    <section className="landing-hero">
-      <div className="landing-hero-copy">
-        <h1>{t("landing.hero.title")}</h1>
-        <p>{t("landing.hero.body")}</p>
-        <div className="landing-hero-actions">
-          <Link className="landing-button on-dark" to={REGISTER_PATH}>
-            {t("landing.hero.createAccount")}
-          </Link>
-          <a
-            className="landing-button ghost"
-            href={CHROME_EXTENSION_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t("landing.hero.addToChrome")}
-          </a>
-        </div>
-        <Link className="landing-hero-login" to="/login">
-          {t("landing.hero.haveAccount")}
-        </Link>
-      </div>
-      <HeroArt />
-    </section>
-  );
-}
-
-/**
- * The hero's picture: the tutor in an arch, with the moments a learner meets
- * around her (a saved word, her question, the streak). Decorative; the copy
- * beside it says the same thing in words.
- */
-function HeroArt() {
-  const { t } = useTranslation();
-  return (
-    <div className="hero-art" aria-hidden="true">
-      <span className="hero-art-sun" />
-      <span className="hero-art-blob" />
-      <div className="hero-art-arch">
-        <img src={tutorPortrait} alt="" draggable={false} />
-      </div>
-      <div className="hero-chip hero-chip-word" dir="ltr" lang="en">
-        <span className="hero-chip-check">
-          <Check size={14} strokeWidth={3} />
-        </span>
-        <span>
-          <mark>thrive</mark>
-          <small dir="auto">{t("landing.demo.translation")}</small>
-        </span>
-      </div>
-      <p className="hero-chip hero-chip-bubble" dir="ltr" lang="en">
-        How do small cafés <mark>thrive</mark>?
-      </p>
-      <div className="hero-chip hero-chip-stats" dir="ltr">
-        <span className="hero-stat-streak">
-          <Flame size={16} fill="currentColor" />7
-        </span>
-        <span className="hero-stat-xp">
-          <Zap size={16} fill="currentColor" />
-          +15 XP
-        </span>
-      </div>
+      <MobileBar />
     </div>
   );
 }
@@ -516,47 +441,13 @@ function Testimonials() {
 }
 
 /** Saved words drifting behind the closing call to action. */
-const CLOSING_WORDS = [
-  "thrive",
-  "regulars",
-  "cozy",
-  "wander",
-  "subtle",
-  "neighborhood",
-  "remember",
-  "bakery",
-];
-
 function Closing() {
   const { t } = useTranslation();
-  const [ref, inView] = useInView<HTMLDivElement>({ once: true });
   return (
     <footer className="landing-closing">
-      <div ref={ref} className="closing-cta" data-inview={inView || undefined}>
-        <ul className="closing-words" dir="ltr" lang="en" aria-hidden="true">
-          {CLOSING_WORDS.map((word) => (
-            <li key={word}>{word}</li>
-          ))}
-        </ul>
-        <h2>{t("landing.cta.title")}</h2>
-        <p>{t("landing.cta.body")}</p>
-        <div className="closing-actions">
-          <Link className="landing-button on-dark" to={REGISTER_PATH}>
-            {t("landing.cta.button")}
-          </Link>
-          <a
-            className="landing-button ghost"
-            href={CHROME_EXTENSION_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t("landing.hero.addToChrome")}
-          </a>
-        </div>
-      </div>
       <div className="landing-footer">
         <div className="landing-footer-brand">
-          <LandingLogo src={logoOnDarkUrl} />
+          <LandingLogo src={logoClearUrl} />
           <p>{t("landing.footer.tagline")}</p>
         </div>
         <nav aria-label={t("landing.footer.product")}>
@@ -616,7 +507,15 @@ type FaqItem = { q: string; a: string };
 
 function Faq() {
   const { t } = useTranslation();
-  const items = t("landing.faq.items", { returnObjects: true }) as FaqItem[];
+  const own = (["price", "level", "test"] as const).map((key) => ({
+    q: t(`landingV2.faq.${key}.q`),
+    a: t(`landingV2.faq.${key}.a`),
+  }));
+  // The new questions replace the old "how much does it cost" answer.
+  const old = (
+    t("landing.faq.items", { returnObjects: true }) as FaqItem[]
+  ).slice(1);
+  const items = [...own, ...old];
   return (
     <section className="landing-faq" id="faq">
       <div className="faq-main">

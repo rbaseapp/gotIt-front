@@ -644,6 +644,8 @@ button.ob-card:hover {
   background: var(--ob-brand);
 }
 .ob-today {
+  flex-direction: row;
+  min-height: 0;
   background: #fff;
   border: 2px solid var(--ob-ink);
   border-radius: 22px;

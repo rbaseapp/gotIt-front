@@ -4,6 +4,11 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
 import App, { PrivateLessonEntry } from "../src/App";
 
+vi.mock("../src/lib/structuredEnglish", async (orig) => ({
+  ...(await orig<object>()),
+  curriculumApi: { get: async () => ({ tutor: { unlocked: true } }) },
+}));
+
 const state = vi.hoisted(() => ({ paid: false }));
 vi.mock("../src/context/AppContext", () => ({
   useApp: () => ({ mode: "live", user: { id: "curriculum-learner" } }),
@@ -34,27 +39,34 @@ beforeEach(() => {
   state.paid = false;
 });
 
-it("opens the voice tutor for a free user who can buy minutes independently", async () => {
+it("shows the locked card instead of the tutor for a free learner", async () => {
   render(
-    <Suspense>
-      <PrivateLessonEntry preferLesson={false} />
-    </Suspense>,
+    <MemoryRouter>
+      <Suspense>
+        <PrivateLessonEntry preferLesson={false} />
+      </Suspense>
+    </MemoryRouter>,
   );
-  expect(await screen.findByText("Voice tutor page")).toBeInTheDocument();
+  await screen.findAllByRole("link");
+  expect(screen.queryByText("Voice tutor page")).not.toBeInTheDocument();
 });
 
 it("keeps the course landing page for Pro and respects explicit lesson links", async () => {
   state.paid = true;
   const view = render(
-    <Suspense>
-      <PrivateLessonEntry preferLesson={false} />
-    </Suspense>,
+    <MemoryRouter>
+      <Suspense>
+        <PrivateLessonEntry preferLesson={false} />
+      </Suspense>
+    </MemoryRouter>,
   );
   expect(await screen.findByText("Course page")).toBeInTheDocument();
   view.rerender(
-    <Suspense>
-      <PrivateLessonEntry preferLesson />
-    </Suspense>,
+    <MemoryRouter>
+      <Suspense>
+        <PrivateLessonEntry preferLesson />
+      </Suspense>
+    </MemoryRouter>,
   );
   expect(await screen.findByText("Voice tutor page")).toBeInTheDocument();
 });

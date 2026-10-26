@@ -617,8 +617,8 @@ describe("live server-backed flows", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getAllByRole("link", { name: "יצירת חשבון" })[0],
-    ).toHaveAttribute("href", "/login?auth=register");
+      screen.getAllByRole("link", { name: "התחל ניסיון חינם" })[0],
+    ).toHaveAttribute("href", "/start");
   });
   it("shows a spinner while checking an answer, then an error and retry after failure", async () => {
     let rejectAttempt!: (reason: Error) => void;

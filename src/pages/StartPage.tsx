@@ -10,7 +10,6 @@ import {
   PlanStep,
   ResultStep,
   SaveStep,
-  firstWordsFor,
 } from "../components/onboarding/steps";
 import {
   STEPS,
@@ -21,6 +20,7 @@ import {
   type OnboardingState,
   type Step,
 } from "../lib/onboarding/state";
+import { firstWordsFor } from "../lib/onboarding/firstWords";
 import type { PlacementBank, PlacementResult } from "../lib/placement/types";
 import "../onboarding.css";
 

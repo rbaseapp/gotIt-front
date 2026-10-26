@@ -43,6 +43,7 @@ import {
   wordPacksSchema,
 } from "../lib/product";
 import moohi from "../assets/ux/dashboard-moohi.png";
+import { TodayMission } from "../components/onboarding/TodayMission";
 import { DashboardMoohi } from "../components/DashboardMoohi";
 import "../dashboard-design.css";
 
@@ -312,6 +313,7 @@ export function DevDashboardPage() {
     <div
       className={`nd-dashboard${isProgram ? " nd-with-program" : " nd-words-only"}`}
     >
+      <TodayMission />
       <LearningStatusSource
         goal={d?.dailyGoal}
         streakDays={d?.gamification.currentStreakDays}

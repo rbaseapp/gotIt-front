@@ -15,6 +15,11 @@ import { practiceDesignEnabled } from "./lib/practiceDesign";
 import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
 import { OnboardingClaimGate } from "./components/onboarding/OnboardingClaimGate";
+import {
+  CurriculumAccess,
+  PreviewBanner,
+  TutorAccess,
+} from "./components/onboarding/Gates";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 import {
   SubscriptionProvider,
@@ -363,11 +368,13 @@ export default function App() {
                       element={
                         mode === "live" ? (
                           <LiveGameAccess>
-                            {location.search.includes("new=1") ? (
-                              <CoursePage />
-                            ) : (
-                              <ProgramsPage />
-                            )}
+                            <CurriculumAccess>
+                              {location.search.includes("new=1") ? (
+                                <CoursePage />
+                              ) : (
+                                <ProgramsPage />
+                              )}
+                            </CurriculumAccess>
                           </LiveGameAccess>
                         ) : (
                           <Navigate to="/learn" replace />
@@ -379,7 +386,9 @@ export default function App() {
                       element={
                         mode === "live" ? (
                           <LiveGameAccess>
-                            <CoursePage />
+                            <CurriculumAccess>
+                              <CoursePage />
+                            </CurriculumAccess>
                           </LiveGameAccess>
                         ) : (
                           <Navigate to="/learn" replace />
@@ -391,7 +400,9 @@ export default function App() {
                       element={
                         mode === "live" ? (
                           <LiveGameAccess>
-                            <HomeworkPage />
+                            <CurriculumAccess>
+                              <HomeworkPage />
+                            </CurriculumAccess>
                           </LiveGameAccess>
                         ) : (
                           <Navigate to="/learn" replace />
@@ -412,7 +423,10 @@ export default function App() {
                       path="/english-learning"
                       element={
                         mode === "live" ? (
-                          <EnglishLearningEntryPage />
+                          <>
+                            <PreviewBanner />
+                            <EnglishLearningEntryPage />
+                          </>
                         ) : (
                           <Navigate to="/learn" replace />
                         )
@@ -422,7 +436,10 @@ export default function App() {
                       path="/english-zero-c1"
                       element={
                         mode === "live" ? (
-                          <StructuredEnglishPage />
+                          <>
+                            <PreviewBanner />
+                            <StructuredEnglishPage />
+                          </>
                         ) : (
                           <Navigate to="/learn" replace />
                         )
@@ -469,7 +486,9 @@ export function PrivateLessonEntry({
       </div>
     );
   return preferLesson || (status && !hasEntitlement("practice.play")) ? (
-    <PrivateLessonPage />
+    <TutorAccess>
+      <PrivateLessonPage />
+    </TutorAccess>
   ) : (
     <CoursePage />
   );

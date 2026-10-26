@@ -8,6 +8,7 @@ import { LearningLanguageSelect } from "../components/LearningLanguageSelect";
 import { ExploreActions } from "../components/ExploreActions";
 import { DashboardDetails } from "../components/DashboardDetails";
 import { useResource } from "../lib/useResource";
+import { TodayMission } from "../components/onboarding/TodayMission";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import {
   product,
@@ -192,6 +193,7 @@ export function LiveDashboardPage() {
     <div
       className={`ux-page ux-home page-enter${isProgram ? " with-program" : " words-home"}`}
     >
+      <TodayMission />
       <header className="ux-home-heading">
         <div>
           <h1>
