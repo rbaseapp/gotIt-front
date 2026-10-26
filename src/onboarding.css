@@ -696,3 +696,22 @@ button.ob-card:hover {
     animation: none;
   }
 }
+
+.ob-skip {
+  position: fixed;
+  inset-block-start: 14px;
+  inset-inline-start: 16px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  color: var(--muted, #6a7a73);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+.ob-skip:hover {
+  color: var(--ink, #22322c);
+}

@@ -221,7 +221,8 @@
       "upgrade": "Upgrade",
       "free": "Back to free practice",
       "preview": "This is a preview. To study the units you need Pro or the trial."
-    }
+    },
+    "skip": "Skip for now"
   },
   "landingV2": {
     "nav": {

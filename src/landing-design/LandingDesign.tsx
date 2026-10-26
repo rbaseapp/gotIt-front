@@ -10,7 +10,7 @@ import pickerCss from "./picker.css?inline";
 import { initLanding } from "./init";
 import "./fonts.css";
 
-const START_PATH = "/start";
+const SIGNUP_PATH = "/signup";
 const RTL_LOCALES = new Set<string>(["he", "ar"]);
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",
@@ -100,7 +100,7 @@ export default function LandingDesign() {
         languageNames: LANGUAGE_NAMES,
         setLanguage: (code: string) => void setUiLocale(code as UiLocale),
         destinations: {
-          signup: START_PATH,
+          signup: SIGNUP_PATH,
           login: "/login",
           extension: CHROME_EXTENSION_URL,
           contact: supportEmailHref("GotIt"),

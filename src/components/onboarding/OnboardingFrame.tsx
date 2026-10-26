@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, X } from "lucide-react";
 import logoUrl from "../../assets/gotit-logo.svg";
 import moochi from "../../assets/ux/dashboard-moohi.png";
-import { STEPS, stepIndex, type Step } from "../../lib/onboarding/state";
+import { useApp } from "../../context/AppContext";
+import { STEPS as ALL_STEPS, type Step } from "../../lib/onboarding/state";
 
 /**
  * The page every onboarding screen sits in: brand, progress, the trial badge and
@@ -31,7 +32,12 @@ export function OnboardingFrame({
   hideMoochi?: boolean;
 }) {
   const { t } = useTranslation();
-  const index = stepIndex(step);
+  // A learner who is already signed in does not pick a language first.
+  const { user } = useApp();
+  const STEPS: readonly Step[] = user
+    ? ALL_STEPS.filter((name) => name !== "language")
+    : ALL_STEPS;
+  const index = Math.max(1, STEPS.indexOf(step) + 1);
   return (
     <div className="ob" data-step={step}>
       <header className="ob-top">

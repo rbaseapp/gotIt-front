@@ -15,6 +15,7 @@ import { practiceDesignEnabled } from "./lib/practiceDesign";
 import { useFeedback } from "./components/Feedback";
 import { AuthPage } from "./pages/AuthPage";
 import { OnboardingClaimGate } from "./components/onboarding/OnboardingClaimGate";
+import { FirstRunGate } from "./components/onboarding/FirstRunGate";
 import {
   CurriculumAccess,
   PreviewBanner,
@@ -225,247 +226,257 @@ export default function App() {
       isAdmin={user?.role === "admin"}
     >
       <OnboardingClaimGate>
-        <Suspense
-          fallback={
-            <div className="empty-session" role="status">
-              <LoaderCircle className="spin" size={30} />
-              <p>{t("app.loadingScreen")}</p>
-            </div>
-          }
-        >
-          <Routes>
-            <Route
-              path="/learn/session/:type"
-              element={
-                mode === "live" ? (
-                  <LiveGameAccess>
-                    {practiceDesignEnabled() ? (
-                      <DevFocusGamePage />
-                    ) : (
-                      <LiveGameSessionPage
-                        key={location.pathname + location.search}
+        <FirstRunGate>
+          <Suspense
+            fallback={
+              <div className="empty-session" role="status">
+                <LoaderCircle className="spin" size={30} />
+                <p>{t("app.loadingScreen")}</p>
+              </div>
+            }
+          >
+            <Routes>
+              <Route path="/start" element={<StartPage />} />
+              <Route
+                path="/learn/session/:type"
+                element={
+                  mode === "live" ? (
+                    <LiveGameAccess>
+                      {practiceDesignEnabled() ? (
+                        <DevFocusGamePage />
+                      ) : (
+                        <LiveGameSessionPage
+                          key={location.pathname + location.search}
+                        />
+                      )}
+                    </LiveGameAccess>
+                  ) : (
+                    <GameSessionPage />
+                  )
+                }
+              />
+              <Route
+                path="*"
+                element={
+                  <AppShell onLogout={() => void logout()}>
+                    <Routes>
+                      <Route
+                        path="/courses/:id/units/:unitKey/words"
+                        element={<CourseUnitWordsPage />}
                       />
-                    )}
-                  </LiveGameAccess>
-                ) : (
-                  <GameSessionPage />
-                )
-              }
-            />
-            <Route
-              path="*"
-              element={
-                <AppShell onLogout={() => void logout()}>
-                  <Routes>
-                    <Route
-                      path="/courses/:id/units/:unitKey/words"
-                      element={<CourseUnitWordsPage />}
-                    />
-                    <Route path="/account" element={<AccountPage />} />
-                    <Route path="/billing/minutes" element={<MinutesPage />} />
-                    <Route
-                      path="/dashboard"
-                      element={
-                        mode === "live" ? (
-                          dashboardDesignEnabled() ? (
-                            <DevDashboardPage />
+                      <Route path="/account" element={<AccountPage />} />
+                      <Route
+                        path="/billing/minutes"
+                        element={<MinutesPage />}
+                      />
+                      <Route
+                        path="/dashboard"
+                        element={
+                          mode === "live" ? (
+                            dashboardDesignEnabled() ? (
+                              <DevDashboardPage />
+                            ) : (
+                              <LiveDashboardPage />
+                            )
                           ) : (
-                            <LiveDashboardPage />
+                            <DashboardPage />
                           )
-                        ) : (
-                          <DashboardPage />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/learn"
-                      element={
-                        mode === "live" ? (
-                          practiceDesignEnabled() ? (
-                            <DevPracticePage />
+                        }
+                      />
+                      <Route
+                        path="/learn"
+                        element={
+                          mode === "live" ? (
+                            practiceDesignEnabled() ? (
+                              <DevPracticePage />
+                            ) : (
+                              <LiveLearnPage />
+                            )
                           ) : (
-                            <LiveLearnPage />
+                            <LearnPage />
                           )
-                        ) : (
-                          <LearnPage />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/vocabulary"
-                      element={
-                        mode === "live" ? (
-                          myWordsDesignEnabled() ? (
-                            <DevMyWordsPage />
+                        }
+                      />
+                      <Route
+                        path="/vocabulary"
+                        element={
+                          mode === "live" ? (
+                            myWordsDesignEnabled() ? (
+                              <DevMyWordsPage />
+                            ) : (
+                              <LiveVocabularyPage />
+                            )
                           ) : (
-                            <LiveVocabularyPage />
+                            <VocabularyPage />
                           )
-                        ) : (
-                          <VocabularyPage />
-                        )
-                      }
-                    />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route
-                      path="/learn/smart"
-                      element={
-                        mode === "live" ? (
-                          <SmartPracticeReadyPage />
-                        ) : (
-                          <LearnPage />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/achievements"
-                      element={
-                        mode === "live" ? (
-                          <AchievementsPage />
-                        ) : (
-                          <DashboardPage />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/history"
-                      element={
-                        mode === "live" ? <HistoryPage /> : <LearnPage />
-                      }
-                    />
-                    <Route
-                      path="/programs"
-                      element={<Navigate to="/courses" replace />}
-                    />
-                    <Route
-                      path="/reading"
-                      element={
-                        mode === "live" ? <LiveReadingPage /> : <ReadingPage />
-                      }
-                    />
-                    <Route path="/transfer" element={<TransferPage />} />
-                    <Route
-                      path="/private-lesson"
-                      element={
-                        mode === "live" ? (
-                          <PrivateLessonEntry
-                            preferLesson={
-                              location.search.includes("course=") ||
-                              location.search.includes("pack=") ||
-                              new URLSearchParams(location.search).has(
-                                "curriculum",
-                              ) ||
-                              location.search.includes("practice=free") ||
-                              location.search.includes("view=")
-                            }
-                          />
-                        ) : (
-                          <Navigate to="/learn" replace />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/courses"
-                      element={
-                        mode === "live" ? (
-                          <LiveGameAccess>
-                            <CurriculumAccess>
-                              {location.search.includes("new=1") ? (
+                        }
+                      />
+                      <Route path="/settings" element={<SettingsPage />} />
+                      <Route
+                        path="/learn/smart"
+                        element={
+                          mode === "live" ? (
+                            <SmartPracticeReadyPage />
+                          ) : (
+                            <LearnPage />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/achievements"
+                        element={
+                          mode === "live" ? (
+                            <AchievementsPage />
+                          ) : (
+                            <DashboardPage />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/history"
+                        element={
+                          mode === "live" ? <HistoryPage /> : <LearnPage />
+                        }
+                      />
+                      <Route
+                        path="/programs"
+                        element={<Navigate to="/courses" replace />}
+                      />
+                      <Route
+                        path="/reading"
+                        element={
+                          mode === "live" ? (
+                            <LiveReadingPage />
+                          ) : (
+                            <ReadingPage />
+                          )
+                        }
+                      />
+                      <Route path="/transfer" element={<TransferPage />} />
+                      <Route
+                        path="/private-lesson"
+                        element={
+                          mode === "live" ? (
+                            <PrivateLessonEntry
+                              preferLesson={
+                                location.search.includes("course=") ||
+                                location.search.includes("pack=") ||
+                                new URLSearchParams(location.search).has(
+                                  "curriculum",
+                                ) ||
+                                location.search.includes("practice=free") ||
+                                location.search.includes("view=")
+                              }
+                            />
+                          ) : (
+                            <Navigate to="/learn" replace />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/courses"
+                        element={
+                          mode === "live" ? (
+                            <LiveGameAccess>
+                              <CurriculumAccess>
+                                {location.search.includes("new=1") ? (
+                                  <CoursePage />
+                                ) : (
+                                  <ProgramsPage />
+                                )}
+                              </CurriculumAccess>
+                            </LiveGameAccess>
+                          ) : (
+                            <Navigate to="/learn" replace />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/courses/:courseId"
+                        element={
+                          mode === "live" ? (
+                            <LiveGameAccess>
+                              <CurriculumAccess>
                                 <CoursePage />
-                              ) : (
-                                <ProgramsPage />
-                              )}
-                            </CurriculumAccess>
-                          </LiveGameAccess>
-                        ) : (
-                          <Navigate to="/learn" replace />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/courses/:courseId"
-                      element={
-                        mode === "live" ? (
-                          <LiveGameAccess>
-                            <CurriculumAccess>
-                              <CoursePage />
-                            </CurriculumAccess>
-                          </LiveGameAccess>
-                        ) : (
-                          <Navigate to="/learn" replace />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/homework/:homeworkId"
-                      element={
-                        mode === "live" ? (
-                          <LiveGameAccess>
-                            <CurriculumAccess>
-                              <HomeworkPage />
-                            </CurriculumAccess>
-                          </LiveGameAccess>
-                        ) : (
-                          <Navigate to="/learn" replace />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/word-packs"
-                      element={
-                        mode === "live" ? (
-                          <WordPacksPage />
-                        ) : (
-                          <Navigate to="/learn" replace />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/english-learning"
-                      element={
-                        mode === "live" ? (
-                          <>
-                            <PreviewBanner />
-                            <EnglishLearningEntryPage />
-                          </>
-                        ) : (
-                          <Navigate to="/learn" replace />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/english-zero-c1"
-                      element={
-                        mode === "live" ? (
-                          <>
-                            <PreviewBanner />
-                            <StructuredEnglishPage />
-                          </>
-                        ) : (
-                          <Navigate to="/learn" replace />
-                        )
-                      }
-                    />
-                    <Route
-                      path="/billing"
-                      element={
-                        mode === "live" ? (
-                          <BillingPage />
-                        ) : (
-                          <Navigate to="/dashboard" replace />
-                        )
-                      }
-                    />
-                    <Route path="/help" element={<HelpPage />} />
-                    <Route
-                      path="*"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-                  </Routes>
-                </AppShell>
-              }
-            />
-          </Routes>
-        </Suspense>
+                              </CurriculumAccess>
+                            </LiveGameAccess>
+                          ) : (
+                            <Navigate to="/learn" replace />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/homework/:homeworkId"
+                        element={
+                          mode === "live" ? (
+                            <LiveGameAccess>
+                              <CurriculumAccess>
+                                <HomeworkPage />
+                              </CurriculumAccess>
+                            </LiveGameAccess>
+                          ) : (
+                            <Navigate to="/learn" replace />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/word-packs"
+                        element={
+                          mode === "live" ? (
+                            <WordPacksPage />
+                          ) : (
+                            <Navigate to="/learn" replace />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/english-learning"
+                        element={
+                          mode === "live" ? (
+                            <>
+                              <PreviewBanner />
+                              <EnglishLearningEntryPage />
+                            </>
+                          ) : (
+                            <Navigate to="/learn" replace />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/english-zero-c1"
+                        element={
+                          mode === "live" ? (
+                            <>
+                              <PreviewBanner />
+                              <StructuredEnglishPage />
+                            </>
+                          ) : (
+                            <Navigate to="/learn" replace />
+                          )
+                        }
+                      />
+                      <Route
+                        path="/billing"
+                        element={
+                          mode === "live" ? (
+                            <BillingPage />
+                          ) : (
+                            <Navigate to="/dashboard" replace />
+                          )
+                        }
+                      />
+                      <Route path="/help" element={<HelpPage />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="/dashboard" replace />}
+                      />
+                    </Routes>
+                  </AppShell>
+                }
+              />
+            </Routes>
+          </Suspense>
+        </FirstRunGate>
       </OnboardingClaimGate>
     </SubscriptionProvider>
   );

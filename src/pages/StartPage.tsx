@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { LoaderCircle } from "lucide-react";
+import { useApp } from "../context/AppContext";
+import { AccountFinish } from "../components/onboarding/AccountFinish";
+import { markFirstRunSkipped } from "../lib/onboarding/firstRun";
 import { OnboardingFrame } from "../components/onboarding/OnboardingFrame";
 import { PocketTest } from "../components/onboarding/PocketTest";
 import {
@@ -25,14 +29,42 @@ import type { PlacementBank, PlacementResult } from "../lib/placement/types";
 import "../onboarding.css";
 
 /**
- * /start: the signed-out onboarding. Seven short screens, no account until the last one.
+ * /start: the level check. Signed in (the first time a learner enters their account)
+ * it ends by saving the level and plan; signed out it ends with sign-up.
  * Everything is kept in this browser, so closing the tab loses nothing.
  */
 export function StartPage() {
+  const { user } = useApp();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  return (
+    <>
+      <StartFlow account={Boolean(user)} />
+      {user && (
+        <button
+          type="button"
+          className="ob-skip"
+          onClick={() => {
+            markFirstRunSkipped(user.id);
+            navigate("/dashboard", { replace: true });
+          }}
+        >
+          {t("start.skip")}
+        </button>
+      )}
+    </>
+  );
+}
+
+function StartFlow({ account }: { account: boolean }) {
   const { t, i18n } = useTranslation();
   const saved = useMemo(() => loadOnboarding(), []);
   const [state, setState] = useState<OnboardingState>(
-    () => saved ?? initialOnboarding(),
+    () =>
+      saved ??
+      (account
+        ? { ...initialOnboarding(), step: "focus" as Step }
+        : initialOnboarding()),
   );
   const [resume, setResume] = useState(
     Boolean(saved && saved.step !== "language"),
@@ -152,6 +184,7 @@ export function StartPage() {
       />
     );
   }
+  if (account && state.step === "save") return <AccountFinish state={state} />;
   if (!state.result) {
     // A resumed session that lost its result goes back to the check.
     return (
