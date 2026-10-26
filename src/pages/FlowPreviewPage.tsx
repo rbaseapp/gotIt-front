@@ -26,7 +26,7 @@ import "../onboarding.css";
 const SCREENS = [
   ["mode", "1 · איך נוח לך לענות"],
   ["about", "2 · גיל וקריאה"],
-  ["about-stop", "2 · מתחת ל-13 (עצירה)"],
+  ["about-kid", "2 · עד גיל 8 (בלי שאלת קריאה)"],
   ["goal", "3 · מטרה"],
   ["self", "4 · הערכה עצמית"],
   ["pocket-intro", "5 · הבדיקה: פתיחה"],
@@ -79,8 +79,12 @@ function Screen({ id }: { id: string }) {
         return sample({ step: "mode", answerMode: null });
       case "about":
         return sample({ step: "about", ageBand: null, readingComfort: null });
-      case "about-stop":
-        return sample({ step: "about", ageBand: "under13" });
+      case "about-kid":
+        return sample({
+          step: "about",
+          ageBand: "under9",
+          readingComfort: "hard",
+        });
       case "goal":
         return sample({ step: "goal", focus: null, goal: null });
       case "self":
@@ -115,7 +119,7 @@ function Screen({ id }: { id: string }) {
     case "mode":
       return <ModeStep {...common} />;
     case "about":
-    case "about-stop":
+    case "about-kid":
       return <AboutStep {...common} back={noop} />;
     case "goal":
       return <GoalStep {...common} back={noop} />;

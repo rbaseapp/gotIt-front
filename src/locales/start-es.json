@@ -225,7 +225,8 @@
       "body": "Para que la prueba y las lecciones se adapten a ti.",
       "ageQuestion": "¿Cuántos años tienes?",
       "age": {
-        "under13": "Menos de 13",
+        "under9": "Hasta 8",
+        "9-12": "9–12",
         "13-17": "13–17",
         "18+": "18 o más"
       },
@@ -235,9 +236,7 @@
         "some": "Un poco",
         "hard": "Me cuesta"
       },
-      "stopTitle": "Hasta pronto 🙂",
-      "stopBody": "Por ahora GotIt es para mayores de 13 años. Vuelve con un adulto cuando añadamos un camino para tu edad.",
-      "stopHome": "Volver al inicio"
+      "minorNote": "Recomendamos que un adulto te acompañe en el registro y la prueba. Usamos voz e imágenes siempre que podemos."
     },
     "goalStep": {
       "title": "¿Qué es lo más importante del inglés para ti?",

@@ -15,6 +15,18 @@ import { STEPS as ALL_STEPS, type Step } from "../../lib/onboarding/state";
  * Moochi's speech bubble with the question. Actions are pinned to the bottom so the
  * main button is always where the thumb is on a phone.
  */
+/** Moochi in a pose that matches the step (the game illustrations already shipped with the app). */
+const STEP_ART: Partial<Record<Step, string>> = {
+  mode: "703fa3e9006db9a761d4d5213c3bd2f0.png",
+  about: "ac2043dc49a4f45c8fa8996719ca255e.png",
+  goal: "733b27676bf58853b6acebeed59264ef.png",
+  self: "7ff4938f80f89b8a21791ae3d201a5f4.png",
+  pocket: "a67fd6c3d45b63c8f34e39a5dea8f8ed.png",
+  talk: "8e5757cae684c7eacfb7443c14cdd330.png",
+  result: "bde805db24f53a66deb4ebb27c828b6d.png",
+  plan: "ac2043dc49a4f45c8fa8996719ca255e.png",
+};
+
 export function OnboardingFrame({
   step,
   title,
@@ -140,6 +152,14 @@ export function OnboardingFrame({
                 draggable={false}
               />
             )
+          )}
+          {avatar && STEP_ART[step] && (
+            <img
+              className="ob-sticker"
+              src={`/assets/focus-games/${STEP_ART[step]}`}
+              alt=""
+              draggable={false}
+            />
           )}
         </div>
         {children}

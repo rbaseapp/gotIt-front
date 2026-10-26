@@ -57,10 +57,7 @@ export function claimPayload(
       reading: skill(result.skills.reading, theta),
       listening: skill(result.skills.listening, theta),
     },
-    ...(state.answerMode &&
-    state.ageBand &&
-    state.ageBand !== "under13" &&
-    state.readingComfort
+    ...(state.answerMode && state.ageBand && state.readingComfort
       ? {
           profile: {
             answerMode: state.answerMode,

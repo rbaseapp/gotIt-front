@@ -188,7 +188,9 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
             className="ob-btn"
             onClick={() => {
               const next: PocketPhase =
-                state.focus === "scratch" ? "literacy" : "cards";
+                state.focus === "scratch" || state.readingComfort === "hard"
+                  ? "literacy"
+                  : "cards";
               setPhase(next);
               update({ phase: next });
             }}

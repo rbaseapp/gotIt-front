@@ -225,7 +225,8 @@
       "body": "Pour que le test et les leçons vous conviennent.",
       "ageQuestion": "Quel âge avez-vous ?",
       "age": {
-        "under13": "Moins de 13 ans",
+        "under9": "Jusqu'à 8",
+        "9-12": "9–12",
         "13-17": "13–17",
         "18+": "18 ans ou plus"
       },
@@ -235,9 +236,7 @@
         "some": "Un peu",
         "hard": "C'est difficile"
       },
-      "stopTitle": "À bientôt 🙂",
-      "stopBody": "GotIt est pour l'instant destiné aux 13 ans et plus. Revenez avec un parent quand nous ajouterons un parcours pour votre âge.",
-      "stopHome": "Retour à l'accueil"
+      "minorNote": "Nous recommandons qu'un adulte soit avec toi pour l'inscription et le test. Nous utilisons la voix et les images autant que possible."
     },
     "goalStep": {
       "title": "Qu'est-ce qui compte le plus en anglais ?",

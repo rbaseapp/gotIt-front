@@ -28,8 +28,8 @@ export type Step = (typeof STEPS)[number];
 export type Focus = "words" | "goal" | "scratch";
 /** How the learner prefers to answer: by talking to the avatar or by tapping choices. */
 export type AnswerMode = "voice" | "text";
-/** Only 13 and over continue in this version; younger visitors are stopped kindly. */
-export type AgeBand = "under13" | "13-17" | "18+";
+/** A band, never a birth date. Under 9 is treated as not yet reading: pictures and voice first. */
+export type AgeBand = "under9" | "9-12" | "13-17" | "18+";
 export type ReadingComfort = "easy" | "some" | "hard";
 /** Self-assessed English: 0 almost none, 1 words and simple sentences, 2 simple talk, 3 fluent. */
 export type SelfLevel = 0 | 1 | 2 | 3;

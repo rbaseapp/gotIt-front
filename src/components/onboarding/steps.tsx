@@ -7,7 +7,6 @@ import {
   talkDelta,
   topicForGoal,
 } from "../../lib/placement/conversationCheck";
-import { Link } from "react-router-dom";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { EmailAuthForm } from "../EmailAuthForm";
 import { GoogleSignIn } from "../GoogleSignIn";
@@ -145,7 +144,10 @@ export function ModeStep({
             aria-pressed={state.answerMode === mode}
             onClick={() => update({ answerMode: mode })}
           >
-            <h3>{t(`start.mode.${mode}.title`)}</h3>
+            <span className="ob-ico big" aria-hidden="true">
+              {t(`start.mode.${mode}.title`).match(MODE_ICON)?.[0].trim() ?? ""}
+            </span>
+            <h3>{t(`start.mode.${mode}.title`).replace(MODE_ICON, "")}</h3>
             <p>{t(`start.mode.${mode}.body`)}</p>
           </button>
         ))}
@@ -155,10 +157,27 @@ export function ModeStep({
   );
 }
 
-const AGES: AgeBand[] = ["under13", "13-17", "18+"];
+const AGES: AgeBand[] = ["under9", "9-12", "13-17", "18+"];
 const READING: ReadingComfort[] = ["easy", "some", "hard"];
+const GOAL_ICONS: Record<string, string> = {
+  words: "🔖",
+  travel: "✈️",
+  work: "💼",
+  study: "🎓",
+  abroad: "🌍",
+  talk: "💬",
+  scratch: "🌱",
+};
+const SELF_ICONS = ["🌱", "🌿", "🌳", "🚀"];
+const MODE_ICON = /^[\p{Extended_Pictographic}\uFE0F\u200D]+\s*/u;
+const AGE_ICONS: Record<AgeBand, string> = {
+  under9: "🧒",
+  "9-12": "🎒",
+  "13-17": "🎧",
+  "18+": "☕",
+};
 
-/** Age band (never a birth date) and how easy reading Hebrew is. Under 13 is stopped for now. */
+/** Age band (never a birth date) and how easy reading is. Nobody is turned away. */
 export function AboutStep({
   state,
   update,
@@ -171,22 +190,8 @@ export function AboutStep({
   back: () => void;
 }) {
   const { t } = useTranslation();
-  if (state.ageBand === "under13")
-    return (
-      <OnboardingFrame
-        step="about"
-        title={t("start.about.stopTitle")}
-        body={t("start.about.stopBody")}
-        onBack={() => update({ ageBand: null })}
-        primary={
-          <Link className="ob-btn" to="/">
-            {t("start.about.stopHome")}
-          </Link>
-        }
-      >
-        <span />
-      </OnboardingFrame>
-    );
+  const young = state.ageBand === "under9" || state.ageBand === "9-12";
+  const readingKnown = state.ageBand === "under9" || state.readingComfort;
   return (
     <OnboardingFrame
       step="about"
@@ -196,7 +201,7 @@ export function AboutStep({
       primary={
         <button
           className="ob-btn"
-          disabled={!state.ageBand || !state.readingComfort}
+          disabled={!state.ageBand || !readingKnown}
           onClick={next}
         >
           {t("start.continue")}
@@ -205,34 +210,52 @@ export function AboutStep({
     >
       <div className="ob-section">
         <h3>{t("start.about.ageQuestion")}</h3>
-        <div className="ob-chips">
+        <div className="ob-grid four">
           {AGES.map((age) => (
             <button
               key={age}
-              className="ob-chip"
+              className="ob-card ob-mini"
               aria-pressed={state.ageBand === age}
-              onClick={() => update({ ageBand: age })}
+              onClick={() =>
+                update(
+                  age === "under9"
+                    ? { ageBand: age, readingComfort: "hard" }
+                    : {
+                        ageBand: age,
+                        readingComfort:
+                          state.ageBand === "under9"
+                            ? null
+                            : state.readingComfort,
+                      },
+                )
+              }
             >
-              {t(`start.about.age.${age}`)}
+              <span className="ob-ico" aria-hidden="true">
+                {AGE_ICONS[age]}
+              </span>
+              <h3>{t(`start.about.age.${age}`)}</h3>
             </button>
           ))}
         </div>
+        {young && <p className="ob-note">{t("start.about.minorNote")}</p>}
       </div>
-      <div className="ob-section">
-        <h3>{t("start.about.readingQuestion")}</h3>
-        <div className="ob-chips">
-          {READING.map((level) => (
-            <button
-              key={level}
-              className="ob-chip"
-              aria-pressed={state.readingComfort === level}
-              onClick={() => update({ readingComfort: level })}
-            >
-              {t(`start.about.reading.${level}`)}
-            </button>
-          ))}
+      {state.ageBand && state.ageBand !== "under9" && (
+        <div className="ob-section">
+          <h3>{t("start.about.readingQuestion")}</h3>
+          <div className="ob-chips">
+            {READING.map((level) => (
+              <button
+                key={level}
+                className="ob-chip"
+                aria-pressed={state.readingComfort === level}
+                onClick={() => update({ readingComfort: level })}
+              >
+                {t(`start.about.reading.${level}`)}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </OnboardingFrame>
   );
 }
@@ -295,6 +318,9 @@ export function GoalStep({
             aria-pressed={chosen === choice}
             onClick={() => choose(choice)}
           >
+            <span className="ob-ico" aria-hidden="true">
+              {GOAL_ICONS[choice]}
+            </span>
             <h3>{t(`start.goalStep.${choice}.title`)}</h3>
             <p>{t(`start.goalStep.${choice}.body`)}</p>
           </button>
@@ -344,6 +370,9 @@ export function SelfStep({
             aria-pressed={state.selfLevel === level}
             onClick={() => update({ selfLevel: level })}
           >
+            <span className="ob-ico" aria-hidden="true">
+              {SELF_ICONS[level]}
+            </span>
             <h3>{t(`start.self.level.${level}.title`)}</h3>
             <p>{t(`start.self.level.${level}.body`)}</p>
           </button>

@@ -230,7 +230,8 @@
       "body": "So the check and the lessons fit you.",
       "ageQuestion": "How old are you?",
       "age": {
-        "under13": "Under 13",
+        "under9": "Up to 8",
+        "9-12": "9–12",
         "13-17": "13–17",
         "18+": "18 or older"
       },
@@ -240,9 +241,7 @@
         "some": "A little",
         "hard": "It's hard"
       },
-      "stopTitle": "See you in a bit 🙂",
-      "stopBody": "GotIt is for ages 13 and up for now. Come back with a parent when we add a path for your age.",
-      "stopHome": "Back to home"
+      "minorNote": "We recommend a grown-up sits with you for sign-up and the check. We use voice and pictures wherever we can."
     },
     "goalStep": {
       "title": "What matters most in English?",
