@@ -13,8 +13,6 @@ import {
   type LucideIcon,
   Mail,
   MessageCircle,
-  Mic,
-  PencilLine,
   Plane,
   Rocket,
   Sprout,
@@ -43,7 +41,6 @@ import {
   SELF_LEVEL_UNITS,
   clearOnboarding,
   type AgeBand,
-  type AnswerMode,
   type OnboardingState,
   type ReadingComfort,
   type SelfLevel,
@@ -127,8 +124,6 @@ export function LanguageStep({
 }
 
 /* ---------------------------------------------------------------- 2 */
-const MODES: AnswerMode[] = ["voice", "text"];
-
 const AGES: AgeBand[] = ["under9", "9-12", "13-17", "18+"];
 const READING: ReadingComfort[] = ["easy", "some", "hard"];
 const GOAL_ICONS: Record<string, LucideIcon> = {
@@ -141,12 +136,6 @@ const GOAL_ICONS: Record<string, LucideIcon> = {
   scratch: Sprout,
 };
 const SELF_ICONS: LucideIcon[] = [Sprout, BookOpen, MessageCircle, Rocket];
-const MODE_ICONS: Record<AnswerMode, LucideIcon> = {
-  voice: Mic,
-  text: PencilLine,
-};
-/** Titles in the language files start with an emoji; the screens use line icons instead. */
-const LEADING_EMOJI = /^[\p{Extended_Pictographic}\uFE0F\u200D]+\s*/u;
 const AGE_ICONS: Record<AgeBand, LucideIcon> = {
   under9: Baby,
   "9-12": Backpack,
@@ -178,39 +167,13 @@ export function AboutStep({
       primary={
         <button
           className="ob-btn"
-          disabled={!state.answerMode || !state.ageBand || !readingKnown}
+          disabled={!state.ageBand || !readingKnown}
           onClick={next}
         >
           {t("start.continue")}
         </button>
       }
     >
-      <div className="ob-section">
-        <h3>{t("start.mode.title")}</h3>
-        <div className="ob-grid two">
-          {MODES.map((mode) => (
-            <button
-              key={mode}
-              className="ob-card ob-row"
-              aria-pressed={state.answerMode === mode}
-              onClick={() => update({ answerMode: mode })}
-            >
-              <span className="ob-ico" aria-hidden="true">
-                {(() => {
-                  const Icon = MODE_ICONS[mode];
-                  return <Icon size={22} strokeWidth={1.8} />;
-                })()}
-              </span>
-              <span>
-                <h3>
-                  {t(`start.mode.${mode}.title`).replace(LEADING_EMOJI, "")}
-                </h3>
-                <p>{t(`start.mode.${mode}.body`)}</p>
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
       <div className="ob-section">
         <h3>{t("start.about.ageQuestion")}</h3>
         <div className="ob-grid four">

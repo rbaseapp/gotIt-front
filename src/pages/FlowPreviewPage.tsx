@@ -22,7 +22,7 @@ import "../onboarding.css";
  * from the real components with sample answers. Nothing here is saved. Dev server only.
  */
 const SCREENS = [
-  ["about", "1 · עליך: אופן מענה, גיל וקריאה"],
+  ["about", "1 · עליך: גיל וקריאה"],
   ["about-kid", "1 · עד גיל 8 (בלי שאלת קריאה)"],
   ["goal", "2 · מטרה והערכה עצמית"],
   ["pocket-intro", "5 · הבדיקה: פתיחה"],
@@ -74,7 +74,6 @@ function Screen({ id }: { id: string }) {
       case "about":
         return sample({
           step: "about",
-          answerMode: null,
           ageBand: null,
           readingComfort: null,
         });

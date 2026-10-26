@@ -75,7 +75,8 @@ export const initialOnboarding = (): OnboardingState => ({
   result: null,
   adjust: 0,
   talk: null,
-  answerMode: null,
+  // Tapping is the only way to answer for now; a real voice conversation is a later project.
+  answerMode: "text",
   ageBand: null,
   readingComfort: null,
   selfLevel: null,
