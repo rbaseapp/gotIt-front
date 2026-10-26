@@ -610,15 +610,17 @@ describe("live server-backed flows", () => {
         </FeedbackProvider>
       </MemoryRouter>,
     );
+    // The Hebrew landing page lives in a shadow root so its styles stay isolated.
+    const host = await screen.findByTestId("landing-design");
+    await waitFor(() =>
+      expect(host.shadowRoot?.querySelector("h1")).not.toBeNull(),
+    );
+    const root = host.shadowRoot!;
+    expect(root.querySelector("h1")?.textContent).toContain("המילים שלכם");
     expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: "לומדים מילים מהדברים שאתם כבר קוראים",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByRole("link", { name: "התחל ניסיון חינם" })[0],
-    ).toHaveAttribute("href", "/start");
+      root.querySelector('.hero-actions a[data-destination="signup"]'),
+    ).not.toBeNull();
+    expect(root.querySelector("#pricing")).not.toBeNull();
   });
   it("shows a spinner while checking an answer, then an error and retry after failure", async () => {
     let rejectAttempt!: (reason: Error) => void;

@@ -1,4 +1,12 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Mail, MessageCircle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -29,7 +37,17 @@ function prefersReducedMotion() {
   return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** The Hebrew page follows the supplied design; other languages keep the shared layout. */
+const LandingDesign = lazy(() => import("../landing-design/LandingDesign"));
+
 export function LandingPage() {
+  const { i18n } = useTranslation();
+  if (i18n.resolvedLanguage === "he")
+    return (
+      <Suspense fallback={null}>
+        <LandingDesign />
+      </Suspense>
+    );
   return (
     <div className="landing l2">
       <LandingHeader />
