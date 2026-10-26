@@ -863,7 +863,7 @@
 - **מיגרציות:** ב-dev, בהרצה ראשונה יש להגדיר `GOTIT_MIGRATION_CHECK_ORDER=false`, כי למיגרציות של concepts ב-`main` יש חותמות זמן מוקדמות יותר ממיגרציות קו הפיתוח.
 - **Core:** להריץ מיגרציה `1792800000000_onboarding-access` לפני ה-backend.
 - **תוכנית אנגלית:** נדרש `structured_program_versions.visible = true` (אחרת הקליטה מחזירה `CURRICULUM_NOT_FOUND`).
-- **מייל:** מקומית, ללא Resend, Core כותב את קוד האימות ללוג תחת `devOneTimeDigits` (רק ב-`NODE_ENV=development`).
+- **מייל:** מקומית, ללא Resend (ו-`NODE_ENV=development`), Core מחזיר את קוד האימות בתשובת ההרשמה (`devCode`) וגם כותב אותו ללוג (`devOneTimeDigits`), והאפליקציה (`import.meta.env.DEV` בלבד) מאמתת אוטומטית: הרשמה ← ישר לאונבורדינג, בלי לחכות למייל. בפרודקשן ובבדיקות אין `devCode`.
 
 ### 19.5 הרצה ובדיקות מקומיות
 - **Front מקומית בעיצוב החדש (כמו gotit-dev):** העיצוב החדש של המשחקים, לוח הבקרה, המילים שלי, התוכניות וההגדרות מופעל לפי hostname של gotit-dev. מקומית יש להפעיל אותו עם `VITE_PRACTICE_DESIGN=true VITE_DASHBOARD_DESIGN=true VITE_MYWORDS_DESIGN=true VITE_PROGRAMS_DESIGN=true VITE_SETTINGS_DESIGN=true npm run dev`. בלי זה רואים את הממשק הישן.

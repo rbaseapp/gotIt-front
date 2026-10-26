@@ -337,5 +337,10 @@ export function parseEmailAccepted(payload: unknown) {
     value.retryAfter !== 60
   )
     throw new Error("Invalid API response");
-  return { expiresIn: 600, retryAfter: 60 };
+  // Present only when the local Core has no email provider (development).
+  const devCode =
+    typeof value.devCode === "string" && /^\d{6}$/.test(value.devCode)
+      ? value.devCode
+      : undefined;
+  return { expiresIn: 600, retryAfter: 60, devCode };
 }

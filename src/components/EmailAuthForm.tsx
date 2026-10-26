@@ -134,6 +134,17 @@ export function EmailAuthForm({
         );
       } else if (mode === "register") {
         const result = await api.registerEmail(email, password);
+        // Local development: the Core hands the code back, so there is no mail to wait for.
+        if (import.meta.env.DEV && result.devCode) {
+          await api.completeEmailCode(
+            email,
+            result.devCode,
+            password,
+            "verify",
+          );
+          await authenticate("login", email, password);
+          return;
+        }
         setCooldown(result.retryAfter);
         setNotice(t("auth.emailCodeRequested"));
         setRemembered(password);
@@ -151,7 +162,20 @@ export function EmailAuthForm({
             reason.code !== "EMAIL_VERIFICATION_REQUIRED"
           )
             throw reason;
-          await requestCode("verify");
+          const again = await api.requestEmailCode(email, "verify");
+          if (import.meta.env.DEV && again.devCode) {
+            await api.completeEmailCode(
+              email,
+              again.devCode,
+              password,
+              "verify",
+            );
+            await authenticate("login", email, password);
+            return;
+          }
+          setCooldown(again.retryAfter);
+          setNotice(t("auth.emailCodeRequested"));
+          setCode("");
           setMode("verify");
           setPassword("");
         }
