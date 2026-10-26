@@ -61,9 +61,9 @@ function Terms() {
           You retain ownership of words, examples, notes, recordings, and other
           content you submit. You grant us a limited, worldwide license to host,
           process, reproduce, and transmit that content only as needed to
-          operate, secure, and improve the service. You confirm that you have
-          the rights needed to submit your content and that it does not violate
-          law or another person’s rights.
+          operate, secure, and improve the service. You confirm that you have the
+          rights needed to submit your content and that it does not violate law
+          or another person’s rights.
         </p>
       </section>
 
@@ -86,8 +86,7 @@ function Terms() {
           details.
         </p>
         <p>
-          Refunds and withdrawal rights are described in our{" "}
-          <Link to="/refund-policy">Refund Policy</Link>.
+          Refunds and withdrawal rights are described in our <Link to="/refund-policy">Refund Policy</Link>.
         </p>
       </section>
 
@@ -95,21 +94,11 @@ function Terms() {
         <h2>6. Acceptable use</h2>
         <p>You may not:</p>
         <ul>
-          <li>
-            use the service unlawfully or infringe another person’s rights;
-          </li>
-          <li>
-            upload malicious code or try to bypass security or usage limits;
-          </li>
+          <li>use the service unlawfully or infringe another person’s rights;</li>
+          <li>upload malicious code or try to bypass security or usage limits;</li>
           <li>access another user’s account or data without authorization;</li>
-          <li>
-            scrape, resell, or reverse engineer the service except where law
-            permits; or
-          </li>
-          <li>
-            interfere with the service or use it to create a competing dataset
-            or service.
-          </li>
+          <li>scrape, resell, or reverse engineer the service except where law permits; or</li>
+          <li>interfere with the service or use it to create a competing dataset or service.</li>
         </ul>
       </section>
 
@@ -129,9 +118,9 @@ function Terms() {
         <p>
           We aim to provide a reliable service, but we do not guarantee that it
           will always be available, error-free, or meet every learning goal. We
-          may add, change, suspend, or discontinue features. If a material
-          change negatively affects a paid subscription, we will provide notice
-          when reasonably possible and honor any rights required by law.
+          may add, change, suspend, or discontinue features. If a material change
+          negatively affects a paid subscription, we will provide notice when
+          reasonably possible and honor any rights required by law.
         </p>
       </section>
 
@@ -140,9 +129,9 @@ function Terms() {
         <p>
           You may stop using GotIt at any time. We may suspend or terminate
           access if you materially breach these Terms, create security or legal
-          risk, or fail to pay applicable charges. Where reasonable, we will
-          give notice and an opportunity to remedy the issue. Provisions that by
-          their nature should survive termination will remain effective.
+          risk, or fail to pay applicable charges. Where reasonable, we will give
+          notice and an opportunity to remedy the issue. Provisions that by their
+          nature should survive termination will remain effective.
         </p>
       </section>
 
@@ -178,13 +167,12 @@ function Terms() {
       <section>
         <h2>12. Changes and contact</h2>
         <p>
-          We may update these Terms. We will change the effective date above
-          and, for material changes, provide reasonable notice. Continued use
-          after a change takes effect means you accept the updated Terms.
+          We may update these Terms. We will change the effective date above and,
+          for material changes, provide reasonable notice. Continued use after a
+          change takes effect means you accept the updated Terms.
         </p>
         <p>
-          Questions about these Terms or the service may be sent to{" "}
-          <ContactLink />.
+          Questions about these Terms or the service may be sent to <ContactLink />.
         </p>
       </section>
     </>
@@ -211,9 +199,9 @@ function Privacy() {
           <li>
             <strong>Account data:</strong> email address, display name, account
             identifier, authentication method, and account status. If you use
-            Google or Facebook sign-in, we receive the identity information that
-            provider makes available; we do not receive your password for either
-            provider.
+            Google or Facebook sign-in, we receive the identity information
+            that provider makes available; we do not receive your password for
+            either provider.
           </li>
           <li>
             <strong>Learning data:</strong> saved words, translations, examples,
@@ -223,8 +211,8 @@ function Privacy() {
             the configured stock-image provider to find a relevant image. If no
             suitable result is available, the word, translation, language codes,
             and a bounded current context sentence may be sent to the configured
-            AI image provider. The selected or generated image and its
-            attribution are cached with the current learning revision.
+            AI image provider. The selected or generated image and its attribution
+            are cached with the current learning revision.
           </li>
           <li>
             <strong>Voice data:</strong> when you actively use pronunciation
@@ -235,20 +223,19 @@ function Privacy() {
             fingerprint needed for reliable submission handling.
           </li>
           <li>
-            <strong>Billing data:</strong> plan, subscription status,
-            transaction and customer identifiers, and related entitlement
-            information from Paddle. Paddle processes payment-card details and
-            billing information under its own privacy notice; GotIt does not
-            store full card details.
+            <strong>Billing data:</strong> plan, subscription status, transaction
+            and customer identifiers, and related entitlement information from
+            Paddle. Paddle processes payment-card details and billing information
+            under its own privacy notice; GotIt does not store full card details.
           </li>
           <li>
-            <strong>Technical data:</strong> IP address, browser and device
-            data, request and security metadata, error details, and basic usage
-            events generated when you interact with the service.
+            <strong>Technical data:</strong> IP address, browser and device data,
+            request and security metadata, error details, and basic usage events
+            generated when you interact with the service.
           </li>
           <li>
-            <strong>Support data:</strong> messages and information you send
-            when asking for help or exercising a privacy right.
+            <strong>Support data:</strong> messages and information you send when
+            asking for help or exercising a privacy right.
           </li>
         </ul>
       </section>
@@ -258,21 +245,11 @@ function Privacy() {
         <p>We use personal data to:</p>
         <ul>
           <li>create and secure accounts and provide the learning service;</li>
-          <li>
-            personalize exercises, track progress, and generate learning
-            content;
-          </li>
-          <li>
-            manage subscriptions, entitlements, billing support, and refunds;
-          </li>
+          <li>personalize exercises, track progress, and generate learning content;</li>
+          <li>manage subscriptions, entitlements, billing support, and refunds;</li>
           <li>respond to support requests and service communications;</li>
-          <li>
-            detect abuse, protect users, troubleshoot, and improve reliability;
-            and
-          </li>
-          <li>
-            comply with legal, tax, accounting, and regulatory obligations.
-          </li>
+          <li>detect abuse, protect users, troubleshoot, and improve reliability; and</li>
+          <li>comply with legal, tax, accounting, and regulatory obligations.</li>
         </ul>
         <p>
           Depending on your location, our legal bases include performing our
@@ -286,30 +263,17 @@ function Privacy() {
         <p>We may share only the data needed with:</p>
         <ul>
           <li>rbase Core, which provides GotIt account authentication;</li>
-          <li>
-            Google, when you choose Google sign-in or a Google-backed language
-            or speech feature;
-          </li>
+          <li>Google, when you choose Google sign-in or a Google-backed language or speech feature;</li>
           <li>Meta, when you choose Facebook sign-in;</li>
           <li>Pixabay, when GotIt searches for a memorization image;</li>
-          <li>
-            Paddle, our reseller and Merchant of Record, for checkout, tax,
-            subscription management, fraud prevention, and buyer support;
-          </li>
-          <li>
-            hosting, database, security, translation, AI, reading, and speech
-            providers used to deliver requested features; and
-          </li>
-          <li>
-            authorities or advisers when required by law or reasonably necessary
-            to protect rights, safety, and the service.
-          </li>
+          <li>Paddle, our reseller and Merchant of Record, for checkout, tax, subscription management, fraud prevention, and buyer support;</li>
+          <li>hosting, database, security, translation, AI, reading, and speech providers used to deliver requested features; and</li>
+          <li>authorities or advisers when required by law or reasonably necessary to protect rights, safety, and the service.</li>
         </ul>
         <p>
-          We do not sell personal data and do not use it for third-party
-          targeted advertising. If the business is reorganized or transferred,
-          data may be transferred subject to appropriate confidentiality and
-          legal protections.
+          We do not sell personal data and do not use it for third-party targeted
+          advertising. If the business is reorganized or transferred, data may
+          be transferred subject to appropriate confidentiality and legal protections.
         </p>
       </section>
 
@@ -320,8 +284,8 @@ function Privacy() {
           state, and, if enabled, store demo-mode learning data locally. Google,
           Meta, and Paddle may use cookies or similar technologies when their
           sign-in or checkout services are opened. We do not use advertising
-          cookies. Clearing browser storage may sign you out or remove local
-          demo data.
+          cookies.
+          Clearing browser storage may sign you out or remove local demo data.
         </p>
       </section>
 
@@ -338,8 +302,8 @@ function Privacy() {
       <section>
         <h2>7. Retention</h2>
         <p>
-          We retain account and learning data while your account is active and
-          as reasonably needed to provide the service. We may retain limited
+          We retain account and learning data while your account is active and as
+          reasonably needed to provide the service. We may retain limited
           security, transaction, support, and legal records for longer where
           necessary to prevent abuse, resolve disputes, or meet legal, tax, and
           accounting duties. Local demo data remains in your browser until you
@@ -361,17 +325,16 @@ function Privacy() {
         <h2>9. Your choices and rights</h2>
         <p>
           Depending on your location, you may have rights to access, correct,
-          delete, restrict, or export personal data; object to certain
-          processing; or withdraw consent. You may also cancel a subscription
-          without deleting your account. To make a request, email{" "}
-          <ContactLink /> from the address associated with your account. We may
-          verify your identity before acting and may retain information where
-          the law permits or requires it.
+          delete, restrict, or export personal data; object to certain processing;
+          or withdraw consent. You may also cancel a subscription without
+          deleting your account. To make a request, email <ContactLink /> from
+          the address associated with your account. We may verify your identity
+          before acting and may retain information where the law permits or requires it.
         </p>
         <p>
-          You may also complain to the data-protection authority in your
-          country. For data processed independently by Paddle, Google, or Meta,
-          contact that provider directly.
+          You may also complain to the data-protection authority in your country.
+          For data processed independently by Paddle, Google, or Meta, contact
+          that provider directly.
         </p>
       </section>
 
@@ -381,8 +344,7 @@ function Privacy() {
           GotIt is not directed to children who cannot legally consent to online
           data processing in their country. We do not knowingly collect their
           personal data without authorization from a parent or legal guardian.
-          Contact us if you believe a child provided data without proper
-          authorization.
+          Contact us if you believe a child provided data without proper authorization.
         </p>
       </section>
 
@@ -394,8 +356,8 @@ function Privacy() {
           additional notice when required.
         </p>
         <p>
-          For privacy questions or requests, contact Ori Arbes, GotIt’s
-          operator, at <ContactLink />.
+          For privacy questions or requests, contact Ori Arbes, GotIt’s operator,
+          at <ContactLink />.
         </p>
       </section>
     </>
@@ -411,8 +373,8 @@ function Refund() {
           Paddle.com is the authorized reseller and Merchant of Record for GotIt
           purchases. Paddle processes payments, taxes, subscription billing,
           returns, and refunds. This Policy supplements Paddle’s buyer terms and
-          refund policy; if there is a conflict for a transaction, Paddle’s
-          terms and any mandatory consumer law govern.
+          refund policy; if there is a conflict for a transaction, Paddle’s terms
+          and any mandatory consumer law govern.
         </p>
       </section>
 
@@ -430,33 +392,28 @@ function Refund() {
       <section>
         <h2>3. Refund eligibility</h2>
         <p>
-          Except where required by law, transactions are generally
-          non-refundable. Paddle may approve a refund in its discretion,
-          including where the service was materially defective, unavailable for
-          an unreasonable period, duplicated, or purchased without
-          authorization. Evidence of fraud, refund abuse, or other manipulative
-          behavior may result in refusal.
+          Except where required by law, transactions are generally non-refundable.
+          Paddle may approve a refund in its discretion, including where the
+          service was materially defective, unavailable for an unreasonable
+          period, duplicated, or purchased without authorization. Evidence of
+          fraud, refund abuse, or other manipulative behavior may result in refusal.
         </p>
         <p>
-          Consumers may have non-waivable withdrawal or refund rights under
-          local law. For example, eligible consumers in the EU, EEA,
-          Switzerland, or United Kingdom may have a 14-day withdrawal right,
-          subject to the rules for digital services and loss of that right after
-          access or performance begins with the consumer’s consent. This Policy
-          does not limit rights for a product that is faulty, not as described,
-          or not fit for purpose.
+          Consumers may have non-waivable withdrawal or refund rights under local
+          law. For example, eligible consumers in the EU, EEA, Switzerland, or
+          United Kingdom may have a 14-day withdrawal right, subject to the rules
+          for digital services and loss of that right after access or performance
+          begins with the consumer’s consent. This Policy does not limit rights
+          for a product that is faulty, not as described, or not fit for purpose.
         </p>
       </section>
 
       <section>
         <h2>4. How to request a refund</h2>
         <p>
-          Submit the request through{" "}
-          <a href="https://paddle.net" target="_blank" rel="noreferrer">
-            Paddle Buyer Support
-          </a>{" "}
-          using the email address and transaction details from your receipt. You
-          may also email <ContactLink /> for product support, but GotIt cannot
+          Submit the request through <a href="https://paddle.net" target="_blank" rel="noreferrer">Paddle Buyer Support</a>
+          {" "}using the email address and transaction details from your receipt.
+          You may also email <ContactLink /> for product support, but GotIt cannot
           send money directly or bypass Paddle’s refund process.
         </p>
       </section>
@@ -467,8 +424,7 @@ function Refund() {
           Approved refunds are returned by Paddle to the original payment method
           where possible. Timing depends on the payment provider. Access to the
           refunded paid plan may end when the refund is issued. Canceling or
-          refunding a subscription does not automatically delete your GotIt
-          account.
+          refunding a subscription does not automatically delete your GotIt account.
         </p>
       </section>
 
@@ -479,9 +435,7 @@ function Refund() {
           transaction, subject to mandatory law. We may update this page for
           future purchases and will revise the effective date above.
         </p>
-        <p>
-          Questions about GotIt may be sent to <ContactLink />.
-        </p>
+        <p>Questions about GotIt may be sent to <ContactLink />.</p>
       </section>
     </>
   );
@@ -511,24 +465,9 @@ export function LegalPage({ kind }: { kind: LegalPageKind }) {
       <header className="legal-header">
         <Logo />
         <nav aria-label="Legal policies">
-          <Link
-            className={kind === "terms" ? "active" : ""}
-            to="/terms-of-service"
-          >
-            Terms
-          </Link>
-          <Link
-            className={kind === "privacy" ? "active" : ""}
-            to="/privacy-policy"
-          >
-            Privacy
-          </Link>
-          <Link
-            className={kind === "refund" ? "active" : ""}
-            to="/refund-policy"
-          >
-            Refunds
-          </Link>
+          <Link className={kind === "terms" ? "active" : ""} to="/terms-of-service">Terms</Link>
+          <Link className={kind === "privacy" ? "active" : ""} to="/privacy-policy">Privacy</Link>
+          <Link className={kind === "refund" ? "active" : ""} to="/refund-policy">Refunds</Link>
         </nav>
       </header>
       <main className="legal-document">

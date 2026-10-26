@@ -48,20 +48,17 @@ export function ProgramsPage() {
     useCallback(() => courseApi.list(), []),
     resourceKey(user, "courses"),
   );
-  const [templateOperations] = useState(() => new Map<string, string>());
-  const startTemplate = async (id: string) => {
+  const [templateOperations] = useState(() => new Map<string,string>());
+  const startTemplate = async(id:string) => {
     setBusy(true);
-    const eventId = templateOperations.get(id) ?? crypto.randomUUID();
-    templateOperations.set(id, eventId);
+    const eventId=templateOperations.get(id)??crypto.randomUUID();
+    templateOperations.set(id,eventId);
     try {
-      const result = await courseApi.useTemplate(id, eventId);
+      const result=await courseApi.useTemplate(id,eventId);
       await courses.reload();
       navigate(`/courses/${result.course.id}`);
-    } catch (reason) {
-      toast(errorMessage(reason), { tone: "error" });
-    } finally {
-      setBusy(false);
-    }
+    } catch(reason) { toast(errorMessage(reason),{tone:'error'}); }
+    finally { setBusy(false); }
   };
   const packs = useCachedResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
@@ -262,24 +259,12 @@ export function ProgramsPage() {
             {t("ux.personalProgram")}
           </Link>
         </section>
-        {(courses.data?.templates ?? [])
-          .filter(
-            (template) =>
-              template.targetLanguageCode === target &&
-              template.supportLanguageCode === support,
-          )
-          .map((template) => (
-            <section className="ux-card" key={template.id}>
-              <h2>{template.title}</h2>
-              <button
-                className="button primary"
-                disabled={busy}
-                onClick={() => void startTemplate(template.id)}
-              >
-                {t("pathUi.useTemplate")}
-              </button>
-            </section>
-          ))}
+        {(courses.data?.templates??[]).filter((template)=>template.targetLanguageCode===target&&template.supportLanguageCode===support).map((template)=>(
+          <section className="ux-card" key={template.id}>
+            <h2>{template.title}</h2>
+            <button className="button primary" disabled={busy} onClick={()=>void startTemplate(template.id)}>{t('pathUi.useTemplate')}</button>
+          </section>
+        ))}
         <div className="ux-inline-actions">
           <Link
             className="button ghost"

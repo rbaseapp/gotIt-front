@@ -167,9 +167,7 @@ export function ReadingPage() {
                 <span>{t("demoReading.targetLanguage")}</span>
                 <LanguageCombobox
                   value={language}
-                  options={getBilingualLanguageOptions().filter(([code]) =>
-                    languages.includes(code),
-                  )}
+                  options={getBilingualLanguageOptions().filter(([code]) => languages.includes(code))}
                   onChange={(code) => {
                     setLanguage(code);
                     setSelected([]);
