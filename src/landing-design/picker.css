@@ -10,3 +10,8 @@
 @media(max-width:650px){.lang-button span,.lang-button i{display:none}.lang-button{padding:8px 10px}.lang-menu{inset-inline-end:auto;inset-inline-start:0}}
 .gl-root[lang=ar] *,.gl-root[lang=zh] *{letter-spacing:0!important}
 .gl-root[lang=ar],.gl-root[lang=ru],.gl-root[lang=zh]{font-family:Heebo,"Segoe UI",Tahoma,"Noto Sans Arabic","Microsoft YaHei",Arial,sans-serif}
+.teacher-avatar.has-photo{width:88px;height:88px;flex-shrink:0;overflow:hidden;background:#e4eedc;box-shadow:0 0 0 3px #fffefa,0 0 0 5px #8fc9a8;animation:avatar-ring 2.4s ease-in-out infinite}
+.teacher-avatar.has-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+@keyframes avatar-ring{0%,100%{box-shadow:0 0 0 3px #fffefa,0 0 0 5px #8fc9a8}50%{box-shadow:0 0 0 3px #fffefa,0 0 0 9px #cfe8da}}
+@media(prefers-reduced-motion:reduce){.teacher-avatar.has-photo{animation:none}}
+.teacher-features>span svg{width:15px;height:15px}
