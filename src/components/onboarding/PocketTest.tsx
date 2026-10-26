@@ -581,6 +581,9 @@ function ProbeStage({
               {option}
             </button>
           ))}
+          <button className="ob-link" onClick={() => onAnswer(null)}>
+            {t("start.pocket.dontKnow")}
+          </button>
           {listening && (
             <button className="ob-link" onClick={onSkip}>
               {t("start.pocket.noSound")}

@@ -58,7 +58,8 @@
       "play": "Abspielen",
       "playAgain": "Nochmal abspielen",
       "noSound": "Kein Ton? Überspringen",
-      "calculating": "Wir ermitteln dein Niveau…"
+      "calculating": "Wir ermitteln dein Niveau…",
+      "dontKnow": "Ich weiß es nicht"
     },
     "result": {
       "title": "Das haben wir gefunden",
@@ -304,7 +305,7 @@
       "begin": "Los geht's",
       "skip": "Diesen Teil überspringen",
       "pick": "Frage {{current}} von {{total}} · wähle die beste Antwort",
-      "notSure": "Nicht sicher"
+      "dontKnow": "Ich weiß es nicht"
     }
   }
 }

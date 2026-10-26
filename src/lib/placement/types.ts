@@ -53,13 +53,23 @@ export type Observation =
       /** Answered as a meaning question: `yes` then means "picked the right meaning". */
       mc?: boolean;
     }
-  | { t: "verify"; text: string; d: number; correct: boolean; ms: number }
+  | {
+      t: "verify";
+      text: string;
+      d: number;
+      correct: boolean;
+      /** The learner chose "I don't know" instead of guessing. */
+      dk?: boolean;
+      ms: number;
+    }
   | {
       t: "probe";
       id: string;
       skill: Skill;
       d: number;
       correct: boolean;
+      /** The learner chose "I don't know" instead of guessing. */
+      dk?: boolean;
       ms: number;
     };
 

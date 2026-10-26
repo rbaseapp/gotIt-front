@@ -35,6 +35,9 @@ const VERIFY_SLIP = 0.06;
 const GUESS_CHANCE = 1 / 3;
 /** Chance of picking the right meaning of a word one does not know (4 options, plus a "don't know" button). */
 const MEANING_GUESS = 0.18;
+/** Chance of tapping "I don't know" when one does not know the answer, and when one does. */
+const DK_IF_UNKNOWN = 0.55;
+const DK_IF_KNOWN = 0.04;
 const PRIOR_SD = 18;
 
 type Rng = () => number;
@@ -164,10 +167,19 @@ export class PlacementSession {
           p *= o.yes ? pYes : 1 - pYes;
         } else if (o.t === "verify") {
           const know = sigmoid((theta - o.d) / WORD_SCALE) * (1 - VERIFY_SLIP);
+          if (o.dk) {
+            // An honest "I don't know" says much more than a wrong guess.
+            p *= (1 - know) * DK_IF_UNKNOWN + know * DK_IF_KNOWN;
+            continue;
+          }
           const pCorrect = GUESS_CHANCE + (1 - GUESS_CHANCE) * know;
           p *= o.correct ? pCorrect : 1 - pCorrect;
         } else {
           const know = sigmoid((theta - o.d) / PROBE_SCALE) * (1 - SLIP);
+          if (o.dk) {
+            p *= (1 - know) * DK_IF_UNKNOWN + know * DK_IF_KNOWN;
+            continue;
+          }
           const pCorrect = GUESS_CHANCE + (1 - GUESS_CHANCE) * know;
           p *= o.correct ? pCorrect : 1 - pCorrect;
         }
@@ -380,6 +392,7 @@ export class PlacementSession {
       text: item.text,
       d: item.d,
       correct: picked === item.answer,
+      ...(picked === null ? { dk: true } : {}),
       ms,
     });
   }
@@ -409,6 +422,7 @@ export class PlacementSession {
       skill,
       d: probe.d,
       correct: picked === probe.a,
+      ...(picked === null ? { dk: true } : {}),
       ms,
     });
   }

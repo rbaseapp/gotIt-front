@@ -58,7 +58,8 @@
       "play": "Lecture",
       "playAgain": "Réécouter",
       "noSound": "Pas de son ? Passer",
-      "calculating": "Calcul de votre niveau…"
+      "calculating": "Calcul de votre niveau…",
+      "dontKnow": "Je ne sais pas"
     },
     "result": {
       "title": "Voici ce que nous avons trouvé",
@@ -304,7 +305,7 @@
       "begin": "Parlons",
       "skip": "Passer cette partie",
       "pick": "Question {{current}} sur {{total}} · choisissez la meilleure réponse",
-      "notSure": "Pas sûr(e)"
+      "dontKnow": "Je ne sais pas"
     }
   }
 }

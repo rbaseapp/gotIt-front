@@ -51,7 +51,7 @@ export type OnboardingState = {
   /** Manual correction, in units, when the learner says the level is off. */
   adjust: number;
   /** Answers to the tap-to-answer conversation check, when it was done. */
-  talk: { correct: number; total: number } | null;
+  talk: { correct: number; total: number; unknown?: number } | null;
   answerMode: AnswerMode | null;
   ageBand: AgeBand | null;
   readingComfort: ReadingComfort | null;

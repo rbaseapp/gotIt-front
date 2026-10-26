@@ -58,7 +58,8 @@
       "play": "Reproducir",
       "playAgain": "Reproducir de nuevo",
       "noSound": "¿Sin sonido? Saltar",
-      "calculating": "Calculando tu nivel…"
+      "calculating": "Calculando tu nivel…",
+      "dontKnow": "No lo sé"
     },
     "result": {
       "title": "Esto es lo que encontramos",
@@ -304,7 +305,7 @@
       "begin": "Hablemos",
       "skip": "Saltar esta parte",
       "pick": "Pregunta {{current}} de {{total}} · elige la mejor respuesta",
-      "notSure": "No estoy seguro/a"
+      "dontKnow": "No lo sé"
     }
   }
 }

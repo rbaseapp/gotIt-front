@@ -1152,3 +1152,15 @@ button.ob-card:hover {
     animation: none;
   }
 }
+
+/* an honest "I don't know" sits with the answers, quieter than them */
+.ob-replies .ob-btn.dk,
+.pocket-options .ob-link {
+  color: var(--ob-muted);
+}
+.ob-replies .ob-btn.dk {
+  border-style: dashed;
+  justify-content: center;
+  min-height: 46px;
+  font-weight: 700;
+}

@@ -331,7 +331,7 @@ export type PlacementClaimInput = {
     ageBand: "under9" | "9-12" | "13-17" | "18+";
     readingComfort: "easy" | "some" | "hard";
     selfLevel: 0 | 1 | 2 | 3 | null;
-    talk?: { correct: number; total: number };
+    talk?: { correct: number; total: number; unknown?: number };
   };
 };
 export const curriculumApi = {

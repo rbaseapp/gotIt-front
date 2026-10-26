@@ -57,7 +57,8 @@
       "play": "播放",
       "playAgain": "再播放一次",
       "noSound": "没有声音？跳过",
-      "calculating": "正在计算你的水平…"
+      "calculating": "正在计算你的水平…",
+      "dontKnow": "我不知道"
     },
     "result": {
       "title": "这是我们的发现",
@@ -303,7 +304,7 @@
       "begin": "开始聊",
       "skip": "跳过这一步",
       "pick": "第 {{current}} 个问题，共 {{total}} 个 · 选出最好的回答",
-      "notSure": "不确定"
+      "dontKnow": "我不知道"
     }
   }
 }

@@ -309,7 +309,7 @@
       "begin": "Let's talk",
       "skip": "Skip this part",
       "pick": "Question {{current}} of {{total}} · pick the best reply",
-      "notSure": "Not sure"
+      "dontKnow": "I don't know"
     }
   }
 }

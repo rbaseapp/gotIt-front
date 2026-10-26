@@ -344,3 +344,37 @@ describe("placement engine, meaning questions", () => {
     expect(session.estimate().median).toBeLessThan(25);
   });
 });
+
+describe("'I don't know' answers", () => {
+  const probe = {
+    id: "t",
+    q: "?",
+    options: ["a", "b", "c"],
+    a: 0,
+    d: 5,
+    text: "x",
+  };
+  const level = (picked: number | null) => {
+    const session = new PlacementSession(bank, {
+      prior: 30,
+      format: "meaning",
+    });
+    // A couple of right answers at a mid level, then one probe on an easy item.
+    for (let i = 0; i < 4; i++) {
+      const card = session.nextCard()!;
+      session.answerCard(card, true, 3000);
+    }
+    const before = session.estimate().median;
+    session.answerProbe(probe as never, "reading", picked, 3000);
+    return { before, after: session.estimate().median, session };
+  };
+  it("is recorded as such, not as a wrong guess", () => {
+    const { session } = level(null);
+    const last = session.log.at(-1) as { dk?: boolean; correct: boolean };
+    expect(last.dk).toBe(true);
+    expect(last.correct).toBe(false);
+  });
+  it("says more than a wrong guess about someone who should know the item", () => {
+    expect(level(null).after).toBeLessThanOrEqual(level(1).after);
+  });
+});

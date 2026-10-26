@@ -438,6 +438,7 @@ export function TalkStep({
     startAtQuestion ? new TalkCheck(theta, topicForGoal(state.goal)) : null,
   );
   const [started, setStarted] = useState(startAtQuestion);
+  const [unknown, setUnknown] = useState(0);
   const [question, setQuestion] = useState<ReturnType<TalkCheck["next"]>>(() =>
     startAtQuestion ? (check.current?.next() ?? null) : null,
   );
@@ -450,10 +451,15 @@ export function TalkStep({
     const session = check.current;
     if (!session || !question) return;
     session.answer(index === question.answer);
+    if (index === null) setUnknown((n) => n + 1);
     if (session.done) {
       update({
         adjust: state.adjust + talkDelta(session.correct),
-        talk: { correct: session.correct, total: TALK_QUESTIONS },
+        talk: {
+          correct: session.correct,
+          total: TALK_QUESTIONS,
+          unknown: unknown + (index === null ? 1 : 0),
+        },
       });
       next();
       return;
@@ -492,11 +498,6 @@ export function TalkStep({
       body={t("start.talk.pick", { current: done + 1, total: TALK_QUESTIONS })}
       voiceText={question.item.prompt}
       voiceLang="en"
-      secondary={
-        <button className="ob-link" onClick={() => reply(null)}>
-          {t("start.talk.notSure")}
-        </button>
-      }
     >
       <div className="ob-replies" role="group">
         {question.replies.map((text, index) => (
@@ -510,6 +511,9 @@ export function TalkStep({
             {text}
           </button>
         ))}
+        <button className="ob-btn ghost dk" onClick={() => reply(null)}>
+          {t("start.talk.dontKnow")}
+        </button>
       </div>
     </OnboardingFrame>
   );
