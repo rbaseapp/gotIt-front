@@ -1149,7 +1149,7 @@
   transform: skewX(-6deg);
 }
 
-/* Moochi sits at the top of his column, with the quick review right under him. */
+/* Moochi sits at the top of his column, beside the day's card. */
 .nd-hero {
   align-items: start;
 }
@@ -1157,13 +1157,6 @@
   justify-content: flex-start;
   gap: 12px;
   align-items: center;
-}
-.nd-mascot > .nd-card,
-.nd-mascot > section {
-  align-self: stretch;
-}
-.nd-lower-grid {
-  grid-template-columns: minmax(0, 1fr);
 }
 
 @media (max-width: 860px) {
@@ -1176,8 +1169,23 @@
     flex: 0 0 150px;
     max-width: 150px;
   }
-  .nd-mascot > .nd-review {
-    flex: 1 1 100%;
-    order: 3;
-  }
+}
+
+/* A more compact day card, so the two cards under it show without scrolling. */
+.nd-main-card {
+  gap: 14px;
+  padding: 20px 24px;
+}
+.nd-main-card h1 {
+  font-size: calc(2.4rem * var(--text-scale, 1));
+  line-height: 1.1;
+}
+.nd-main-card .nd-day-list li {
+  padding-block: 10px;
+}
+.nd-main-card .nd-xp-note {
+  padding: 10px 14px;
+}
+.nd-main-card .nd-main-action {
+  min-height: 52px;
 }
