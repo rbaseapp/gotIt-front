@@ -306,17 +306,6 @@
       "skip": "Diesen Teil überspringen",
       "pick": "Frage {{current}} von {{total}} · wähle die beste Antwort",
       "dontKnow": "Ich weiß es nicht"
-    },
-    "voice": {
-      "speaking": "Rachel fragt…",
-      "listening": "Ich höre zu… du kannst laut antworten",
-      "nomatch": "Das habe ich nicht verstanden. Versuch es nochmal oder tippe die Antwort an.",
-      "nomatchHeard": "Ich habe „{{heard}}“ gehört. Nicht sicher; versuch es nochmal oder tippe.",
-      "unsupported": "Dieser Browser erkennt keine Sprache; tippe deine Antwort an.",
-      "denied": "Kein Mikrofonzugriff; tippe deine Antwort an.",
-      "retry": "Nochmal versuchen",
-      "askMeaning": "Was bedeutet das Wort?",
-      "askKnow": "Kennst du das Wort?"
     }
   }
 }
