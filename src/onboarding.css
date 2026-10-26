@@ -1246,3 +1246,43 @@ button.ob-card:hover {
     display: none;
   }
 }
+
+/* the talk intro shows who will be asking */
+.ob-talk-intro {
+  display: grid;
+  place-items: center;
+}
+.ob-talk-intro img {
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: var(--ob-shadow);
+}
+
+/* nine interests in two compact columns on a phone, so the next question is not far below */
+@media (max-width: 520px) {
+  .ob-grid.three.ob-interests {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .ob-interests .ob-card.ob-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+  .ob-interests .ob-card.ob-row[aria-pressed="true"] {
+    padding: 11px 13px;
+  }
+  .ob-interests .ob-card h3 {
+    font-size: 1em;
+  }
+  .ob-interests .ob-ico {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+}

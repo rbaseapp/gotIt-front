@@ -20,6 +20,7 @@ import {
   talkDelta,
   topicForGoal,
 } from "../../lib/placement/conversationCheck";
+import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { EmailAuthForm } from "../EmailAuthForm";
 import { GoogleSignIn } from "../GoogleSignIn";
@@ -366,7 +367,9 @@ export function TalkStep({
           </button>
         }
       >
-        <span />
+        <div className="ob-talk-intro">
+          <img src={rachel} alt="" draggable={false} />
+        </div>
       </OnboardingFrame>
     );
   const done = check.current?.answers.length ?? 0;
