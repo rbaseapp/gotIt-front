@@ -344,7 +344,6 @@ export function DevDashboardPage() {
         }}
       />
       <div className="nd-wrap nd-content">
-        <TodayMission />
         <RemoteState
           loading={
             language.loading ||
@@ -396,6 +395,7 @@ export function DevDashboardPage() {
                         })}
                   </small>
                 </div>
+                <TodayMission embedded />
                 <h1 id="nd-hero-title" dir="auto">
                   {heading}
                 </h1>

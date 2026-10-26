@@ -13,9 +13,10 @@ const DAY = 86_400_000;
 
 /**
  * Shown on "My day" to a learner who just went through onboarding and has not
- * finished a lesson yet: one clear task instead of an empty page.
+ * finished a lesson yet: one clear task instead of an empty page. `embedded` puts it
+ * inside the day's card, so there is one card and one main action.
  */
-export function TodayMission() {
+export function TodayMission({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const { status } = useSubscription();
   const { user } = useApp();
@@ -32,7 +33,7 @@ export function TodayMission() {
   )
     return (
       <section
-        className="ob ob-today"
+        className={`ob ob-today${embedded ? " embedded" : ""}`}
         aria-label={t("start.today.checkTitle")}
         style={{ minHeight: 0 }}
       >
@@ -58,7 +59,7 @@ export function TodayMission() {
   const days = status?.tier === "trial" ? status.trial?.daysRemaining : null;
   return (
     <section
-      className="ob ob-today"
+      className={`ob ob-today${embedded ? " embedded" : ""}`}
       aria-label={t("start.today.title")}
       style={{ minHeight: 0 }}
     >
