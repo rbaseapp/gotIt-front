@@ -47,3 +47,22 @@ it("an empty legacy report cannot claim independent learning or turn planned min
   expect(screen.getByText(/0 דקות/)).toBeInTheDocument();
   expect(screen.queryByText("בקשת תה במשפט עצמאי.")).not.toBeInTheDocument();
 });
+it("returns curriculum learners to the updated unit map instead of reopening the same teacher lesson", () => {
+  const lesson = {
+    ...guidedReport,
+    curriculum: { lessonId: "P01-L1", version: "2026-10-21.1" },
+  };
+  render(
+    <MemoryRouter>
+      <LessonSummary lesson={lesson} returnTo="/english-learning?unit=P01">
+        Report detail
+      </LessonSummary>
+    </MemoryRouter>,
+  );
+  expect(
+    screen.getByRole("link", { name: he.pathUi.continueUnit }),
+  ).toHaveAttribute("href", "/english-learning?unit=P01");
+  expect(
+    screen.queryByRole("link", { name: he.c1.resume }),
+  ).not.toBeInTheDocument();
+});

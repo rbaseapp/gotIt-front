@@ -17,7 +17,11 @@ import { useTranslation } from "react-i18next";
 import { UiLanguageSelect } from "../components/UiLanguageSelect";
 import { supportEmailHref, supportWhatsappHref } from "../lib/supportContact";
 
-export function AuthPage() {
+export function AuthPage({
+  startingMode,
+}: {
+  startingMode?: "login" | "register";
+}) {
   const { t } = useTranslation();
   const { authenticate, authenticateGoogle, authenticateFacebook, startDemo } =
     useApp();
@@ -74,7 +78,11 @@ export function AuthPage() {
         </div>
         <div className="auth-card">
           <p className="eyebrow">{t("auth.welcome")}</p>
-          <EmailAuthForm authenticate={authenticate} onBusy={setLoading}>
+          <EmailAuthForm
+            authenticate={authenticate}
+            onBusy={setLoading}
+            startingMode={startingMode}
+          >
             {error && (
               <div className="form-error" role="alert">
                 {error}

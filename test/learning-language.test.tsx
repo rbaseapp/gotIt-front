@@ -25,6 +25,7 @@ describe("learning language persistence", () => {
     expect(first.result.current.loading).toBe(true);
     expect(first.result.current.code).toBe("en");
     expect(localStorage.getItem("gotit.learningLanguage")).toBe("en");
+    await waitFor(() => expect(resolve).toBeTypeOf("function"));
     first.unmount();
 
     const second = renderHook(useLearningLanguage);
@@ -59,4 +60,20 @@ describe("learning language persistence", () => {
     expect(result.current.code).toBe("ar");
     expect(localStorage.getItem("gotit.learningLanguage")).toBe("ar");
   });
+});
+
+it("synchronizes the header selection with another mounted language consumer", async () => {
+  localStorage.setItem("gotit.learningLanguage", "en");
+  vi.mocked(product).mockResolvedValue({
+    languages: [
+      { code: "en", count: 2 },
+      { code: "ar", count: 10 },
+    ],
+  });
+  const header = renderHook(useLearningLanguage);
+  const page = renderHook(useLearningLanguage);
+  await waitFor(() => expect(page.result.current.loading).toBe(false));
+  act(() => header.result.current.setCode("ar"));
+  expect(page.result.current.code).toBe("ar");
+  expect(localStorage.getItem("gotit.learningLanguage")).toBe("ar");
 });

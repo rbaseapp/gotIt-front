@@ -40,21 +40,27 @@ for (const locale of ["en", "he"] as const) {
         page.getByRole("heading", { name: copy.auth.verifyTitle, exact: true }),
       ).toBeFocused();
       for (const submit of [copy.auth.verifySubmit, copy.auth.resetSubmit]) {
+        const verifying = submit === copy.auth.verifySubmit;
         await page
           .getByLabel(copy.auth.emailCode, { exact: true })
           .fill("123456");
-        await page
-          .getByLabel(copy.auth.newPassword, { exact: true })
-          .fill("new-password-123");
-        await page
-          .getByLabel(copy.auth.confirmPassword, { exact: true })
-          .fill("new-password-123");
+        // After sign-up the password is already known: verification asks for the code alone and
+        // submits it by itself. Password recovery still asks for the new password twice.
+        if (!verifying) {
+          await page
+            .getByLabel(copy.auth.newPassword, { exact: true })
+            .fill("new-password-123");
+          await page
+            .getByLabel(copy.auth.confirmPassword, { exact: true })
+            .fill("new-password-123");
+        }
         const size = await page.evaluate(() => ({
           viewport: innerWidth,
           document: document.documentElement.scrollWidth,
         }));
         expect(size.document).toBeLessThanOrEqual(size.viewport + 1);
-        await page.getByRole("button", { name: submit, exact: true }).click();
+        if (!verifying)
+          await page.getByRole("button", { name: submit, exact: true }).click();
         await expect(
           page.getByLabel(copy.auth.password, { exact: true }),
         ).toHaveValue("");

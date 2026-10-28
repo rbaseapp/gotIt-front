@@ -8,6 +8,16 @@ import fr from "./locales/fr/translation.json";
 import he from "./locales/he/translation.json";
 import ru from "./locales/ru/translation.json";
 import zh from "./locales/zh/translation.json";
+import pricingEn from "./locales/pricing-en.json";
+import pricingHe from "./locales/pricing-he.json";
+import startAr from "./locales/start-ar.json";
+import startDe from "./locales/start-de.json";
+import startEn from "./locales/start-en.json";
+import startEs from "./locales/start-es.json";
+import startFr from "./locales/start-fr.json";
+import startHe from "./locales/start-he.json";
+import startRu from "./locales/start-ru.json";
+import startZh from "./locales/start-zh.json";
 
 export const UI_LOCALE_STORAGE_KEY = "gotit.uiLocale.v1";
 export const SUPPORTED_UI_LOCALES = [
@@ -62,14 +72,14 @@ function applyDocumentLocale(locale: UiLocale): void {
 
 void i18n.use(initReactI18next).init({
   resources: {
-    ar: { translation: ar },
-    de: { translation: de },
-    en: { translation: en },
-    es: { translation: es },
-    fr: { translation: fr },
-    he: { translation: he },
-    ru: { translation: ru },
-    zh: { translation: zh },
+    ar: { translation: { ...ar, ...startAr } },
+    de: { translation: { ...de, ...startDe } },
+    en: { translation: { ...en, pricing: pricingEn, ...startEn } },
+    es: { translation: { ...es, ...startEs } },
+    fr: { translation: { ...fr, ...startFr } },
+    he: { translation: { ...he, pricing: pricingHe, ...startHe } },
+    ru: { translation: { ...ru, ...startRu } },
+    zh: { translation: { ...zh, ...startZh } },
   },
   lng: detectUiLocale(),
   fallbackLng: "en",

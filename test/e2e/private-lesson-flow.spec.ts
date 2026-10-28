@@ -85,7 +85,7 @@ for (const language of ["he", "en"])
               this.emit({
                 type: "response.output_audio_transcript.done",
                 transcript: [
-                  "We use the present simple for habits: I walk to work; she walks to work. Which sentence uses she correctly?",
+                  "Great! עכשיו נתרגל יחד משפט קצר בעברית עם המילה walk.",
                   "With she, add s to walk. Would you choose she walk or she walks?",
                   "Try completing this habit: every morning, she ... to work. What is the missing word?",
                 ][Math.min(this.count - 1, 2)],
@@ -174,7 +174,7 @@ for (const language of ["he", "en"])
                     tier: "paid",
                     access: true,
                     plan: { key: "paid", name: "Paid", kind: "paid" },
-                    entitlements: ["practice.play"],
+                    entitlements: ["practice.play", "curriculum.access", "tutor.session"],
                     subscription: null,
                     trial: null,
                   }
@@ -229,6 +229,10 @@ for (const language of ["he", "en"])
         "data-lesson-responses",
         "1",
       );
+      const opening = page.locator(".lesson-room-turn.tutor > p").first();
+      await expect(opening).toHaveAttribute("dir", "rtl");
+      await expect(opening).toHaveCSS("direction", "rtl");
+      await expect(opening).toHaveCSS("text-align", "start");
       await page.clock.runFor(30_000);
       await expect(page.locator("html")).toHaveAttribute(
         "data-lesson-responses",
@@ -251,6 +255,9 @@ for (const language of ["he", "en"])
       await expect(
         page.locator(".lesson-room-turn.tutor").last(),
       ).toBeVisible();
+      await expect(
+        page.locator(".lesson-room-turn.tutor > p").last(),
+      ).toHaveCSS("direction", "ltr");
       const layout = await page.evaluate(() => {
         const boxes = [
           ".lesson-room-header",

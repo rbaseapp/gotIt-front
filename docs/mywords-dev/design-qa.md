@@ -1,0 +1,13 @@
+# Design QA
+
+final result: passed
+
+Source: exported selected Claude MyWordsV2 artboard, opened in Chrome and compared with the rendered local application using the same supplied card data. Both desktop captures use a 1440 × 1000 CSS iframe at 0.5 scale in the same browser; the surrounding grey browser harness is excluded from visual judgments. This is a desktop web page, not a device-frame prototype.
+
+Evidence: [paired desktop comparison](comparison-desktop.png), [paired drawer detail comparison](comparison-drawer.png), [reference](reference-desktop.png), [implementation](implementation-desktop.png), [320px RTL](implementation-mobile.png), [RTL mobile drawer](implementation-mobile-drawer.png), [390px LTR list](implementation-ltr-list.png), [LTR drawer](implementation-ltr-drawer.png).
+
+Iteration 1: blocked by P2 header height, missing account circle, misplaced/shrunken mascot and overly compact desktop CTA group. Fixed scoped shell precedence, 74px desktop header, original mascot/button dimensions and original hero alignment. P2 drawer duplicate visible title/extra header and green primary CTA were fixed by an accessible hidden title, original status/strength/close row and gold primary CTA. The context paragraph now retains the source's heading font and bold highlighted word. The paired final captures above show the corrections.
+
+Final review: no open P0/P1/P2 visual differences. Colors, type families, waves, checkbox/badge/speaker order, bilingual card alignment, POS/source chip, five memory bars, due styling, hero composition and drawer dimensions match the source structure. Focus rings and actual data are deliberate product adaptations. The reference has six illustrative category chips; the implementation displays actual installed topics/tags and their distinct server counts. Its correct/total ratio, manually overridden mastery wording, safe trash wording and retained detail editor expose real behavior rather than prototype placeholders. These explain the differences in content and drawer footer density.
+
+Responsive verification: 320px Hebrew RTL and 390px English LTR use one-column cards and stacked hero actions; document scrollWidth equals clientWidth (311/311 and 382/382 with desktop scrollbars). The drawer fits the iframe at 390 × 700, top 0 / footer bottom 700, with a separately scrolling body. Card/list toggle and drawer were opened through visible controls. Original desktop width gives three columns. Search, compound filters, paging, selected IDs and confirmations are covered by UI/API regressions. Physical device speech quality is not established by screenshots; the playback button invokes the existing browser speech implementation with an unavailable-state message.

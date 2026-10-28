@@ -18,6 +18,7 @@ export function UnitWordBrowser({
   busy,
   onKnown,
   packId,
+  suppliedContent,
 }: {
   packId: string;
   entries: WordPackEntry[];
@@ -25,6 +26,7 @@ export function UnitWordBrowser({
   supportLanguage: string;
   busy: boolean;
   onKnown: (entry: WordPackEntry) => void;
+  suppliedContent?: { knownLabel: string; knownHelp: string };
 }) {
   const { t } = useTranslation();
   const [selectedId, setSelectedId] = useState<string>();
@@ -35,19 +37,19 @@ export function UnitWordBrowser({
   const exampleText = selected?.exampleText;
   const picture = useResource(
     useCallback(async () => {
-      if (!entryId) return { image: null, entryId };
+      if (!entryId || suppliedContent) return { image: null, entryId };
       const path = `word-packs/${packId}/entries/${entryId}/image`;
       const cached = await product(studyImageSchema, path);
       const value = cached.image
         ? cached
         : await product(studyImageSchema, path, "POST", {});
       return { ...value, entryId };
-    }, [packId, entryId]),
+    }, [packId, entryId, suppliedContent]),
   );
   const example = useResource(
     useCallback(
       async () => ({
-        ...(exampleText || !entryId
+        ...(exampleText || !entryId || suppliedContent
           ? { exampleText: exampleText ?? null, generated: false }
           : await product(
               wordExampleSchema,
@@ -57,7 +59,7 @@ export function UnitWordBrowser({
             )),
         entryId,
       }),
-      [packId, entryId, exampleText],
+      [packId, entryId, exampleText, suppliedContent],
     ),
   );
   const image = picture.data?.entryId === entryId ? picture.data.image : null;
@@ -191,15 +193,15 @@ export function UnitWordBrowser({
           <label className="unit-known-toggle">
             <input
               type="checkbox"
-              disabled={busy}
+              disabled={busy || Boolean(suppliedContent && selected.known)}
               checked={!!selected.known}
               aria-describedby="unit-known-help"
               onChange={() => onKnown(selected)}
             />
-            {t("unitStudy.knownLabel")}
+            {suppliedContent?.knownLabel ?? t("unitStudy.knownLabel")}
           </label>
           <p id="unit-known-help" className="unit-known-help">
-            {t("unitStudy.knownHelp")}
+            {suppliedContent?.knownHelp ?? t("unitStudy.knownHelp")}
           </p>
         </aside>
       )}

@@ -1,0 +1,10 @@
+Built-in image_gen; user screenshot as reference; transparent_background=true.
+Use case: stylized-concept. Asset: transparent wide hero, displayed around 440 x
+220 px. Recreate only the reference's left illustration: cute rounded turquoise
+brain, large shiny black eyes, pink cheeks, happy smile and small dark teal hands
+hugging three cream books with emerald and gold cover trim. Sage succulent leaves
+flank the character; two tiny yellow accents above. Three tilted cream flashcards
+on the right read exactly: I am / You are / We are, in dark navy bold sans-serif.
+Soft studio lighting, smooth plush clay-like 3D rendering; brain near 40% width,
+bottom aligned, complete leaves and cards inside the wide crop. Genuine alpha,
+no page UI, logos, watermark, unrelated text or checkerboard.

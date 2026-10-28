@@ -10,6 +10,7 @@ export function Modal({
   children,
   size = "md",
   className = "",
+  hideCloseButton = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -17,8 +18,9 @@ export function Modal({
   children: ReactNode;
   size?: "sm" | "md" | "lg";
   className?: string;
+  hideCloseButton?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const ref = useRef<HTMLElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -39,7 +41,10 @@ export function Modal({
           (!element.closest("details:not([open])") ||
             element.tagName === "SUMMARY"),
       );
-    getFocusable()[0]?.focus();
+    (
+      ref.current?.querySelector<HTMLElement>("[data-autofocus]") ??
+      getFocusable()[0]
+    )?.focus();
     const handler = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -73,18 +78,21 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        dir={i18n.dir()}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="modal-header">
           <h2 id={titleId}>{title}</h2>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={onClose}
-            aria-label={t("common.close")}
-          >
-            <X size={20} />
-          </button>
+          {!hideCloseButton && (
+            <button
+              type="button"
+              className="icon-button"
+              onClick={onClose}
+              aria-label={t("common.close")}
+            >
+              <X size={20} />
+            </button>
+          )}
         </header>
         {children}
       </section>

@@ -1,6 +1,17 @@
 import { api } from "./api";
+import i18n from "../i18n";
 
 export type NotificationPreferences = {
+  enabled?: boolean;
+  reminderMinute?: number;
+  reminderDays?: number[];
+  quietEnabled?: boolean;
+  quietStart?: number;
+  quietEnd?: number;
+  streakEmail?: boolean;
+  streakPush?: boolean;
+  weeklyEmail?: boolean;
+  weeklyPush?: boolean;
   practiceEmail: boolean;
   practicePush: boolean;
   systemEmail: boolean;
@@ -33,20 +44,24 @@ export async function saveNotifications(
   previous: NotificationPreferences,
   config: NotificationConfig,
 ) {
-  if (preferences.practicePush || preferences.systemPush) {
+  const enablingPush =
+    (preferences.practicePush && !previous.practicePush) ||
+    (preferences.systemPush && !previous.systemPush) ||
+    (preferences.streakPush && !previous.streakPush) ||
+    (preferences.weeklyPush && !previous.weeklyPush);
+  if (enablingPush) {
     if (
       !config.vapidPublicKey ||
       !("serviceWorker" in navigator) ||
       !("PushManager" in window) ||
       !("Notification" in window)
     )
-      throw new Error("Push notifications are unavailable in this browser.");
+      throw new Error(i18n.t("settingsLive.pushUnsupported"));
     const permission = await Notification.requestPermission();
     if (permission !== "granted")
-      throw new Error("Push notification permission was not granted.");
-    const registration = await navigator.serviceWorker.register(
-      "/notification-sw.js",
-    );
+      throw new Error(i18n.t("settingsLive.pushDenied"));
+    await navigator.serviceWorker.register("/notification-sw.js");
+    const registration = await navigator.serviceWorker.ready;
     const subscription =
       (await registration.pushManager.getSubscription()) ??
       (await registration.pushManager.subscribe({
@@ -62,10 +77,18 @@ export async function saveNotifications(
       keys: { p256dh: json.keys?.p256dh, auth: json.keys?.auth },
     });
   }
+  // Send only changed preferences. An unchanged Push opt-in must not prevent
+  // saving email/time preferences on another device or when a provider is down.
+  const patch = Object.fromEntries(
+    Object.entries(preferences).filter(
+      ([key, value]) => previous[key as keyof typeof preferences] !== value,
+    ),
+  );
+  if (!Object.keys(patch).length) return previous;
   const result = (await api.product(
     "notifications/preferences",
     "PATCH",
-    preferences,
+    patch,
   )) as { preferences: Omit<NotificationPreferences, "timezone"> };
   return { ...result.preferences, timezone: previous.timezone };
 }

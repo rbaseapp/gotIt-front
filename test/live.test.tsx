@@ -95,6 +95,9 @@ function mount(
   vi.stubEnv("VITE_DEMO_MODE", "false");
   setTokens({ accessToken: "access", refreshToken: "refresh", expiresIn: 900 });
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    // These fixtures exercise the retained legacy content source, unpublished C1.
+    if (url.endsWith("/structured-english/catalog"))
+      return json({ programs: [] });
     if (url.endsWith("/auth/me")) return json({ user: identity });
     if (url.endsWith("/profile") && (!init?.method || init.method === "GET"))
       return json({ profile });
@@ -607,15 +610,37 @@ describe("live server-backed flows", () => {
         </FeedbackProvider>
       </MemoryRouter>,
     );
+    // The Hebrew landing page lives in a shadow root so its styles stay isolated.
+    const host = await screen.findByTestId("landing-design");
+    await waitFor(() =>
+      expect(host.shadowRoot?.querySelector("h1")).toBeTruthy(),
+    );
+    const root = host.shadowRoot!;
+    expect(root.querySelector("h1")?.textContent).toContain("המילים שלכם");
     expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: "לומדים מילים מהדברים שאתם כבר קוראים",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByRole("link", { name: "יצירת חשבון" })[0],
-    ).toHaveAttribute("href", "/login?auth=register");
+      root.querySelector('.hero-actions a[data-destination="signup"]'),
+    ).not.toBeNull();
+    expect(root.querySelector("#pricing")).not.toBeNull();
+  });
+  it("opens the account form instead of the landing page for the extension's /?auth= links", async () => {
+    vi.stubEnv("VITE_DEMO_MODE", "false");
+    clearTokens();
+    for (const auth of ["register", "reset"]) {
+      window.history.pushState({}, "", `/?auth=${auth}`);
+      const view = render(
+        <MemoryRouter initialEntries={[`/?auth=${auth}`]}>
+          <FeedbackProvider>
+            <AppProvider>
+              <App />
+            </AppProvider>
+          </FeedbackProvider>
+        </MemoryRouter>,
+      );
+      expect(await screen.findByLabelText("כתובת אימייל")).toBeInTheDocument();
+      expect(screen.queryByTestId("landing-design")).not.toBeInTheDocument();
+      view.unmount();
+    }
+    window.history.pushState({}, "", "/");
   });
   it("shows a spinner while checking an answer, then an error and retry after failure", async () => {
     let rejectAttempt!: (reason: Error) => void;

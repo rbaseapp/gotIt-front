@@ -77,7 +77,7 @@ for (const width of [390, 1440])
               tier: "paid",
               access: true,
               plan: { key: "paid", name: "Paid", kind: "paid" },
-              entitlements: ["practice.play", "vocabulary.write"],
+              entitlements: ["practice.play", "vocabulary.write", "curriculum.access", "tutor.session"],
               subscription: null,
               trial: null,
             },

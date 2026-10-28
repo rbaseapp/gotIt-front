@@ -36,7 +36,7 @@ export function unitPracticeLink(
 export function learningReturn(value: string | null, fallback = "/learn") {
   if (!value || value.startsWith("//") || /[\\\r\n]/u.test(value))
     return fallback;
-  return /^\/(?:dashboard|vocabulary|learn|reading|history|private-lesson|word-packs|english-learning|courses(?:\/[a-zA-Z0-9-]+)?|homework\/[a-zA-Z0-9-]+)(?:[?#]|$)/u.test(
+  return /^\/(?:dashboard|vocabulary|learn|reading|history|private-lesson|word-packs|english-learning|english-zero-c1|courses(?:\/[a-zA-Z0-9-]+)?|homework\/[a-zA-Z0-9-]+)(?:[?#]|$)/u.test(
     value,
   )
     ? value

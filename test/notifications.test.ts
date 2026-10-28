@@ -50,11 +50,9 @@ it("saves email consent with no push permission request", async () => {
     pushAvailable: false,
   });
   expect(result.practiceEmail).toBe(true);
-  expect(product).toHaveBeenCalledWith(
-    "notifications/preferences",
-    "PATCH",
-    patch,
-  );
+  expect(product).toHaveBeenCalledWith("notifications/preferences", "PATCH", {
+    practiceEmail: true,
+  });
   expect(product).toHaveBeenCalledTimes(1);
 });
 
@@ -74,7 +72,8 @@ it("registers a push endpoint without sending browser-only fields", async () => 
   vi.stubGlobal("Notification", { requestPermission: async () => "granted" });
   vi.stubGlobal("navigator", {
     serviceWorker: {
-      register: async () => ({
+      register: async () => ({}),
+      ready: Promise.resolve({
         pushManager: {
           getSubscription: async () => subscription,
           subscribe: async () => {

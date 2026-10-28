@@ -1,0 +1,48 @@
+{
+  "back": "Back to subscription management",
+  "title": "Choose your plan",
+  "description": "Switch or cancel anytime. Your progress and saved words stay with you.",
+  "proDescription": "Save words and practice independently, at your own pace.",
+  "tutorDescription": "Pro learning tools, plus a prepaid bank of personal AI tutor minutes.",
+  "retry": "Try again",
+  "noPlans": "No subscription plans are available right now.",
+  "noPacks": "No minute packs are available right now.",
+  "saveUpTo": "Save up to {{percent}}%",
+  "noIncludedMinutes": "No tutor minutes included",
+  "unavailable": "Unavailable",
+  "intervalUnavailable": "This plan is not available for the selected billing period.",
+  "billed": "Billed {{price}} · {{period}}",
+  "savings": "Save {{price}}",
+  "refundPolicy": "Refund policy",
+  "cancelAnytime": "Cancel anytime through your subscription portal",
+  "comparison": "Full plan comparison",
+  "included": "What's included",
+  "tutorMinutes": "AI tutor minutes per billing period",
+  "available": "Included",
+  "notIncluded": "Not included",
+  "minutesTitle": "Conversation minutes with your AI tutor",
+  "minutesDescription": "Want to talk more? Add minutes without changing your subscription.",
+  "balance": "minutes available",
+  "balanceUnavailable": "Balance unavailable",
+  "minutesUnit": "min",
+  "buyPack": "Buy {{count}} minutes",
+  "faq": {
+    "progress": {
+      "question": "What happens to my words and progress when I change plans?",
+      "answer": "Your words and progress stay in your account. Available learning tools depend on your current plan."
+    },
+    "billing": {
+      "question": "When am I charged?",
+      "answer": "Subscriptions are billed in advance for the selected period and renew automatically until canceled. Review the final total in Paddle before confirming."
+    },
+    "expiry": {
+      "question": "Do tutor minutes expire?",
+      "answer": "Purchased packs are valid for one year. Included tutor minutes are granted as a bank for the subscription billing period."
+    },
+    "refund": {
+      "question": "Can I get a refund?",
+      "answer": "Refund requests are handled according to our published refund policy."
+    }
+  },
+  "offline": "Reconnect to the internet to manage your subscription."
+}

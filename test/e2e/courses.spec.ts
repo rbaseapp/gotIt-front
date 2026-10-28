@@ -11,6 +11,7 @@ async function signedIn(
   language = "he",
   oralFirst = false,
   homeworkData = fixtureHomework,
+  courseData?: ReturnType<typeof courseWithPlan>,
 ) {
   await page.addInitScript((locale) => {
     localStorage.removeItem("gotit.mode");
@@ -18,11 +19,12 @@ async function signedIn(
     sessionStorage.setItem("gotit.refresh", "browser-fixture-refresh");
   }, language);
   const course =
-    screen === "plan"
+    courseData ??
+    (screen === "plan"
       ? courseWithPlan()
       : screen === "active"
         ? courseWithPlan(true)
-        : { ...structuredClone(fixtureCourse), ready: screen !== "intake" };
+        : { ...structuredClone(fixtureCourse), ready: screen !== "intake" });
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     const payload = path.endsWith("/auth/refresh")
@@ -60,7 +62,7 @@ async function signedIn(
                 tier: "paid",
                 access: true,
                 plan: { key: "paid", name: "Paid", kind: "paid" },
-                entitlements: ["practice.play"],
+                entitlements: ["practice.play", "curriculum.access", "tutor.session"],
                 subscription: null,
                 trial: null,
               }
@@ -212,6 +214,80 @@ for (const language of ["he", "en"])
       });
     }
   }
+for (const [locale, target] of [
+  ["he", "en"],
+  ["en", "en"],
+  ["en", "he"],
+]) {
+  for (const width of [320, 390, 768, 844, 860, 861, 1024, 1440, 1920]) {
+    test(`approved plan actions stay unobstructed: ${locale}/${target} ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: width === 844 ? 390 : 900 });
+      const course = courseWithPlan(true);
+      course.preferences.targetLanguageCode = target;
+      course.versions[0]!.plan.units[0]!.vocabulary =
+        target === "en"
+          ? ["traveler", "visitor", "entrance"]
+          : ["מטיילים", "מבקרים", "כניסה"];
+      await signedIn(page, "active", locale, false, fixtureHomework, course);
+
+      const overview = page.locator(".course-plan-overview");
+      if (width > 860) {
+        await expect(overview).toBeVisible();
+        const preview = overview.locator(".personal-map-word-preview");
+        // Exercise both the reported text and long generated content at larger text size.
+        for (const expanded of [false, true]) {
+          if (expanded) {
+            await page
+              .locator("html")
+              .evaluate((element) =>
+                element.style.setProperty("--text-scale", "1.3"),
+              );
+            await preview.locator("strong").evaluate((element) => {
+              element.textContent =
+                "extraordinarilylongvocabularyexpression".repeat(6);
+            });
+          }
+          const words = (await preview.boundingBox())!;
+          for (const element of await overview
+            .locator(".course-plan-content > *")
+            .all()) {
+            const content = (await element.boundingBox())!;
+            const overlaps =
+              words.x < content.x + content.width &&
+              words.x + words.width > content.x &&
+              words.y < content.y + content.height &&
+              words.y + words.height > content.y;
+            expect(overlaps).toBe(false);
+          }
+          for (const action of await overview
+            .locator(".button, .course-text-link")
+            .all()) {
+            await action.click({ trial: true });
+          }
+        }
+      } else {
+        await expect(overview).toBeHidden();
+        await page
+          .locator(".personal-unit-mobile .button.primary")
+          .click({ trial: true });
+      }
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      ).toBe(true);
+      if (locale === "he" && [390, 1024, 1440].includes(width)) {
+        await page.screenshot({
+          path: `test-results/approved-plan-${width}.png`,
+          fullPage: true,
+        });
+      }
+    });
+  }
+}
+
 test("keyboard can expand a future unit and move through the homework choices", async ({
   page,
 }) => {

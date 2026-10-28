@@ -1,0 +1,169 @@
+@import url("https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap");
+
+/* Application chrome owns its styles; page styles must not override it. */
+html:has(body .shared-header-shell):not(
+    :has(body.private-lesson-session-open)
+  ) {
+  scrollbar-gutter: stable;
+}
+body:has(.shared-header-shell) {
+  min-width: 0;
+}
+.app-layout.shared-header-shell {
+  display: block;
+}
+.app-layout.shared-header-shell > .main-column {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.app-layout.shared-header-shell > .main-column > .app-topbar {
+  position: relative;
+  z-index: 20;
+  min-height: 68px;
+  padding: 8px 24px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  background: #fff;
+  color: #22322c;
+  border-bottom: 1px solid #e3e8e2;
+  font-family: "Assistant", "Rubik", system-ui, sans-serif;
+}
+.app-topbar * {
+  box-sizing: border-box;
+}
+.shared-header-shell .app-topbar .app-header-brand .brand-logo {
+  width: 150px;
+}
+.shared-header-shell .app-topbar .app-top-navigation {
+  display: flex;
+  gap: 2px;
+  margin-inline: auto;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  justify-content: center;
+}
+.shared-header-shell .app-topbar .app-top-navigation a {
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+  color: #22322c;
+  font-size: calc(16px * var(--text-scale, 1));
+  font-weight: 600;
+}
+.shared-header-shell .app-topbar .app-top-navigation a:hover {
+  background: #e5f0eb;
+}
+.shared-header-shell .app-topbar .app-top-navigation a.active {
+  background: #22322c;
+  color: #fff;
+}
+.shared-header-shell .app-topbar .app-top-navigation a:focus-visible {
+  outline: 3px solid #1f604c;
+  outline-offset: 4px;
+}
+.shared-header-shell .app-topbar .app-header-menu {
+  display: none;
+}
+.shared-header-shell .app-topbar .app-header-actions {
+  display: flex;
+  align-items: center;
+}
+.shared-header-shell .app-topbar .user-menu-wrap {
+  display: block;
+}
+.shared-header-shell .app-topbar .user-copy {
+  display: none;
+}
+.shared-header-shell .app-topbar .user-button {
+  width: auto;
+  height: 46px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 1px solid #e3e8e2;
+  border-radius: 999px;
+  background: #fff;
+  color: #22322c;
+  gap: 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.shared-header-shell .app-topbar .avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  transform: none;
+  font-size: 16px;
+  background: #286f5c;
+  color: #fff;
+}
+.shared-header-shell .app-topbar .nd-account-label {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.shared-header-shell .app-topbar .user-button > svg {
+  display: block;
+  flex: none;
+}
+.shared-header-shell .app-topbar .user-popover {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  z-index: 60;
+}
+.shared-header-shell .mobile-tabs {
+  display: none;
+}
+@media (max-width: 1100px) {
+  .app-layout.shared-header-shell > .main-column > .app-topbar {
+    gap: 12px;
+  }
+  .shared-header-shell .app-topbar .app-top-navigation a {
+    padding-inline: 10px;
+    font-size: calc(14px * var(--text-scale, 1));
+  }
+}
+@media (max-width: 860px) {
+  .app-layout.shared-header-shell > .main-column > .app-topbar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-height: 64px;
+  }
+  .shared-header-shell .app-topbar .app-header-brand .brand-logo {
+    width: 120px;
+  }
+  .shared-header-shell .app-topbar .app-top-navigation {
+    display: none;
+  }
+  .shared-header-shell .app-topbar .app-header-menu {
+    display: inline-flex;
+    justify-self: start;
+  }
+  .shared-header-shell .mobile-tabs {
+    display: flex;
+  }
+}
+@media (max-width: 560px) {
+  .app-layout.shared-header-shell > .main-column > .app-topbar {
+    padding-inline: 16px;
+  }
+  .shared-header-shell .app-topbar .nd-account-label {
+    display: none;
+  }
+}
+@media (min-width: 861px) and (max-width: 1100px) {
+  [data-text-scale="large"]
+    .shared-header-shell
+    .app-topbar
+    .app-top-navigation {
+    display: none;
+  }
+  [data-text-scale="large"] .shared-header-shell .app-topbar .app-header-menu {
+    display: inline-flex;
+    justify-self: start;
+  }
+}

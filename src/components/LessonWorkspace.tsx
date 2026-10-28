@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Logo } from "./Logo";
 import { Modal } from "./Modal";
 import { TeacherAvatar } from "./TeacherAvatar";
+import { textDirection } from "../lib/textDirection";
 import type {
   LessonActivity,
   PrivateLessonSession,
@@ -37,6 +38,9 @@ type Props = {
     | "lastAnswer"
     | "review"
     | "interactionMode"
+    | "status"
+    | "protocolVersion"
+    | "completedActivities"
   >;
   needsContinue?: boolean;
   finishBlocked?: boolean;
@@ -74,10 +78,13 @@ export function LessonWorkspace(p: Props) {
   const followHistory = useRef(true);
   const answerField = useRef<HTMLTextAreaElement>(null);
   const conversation = p.activity.interactionMode === "conversation";
+  const adaptive = p.activity.protocolVersion === "adaptive-v1";
   const stage = ["learn", "try", "chat"].indexOf(p.activity.stage) + 1;
   const teacherName = t(`privateLesson.voiceOptions.${p.lesson.teacherVoice}`);
   const voiceActive = p.inputMode === "voice" && !p.microphoneMuted;
   const unavailable = p.busy || !p.ready || submitting || panel !== null;
+  const activityEnded =
+    p.activity.status === "exhausted" || p.activity.status === "closing";
   const lastTurn = p.activity.turns.at(-1);
   const messages =
     !p.activity.tutorText ||
@@ -108,7 +115,13 @@ export function LessonWorkspace(p: Props) {
   }, [lastMessage, messages.length, p.translatedTurn]);
 
   const submit = async () => {
-    if (unavailable || p.answerBlocked || submission.current || !draft.trim())
+    if (
+      unavailable ||
+      activityEnded ||
+      p.answerBlocked ||
+      submission.current ||
+      !draft.trim()
+    )
       return;
     submission.current = true;
     setSubmitting(true);
@@ -171,7 +184,9 @@ export function LessonWorkspace(p: Props) {
               : ""}
             {conversation
               ? ` · ${t("ux.freeChat")}`
-              : ` · ${t("lessonUi.stageCaption", { stage, title: t(`lessonUi.stage${stage}`) })}`}
+              : adaptive
+                ? ` · ${t("lessonUi.activityCaption", { count: (p.activity.completedActivities ?? 0) + (activityEnded ? 0 : 1), title: t(`lessonUi.stage${stage}`) })}`
+                : ` · ${t("lessonUi.stageCaption", { stage, title: t(`lessonUi.stage${stage}`) })}`}
           </p>
         </div>
         <Logo
@@ -201,7 +216,7 @@ export function LessonWorkspace(p: Props) {
             {t(conversation ? "ux.freeChat" : "lessonRoom.guided")}
           </span>
         </div>
-        {!conversation && (
+        {!conversation && !adaptive && (
           <nav className="lesson-room-stages" aria-label={t("lessonUi.stages")}>
             {[1, 2, 3].map((number) => (
               <span
@@ -231,8 +246,9 @@ export function LessonWorkspace(p: Props) {
               <button
                 type="button"
                 className="lesson-room-action"
-                disabled={unavailable}
+                disabled={unavailable || activityEnded}
                 onClick={() => p.onAction("hint")}
+                aria-disabled={activityEnded || undefined}
               >
                 {t("lessonUi.hint")}
               </button>
@@ -299,10 +315,13 @@ export function LessonWorkspace(p: Props) {
                     ? `${teacherName} · ${t("privateLesson.roles.tutor")}`
                     : t("privateLesson.roles.learner")}
                 </strong>
-                <p dir="auto">{turn.text}</p>
+                <p dir={textDirection(turn.text)}>{turn.text}</p>
                 {index === messages.length - 1 &&
                   !turn.text.includes(p.activity.question) && (
-                    <p className="lesson-room-question" dir="auto">
+                    <p
+                      className="lesson-room-question"
+                      dir={textDirection(p.activity.question)}
+                    >
                       {p.activity.question}
                     </p>
                   )}
@@ -312,14 +331,20 @@ export function LessonWorkspace(p: Props) {
               !messages.some((turn) =>
                 turn.text.includes(p.activity.feedback!),
               ) && (
-                <p className="lesson-room-feedback" dir="auto">
+                <p
+                  className="lesson-room-feedback"
+                  dir={textDirection(p.activity.feedback)}
+                >
                   {p.activity.feedback}
                 </p>
               )}
             {p.translatedTurn && (
               <details className="lesson-room-translation" open>
                 <summary>{t("privateLesson.translateLast")}</summary>
-                <p dir="auto" lang={p.lesson.supportLanguageCode ?? undefined}>
+                <p
+                  dir={textDirection(p.translatedTurn)}
+                  lang={p.lesson.supportLanguageCode ?? undefined}
+                >
                   {p.translatedTurn}
                 </p>
               </details>
@@ -348,6 +373,19 @@ export function LessonWorkspace(p: Props) {
           </div>
 
           <div className="lesson-room-composer">
+            {activityEnded && (
+              <div role="status">
+                <p>{t("lessonUi.activitiesFinished")}</p>
+                <button
+                  type="button"
+                  className="lesson-room-action primary"
+                  disabled={unavailable || p.finishBlocked}
+                  onClick={p.onFinish}
+                >
+                  {t("lessonUi.finish")}
+                </button>
+              </div>
+            )}
             {p.needsContinue && (
               <button
                 type="button"
@@ -407,7 +445,12 @@ export function LessonWorkspace(p: Props) {
                   type="submit"
                   className="lesson-room-action primary"
                   aria-label={t("lessonUi.send")}
-                  disabled={unavailable || p.answerBlocked || !draft.trim()}
+                  disabled={
+                    unavailable ||
+                    activityEnded ||
+                    p.answerBlocked ||
+                    !draft.trim()
+                  }
                 >
                   {submitting ? (
                     <LoaderCircle size={18} className="spin" />
@@ -424,7 +467,7 @@ export function LessonWorkspace(p: Props) {
                   maxLength={1500}
                   dir="auto"
                   value={draft}
-                  disabled={submitting || panel !== null}
+                  disabled={activityEnded || submitting || panel !== null}
                   onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={(event) => {
                     if (
@@ -450,7 +493,10 @@ export function LessonWorkspace(p: Props) {
                   aria-label={t(
                     voiceActive ? "lessonUi.stopSpeaking" : "lessonUi.speak",
                   )}
-                  onClick={p.onMicrophone}
+                  onClick={() => {
+                    if (!activityEnded) p.onMicrophone();
+                  }}
+                  aria-disabled={activityEnded || undefined}
                 >
                   {voiceActive ? (
                     <MicOff size={20} />

@@ -17,100 +17,9 @@
   margin: 0;
   min-width: 0;
 }
-.app-layout.nd-shell > .main-column > .topbar {
-  position: relative;
-  height: auto;
-  min-height: 76px;
-  padding: 12px max(24px, calc((100% - 1132px) / 2));
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 24px;
-  background: #fff;
-  border-bottom: 1px solid var(--nd-line);
-  flex-wrap: nowrap;
-}
 .app-layout.nd-shell > .main-column > .page-content {
   padding: 0;
   max-width: none;
-}
-.nd-shell .topbar-title {
-  display: none;
-}
-.nd-desktop-brand {
-  flex: none;
-}
-.nd-desktop-brand .brand-logo {
-  width: 170px;
-}
-.nd-top-navigation {
-  display: flex;
-  gap: 2px;
-  margin-inline: auto;
-  align-items: center;
-  flex-wrap: wrap;
-  min-width: 0;
-  justify-content: center;
-}
-.nd-top-navigation a {
-  text-decoration: none;
-  padding: 12px 16px;
-  border-radius: 999px;
-  white-space: nowrap;
-  color: var(--nd-ink);
-  font-weight: 600;
-}
-.nd-top-navigation a:hover {
-  background: #e5f0eb;
-}
-.nd-top-navigation a.active {
-  background: var(--nd-ink);
-  color: #fff;
-}
-.nd-shell .topbar-actions {
-  margin: 0;
-  flex: none;
-}
-.nd-shell .user-menu-wrap {
-  display: block;
-}
-.nd-shell .user-copy {
-  display: none;
-}
-.nd-shell .user-button {
-  width: auto;
-  height: 46px;
-  min-height: 44px;
-  padding: 4px 8px;
-  border: 1px solid var(--nd-line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--nd-ink);
-  gap: 10px;
-  cursor: pointer;
-}
-.nd-shell .avatar {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  border-radius: 50%;
-  transform: none;
-  font-size: 16px;
-  background: var(--nd-brand);
-  color: #fff;
-}
-.nd-account-label {
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.nd-shell .user-button > svg {
-  display: block;
-  flex: none;
-}
-.nd-shell .user-popover {
-  inset-inline-start: auto;
-  inset-inline-end: 0;
-  z-index: 60;
 }
 .nd-dashboard {
   color: var(--nd-ink);
@@ -142,77 +51,10 @@
 .nd-dashboard select {
   font: inherit;
 }
-.nd-dashboard :is(a, button, input, select, summary):focus-visible,
-.nd-shell .nd-top-navigation a:focus-visible {
-  outline: 3px solid #1f604c;
-  outline-offset: 4px;
-}
 .nd-wrap {
   max-width: 1180px;
   padding-inline: 24px;
   margin-inline: auto;
-}
-.nd-strip {
-  background: var(--nd-brand);
-  color: #fff;
-}
-.nd-strip .nd-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding-block: 12px;
-}
-.nd-chip {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  font-size: calc(14px * var(--text-scale, 1));
-  border: 1px solid #ffffff30;
-  border-radius: 999px;
-  background: #ffffff0c;
-  padding: 8px 14px;
-}
-.nd-chip svg {
-  color: #ffe39a;
-  flex: none;
-}
-.nd-mini-track {
-  width: 56px;
-  height: 6px;
-  background: #ffffff40;
-  overflow: hidden;
-  border-radius: 999px;
-}
-.nd-mini-track i {
-  display: block;
-  height: 100%;
-  background: var(--nd-gold);
-}
-.nd-language {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-inline-start: auto;
-  border: 1px solid #ffffff50;
-  border-radius: 999px;
-  padding: 0 12px;
-  min-height: 44px;
-  font-size: calc(14px * var(--text-scale, 1));
-}
-.nd-language select {
-  min-height: 42px;
-  width: auto;
-  max-width: 180px;
-  background: transparent;
-  color: #ffe18b;
-  border: 0;
-  padding: 4px;
-  font-weight: 700;
-}
-.nd-language option {
-  color: #22322c;
-  background: #fff;
 }
 .nd-content {
   padding-block: 40px 32px;
@@ -693,6 +535,7 @@
 }
 .nd-xp-summary {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   gap: 14px;
   flex: none;
@@ -769,6 +612,113 @@
   display: inline-flex;
   align-items: center;
 }
+.nd-answer-toast {
+  position: fixed;
+  z-index: 300;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(400px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid;
+  border-radius: 18px;
+  box-shadow: 0 12px 36px #12372930;
+  text-align: start;
+}
+.nd-answer-toast.success {
+  color: #145c37;
+  background: #e6f8eb;
+  border-color: #54b67a;
+}
+.nd-answer-toast.error {
+  color: #962e29;
+  background: #fff0ed;
+  border-color: #dc7c72;
+}
+.nd-answer-toast > svg {
+  flex-shrink: 0;
+}
+.nd-answer-toast > div:not(.nd-answer-confetti) {
+  flex: 1;
+  min-width: 0;
+}
+.nd-answer-toast p {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+.nd-answer-toast button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: transparent;
+  color: inherit;
+  border-radius: 10px;
+}
+.nd-answer-toast button:hover {
+  background: #ffffff80;
+}
+.nd-answer-confetti {
+  position: absolute;
+  inset: -160px -8px 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.nd-answer-confetti i {
+  position: absolute;
+  bottom: 35px;
+  left: 50%;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--color);
+  opacity: 0;
+  animation: nd-confetti 1.6s ease-out var(--delay) both;
+}
+@keyframes nd-confetti {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(var(--x), -145px) rotate(var(--rotation));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), 30px) rotate(var(--rotation));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nd-answer-confetti {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .nd-answer-toast {
+    bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+}
+.nd-task-xp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #7a5a00;
+  background: #fdf2d3;
+  font-weight: 800;
+  font-size: calc(12px * var(--text-scale, 1));
+}
+.nd-task-xp.completed {
+  background: #e6f8eb;
+  color: #145c37;
+}
 .nd-fine-print {
   font-size: calc(12px * var(--text-scale, 1));
   color: var(--nd-muted);
@@ -817,29 +767,48 @@
   color: var(--nd-ink);
   cursor: pointer;
 }
-.nd-next-word {
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  min-height: 44px;
-}
-.nd-choices button:hover {
+.nd-choices button:hover:enabled {
   background: #e5f0eb;
 }
-.nd-answer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 12px;
+.nd-review .nd-word-card.correct {
+  box-shadow:
+    0 0 0 3px #0e7a53,
+    0 14px 20px -22px #22322c;
 }
-.nd-answer.correct {
+.nd-review .nd-word-card.incorrect {
+  animation: nd-answer-shake 0.4s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nd-review .nd-word-card.incorrect {
+    animation: none;
+  }
+}
+@keyframes nd-answer-shake {
+  25%,
+  75% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+.nd-choices button.correct {
   background: #e3f7ee;
+  border-color: #0e7a53;
   color: #0e6747;
 }
-.nd-answer.incorrect {
-  background: #fff0eb;
+.nd-choices button.incorrect {
+  border-color: #c0392b;
+  color: #913600;
+}
+.nd-choices button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.nd-word-card.correct .nd-answer-hint {
+  color: #0e6747;
+}
+.nd-word-card.incorrect .nd-answer-hint {
   color: #913600;
 }
 .nd-article {
@@ -970,42 +939,11 @@
   margin: 0;
 }
 @media (max-width: 1100px) {
-  .app-layout.nd-shell > .main-column > .topbar {
-    padding-inline: 24px;
-    gap: 12px;
-  }
-  .nd-top-navigation a {
-    padding-inline: 10px;
-    font-size: calc(14px * var(--text-scale, 1));
-  }
   .nd-hero {
     gap: 24px;
   }
 }
 @media (max-width: 860px) {
-  .app-layout.nd-shell > .main-column > .topbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    min-height: 64px;
-    justify-content: space-between;
-  }
-  .nd-desktop-brand,
-  .nd-top-navigation {
-    display: none;
-  }
-  .nd-shell .topbar-title {
-    display: flex;
-    gap: 12px;
-  }
-  .nd-shell .topbar-title > span:not(.mobile-brand) {
-    display: none;
-  }
-  .nd-shell .mobile-brand,
-  .nd-shell .mobile-menu {
-    display: inline-flex;
-  }
-  .nd-shell .mobile-tabs {
-    display: flex;
-  }
   .nd-content {
     padding-block: 24px 110px;
     gap: 24px;
@@ -1029,18 +967,9 @@
   .nd-lower-grid {
     grid-template-columns: minmax(0, 1fr);
   }
-  .nd-language {
-    margin-inline-start: 0;
-  }
-  .nd-strip .nd-wrap {
-    gap: 8px;
-  }
 }
 @media (max-width: 560px) {
   .nd-wrap {
-    padding-inline: 16px;
-  }
-  .app-layout.nd-shell > .main-column > .topbar {
     padding-inline: 16px;
   }
   .nd-card {
@@ -1053,18 +982,8 @@
   .nd-main-card h1 {
     font-size: calc(30px * var(--text-scale, 1));
   }
-  .nd-chip {
-    font-size: calc(12px * var(--text-scale, 1));
-    padding: 8px 10px;
-  }
-  .nd-mini-track {
-    display: none;
-  }
   .nd-moohi {
     max-width: 120px;
-  }
-  .nd-account-label {
-    display: none;
   }
   .nd-speech {
     font-size: calc(14px * var(--text-scale, 1));
@@ -1076,7 +995,7 @@
   .nd-task-list li {
     flex-wrap: wrap;
   }
-  .nd-task-list a {
+  .nd-task-xp {
     margin-inline-start: auto;
   }
   .nd-task-list li > svg {
@@ -1091,4 +1010,208 @@
   .nd-day-list b {
     font-size: calc(14px * var(--text-scale, 1));
   }
+}
+
+.nd-dashboard :is(a, button, input, select, summary):focus-visible {
+  outline: 3px solid #1f604c;
+  outline-offset: 4px;
+}
+
+/* Tighter rhythm: the top of the page is the work, not the decoration. */
+.nd-dashboard {
+  min-height: calc(100dvh - 68px);
+}
+.nd-content {
+  padding-block: 20px 28px;
+  gap: 20px;
+}
+.nd-greeting {
+  margin-bottom: -8px !important;
+}
+/* The mission lives inside the day's card: one card, one main action. */
+.nd-main-card .ob-today.embedded {
+  background: var(--nd-soft, #eef6f1);
+  border: 1px solid var(--nd-line);
+  border-radius: 16px;
+  box-shadow: none;
+  padding: 12px 14px;
+  margin: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.nd-main-card .ob-today.embedded img {
+  width: 40px;
+}
+.nd-main-card .ob-today.embedded > div {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+.nd-main-card .ob-today.embedded h2 {
+  font-size: 1em;
+}
+.nd-main-card .ob-today.embedded p {
+  margin: 0;
+  line-height: 1.45;
+  font-size: 0.92em;
+}
+.nd-main-card .ob-today.embedded p:nth-of-type(2) {
+  display: none;
+}
+/* While a mission is on, it carries the main action and the word task steps back. */
+.nd-main-card:has(.ob-today.embedded) .nd-main-action {
+  background: #fff;
+  color: var(--nd-brand);
+  border: 2px solid var(--nd-brand);
+  box-shadow: none;
+}
+
+/* Mascot: large, but not taller than the day's card. */
+@media (min-width: 861px) {
+  .nd-hero {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    gap: 32px;
+  }
+}
+.nd-mascot img,
+.nd-moohi {
+  max-width: 310px;
+}
+
+/* Moochi tossing his marker (looping video, greeting written on his card). */
+.moochi-loop {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  container-type: inline-size;
+}
+.moochi-loop video,
+.moochi-loop img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent),
+    linear-gradient(transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent),
+    linear-gradient(transparent, #000 3%, #000 97%, transparent);
+  mask-composite: intersect;
+}
+.moochi-loop-card {
+  position: absolute;
+  left: 25%;
+  top: 62.7%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  font-size: 7.6cqw;
+  transform: translate(-50%, -50%) rotate(-18deg);
+}
+.moochi-loop-word {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.moochi-loop-word:first-child {
+  display: flex;
+}
+.moochi-loop-word b {
+  position: relative;
+  isolation: isolate;
+  font-family: "Rubik", "Assistant", system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #173f35;
+  white-space: nowrap;
+  padding: 0.06em 0.26em 0.1em;
+}
+.moochi-loop-word b.small {
+  font-size: 0.8em;
+}
+.moochi-loop-word b::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 18% -4% 4%;
+  background: #f7cf3d;
+  border-radius: 0.3em 0.5em 0.35em 0.55em / 0.5em 0.4em 0.55em 0.4em;
+  transform: skewX(-6deg);
+}
+
+/* Moochi sits at the top of his column, beside the day's card. */
+.nd-hero {
+  align-items: start;
+}
+.nd-mascot {
+  justify-content: flex-start;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 860px) {
+  /* Phone: Moochi and his bubble share a row, the quick review takes the full width under them. */
+  .nd-mascot {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .nd-mascot > .moochi-loop {
+    flex: 0 0 150px;
+    max-width: 150px;
+  }
+}
+
+/* A more compact day card, so the two cards under it show without scrolling. */
+.nd-main-card {
+  gap: 14px;
+  padding: 20px 24px;
+}
+.nd-main-card h1 {
+  font-size: calc(2.4rem * var(--text-scale, 1));
+  line-height: 1.1;
+}
+.nd-main-card .nd-day-list li {
+  padding-block: 10px;
+}
+.nd-main-card .nd-xp-note {
+  padding: 10px 14px;
+}
+.nd-main-card .nd-main-action {
+  min-height: 52px;
+}
+
+/* Quick review before any word is saved: where words come from, and one next step. */
+.nd-review-empty {
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 14px 20px -22px #22322c;
+}
+.nd-review-empty svg {
+  color: var(--nd-brand);
+}
+.nd-review-empty h3 {
+  font-size: calc(18px * var(--text-scale, 1));
+  font-weight: 800;
+}
+.nd-review-empty p {
+  font-size: calc(14px * var(--text-scale, 1));
+  color: var(--nd-muted);
+  line-height: 1.55;
+  max-width: 34ch;
 }

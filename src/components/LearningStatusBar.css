@@ -1,0 +1,148 @@
+/* One fixed design, shared by every shell screen. */
+.learning-status-bar {
+  --status-brand: #286f5c;
+  --status-gold: #f5c542;
+  --status-content-width: none;
+  --status-content-padding: 24px;
+  --status-padding: 6px;
+  --status-gap: 8px;
+  --status-chip-padding: 6px 14px;
+  --status-chip-size: calc(14px * var(--text-scale, 1));
+  --status-chip-weight: 400;
+  --status-chip-background: #ffffff0c;
+  --status-chip-border: #ffffff30;
+  --status-track-width: 56px;
+  --status-track-height: 6px;
+  --status-language-padding: 0 12px;
+  --status-language-height: 38px;
+  --status-select-height: 34px;
+  --status-language-size: calc(14px * var(--text-scale, 1));
+  --status-language-border: #ffffff50;
+  --status-select-width: 180px;
+  --status-select-padding: 4px;
+  --status-select-weight: 700;
+  --status-select-color: #ffe18b;
+  --status-flame: #ffe39a;
+  background: var(--status-brand);
+  color: #fff;
+  font-family: "Assistant", "Rubik", system-ui, sans-serif;
+  line-height: normal;
+}
+.learning-status-bar * {
+  box-sizing: border-box;
+}
+.learning-status-bar .learning-status-inner {
+  max-width: var(--status-content-width);
+  margin-inline: auto;
+  padding-inline: var(--status-content-padding);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-block: var(--status-padding);
+}
+.learning-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--status-gap);
+  padding: var(--status-chip-padding);
+  border: 1px solid var(--status-chip-border);
+  border-radius: 999px;
+  background: var(--status-chip-background);
+  color: #fff;
+  font-size: var(--status-chip-size);
+  font-weight: var(--status-chip-weight);
+  white-space: nowrap;
+}
+.learning-status-chip b {
+  font-weight: 800;
+}
+.learning-status-chip svg {
+  flex: none;
+  color: var(--status-flame);
+}
+.learning-status-progress {
+  appearance: none;
+  border: 0;
+  flex: none;
+  width: var(--status-track-width);
+  height: var(--status-track-height);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #ffffff40;
+  accent-color: var(--status-gold);
+  direction: ltr;
+}
+.learning-status-progress::-webkit-progress-bar {
+  background: transparent;
+}
+.learning-status-progress::-webkit-progress-value {
+  background: var(--status-gold);
+}
+.learning-status-progress::-moz-progress-bar {
+  background: var(--status-gold);
+}
+.learning-status-language,
+.learning-status-language label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  color: inherit;
+}
+.learning-status-language {
+  margin-inline-start: auto;
+  padding: var(--status-language-padding);
+  min-height: var(--status-language-height);
+  border: 1px solid var(--status-language-border);
+  border-radius: 999px;
+  font-size: var(--status-language-size);
+  font-weight: var(--status-chip-weight);
+}
+.learning-status-language svg {
+  flex: none;
+}
+.learning-status-bar .learning-status-language select {
+  width: auto;
+  max-width: var(--status-select-width);
+  min-width: 0;
+  min-height: var(--status-select-height);
+  padding: var(--status-select-padding);
+  border: 0;
+  background: transparent;
+  color: var(--status-select-color);
+  font: inherit;
+  font-weight: var(--status-select-weight);
+  cursor: pointer;
+}
+.learning-status-language option {
+  color: #22322c;
+  background: #fff;
+}
+.learning-status-language select:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.learning-status-language select:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+@media (max-width: 860px) {
+  .learning-status-bar .learning-status-inner {
+    gap: 8px;
+  }
+  .learning-status-bar .learning-status-language {
+    margin-inline-start: 0;
+  }
+}
+@media (max-width: 560px) {
+  .learning-status-bar {
+    --status-content-padding: 16px;
+    --status-chip-size: calc(12px * var(--text-scale, 1));
+    --status-chip-padding: 8px 10px;
+  }
+  .learning-status-bar .learning-status-progress {
+    display: none;
+  }
+}
