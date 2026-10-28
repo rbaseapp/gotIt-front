@@ -33,15 +33,19 @@ export function OnboardingClaimGate({ children }: { children: ReactNode }) {
       return;
     }
     void (async () => {
+      let saved = false;
       try {
         const result = await claimOnboarding(state);
         if (result && !result.applied)
           toast(t("start.save.existing"), { tone: "info" });
         else await saveFirstWords(state);
+        saved = true;
       } catch {
         toast(t("start.save.failed"), { tone: "error" });
       } finally {
-        clearOnboarding();
+        // The result is only forgotten once the account has it. After a failed save (network blip,
+        // server error) it stays in this browser, so the next visit tries again instead of losing it.
+        if (saved) clearOnboarding();
         setPhase("done");
         navigate("/dashboard", { replace: true });
       }

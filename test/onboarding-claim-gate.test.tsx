@@ -48,3 +48,21 @@ it("leaves a half-finished check alone after a reload", async () => {
   expect(await screen.findByText("app")).toBeInTheDocument();
   expect(claim).not.toHaveBeenCalled();
 });
+
+it("keeps the result in this browser when the save fails, so the next visit can retry", async () => {
+  store("save");
+  claim.mockRejectedValueOnce(new Error("network"));
+  renderGate();
+  await waitFor(() => expect(claim).toHaveBeenCalledTimes(1));
+  await screen.findByText("app");
+  expect(localStorage.getItem(ONBOARDING_STORAGE_KEY)).not.toBeNull();
+});
+
+it("forgets the result once the account has it", async () => {
+  store("save");
+  renderGate();
+  await waitFor(() => expect(claim).toHaveBeenCalledTimes(1));
+  await waitFor(() =>
+    expect(localStorage.getItem(ONBOARDING_STORAGE_KEY)).toBeNull(),
+  );
+});
