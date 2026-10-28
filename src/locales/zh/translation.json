@@ -1973,7 +1973,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "与老师一起的个人计划",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2926,7 +2926,9 @@
     "artLoading": "正在生成插图…",
     "artUnavailable": "插图暂时不可用",
     "mascotAlt": "Mohi 手持旗帜并用{{language}}问候",
-    "programAlt": "{{title}} 的插图"
+    "programAlt": "{{title}} 的插图",
+    "intakeStep": "初次交流 · 第 {{current}} 题，共 {{total}} 题",
+    "intakeReview": "信息已就绪 · 待确认生成"
   },
   "programChooser": {
     "title": "这次想怎样学习？",
@@ -2935,7 +2937,7 @@
     "target": "我想学习的语言",
     "support": "讲解和界面语言",
     "personalTitle": "与 AI 老师一起制定专属课程",
-    "personalDescription": "Mohi 会了解你的目标、水平和兴趣，为你制定结构清晰的个性化学习路线。",
+    "personalDescription": "老师会简单问几个关于你的目标和兴趣的问题，然后为你制定专属路线。",
     "foundationTitle": "从基础开始",
     "foundationDescription": "现成的系统课程，循序渐进，从基础到自信地使用{{language}}交流。",
     "recommended": "推荐初学者选择",

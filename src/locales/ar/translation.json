@@ -2018,7 +2018,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "برنامج شخصي مع المعلم",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2971,7 +2971,9 @@
     "artLoading": "نجهز رسمك…",
     "artUnavailable": "الرسم غير متاح حاليًا",
     "mascotAlt": "موهي مع علم وتحيات باللغة {{language}}",
-    "programAlt": "رسم لبرنامج {{title}}"
+    "programAlt": "رسم لبرنامج {{title}}",
+    "intakeStep": "محادثة تعارف · السؤال {{current}} من {{total}}",
+    "intakeReview": "التفاصيل جاهزة · بقي التأكيد والبناء"
   },
   "programChooser": {
     "title": "كيف سنتعلم هذه المرة؟",
@@ -2980,7 +2982,7 @@
     "target": "اللغة التي أريد تعلمها",
     "support": "لغة الشرح والواجهة",
     "personalTitle": "أنشئ برنامجًا شخصيًا مع معلم ذكي",
-    "personalDescription": "سيسألك موحي عن أهدافك ومستواك واهتماماتك، ثم يبني لك مسارًا تعليميًا منظمًا يناسبك.",
+    "personalDescription": "يطرح المعلم بعض الأسئلة القصيرة عن أهدافك واهتماماتك، ثم يبني لك مسارًا مناسبًا.",
     "foundationTitle": "ابدأ من الأساسيات",
     "foundationDescription": "برنامج جاهز بدروس منظمة، خطوة بخطوة، من الأساسيات إلى محادثة واثقة باللغة {{language}}.",
     "recommended": "موصى به للمبتدئين",

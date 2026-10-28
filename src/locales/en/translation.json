@@ -1972,7 +1972,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Personal program with the teacher",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2925,7 +2925,9 @@
     "artLoading": "Preparing your illustration…",
     "artUnavailable": "Illustration currently unavailable",
     "mascotAlt": "Mohi with a flag and greetings in {{language}}",
-    "programAlt": "Illustration for {{title}}"
+    "programAlt": "Illustration for {{title}}",
+    "intakeStep": "Intro conversation · question {{current}} of {{total}}",
+    "intakeReview": "Details ready · approve to build"
   },
   "programChooser": {
     "title": "How shall we learn today?",
@@ -2934,7 +2936,7 @@
     "target": "The language I want to learn",
     "support": "Explanation and interface language",
     "personalTitle": "Build a personal program with an AI teacher",
-    "personalDescription": "Mohi will ask about your goals, level and interests, then build a structured learning path tailored to you.",
+    "personalDescription": "The teacher asks a few short questions about your goals and interests, then builds a path tailored to you.",
     "foundationTitle": "Start with the basics",
     "foundationDescription": "A ready-made program with organized lessons, step by step, from the foundations to confident conversation in {{language}}.",
     "recommended": "Recommended for beginners",
