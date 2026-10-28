@@ -34,7 +34,6 @@
       "introBody": "认识这个词吗？点“认识”。还不认识？点“还不认识”。没有分数，没有错误。最多 {{count}} 道题。",
       "know": "认识",
       "unknown": "还不认识",
-      "hear": "听这个词",
       "undo": "撤销上一个回答",
       "inPocket": "你的口袋里",
       "slowDown": "等一下，我们慢一点。",
@@ -47,8 +46,6 @@
       "title": "这是我们的发现",
       "level": "你的水平",
       "between": "介于 {{low}} 和 {{high}} 之间",
-      "inPocket": "你的口袋里：约 {{count}} 个词",
-      "outOf": "GotIt 教授的 {{total}} 个核心词中。这是估算值。",
       "skills": "技能",
       "skill": {
         "vocabulary": "词汇",
@@ -91,40 +88,28 @@
         "C1": "你的水平很高，现在我们专注于准确性和风格。"
       },
       "gap": {
-        "more": "你比自己想的懂得更多。我们会从更高的位置开始，跳过你已掌握的内容。",
-        "less": "你的水平低于预期，没关系。我们从正确的位置开始，进步会很快。",
-        "same": "你对自己的判断很准确。"
-      }
+        "more": "你比自己想的懂得更多。以测试为准，所以从 {{band}} 开始，跳过你已经掌握的内容。",
+        "less": "测试结果低于你的预期，这没关系。以测试为准，所以从 {{band}} 开始，并快速进步。",
+        "same": "你的自评与测试结果一致。"
+      },
+      "gapCompare": "你的自评：{{self}} · 测试结果：{{found}}",
+      "inPocketRange": "你的口袋里：大约 {{range}} 个单词",
+      "wordsHow": "这是怎么算出来的？",
+      "wordsExplain": "根据我们检查的 {{cards}} 个按常用程度排序的单词，我们估计你已认识 GotIt {{total}} 个核心词中的多少。这只是估计，会在练习中越来越准确。"
     },
     "plan": {
       "title": "来制定你的计划",
       "body": "几个简短的选择，计划会即时更新。",
-      "deadlineQuestion": "大概什么时候？",
-      "minutesQuestion": "每天多长时间？",
-      "deadline": {
-        "1": "一个月",
-        "3": "3 个月",
-        "6": "半年",
-        "0": "没有日期"
-      },
-      "minutes": "{{count}} 分钟",
+      "minutesQuestion": "每天多少时间适合你？",
       "recommended": "推荐",
-      "cardTitle": "你的英语计划",
       "cardTarget": "目标：{{band}}",
       "cardRange": "从第 {{from}} 单元到第 {{to}} 单元（共 {{units}} 个单元）",
-      "sim": "每天 {{minutes}} 分钟 ← {{low}}–{{high}} 个月达到目标",
-      "simShort": "每天 {{minutes}} 分钟 ← 约 {{months}} 个月",
-      "needed": "要在{{deadline}}内完成，每天需要约 {{minutes}} 分钟。",
-      "useNeeded": "设为 {{minutes}} 分钟",
-      "feasible": "这符合你的目标。",
       "dailyNote": "通过扩展保存的单词不计入每日目标。",
       "next": "继续",
-      "deadlineName": {
-        "1": "一个月",
-        "3": "三个月",
-        "6": "半年"
-      },
-      "targetQuestion": "你想达到哪个水平？"
+      "targetQuestion": "你想达到哪个水平？",
+      "perDay": "每天 {{count}} 分钟",
+      "reach": "你将在 {{range}} 个月内达到 {{band}}",
+      "around": "大约在 {{date}}，每周练习 5 天"
     },
     "save": {
       "title": "正在保存你制定的内容",
@@ -239,17 +224,9 @@
         }
       }
     },
-    "avatar": {
-      "replay": "再听一遍",
-      "mute": "关闭声音",
-      "unmute": "打开声音"
-    },
     "talk": {
-      "title": "现在我们用英语聊一会儿",
-      "body": "我会问你 3 个简短的问题。选出最好的回答。没有错误答案，也可以跳过。",
-      "begin": "开始聊",
       "skip": "跳过这一步",
-      "pick": "第 {{current}} 个问题，共 {{total}} 个 · 选出最好的回答",
+      "pick": "句子理解 · 第 {{current}} 题，共 {{total}} 题 · 选择最合适的回答",
       "dontKnow": "我不知道"
     },
     "interests": {
@@ -276,6 +253,20 @@
         "listening": "发音与听力",
         "writing": "阅读与写作",
         "teacher": "让老师决定"
+      }
+    },
+    "finish": {
+      "choose": {
+        "title": "你已经有一个计划",
+        "body": "新的测试建议了不同的起点。要切换吗？已完成的课程和保存的单词都会保留。",
+        "primary": "切换到新计划",
+        "secondary": "保留当前计划"
+      },
+      "failed": {
+        "title": "你的计划尚未保存",
+        "body": "无法连接服务器。结果已保存在此浏览器中，我们会在你下次进入时保存。",
+        "primary": "重试",
+        "secondary": "暂时继续"
       }
     }
   }

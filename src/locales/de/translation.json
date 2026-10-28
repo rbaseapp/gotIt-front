@@ -18,7 +18,9 @@
     "loadingPayment": "Zahlung wird verarbeitet…",
     "checkingSession": "Sitzung wird überprüft…",
     "loadingScreen": "Wird geladen…",
-    "checkingAccess": "Lernzugriff wird überprüft…"
+    "checkingAccess": "Lernzugriff wird überprüft…",
+    "serverAsleep": "Der Server startet gerade und braucht einen Moment. Du bist weiterhin angemeldet.",
+    "retry": "Erneut versuchen"
   },
   "nav": {
     "dashboard": "Mein Tag",

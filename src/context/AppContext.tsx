@@ -66,8 +66,32 @@ function initialDemo(): DemoState {
     : freshDemo();
 }
 export type AuthMode = "loading" | "signed-out" | "demo" | "live";
+
+/** Only a rejected session signs the learner out; outages and timeouts do not. */
+function signedOutBy(error: unknown) {
+  return error instanceof ApiError && error.status === 401;
+}
+
+const ME_RETRY_DELAYS = [1500, 3000, 6000];
+
+/** Render wakes a sleeping server in 10-30 seconds, so a slow first answer gets a few more tries. */
+async function meWithRetry(cancelled: () => boolean) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await api.me();
+    } catch (error) {
+      const delay = ME_RETRY_DELAYS[attempt];
+      if (signedOutBy(error) || delay === undefined || cancelled()) throw error;
+      await new Promise((resolve) => window.setTimeout(resolve, delay));
+    }
+  }
+}
+
 interface AppContextValue {
   mode: AuthMode;
+  /** The session could not be checked because the server did not answer. */
+  connectionError: boolean;
+  retrySession: () => void;
   user: AuthUser | null;
   profileError: string;
   notice: string;
@@ -122,6 +146,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [profileError, setProfileError] = useState("");
   const [notice, setNotice] = useState("");
   const [storageError, setStorageError] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
 
   useEffect(() => {
     if (import.meta.env.VITE_DEMO_MODE === "true")
@@ -137,9 +162,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.addEventListener("gotit:session-expired", expired);
     return () => window.removeEventListener("gotit:session-expired", expired);
   }, []);
+  const [hydration, setHydration] = useState(0);
   useEffect(() => {
     let cancelled = false;
     const hydrate = async () => {
+      setConnectionError(false);
       try {
         if (
           import.meta.env.VITE_DEMO_MODE === "true" &&
@@ -152,7 +179,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setMode("signed-out");
           return;
         }
-        const identity = await api.me();
+        const identity = await meWithRetry(() => cancelled);
         if (cancelled) return;
         setUser(identity);
         setProfileError(i18n.t("session.loadingProfile"));
@@ -181,22 +208,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
             );
         }
       } catch (error) {
-        if (!cancelled) {
-          if (error instanceof ApiError && error.status === 401) clearTokens();
-          setMode("signed-out");
-          setNotice(
-            error instanceof Error
-              ? error.message
-              : i18n.t("session.signInAgain"),
-          );
+        if (cancelled) return;
+        // A sleeping or failing server is not a signed-out user: keep the session and offer a retry.
+        if (!signedOutBy(error)) {
+          setConnectionError(true);
+          return;
         }
+        clearTokens();
+        setMode("signed-out");
+        setNotice(
+          error instanceof Error
+            ? error.message
+            : i18n.t("session.signInAgain"),
+        );
       }
     };
     void hydrate();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hydration]);
 
   const profile = mode === "demo" ? demo.profile : liveProfile;
   useEffect(() => {
@@ -290,6 +321,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     mode,
+    connectionError,
+    retrySession: () => setHydration((n) => n + 1),
     user,
     profile,
     stats,
