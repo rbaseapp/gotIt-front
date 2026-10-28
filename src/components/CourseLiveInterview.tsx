@@ -205,7 +205,7 @@ export function CourseLiveInterview({
       <p role="status">{t(`courses.liveStatus.${phase}`)}</p>
       <button
         type="button"
-        className={`button ${running ? "secondary" : "primary"}`}
+        className={`button ${running ? "secondary" : "ghost"}`}
         onClick={running ? stop : () => void start()}
       >
         {phase === "connecting" ? (

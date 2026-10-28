@@ -228,7 +228,8 @@ describe("personal course experience", () => {
     });
     const user = userEvent.setup();
     renderRoute(`/courses/${intake.id}`);
-    await user.click(await screen.findByText("מעדיפים לכתוב תשובה?"));
+    // Writing is the first way to answer, so the text box is already open.
+    await screen.findByRole("textbox");
     await user.click(await screen.findByRole("button", { name: "תשובה בקול" }));
     expect(await screen.findByRole("textbox")).toHaveValue(
       "I want to speak at work",
@@ -265,7 +266,6 @@ describe("personal course experience", () => {
     renderRoute(`/courses/${intake.id}`);
     await user.click(await screen.findByRole("button", { name: "חזרה לשיחה" }));
     expect(screen.getByRole("log")).toHaveTextContent("Old goal");
-    await user.click(screen.getByText("מעדיפים לכתוב תשובה?"));
     await user.click(screen.getByRole("button", { name: "תיקון התשובה" }));
     await user.clear(screen.getByRole("textbox"));
     await user.type(screen.getByRole("textbox"), "New goal");
@@ -532,7 +532,8 @@ describe("personal course experience", () => {
     mocks.command.mockRejectedValue(new Error("offline"));
     const user = userEvent.setup();
     renderRoute(`/courses/${fixtureCourse.id}`);
-    await user.click(await screen.findByText("מעדיפים לכתוב תשובה?"));
+    // Writing is the first way to answer, so the text box is already open.
+    await screen.findByRole("textbox");
     const input = await screen.findByRole("textbox");
     await user.type(input, "רוצה ללמוד מההתחלה");
     await user.click(screen.getByRole("button", { name: "שליחה" }));
