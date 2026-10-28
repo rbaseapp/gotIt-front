@@ -622,6 +622,26 @@ describe("live server-backed flows", () => {
     ).not.toBeNull();
     expect(root.querySelector("#pricing")).not.toBeNull();
   });
+  it("opens the account form instead of the landing page for the extension's /?auth= links", async () => {
+    vi.stubEnv("VITE_DEMO_MODE", "false");
+    clearTokens();
+    for (const auth of ["register", "reset"]) {
+      window.history.pushState({}, "", `/?auth=${auth}`);
+      const view = render(
+        <MemoryRouter initialEntries={[`/?auth=${auth}`]}>
+          <FeedbackProvider>
+            <AppProvider>
+              <App />
+            </AppProvider>
+          </FeedbackProvider>
+        </MemoryRouter>,
+      );
+      expect(await screen.findByLabelText("כתובת אימייל")).toBeInTheDocument();
+      expect(screen.queryByTestId("landing-design")).not.toBeInTheDocument();
+      view.unmount();
+    }
+    window.history.pushState({}, "", "/");
+  });
   it("shows a spinner while checking an answer, then an error and retry after failure", async () => {
     let rejectAttempt!: (reason: Error) => void;
     const firstAttempt = new Promise<Response>((_resolve, reject) => {

@@ -207,7 +207,13 @@ export default function App() {
         <p>{t("app.loadingScreen")}</p>
       </div>
     );
-    if (normalizedPath === "/")
+    // The Chrome extension opens /?auth=register and /?auth=reset straight into the account form.
+    const authIntent = new URLSearchParams(location.search).get("auth");
+    if (
+      normalizedPath === "/" &&
+      authIntent !== "register" &&
+      authIntent !== "reset"
+    )
       return (
         <Suspense fallback={fallback}>
           <LandingPage />
