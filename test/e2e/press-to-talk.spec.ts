@@ -93,7 +93,7 @@ test("press to talk stays in place through hold, release and cancellation", asyn
                   tier: "paid",
                   access: true,
                   plan: { key: "paid", name: "Paid", kind: "paid" },
-                  entitlements: ["practice.play"],
+                  entitlements: ["practice.play", "curriculum.access", "tutor.session"],
                   subscription: null,
                   trial: null,
                 }

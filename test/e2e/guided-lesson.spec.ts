@@ -157,7 +157,7 @@ async function fixture(
       payload = {
         tier: "paid",
         access: true,
-        entitlements: ["practice.play"],
+        entitlements: ["practice.play", "curriculum.access", "tutor.session"],
         plan: null,
         subscription: null,
         trial: null,

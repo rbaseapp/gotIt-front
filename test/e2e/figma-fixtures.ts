@@ -101,7 +101,7 @@ export async function figmaFixtures(page: Page, locale: string) {
         tier: "paid",
         access: true,
         plan: { key: "paid", name: "Paid", kind: "paid" },
-        entitlements: ["practice.play"],
+        entitlements: ["practice.play", "curriculum.access", "tutor.session"],
         subscription: null,
         trial: null,
       };
