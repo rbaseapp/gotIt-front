@@ -164,12 +164,12 @@
     "skip": "Vorerst überspringen",
     "tutorIntro": {
       "title": "Lerne Rachel kennen",
-      "body": "Rachel ist deine Lehrerin. Ein Gespräch von 3–5 Minuten über Dinge, die du schon kennst, ohne Druck, und du kannst jederzeit aufhören.",
+      "body": "Rachel ist deine Lehrerin. Ein Gespräch von bis zu 5 Minuten über Dinge, die du schon kennst, ohne Druck, und du kannst jederzeit aufhören.",
       "go": "Lernen wir uns kennen",
       "later": "Vielleicht später",
       "saved": "Dein Plan ist gespeichert · {{band}}",
       "lessonTitle": "Dein erstes Gespräch mit Rachel",
-      "lessonBody": "3–5 Minuten über Dinge, die du schon kennst. Jederzeit beendbar."
+      "lessonBody": "Bis zu 5 Minuten über Dinge, die du schon kennst. Jederzeit beendbar."
     },
     "mode": {
       "title": "Wie antwortest du am liebsten?",
