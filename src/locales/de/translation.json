@@ -1756,7 +1756,6 @@
     "teacher": "KI-Lehrer",
     "startLiveInterview": "Live-Gespräch starten",
     "stopLiveInterview": "Gespräch beenden",
-    "typeInstead": "Lieber schriftlich antworten?",
     "liveDisconnected": "Die Verbindung wurde unterbrochen. Verbinde dich erneut oder schreibe weiter.",
     "liveBusy": "Die Lehrkraft verarbeitet deine vorige Antwort.",
     "liveStatus": {

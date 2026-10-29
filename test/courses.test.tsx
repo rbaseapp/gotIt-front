@@ -306,6 +306,52 @@ describe("personal course experience", () => {
     const choices = await screen.findAllByRole("combobox");
     expect(choices[1]).toHaveValue("Hebrew — עברית");
   });
+  it("offers the text box before the voice button, and review as soon as a short intake is answered", async () => {
+    const intake = structuredClone(fixtureCourse);
+    intake.ready = false;
+    intake.intakeProgress = { current: 3, answered: 2, total: 3 };
+    intake.intakeAnswers = [
+      { topic: "goal", text: "לדבר", channel: "text" },
+      { topic: "ageAndLiteracy", text: "מבוגר", channel: "text" },
+    ];
+    intake.messages = [
+      { role: "tutor", text: "מה המטרה?", channel: "text" },
+      { role: "learner", text: "לדבר", channel: "text" },
+      { role: "tutor", text: "בן כמה?", channel: "text" },
+      { role: "learner", text: "מבוגר", channel: "text" },
+      { role: "tutor", text: "איך נוח ללמוד?", channel: "text" },
+    ];
+    mocks.get.mockResolvedValue({ course: intake });
+    renderRoute(`/courses/${intake.id}`);
+    const box = await screen.findByRole("textbox");
+    const voice = screen.getByRole("button", { name: "מתחילים ראיון חי" });
+    expect(
+      box.compareDocumentPosition(voice) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // Two of three answers: not done yet, so no shortcut to the review.
+    expect(
+      screen.queryByRole("button", { name: "נעבור על מה שיש עד עכשיו" }),
+    ).not.toBeInTheDocument();
+  });
+  it("shows the review shortcut once every question of a short intake is answered", async () => {
+    const intake = structuredClone(fixtureCourse);
+    intake.ready = false;
+    intake.intakeProgress = { current: 3, answered: 3, total: 3 };
+    intake.intakeAnswers = [
+      { topic: "goal", text: "לדבר", channel: "text" },
+      { topic: "ageAndLiteracy", text: "מבוגר", channel: "text" },
+      { topic: "learningPreferences", text: "שיחות", channel: "text" },
+    ];
+    intake.messages = [
+      { role: "tutor", text: "מה המטרה?", channel: "text" },
+      { role: "learner", text: "לדבר", channel: "text" },
+    ];
+    mocks.get.mockResolvedValue({ course: intake });
+    renderRoute(`/courses/${intake.id}`);
+    expect(
+      await screen.findByRole("button", { name: "נעבור על מה שיש עד עכשיו" }),
+    ).toBeInTheDocument();
+  });
   it("shows the bounded interview as visible chat bubbles with text and voice replies", async () => {
     const intake = structuredClone(fixtureCourse);
     intake.ready = false;

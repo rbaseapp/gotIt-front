@@ -1802,7 +1802,6 @@
     "teacher": "AI teacher",
     "startLiveInterview": "Start live interview",
     "stopLiveInterview": "End conversation",
-    "typeInstead": "Prefer to type an answer?",
     "liveDisconnected": "The conversation disconnected. Reconnect or continue by typing.",
     "liveBusy": "The teacher is processing your previous answer.",
     "liveStatus": {

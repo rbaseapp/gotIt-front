@@ -1756,7 +1756,6 @@
     "teacher": "Professeur IA",
     "startLiveInterview": "Commencer l'entretien en direct",
     "stopLiveInterview": "Terminer la conversation",
-    "typeInstead": "Vous préférez répondre par écrit ?",
     "liveDisconnected": "La conversation a été interrompue. Reconnectez-vous ou continuez par écrit.",
     "liveBusy": "Le professeur traite votre réponse précédente.",
     "liveStatus": {

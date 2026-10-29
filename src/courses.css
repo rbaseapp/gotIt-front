@@ -236,6 +236,14 @@
 .course-live-interview small {
   color: #a33;
 }
+/* Before it starts, voice is just a button under the text box; the avatar appears once the teacher is on the line. */
+.course-live-interview[data-idle] {
+  padding-block: 4px 0;
+}
+.course-live-interview[data-idle] .teacher-avatar,
+.course-live-interview[data-idle] > p {
+  display: none;
+}
 .course-text-fallback {
   margin-block: 16px;
 }
