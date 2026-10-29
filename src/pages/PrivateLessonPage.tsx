@@ -124,6 +124,8 @@ export function PrivateLessonPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("course");
   const curriculumLessonId = searchParams.get("curriculum");
+  // Arriving from the level check: the first short chat with the teacher.
+  const firstChat = searchParams.get("intro") === "1";
   const curriculumPreview = useResource(
     useCallback(
       () =>
@@ -1635,7 +1637,9 @@ export function PrivateLessonPage() {
                 ? curriculumPreview.data.title
                 : courseId && displayedCourseLesson
                   ? displayedCourseLesson.title
-                  : t("ux.readyForLesson")}
+                  : firstChat
+                    ? t("start.tutorIntro.lessonTitle")
+                    : t("ux.readyForLesson")}
             </h1>
             <p>
               {curriculumLessonId ? (
@@ -1647,6 +1651,8 @@ export function PrivateLessonPage() {
                     ([code]) => code === lessonTargetLanguage,
                   )?.[1] ?? lessonTargetLanguage}
                 </>
+              ) : firstChat ? (
+                t("start.tutorIntro.lessonBody")
               ) : (
                 t("privateLesson.description")
               )}

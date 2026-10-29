@@ -268,6 +268,12 @@ export function DevProgramsView({
               <Link className="pg-overview" to={active.destination}>
                 {t("programsDesign.overview")}
               </Link>
+              {active.id === "english-zero-c1" && (
+                // A new check moves the program; finished lessons and words stay.
+                <Link className="pg-overview pg-recheck" to="/start?fresh">
+                  {t("programsDesign.recheck")}
+                </Link>
+              )}
             </div>
             <ProgramArtwork
               key={`${active.id}-active`}

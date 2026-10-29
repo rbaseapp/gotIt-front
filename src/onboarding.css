@@ -1262,3 +1262,19 @@ button.ob-card:hover {
     border-radius: 11px;
   }
 }
+
+/* the teacher's portrait on the invitation: a round crop, no photo background box */
+.ob-tutor {
+  width: clamp(96px, 18vw, 132px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  background: #e7f1ec;
+  user-select: none;
+}
+.ob-saved {
+  margin: 0;
+  font-weight: 800;
+  color: var(--ob-accent, #2a7a5f);
+}

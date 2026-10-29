@@ -163,10 +163,13 @@
     },
     "skip": "Saltar por ahora",
     "tutorIntro": {
-      "title": "Ya sabes lo suficiente para una charla corta",
-      "body": "¿Quieres conocer a Rachel, tu profesora? Una conversación de 3–5 minutos sobre cosas que ya conoces. Sin presión, y puedes parar cuando quieras.",
+      "title": "Conoce a Rachel",
+      "body": "Rachel es tu profesora. Una charla de 3–5 minutos sobre cosas que ya conoces, sin presión, y puedes parar cuando quieras.",
       "go": "Vamos a conocernos",
-      "later": "Quizás luego"
+      "later": "Quizás luego",
+      "saved": "Tu plan está guardado · {{band}}",
+      "lessonTitle": "Tu primera charla con Rachel",
+      "lessonBody": "3–5 minutos sobre cosas que ya conoces. Puedes parar cuando quieras."
     },
     "mode": {
       "title": "¿Cómo te resulta más cómodo responder?",

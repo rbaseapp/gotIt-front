@@ -2927,7 +2927,8 @@
     "mascotAlt": "Mohi mit Flagge und Grüßen auf {{language}}",
     "programAlt": "Illustration für {{title}}",
     "intakeStep": "Kennenlernen · Frage {{current}} von {{total}}",
-    "intakeReview": "Angaben fertig · noch bestätigen"
+    "intakeReview": "Angaben fertig · noch bestätigen",
+    "recheck": "Einstufung wiederholen"
   },
   "programChooser": {
     "title": "Wie lernen wir diesmal?",
@@ -2953,7 +2954,9 @@
     "personalAction": "Mein Programm erstellen",
     "foundationAction": "Die Grundlagen lernen",
     "help": "Unsicher? Beginne mit den Grundlagen und erstelle später ein persönliches Programm.",
-    "languageNameLocale": "de"
+    "languageNameLocale": "de",
+    "checkFirst": "Ein kurzer Test mit bis zu 10 Fragen legt fest, wo du beginnst",
+    "checkAction": "Niveau prüfen und Plan erstellen"
   },
   "programMap": {
     "unit": "Einheit {{count}}",

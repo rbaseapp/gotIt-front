@@ -163,10 +163,13 @@
     },
     "skip": "Passer pour l'instant",
     "tutorIntro": {
-      "title": "Vous en savez déjà assez pour une courte discussion",
-      "body": "Envie de rencontrer Rachel, votre professeure ? Une conversation de 3 à 5 minutes sur des choses que vous connaissez déjà. Sans pression, et vous pouvez arrêter à tout moment.",
+      "title": "Faites connaissance avec Rachel",
+      "body": "Rachel est votre professeure. Une discussion de 3 à 5 minutes sur des choses que vous connaissez déjà, sans pression, et vous pouvez arrêter à tout moment.",
       "go": "Faisons connaissance",
-      "later": "Peut-être plus tard"
+      "later": "Peut-être plus tard",
+      "saved": "Votre plan est enregistré · {{band}}",
+      "lessonTitle": "Votre première discussion avec Rachel",
+      "lessonBody": "3 à 5 minutes sur des choses que vous connaissez. Arrêtez quand vous voulez."
     },
     "mode": {
       "title": "Comment préférez-vous répondre ?",

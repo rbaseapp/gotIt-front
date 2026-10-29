@@ -2927,7 +2927,8 @@
     "mascotAlt": "Mohi con bandera y saludos en {{language}}",
     "programAlt": "Ilustración de {{title}}",
     "intakeStep": "Conversación inicial · pregunta {{current}} de {{total}}",
-    "intakeReview": "Datos listos · falta aprobar"
+    "intakeReview": "Datos listos · falta aprobar",
+    "recheck": "Repetir la prueba de nivel"
   },
   "programChooser": {
     "title": "¿Cómo aprendemos esta vez?",
@@ -2953,7 +2954,9 @@
     "personalAction": "Vamos a crear mi programa",
     "foundationAction": "Aprender desde lo básico",
     "help": "¿No te decides? Empieza por lo básico y crea un programa personal más adelante.",
-    "languageNameLocale": "es"
+    "languageNameLocale": "es",
+    "checkFirst": "Una prueba corta, hasta 10 preguntas, decide dónde empiezas",
+    "checkAction": "Comprobar mi nivel y crear el plan"
   },
   "programMap": {
     "unit": "Unidad {{count}}",

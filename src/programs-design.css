@@ -229,6 +229,11 @@
   margin-top: 17px;
   text-underline-offset: 4px;
 }
+.pg-recheck {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
 .pg-active-art {
   height: 270px;
   width: 100%;

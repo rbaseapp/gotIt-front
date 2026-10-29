@@ -8,6 +8,7 @@ import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
 import moochi from "../../assets/ux/dashboard-moohi.png";
 import { canMeetTutor } from "../../lib/onboarding/tutorIntro";
 import { claimOnboarding, saveFirstWords } from "../../lib/onboarding/claim";
+import { bandInfo } from "../../lib/placement/plan";
 import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
 import {
   clearOnboarding,
@@ -72,7 +73,13 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
     void save(false);
   }, [save]);
 
-  if (phase === "tutor") return <TutorInvite />;
+  if (phase === "tutor") {
+    const theta = Math.min(
+      84,
+      Math.max(1, (state.result?.theta ?? 1) + state.adjust),
+    );
+    return <TutorInvite band={bandInfo(theta).band} />;
+  }
   if (phase === "choose" || phase === "failed")
     return (
       <div className="ob ob-lock" style={{ minHeight: 0 }}>
@@ -105,11 +112,14 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
 }
 
 /** The invitation to a first short conversation with the teacher, shown to learners who can hold one. */
-export function TutorInvite() {
+export function TutorInvite({ band }: { band: string }) {
   const { t } = useTranslation();
   return (
     <div className="ob ob-lock" style={{ minHeight: 0 }}>
-      <img className="ob-moochi" src={rachel} alt="" draggable={false} />
+      <img className="ob-tutor" src={rachel} alt="" draggable={false} />
+      <p className="ob-saved" role="status">
+        {t("start.tutorIntro.saved", { band })}
+      </p>
       <div className="ob-bubble">
         <h1 tabIndex={-1} data-ob-title>
           {t("start.tutorIntro.title")}

@@ -2927,7 +2927,8 @@
     "mascotAlt": "Mohi avec un drapeau et des salutations en {{language}}",
     "programAlt": "Illustration de {{title}}",
     "intakeStep": "Échange de départ · question {{current}} sur {{total}}",
-    "intakeReview": "Détails prêts · reste à valider"
+    "intakeReview": "Détails prêts · reste à valider",
+    "recheck": "Refaire le test de niveau"
   },
   "programChooser": {
     "title": "Comment apprendre cette fois-ci ?",
@@ -2953,7 +2954,9 @@
     "personalAction": "Créons mon programme",
     "foundationAction": "Apprendre les bases",
     "help": "Vous hésitez ? Commencez par les bases et créez un programme personnel plus tard.",
-    "languageNameLocale": "fr"
+    "languageNameLocale": "fr",
+    "checkFirst": "Un court test, 10 questions au plus, fixe votre point de départ",
+    "checkAction": "Tester mon niveau et créer le plan"
   },
   "programMap": {
     "unit": "Unité {{count}}",

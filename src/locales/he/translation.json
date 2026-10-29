@@ -2926,7 +2926,8 @@
     "mascotAlt": "מוחי עם דגל וברכות ב{{language}}",
     "programAlt": "איור לתוכנית {{title}}",
     "intakeStep": "שיחת היכרות · שאלה {{current}} מתוך {{total}}",
-    "intakeReview": "הפרטים מוכנים · נשאר לאשר ולבנות"
+    "intakeReview": "הפרטים מוכנים · נשאר לאשר ולבנות",
+    "recheck": "בדיקת רמה מחדש"
   },
   "programChooser": {
     "title": "איך נלמד הפעם?",
@@ -2952,7 +2953,9 @@
     "personalAction": "בואו נבנה את התוכנית שלי",
     "foundationAction": "התחילו ללמוד מהבסיס",
     "help": "לא בטוחים? אפשר להתחיל מהבסיס וליצור תוכנית אישית בהמשך.",
-    "languageNameLocale": "he"
+    "languageNameLocale": "he",
+    "checkFirst": "בדיקה קצרה, עד 10 שאלות, קובעת מאיפה מתחילים",
+    "checkAction": "לבדיקת רמה ולתוכנית"
   },
   "programMap": {
     "unit": "יחידה {{count}}",

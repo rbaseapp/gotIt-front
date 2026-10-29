@@ -2927,7 +2927,8 @@
     "mascotAlt": "Mohi 手持旗帜并用{{language}}问候",
     "programAlt": "{{title}} 的插图",
     "intakeStep": "初次交流 · 第 {{current}} 题，共 {{total}} 题",
-    "intakeReview": "信息已就绪 · 待确认生成"
+    "intakeReview": "信息已就绪 · 待确认生成",
+    "recheck": "重新测试水平"
   },
   "programChooser": {
     "title": "这次想怎样学习？",
@@ -2953,7 +2954,9 @@
     "personalAction": "制定我的课程",
     "foundationAction": "开始学习基础",
     "help": "还不确定？可以先学习基础，以后再创建专属课程。",
-    "languageNameLocale": "zh"
+    "languageNameLocale": "zh",
+    "checkFirst": "简短测试（最多 10 题）决定你的起点",
+    "checkAction": "测试水平并制定计划"
   },
   "programMap": {
     "unit": "第 {{count}} 单元",

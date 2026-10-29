@@ -165,10 +165,13 @@
     },
     "skip": "Skip for now",
     "tutorIntro": {
-      "title": "You already know enough for a short chat",
-      "body": "Want to meet Rachel, your teacher? A 3–5 minute conversation about things you already know. No pressure, and you can stop any time.",
+      "title": "Meet Rachel",
+      "body": "Rachel is your teacher. A 3–5 minute chat about things you already know, no pressure, and you can stop any time.",
       "go": "Let's meet",
-      "later": "Maybe later"
+      "later": "Maybe later",
+      "saved": "Your plan is saved · {{band}}",
+      "lessonTitle": "Your first chat with Rachel",
+      "lessonBody": "3–5 minutes on things you already know. Stop any time."
     },
     "mode": {
       "title": "How are you comfortable answering?",

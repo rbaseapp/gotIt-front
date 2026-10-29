@@ -2926,7 +2926,8 @@
     "mascotAlt": "Mohi with a flag and greetings in {{language}}",
     "programAlt": "Illustration for {{title}}",
     "intakeStep": "Intro conversation · question {{current}} of {{total}}",
-    "intakeReview": "Details ready · approve to build"
+    "intakeReview": "Details ready · approve to build",
+    "recheck": "Retake the level check"
   },
   "programChooser": {
     "title": "How shall we learn today?",
@@ -2952,7 +2953,9 @@
     "personalAction": "Let’s build my program",
     "foundationAction": "Start learning the basics",
     "help": "Not sure? Start with the basics and create a personal program later.",
-    "languageNameLocale": "en"
+    "languageNameLocale": "en",
+    "checkFirst": "A short check, up to 10 questions, sets where you start",
+    "checkAction": "Check my level and build the plan"
   },
   "programMap": {
     "unit": "Unit {{count}}",
