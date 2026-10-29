@@ -41,6 +41,7 @@ it("starts the first chat with a plain voice or writing choice", () => {
       onMode={onMode}
       busy={false}
       disabled={false}
+      error=""
       onStart={onStart}
       onWarmup={onWarmup}
     />,
@@ -66,9 +67,29 @@ it("hides the level chip when the level is unknown", () => {
       onMode={vi.fn()}
       busy={false}
       disabled={false}
+      error=""
       onStart={vi.fn()}
       onWarmup={vi.fn()}
     />,
   );
   expect(screen.queryByText("לפי בדיקת הרמה שלכם")).not.toBeInTheDocument();
+});
+
+it("shows why the chat could not start instead of doing nothing", () => {
+  render(
+    <FirstChatIntro
+      level=""
+      minutes={5}
+      mode="voice"
+      onMode={vi.fn()}
+      busy={false}
+      disabled={false}
+      error="יש לסיים את השיעור הקולי הנוכחי לפני פתיחת שיעור חדש."
+      onStart={vi.fn()}
+      onWarmup={vi.fn()}
+    />,
+  );
+  expect(screen.getByRole("alert")).toHaveTextContent(
+    "יש לסיים את השיעור הקולי הנוכחי",
+  );
 });

@@ -124,6 +124,15 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+.fci-error {
+  margin: 0;
+  background: #fbe9e4;
+  border: 1px solid #b4412b;
+  color: #8f2f1c;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+}
 .fci-warm {
   text-align: start;
   background: #fffefa;

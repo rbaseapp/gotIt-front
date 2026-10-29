@@ -2003,6 +2003,7 @@ export function PrivateLessonPage() {
               onMode={setInputMode}
               busy={phase === "preparing"}
               disabled={setupLoading || !targetLanguage.trim()}
+              error={error}
               onStart={(event) => void startLesson(event)}
               onWarmup={warmup}
             />

@@ -24,6 +24,7 @@ export function FirstChatIntro({
   onMode,
   busy,
   disabled,
+  error,
   onStart,
   onWarmup,
 }: {
@@ -33,6 +34,7 @@ export function FirstChatIntro({
   onMode: (mode: Mode) => void;
   busy: boolean;
   disabled: boolean;
+  error: string;
   onStart: (event: FormEvent) => void;
   onWarmup: () => void;
 }) {
@@ -86,6 +88,11 @@ export function FirstChatIntro({
             <Sparkles size={20} aria-hidden="true" />
             {t("start.tutorIntro.start", { count: minutes })}
           </button>
+          {error && (
+            <p className="fci-error" role="alert">
+              {error}
+            </p>
+          )}
           <button
             className="fci-warm"
             type="button"
