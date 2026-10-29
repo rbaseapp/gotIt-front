@@ -4,6 +4,7 @@ import {
   Clock3,
   Gift,
   Keyboard,
+  LoaderCircle,
   Mic,
   ShieldCheck,
   Sparkles,
@@ -85,9 +86,20 @@ export function FirstChatIntro({
             <small>{t("start.tutorIntro.howHint")}</small>
           </div>
           <button className="fci-go" type="submit" disabled={disabled || busy}>
-            <Sparkles size={20} aria-hidden="true" />
-            {t("start.tutorIntro.start", { count: minutes })}
+            {busy ? (
+              <LoaderCircle className="spin" size={20} aria-hidden="true" />
+            ) : (
+              <Sparkles size={20} aria-hidden="true" />
+            )}
+            {busy
+              ? t("privateLesson.preparing")
+              : t("start.tutorIntro.start", { count: minutes })}
           </button>
+          {busy && (
+            <p className="fci-wait" role="status">
+              {t("start.tutorIntro.waitHint")}
+            </p>
+          )}
           {error && (
             <p className="fci-error" role="alert">
               {error}
@@ -96,7 +108,7 @@ export function FirstChatIntro({
           <button
             className="fci-warm"
             type="button"
-            disabled={disabled}
+            disabled={disabled || busy}
             onClick={onWarmup}
           >
             <span>

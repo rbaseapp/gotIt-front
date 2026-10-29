@@ -193,7 +193,8 @@
       "endTitle": "Was du am Ende bekommst",
       "end1": "Eine kurze Zusammenfassung: was gut lief und was du stärken kannst",
       "end2": "Neue Wörter für deine Tasche",
-      "noScoreNote": "Das Gespräch wird nicht benotet. Es hilft uns, den Plan anzupassen."
+      "noScoreNote": "Das Gespräch wird nicht benotet. Es hilft uns, den Plan anzupassen.",
+      "waitHint": "Das kann zwischen einer halben und anderthalb Minuten dauern. Bleib auf diesem Bildschirm, das Gespräch öffnet sich von selbst."
     },
     "mode": {
       "title": "Wie antwortest du am liebsten?",

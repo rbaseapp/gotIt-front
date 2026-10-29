@@ -193,7 +193,8 @@
       "endTitle": "Ce que vous recevez à la fin",
       "end1": "Un court bilan : ce qui allait bien et ce qu'il faut renforcer",
       "end2": "De nouveaux mots à ajouter à votre poche",
-      "noScoreNote": "La discussion n'est pas notée. Elle nous aide à adapter le plan."
+      "noScoreNote": "La discussion n'est pas notée. Elle nous aide à adapter le plan.",
+      "waitHint": "Cela peut prendre de 30 secondes à une minute et demie. Restez sur cet écran, la discussion s'ouvrira seule."
     },
     "mode": {
       "title": "Comment préférez-vous répondre ?",

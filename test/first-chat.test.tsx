@@ -93,3 +93,23 @@ it("shows why the chat could not start instead of doing nothing", () => {
     "יש לסיים את השיעור הקולי הנוכחי",
   );
 });
+
+it("says it is preparing while the chat is being set up", () => {
+  render(
+    <FirstChatIntro
+      level=""
+      minutes={5}
+      mode="voice"
+      onMode={vi.fn()}
+      busy
+      disabled={false}
+      error=""
+      onStart={vi.fn()}
+      onWarmup={vi.fn()}
+    />,
+  );
+  expect(
+    screen.getByRole("button", { name: /מכינים את השיעור/ }),
+  ).toBeDisabled();
+  expect(screen.getByRole("status")).toHaveTextContent("דקה וחצי");
+});
