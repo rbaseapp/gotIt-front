@@ -35,6 +35,7 @@ import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { FirstChatIntro } from "../components/FirstChatIntro";
 import { Logo } from "../components/Logo";
 import { TeacherAvatar } from "../components/TeacherAvatar";
 import { TeacherVoicePreview } from "../components/TeacherVoicePreview";
@@ -1994,6 +1995,17 @@ export function PrivateLessonPage() {
                 </p>
               )}
             </form>
+          ) : firstChat ? (
+            <FirstChatIntro
+              level={level}
+              minutes={plannedMinutes}
+              mode={inputMode}
+              onMode={setInputMode}
+              busy={phase === "preparing"}
+              disabled={setupLoading || !targetLanguage.trim()}
+              onStart={(event) => void startLesson(event)}
+              onWarmup={warmup}
+            />
           ) : (
             <section className="private-lesson-setup live-panel">
               <div className="private-lesson-intro">

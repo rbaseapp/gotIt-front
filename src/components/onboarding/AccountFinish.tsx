@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LoaderCircle } from "lucide-react";
+import {
+  Check,
+  LoaderCircle,
+  MessageCircle,
+  Mic,
+  PencilLine,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { useSubscription } from "../../context/SubscriptionContext";
-import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
+import { OnboardingFrame } from "./OnboardingFrame";
 import moochi from "../../assets/ux/dashboard-moohi.png";
 import { canMeetTutor } from "../../lib/onboarding/tutorIntro";
 import { claimOnboarding, saveFirstWords } from "../../lib/onboarding/claim";
-import { bandInfo } from "../../lib/placement/plan";
+import { bandInfo, wordsPerMonth } from "../../lib/placement/plan";
 import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
 import {
   clearOnboarding,
@@ -78,7 +84,7 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
       84,
       Math.max(1, (state.result?.theta ?? 1) + state.adjust),
     );
-    return <TutorInvite band={bandInfo(theta).band} />;
+    return <TutorInvite band={bandInfo(theta).band} minutes={state.minutes} />;
   }
   if (phase === "choose" || phase === "failed")
     return (
@@ -111,27 +117,67 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
   );
 }
 
-/** The invitation to a first short conversation with the teacher, shown to learners who can hold one. */
-export function TutorInvite({ band }: { band: string }) {
+/** The invitation to a first short chat with Moochi, shown to learners who can hold one. */
+export function TutorInvite({
+  band,
+  minutes,
+}: {
+  band: string;
+  minutes: number;
+}) {
   const { t } = useTranslation();
+  const steps = [
+    { icon: MessageCircle, key: "ask" },
+    { icon: Mic, key: "answer" },
+    { icon: PencilLine, key: "fix" },
+  ] as const;
   return (
-    <div className="ob ob-lock" style={{ minHeight: 0 }}>
-      <img className="ob-tutor" src={rachel} alt="" draggable={false} />
-      <p className="ob-saved" role="status">
-        {t("start.tutorIntro.saved", { band })}
-      </p>
-      <div className="ob-bubble">
-        <h1 tabIndex={-1} data-ob-title>
-          {t("start.tutorIntro.title")}
-        </h1>
-        <p>{t("start.tutorIntro.body")}</p>
-      </div>
-      <Link className="ob-btn" to="/private-lesson?practice=free&intro=1">
-        {t("start.tutorIntro.go")}
-      </Link>
-      <Link className="ob-link" to="/dashboard" replace>
-        {t("start.tutorIntro.later")}
-      </Link>
-    </div>
+    <OnboardingFrame
+      step="save"
+      title={t("start.tutorIntro.title")}
+      body={t("start.tutorIntro.body")}
+      primary={
+        <Link className="ob-btn" to="/private-lesson?practice=free&intro=1">
+          {t("start.tutorIntro.go")}
+        </Link>
+      }
+      secondary={
+        <Link className="ob-link" to="/dashboard" replace>
+          {t("start.tutorIntro.later")}
+        </Link>
+      }
+    >
+      <section className="ob-saved" aria-label={t("start.tutorIntro.saved")}>
+        <span className="ob-saved-ok" aria-hidden="true">
+          <Check size={18} />
+        </span>
+        <b>{t("start.tutorIntro.saved")}</b>
+        <span className="ob-saved-chips">
+          <span>
+            <span dir="ltr">{band}</span> · {t(`start.result.band.${band}`)}
+          </span>
+          <span>{t("start.plan.perDay", { count: minutes })}</span>
+          <span>
+            {t("start.plan.wordsPerMonth", { count: wordsPerMonth(minutes) })}
+          </span>
+        </span>
+      </section>
+      <section className="ob-steps">
+        {steps.map(({ icon: Icon, key }) => (
+          <article key={key}>
+            <span aria-hidden="true">
+              <Icon size={22} />
+            </span>
+            <b>{t(`start.tutorIntro.${key}Title`)}</b>
+            <small>{t(`start.tutorIntro.${key}Body`)}</small>
+          </article>
+        ))}
+      </section>
+      <ul className="ob-promise">
+        <li>{t("start.tutorIntro.promiseTime")}</li>
+        <li>{t("start.tutorIntro.promiseStop")}</li>
+        <li>{t("start.tutorIntro.promiseNoScore")}</li>
+      </ul>
+    </OnboardingFrame>
   );
 }
