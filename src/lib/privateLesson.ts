@@ -356,6 +356,8 @@ export type PrivateLessonDurationMinutes = 1 | 5 | 10 | 15 | 20;
 export type PrivateLessonInput = {
   curriculumLessonId?: string;
   interactionProtocol?: "adaptive-v1";
+  /** A free conversation that opens at once, with no planned tasks. */
+  quickStart?: boolean;
   interactionMode?: "guided" | "conversation";
   courseId?: string;
   courseLesson?: { version: number; unitKey: string; lessonIndex: number };

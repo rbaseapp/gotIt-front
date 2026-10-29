@@ -881,9 +881,16 @@ export function PrivateLessonPage() {
     abortRef.current = controller;
     try {
       const created = await createPrivateLessonSession({
-        ...(lessonSetup?.interactionCapabilities?.adaptiveLessons
-          ? { interactionProtocol: "adaptive-v1" as const }
-          : {}),
+        // The first chat from the level check opens at once: no planned tasks, the teacher just talks.
+        ...(firstChat &&
+        !courseId &&
+        !packId &&
+        !curriculumLessonId &&
+        searchParams.get("practice") === "free"
+          ? { quickStart: true }
+          : lessonSetup?.interactionCapabilities?.adaptiveLessons
+            ? { interactionProtocol: "adaptive-v1" as const }
+            : {}),
         interactionMode:
           !courseId && !packId && searchParams.get("practice") === "free"
             ? "conversation"
