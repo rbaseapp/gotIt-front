@@ -1802,7 +1802,6 @@
     "teacher": "המורה AI",
     "startLiveInterview": "מתחילים ראיון חי",
     "stopLiveInterview": "סיום השיחה",
-    "typeInstead": "מעדיפים לכתוב תשובה?",
     "liveDisconnected": "השיחה נותקה. אפשר להתחבר מחדש או להמשיך בכתיבה.",
     "liveBusy": "המורה מעבדת את התשובה הקודמת.",
     "liveStatus": {
@@ -1972,7 +1971,7 @@
     "allCompleted": "סיימתם את החזרות להיום",
     "selectedProgram": "התוכנית שבחרתם",
     "openMap": "למפת הלימוד",
-    "personalProgram": "תוכנית אישית",
+    "personalProgram": "תוכנית אישית עם המורה",
     "openProgram": "פתיחת התוכנית",
     "noPrograms": "התוכנית הראשונה שלכם",
     "noProgramsHelp": "בחרו תוכנית, או המשיכו ללמוד את המילים שלכם",
@@ -2925,7 +2924,9 @@
     "artLoading": "מכינים את האיור שלך…",
     "artUnavailable": "האיור אינו זמין כרגע",
     "mascotAlt": "מוחי עם דגל וברכות ב{{language}}",
-    "programAlt": "איור לתוכנית {{title}}"
+    "programAlt": "איור לתוכנית {{title}}",
+    "intakeStep": "שיחת היכרות · שאלה {{current}} מתוך {{total}}",
+    "intakeReview": "הפרטים מוכנים · נשאר לאשר ולבנות"
   },
   "programChooser": {
     "title": "איך נלמד הפעם?",
@@ -2934,7 +2935,7 @@
     "target": "השפה שארצה ללמוד",
     "support": "שפת ההסברים והממשק",
     "personalTitle": "בונים תוכנית אישית עם מורה AI",
-    "personalDescription": "מוחי ישאל אותך כמה שאלות על המטרות, הרמה ותחומי העניין שלך, ויבנה עבורך מסלול למידה מובנה מותאם אישית.",
+    "personalDescription": "המורה ישאל אותך כמה שאלות קצרות על המטרות ותחומי העניין שלך, ויבנה מסלול מותאם אישית.",
     "foundationTitle": "מתחילים מהבסיס",
     "foundationDescription": "תוכנית מוכנה עם שיעורים מסודרים, צעד אחר צעד, מהיסודות ועד לשיחה בטוחה ב{{language}}.",
     "recommended": "מומלץ למתחילים",

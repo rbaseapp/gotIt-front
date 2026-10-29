@@ -191,7 +191,10 @@ export function CourseLiveInterview({
 
   const running = phase !== "idle";
   return (
-    <div className="course-live-interview">
+    <div
+      className="course-live-interview"
+      data-idle={phase === "idle" || undefined}
+    >
       <audio ref={audio} autoPlay />
       <TeacherAvatar
         variant="female"
@@ -205,7 +208,7 @@ export function CourseLiveInterview({
       <p role="status">{t(`courses.liveStatus.${phase}`)}</p>
       <button
         type="button"
-        className={`button ${running ? "secondary" : "primary"}`}
+        className={`button ${running ? "secondary" : "ghost"}`}
         onClick={running ? stop : () => void start()}
       >
         {phase === "connecting" ? (

@@ -1756,7 +1756,6 @@
     "teacher": "KI-Lehrer",
     "startLiveInterview": "Live-Gespräch starten",
     "stopLiveInterview": "Gespräch beenden",
-    "typeInstead": "Lieber schriftlich antworten?",
     "liveDisconnected": "Die Verbindung wurde unterbrochen. Verbinde dich erneut oder schreibe weiter.",
     "liveBusy": "Die Lehrkraft verarbeitet deine vorige Antwort.",
     "liveStatus": {
@@ -1973,7 +1972,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Persönliches Programm mit der Lehrkraft",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2926,7 +2925,9 @@
     "artLoading": "Deine Illustration wird erstellt…",
     "artUnavailable": "Illustration derzeit nicht verfügbar",
     "mascotAlt": "Mohi mit Flagge und Grüßen auf {{language}}",
-    "programAlt": "Illustration für {{title}}"
+    "programAlt": "Illustration für {{title}}",
+    "intakeStep": "Kennenlernen · Frage {{current}} von {{total}}",
+    "intakeReview": "Angaben fertig · noch bestätigen"
   },
   "programChooser": {
     "title": "Wie lernen wir diesmal?",
@@ -2935,7 +2936,7 @@
     "target": "Die Sprache, die ich lernen möchte",
     "support": "Sprache der Erklärungen und Oberfläche",
     "personalTitle": "Erstelle dein Programm mit einer KI-Lehrkraft",
-    "personalDescription": "Mohi fragt nach deinen Zielen, deinem Niveau und deinen Interessen und erstellt einen strukturierten Lernweg für dich.",
+    "personalDescription": "Die Lehrkraft stellt ein paar kurze Fragen zu deinen Zielen und Interessen und erstellt einen passenden Lernweg.",
     "foundationTitle": "Mit den Grundlagen beginnen",
     "foundationDescription": "Ein fertiges Programm mit geordneten Lektionen, Schritt für Schritt von den Grundlagen bis zu sicheren Gesprächen auf {{language}}.",
     "recommended": "Für Anfänger empfohlen",

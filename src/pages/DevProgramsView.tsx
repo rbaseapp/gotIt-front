@@ -150,6 +150,15 @@ export function DevProgramsView({
           : program.status !== "completed")),
   );
   const loading = coursesLoading || packsLoading;
+  const intakeLine = (program: Program) =>
+    !program.intake
+      ? t("courses.intakeInProgress")
+      : program.intake.answered >= program.intake.total
+        ? t("programsDesign.intakeReview")
+        : t("programsDesign.intakeStep", {
+            current: program.intake.current,
+            total: program.intake.total,
+          });
   const percent = active ? programPercent(active) : 0;
   const weeks = active?.daysPerWeek
     ? Math.ceil((active.total - active.completed) / active.daysPerWeek)
@@ -216,17 +225,20 @@ export function DevProgramsView({
                   <LanguageFlag code={active.language} />
                   {languageName(active.language)}
                 </span>
-                <span>
-                  <ChartNoAxesColumnIncreasing size={15} aria-hidden="true" />
-                  {["beginner", "intermediate", "advanced"].includes(
-                    active.level,
-                  )
-                    ? t(`packs.levels.${active.level}`, {
-                        defaultValue: active.level,
-                      })
-                    : active.level}
-                </span>
-                {active.minutes && (
+                {/* A draft's level and time are still defaults, not the learner's answers. */}
+                {active.status !== "draft" && (
+                  <span>
+                    <ChartNoAxesColumnIncreasing size={15} aria-hidden="true" />
+                    {["beginner", "intermediate", "advanced"].includes(
+                      active.level,
+                    )
+                      ? t(`packs.levels.${active.level}`, {
+                          defaultValue: active.level,
+                        })
+                      : active.level}
+                  </span>
+                )}
+                {active.status !== "draft" && active.minutes && (
                   <span>
                     <Clock3 size={15} aria-hidden="true" />
                     {t("programsDesign.minutes", { count: active.minutes })}
@@ -268,32 +280,36 @@ export function DevProgramsView({
               <div className="pg-progress-heading">
                 <strong>
                   <CalendarDays size={17} aria-hidden="true" />
-                  {active.status === "completed"
-                    ? t("programsDesign.completed")
-                    : weeks
-                      ? t("programsDesign.weeks", { count: weeks })
-                      : t("programsDesign.yourProgress")}
+                  {active.status === "draft"
+                    ? t("programsDesign.draft")
+                    : active.status === "completed"
+                      ? t("programsDesign.completed")
+                      : weeks
+                        ? t("programsDesign.weeks", { count: weeks })
+                        : t("programsDesign.yourProgress")}
                 </strong>
-                <b>{percent}%</b>
+                {active.status !== "draft" && <b>{percent}%</b>}
               </div>
-              <div
-                className="pg-segments"
-                role="progressbar"
-                aria-label={t("programsDesign.progress")}
-                aria-valuenow={percent}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                {[0, 1, 2, 3].map((index) => (
-                  <span key={index}>
-                    <i
-                      style={{
-                        width: `${Math.max(0, Math.min(100, percent * 4 - index * 100))}%`,
-                      }}
-                    />
-                  </span>
-                ))}
-              </div>
+              {active.status !== "draft" && (
+                <div
+                  className="pg-segments"
+                  role="progressbar"
+                  aria-label={t("programsDesign.progress")}
+                  aria-valuenow={percent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  {[0, 1, 2, 3].map((index) => (
+                    <span key={index}>
+                      <i
+                        style={{
+                          width: `${Math.max(0, Math.min(100, percent * 4 - index * 100))}%`,
+                        }}
+                      />
+                    </span>
+                  ))}
+                </div>
+              )}
               <ul className="pg-checkpoints">
                 {active.checkpoints.map((checkpoint, index) => (
                   <li key={index}>
@@ -313,7 +329,7 @@ export function DevProgramsView({
                 {!active.checkpoints.length && (
                   <li>
                     <MessageCircle size={19} aria-hidden="true" />
-                    {t("courses.intakeInProgress")}
+                    {intakeLine(active)}
                   </li>
                 )}
               </ul>
@@ -322,7 +338,11 @@ export function DevProgramsView({
                 onClick={() => open(active, active.continueTo)}
               >
                 <span className="pg-next-icon">
-                  <Mic size={17} aria-hidden="true" />
+                  {active.status === "draft" ? (
+                    <MessageCircle size={17} aria-hidden="true" />
+                  ) : (
+                    <Mic size={17} aria-hidden="true" />
+                  )}
                 </span>
                 <strong dir="auto">
                   {active.next
@@ -335,23 +355,25 @@ export function DevProgramsView({
                 </strong>
                 <Play size={14} aria-hidden="true" />
               </button>
-              <div className="pg-progress-foot">
-                <CalendarDays size={16} aria-hidden="true" />
-                {assignment ? (
-                  <Link to={`/homework/${assignment.id}`}>
-                    {t("programsDesign.homeworkReady")}
-                  </Link>
-                ) : (
-                  <span>
-                    {t(
-                      active.course
-                        ? "programsDesign.lessonCount"
-                        : "programsDesign.unitCount",
-                      { count: active.completed, total: active.total },
-                    )}
-                  </span>
-                )}
-              </div>
+              {active.status !== "draft" && (
+                <div className="pg-progress-foot">
+                  <CalendarDays size={16} aria-hidden="true" />
+                  {assignment ? (
+                    <Link to={`/homework/${assignment.id}`}>
+                      {t("programsDesign.homeworkReady")}
+                    </Link>
+                  ) : (
+                    <span>
+                      {t(
+                        active.course
+                          ? "programsDesign.lessonCount"
+                          : "programsDesign.unitCount",
+                        { count: active.completed, total: active.total },
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -458,7 +480,7 @@ export function DevProgramsView({
                       {program.description || t("ux.personalHelp")}
                     </p>
                     <div className="pg-card-meta">
-                      {program.minutes && (
+                      {program.status !== "draft" && program.minutes && (
                         <span>
                           <Clock3 size={15} />
                           {t("programsDesign.minutesPerLesson", {
@@ -466,22 +488,31 @@ export function DevProgramsView({
                           })}
                         </span>
                       )}
-                      <span>
-                        <Clock3 size={15} />
-                        {t(
-                          program.course
-                            ? "programsDesign.lessonCount"
-                            : "programsDesign.unitCount",
-                          { count: program.completed, total: program.total },
-                        )}
-                      </span>
+                      {program.status === "draft" ? (
+                        <span>
+                          <MessageCircle size={15} />
+                          {intakeLine(program)}
+                        </span>
+                      ) : (
+                        <span>
+                          <Clock3 size={15} />
+                          {t(
+                            program.course
+                              ? "programsDesign.lessonCount"
+                              : "programsDesign.unitCount",
+                            { count: program.completed, total: program.total },
+                          )}
+                        </span>
+                      )}
                     </div>
-                    <progress
-                      className="pg-card-progress"
-                      max={100}
-                      value={progress}
-                      aria-label={t("programsDesign.progress")}
-                    />
+                    {program.status !== "draft" && (
+                      <progress
+                        className="pg-card-progress"
+                        max={100}
+                        value={progress}
+                        aria-label={t("programsDesign.progress")}
+                      />
+                    )}
                     <div className="pg-card-next">
                       <Icon size={19} aria-hidden="true" />
                       <strong dir="auto">

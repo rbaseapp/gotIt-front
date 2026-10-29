@@ -112,7 +112,8 @@
       "targetQuestion": "Which level do you want to reach?",
       "perDay": "{{count}} min a day",
       "reach": "You reach {{band}} in {{range}} months",
-      "around": "Around {{date}}, practising 5 days a week"
+      "around": "Around {{date}}, practising 5 days a week",
+      "wordsPerMonth": "About {{count}} new words a month"
     },
     "save": {
       "title": "Saving what you built",

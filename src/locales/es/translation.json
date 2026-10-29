@@ -1756,7 +1756,6 @@
     "teacher": "Profesor de IA",
     "startLiveInterview": "Iniciar entrevista en vivo",
     "stopLiveInterview": "Terminar conversación",
-    "typeInstead": "¿Prefieres responder por escrito?",
     "liveDisconnected": "Se interrumpió la conversación. Vuelve a conectarte o continúa escribiendo.",
     "liveBusy": "El profesor está procesando tu respuesta anterior.",
     "liveStatus": {
@@ -1973,7 +1972,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Programa personal con el profesor",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2926,7 +2925,9 @@
     "artLoading": "Preparando tu ilustración…",
     "artUnavailable": "Ilustración no disponible",
     "mascotAlt": "Mohi con bandera y saludos en {{language}}",
-    "programAlt": "Ilustración de {{title}}"
+    "programAlt": "Ilustración de {{title}}",
+    "intakeStep": "Conversación inicial · pregunta {{current}} de {{total}}",
+    "intakeReview": "Datos listos · falta aprobar"
   },
   "programChooser": {
     "title": "¿Cómo aprendemos esta vez?",
@@ -2935,7 +2936,7 @@
     "target": "El idioma que quiero aprender",
     "support": "Idioma de las explicaciones y la interfaz",
     "personalTitle": "Crea un programa personal con un profesor de IA",
-    "personalDescription": "Mohi te preguntará por tus objetivos, nivel e intereses y creará un itinerario de aprendizaje estructurado a tu medida.",
+    "personalDescription": "El profesor te hace unas preguntas breves sobre tus objetivos e intereses y crea un itinerario a tu medida.",
     "foundationTitle": "Empieza por lo básico",
     "foundationDescription": "Un programa listo con lecciones organizadas, paso a paso, desde los fundamentos hasta conversar con confianza en {{language}}.",
     "recommended": "Recomendado para principiantes",

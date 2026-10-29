@@ -109,7 +109,8 @@
       "targetQuestion": "你想达到哪个水平？",
       "perDay": "每天 {{count}} 分钟",
       "reach": "你将在 {{range}} 个月内达到 {{band}}",
-      "around": "大约在 {{date}}，每周练习 5 天"
+      "around": "大约在 {{date}}，每周练习 5 天",
+      "wordsPerMonth": "每月约 {{count}} 个新单词"
     },
     "save": {
       "title": "正在保存你制定的内容",

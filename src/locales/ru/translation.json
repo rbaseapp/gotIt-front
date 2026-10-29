@@ -1786,7 +1786,6 @@
     "teacher": "ИИ-преподаватель",
     "startLiveInterview": "Начать живое интервью",
     "stopLiveInterview": "Завершить разговор",
-    "typeInstead": "Предпочитаете ответить текстом?",
     "liveDisconnected": "Связь прервалась. Подключитесь снова или продолжите письменно.",
     "liveBusy": "Преподаватель обрабатывает предыдущий ответ.",
     "liveStatus": {
@@ -2003,7 +2002,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Личная программа с преподавателем",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2956,7 +2955,9 @@
     "artLoading": "Готовим иллюстрацию…",
     "artUnavailable": "Иллюстрация пока недоступна",
     "mascotAlt": "Мохи с флагом и приветствиями на языке {{language}}",
-    "programAlt": "Иллюстрация для {{title}}"
+    "programAlt": "Иллюстрация для {{title}}",
+    "intakeStep": "Знакомство · вопрос {{current}} из {{total}}",
+    "intakeReview": "Данные готовы · осталось подтвердить"
   },
   "programChooser": {
     "title": "Как будем учиться в этот раз?",
@@ -2965,7 +2966,7 @@
     "target": "Язык, который я хочу изучать",
     "support": "Язык объяснений и интерфейса",
     "personalTitle": "Создайте личную программу с ИИ-преподавателем",
-    "personalDescription": "Мохи спросит о ваших целях, уровне и интересах и составит структурированный план обучения для вас.",
+    "personalDescription": "Преподаватель задаст несколько коротких вопросов о целях и интересах и составит план для вас.",
     "foundationTitle": "Начните с основ",
     "foundationDescription": "Готовая программа с последовательными уроками: шаг за шагом от основ до уверенного общения на языке {{language}}.",
     "recommended": "Рекомендуется начинающим",

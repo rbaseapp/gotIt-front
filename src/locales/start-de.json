@@ -110,7 +110,8 @@
       "targetQuestion": "Welches Niveau möchtest du erreichen?",
       "perDay": "{{count}} Min. pro Tag",
       "reach": "Du erreichst {{band}} in {{range}} Monaten",
-      "around": "Etwa im {{date}}, bei 5 Übungstagen pro Woche"
+      "around": "Etwa im {{date}}, bei 5 Übungstagen pro Woche",
+      "wordsPerMonth": "Etwa {{count}} neue Wörter pro Monat"
     },
     "save": {
       "title": "Wir speichern, was du aufgebaut hast",

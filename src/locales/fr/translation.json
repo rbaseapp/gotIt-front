@@ -1756,7 +1756,6 @@
     "teacher": "Professeur IA",
     "startLiveInterview": "Commencer l'entretien en direct",
     "stopLiveInterview": "Terminer la conversation",
-    "typeInstead": "Vous préférez répondre par écrit ?",
     "liveDisconnected": "La conversation a été interrompue. Reconnectez-vous ou continuez par écrit.",
     "liveBusy": "Le professeur traite votre réponse précédente.",
     "liveStatus": {
@@ -1973,7 +1972,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Programme personnel avec le professeur",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2926,7 +2925,9 @@
     "artLoading": "Préparation de votre illustration…",
     "artUnavailable": "Illustration indisponible",
     "mascotAlt": "Mohi avec un drapeau et des salutations en {{language}}",
-    "programAlt": "Illustration de {{title}}"
+    "programAlt": "Illustration de {{title}}",
+    "intakeStep": "Échange de départ · question {{current}} sur {{total}}",
+    "intakeReview": "Détails prêts · reste à valider"
   },
   "programChooser": {
     "title": "Comment apprendre cette fois-ci ?",
@@ -2935,7 +2936,7 @@
     "target": "La langue que je veux apprendre",
     "support": "Langue des explications et de l’interface",
     "personalTitle": "Créez un programme personnel avec un professeur IA",
-    "personalDescription": "Mohi vous interrogera sur vos objectifs, votre niveau et vos intérêts pour créer un parcours structuré adapté à vous.",
+    "personalDescription": "Le professeur pose quelques questions courtes sur vos objectifs et vos intérêts, puis crée un parcours adapté.",
     "foundationTitle": "Commencez par les bases",
     "foundationDescription": "Un programme prêt à l’emploi, avec des leçons organisées, des bases à une conversation assurée en {{language}}.",
     "recommended": "Recommandé aux débutants",

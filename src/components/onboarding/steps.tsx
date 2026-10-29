@@ -29,6 +29,7 @@ import {
   BAND_END,
   bandInfo,
   buildPlan,
+  wordsPerMonth,
   suggestedTarget,
   targetChoices,
   type Goal,
@@ -645,6 +646,11 @@ export function PlanStep({
             <small>{t("start.plan.perDay", { count: MINUTES_MAX })}</small>
           </span>
         </label>
+        <p className="ob-words">
+          {t("start.plan.wordsPerMonth", {
+            count: wordsPerMonth(state.minutes),
+          })}
+        </p>
         <p className="ob-sim">
           {t("start.plan.reach", {
             band: `${plan.targetBand} · ${t(`start.result.band.${plan.targetBand}`)}`,

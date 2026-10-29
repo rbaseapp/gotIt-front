@@ -537,6 +537,12 @@ button.ob-card:hover {
   justify-content: space-between;
   color: var(--ob-muted, #6b7a72);
 }
+.ob-plan-card .ob-words {
+  margin: 0;
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--ob-accent, #2a7a5f);
+}
 .ob-plan-card .ob-sim {
   margin: 0;
   font-weight: 800;

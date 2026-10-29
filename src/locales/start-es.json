@@ -110,7 +110,8 @@
       "targetQuestion": "¿Qué nivel quieres alcanzar?",
       "perDay": "{{count}} min al día",
       "reach": "Llegas a {{band}} en {{range}} meses",
-      "around": "Hacia {{date}}, practicando 5 días a la semana"
+      "around": "Hacia {{date}}, practicando 5 días a la semana",
+      "wordsPerMonth": "Unas {{count}} palabras nuevas al mes"
     },
     "save": {
       "title": "Guardando lo que construiste",
