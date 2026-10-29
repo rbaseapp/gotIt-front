@@ -110,7 +110,8 @@
       "targetQuestion": "Quel niveau voulez-vous atteindre ?",
       "perDay": "{{count}} min par jour",
       "reach": "Vous atteignez {{band}} en {{range}} mois",
-      "around": "Vers {{date}}, en pratiquant 5 jours par semaine"
+      "around": "Vers {{date}}, en pratiquant 5 jours par semaine",
+      "wordsPerMonth": "Environ {{count}} nouveaux mots par mois"
     },
     "save": {
       "title": "Enregistrement de ce que vous avez construit",

@@ -59,7 +59,14 @@ export function StartPage() {
 
 function StartFlow({ account }: { account: boolean }) {
   const { t } = useTranslation();
-  const saved = useMemo(() => loadOnboarding(), []);
+  // /start?fresh drops the saved answers, so a reviewer can walk the flow again.
+  const saved = useMemo(() => {
+    if (new URLSearchParams(window.location.search).has("fresh")) {
+      clearOnboarding();
+      return null;
+    }
+    return loadOnboarding();
+  }, []);
   const [state, setState] = useState<OnboardingState>(
     () =>
       saved ??
