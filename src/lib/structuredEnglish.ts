@@ -326,6 +326,8 @@ export type PlacementClaimInput = {
     listening: { band: string; score: number } | null;
   };
   knownWords: string[];
+  /** Move an existing program to this result (the learner asked for the new plan). */
+  replace?: boolean;
   profile?: {
     selfLevel?: 0 | 1 | 2 | 3 | 4;
     talk?: { correct: number; total: number; unknown?: number };

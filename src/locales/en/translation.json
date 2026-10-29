@@ -18,7 +18,9 @@
     "loadingPayment": "Loading payment…",
     "checkingSession": "Checking your session…",
     "loadingScreen": "Loading…",
-    "checkingAccess": "Checking learning access…"
+    "checkingAccess": "Checking learning access…",
+    "serverAsleep": "The server is waking up and taking a moment. You are still signed in.",
+    "retry": "Try again"
   },
   "nav": {
     "dashboard": "My day",

@@ -26,8 +26,7 @@ const SCREENS = [
   ["interests", "2 · תחומי עניין ומה לשפר"],
   ["pocket-intro", "5 · הבדיקה: פתיחה"],
   ["pocket-card", "5 · הבדיקה: שאלת פירוש"],
-  ["talk-intro", "6 · שיחה עם רייצ'ל: פתיחה"],
-  ["talk-question", "6 · שיחה עם רייצ'ל: שאלה"],
+  ["talk", "6 · הבנת משפטים (בכתב)"],
   ["result", "7 · התוצאה"],
   ["plan", "8 · התוכנית"],
   ["tutor", "9 · הזמנה לשיחה"],
@@ -82,8 +81,7 @@ function Screen({ id }: { id: string }) {
         return sample({ step: "pocket", phase: "intro" });
       case "pocket-card":
         return sample({ step: "pocket", phase: "cards" });
-      case "talk-intro":
-      case "talk-question":
+      case "talk":
         return sample({ step: "talk", result: SAMPLE_RESULT });
       case "result":
         return sample({ step: "result", result: SAMPLE_RESULT, selfLevel: 1 });
@@ -120,10 +118,8 @@ function Screen({ id }: { id: string }) {
           onBack={noop}
         />
       ) : null;
-    case "talk-intro":
+    case "talk":
       return <TalkStep {...common} />;
-    case "talk-question":
-      return <TalkStep {...common} startAtQuestion />;
     case "result":
       return <ResultStep {...common} back={noop} />;
     case "plan":

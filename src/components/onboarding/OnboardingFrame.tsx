@@ -1,12 +1,9 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import logoUrl from "../../assets/gotit-logo.svg";
 import moochi from "../../assets/ux/dashboard-moohi.png";
-import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
-import { useAvatarVoice } from "../../lib/onboarding/avatarVoice";
-import { loadOnboarding } from "../../lib/onboarding/state";
 import { useApp } from "../../context/AppContext";
 import { progressSteps, type Step } from "../../lib/onboarding/state";
 import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
@@ -16,16 +13,6 @@ import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
  * Moochi's speech bubble with the question. Actions are pinned to the bottom so the
  * main button is always where the thumb is on a phone.
  */
-/** Moochi in a pose that matches the step (the game illustrations already shipped with the app). */
-const STEP_ART: Partial<Record<Step, string>> = {
-  level: "733b27676bf58853b6acebeed59264ef.png",
-  interests: "733b27676bf58853b6acebeed59264ef.png",
-  pocket: "a67fd6c3d45b63c8f34e39a5dea8f8ed.png",
-  talk: "8e5757cae684c7eacfb7443c14cdd330.png",
-  result: "bde805db24f53a66deb4ebb27c828b6d.png",
-  plan: "ac2043dc49a4f45c8fa8996719ca255e.png",
-};
-
 export function OnboardingFrame({
   step,
   title,
@@ -35,8 +22,6 @@ export function OnboardingFrame({
   secondary,
   onBack,
   hideMoochi,
-  voiceText,
-  voiceLang,
 }: {
   step: Step;
   title: ReactNode;
@@ -46,30 +31,14 @@ export function OnboardingFrame({
   secondary?: ReactNode;
   onBack?: () => void;
   hideMoochi?: boolean;
-  /** What Rachel says aloud when it differs from the caption (e.g. an English question). */
-  voiceText?: string;
-  voiceLang?: string;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useApp();
   const STEPS = progressSteps(Boolean(user));
   const index = Math.max(
     1,
     STEPS.indexOf(step === "talk" ? "pocket" : step) + 1,
   );
-  // Signed in: Rachel asks the questions and the screen below is her board.
-  const avatar = Boolean(user);
-  const line =
-    voiceText ??
-    (typeof title === "string"
-      ? typeof body === "string"
-        ? `${title}. ${body}`
-        : title
-      : null);
-  const voice = useAvatarVoice(avatar ? line : null, {
-    auto: loadOnboarding()?.answerMode === "voice",
-    language: voiceLang ?? i18n.resolvedLanguage ?? "en",
-  });
   return (
     <div className="ob" data-step={step}>
       <header className="ob-top">
@@ -97,7 +66,8 @@ export function OnboardingFrame({
             ))}
           </div>
         </div>
-        <span className="ob-trial">{t("start.trialBadge")}</span>
+        {/* A signed-in learner already has an account and its plan. */}
+        {!user && <span className="ob-trial">{t("start.trialBadge")}</span>}
       </header>
       <main className="ob-main">
         <div className="ob-head">
@@ -107,58 +77,8 @@ export function OnboardingFrame({
             </h1>
             {body && <p>{body}</p>}
           </div>
-          {avatar ? (
-            <div className="ob-avatar-wrap">
-              <div
-                className="ob-avatar"
-                data-speaking={voice.speaking || undefined}
-              >
-                <img src={rachel} alt="" draggable={false} />
-              </div>
-              {voice.available && (
-                <span className="ob-avatar-controls">
-                  <button
-                    type="button"
-                    className="ob-link"
-                    aria-label={t("start.avatar.replay")}
-                    onClick={voice.replay}
-                  >
-                    <Volume2 size={14} aria-hidden="true" />{" "}
-                    {t("start.avatar.replay")}
-                  </button>
-                  <button
-                    type="button"
-                    className="ob-link"
-                    aria-pressed={voice.muted}
-                    onClick={voice.toggleMute}
-                  >
-                    {voice.muted ? (
-                      <VolumeX size={14} aria-hidden="true" />
-                    ) : null}
-                    {voice.muted
-                      ? t("start.avatar.unmute")
-                      : t("start.avatar.mute")}
-                  </button>
-                </span>
-              )}
-            </div>
-          ) : (
-            !hideMoochi && (
-              <img
-                className="ob-moochi"
-                src={moochi}
-                alt=""
-                draggable={false}
-              />
-            )
-          )}
-          {avatar && STEP_ART[step] && (
-            <img
-              className="ob-sticker"
-              src={`/assets/focus-games/${STEP_ART[step]}`}
-              alt=""
-              draggable={false}
-            />
+          {!hideMoochi && (
+            <img className="ob-moochi" src={moochi} alt="" draggable={false} />
           )}
         </div>
         {children}

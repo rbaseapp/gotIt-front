@@ -18,7 +18,9 @@
     "loadingPayment": "Traitement du paiement…",
     "checkingSession": "Vérification de votre session…",
     "loadingScreen": "Chargement…",
-    "checkingAccess": "Vérification de votre accès…"
+    "checkingAccess": "Vérification de votre accès…",
+    "serverAsleep": "Le serveur se réveille, cela prend un instant. Vous êtes toujours connecté.",
+    "retry": "Réessayer"
   },
   "nav": {
     "dashboard": "Mon jour",
