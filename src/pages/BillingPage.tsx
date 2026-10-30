@@ -22,7 +22,8 @@ const groups = ["tutor-60", "tutor-195", "pro"] as const;
 
 export function BillingPage() {
   const { t, i18n } = useTranslation();
-  const { profile } = useApp();
+  const { profile, user } = useApp();
+  const isAdmin = user?.role === 'admin';
   const { toast } = useFeedback();
   const plans = useResource(useCallback(() => billing.plans(), []));
   const status = useResource(useCallback(() => billing.status(), []));
@@ -176,9 +177,9 @@ export function BillingPage() {
         <section className="live-panel billing-current">
           <div>
             <p className="eyebrow">{t("billing.currentPlan")}</p>
-            <h2>{status.data.plan.name}</h2>
+            <h2>{isAdmin ? t("billing.adminAccess") : status.data.plan.name}</h2>
             <p>
-              {status.data.tier === "trial"
+              {isAdmin ? t("billing.unlimitedAccess") : status.data.tier === "trial"
                 ? t("billing.trialStatus", {
                     count: status.data.trial?.daysRemaining ?? 0,
                   })
@@ -186,10 +187,10 @@ export function BillingPage() {
                   ? t("billing.paidStatus")
                   : t("billing.freeStatus")}
             </p>
-            {minutes.data && (
+            {!isAdmin && minutes.data && (
               <p>
                 <strong>
-                  {t("billing.minutesRemaining", {
+                  {minutes.data.unlimited ? t("billing.unlimitedAccess") : t("billing.minutesRemaining", {
                     count: Math.floor(minutes.data.secondsRemaining / 60),
                   })}
                 </strong>

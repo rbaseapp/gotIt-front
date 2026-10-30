@@ -714,6 +714,8 @@
     "back": "Zurück zum Abonnement"
   },
   "billing": {
+    "adminAccess": "Administratorzugriff",
+    "unlimitedAccess": "Alle PRO-Funktionen ohne Nutzungslimit",
     "paymentComplete": "Zahlung abgeschlossen. Dein Tarif und deine Tutor-Minuten werden aktualisiert.",
     "noPaddlePrice": "Kein Paddle-Preis für einen Pro-Plan gefunden.",
     "priceLoadFailed": "Der lokale Preis konnte jetzt nicht geladen werden.",

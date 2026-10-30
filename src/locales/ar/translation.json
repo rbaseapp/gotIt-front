@@ -738,6 +738,8 @@
     "back": "العودة إلى الاشتراك"
   },
   "billing": {
+    "adminAccess": "وصول المسؤول",
+    "unlimitedAccess": "جميع ميزات PRO دون حدود استخدام",
     "paymentComplete": "اكتمل الدفع. يجري تحديث خطتك ودقائق الدروس.",
     "noPaddlePrice": "لم يتم العثور على سعر Paddle لخطة Pro.",
     "priceLoadFailed": "تعذر تحميل السعر المحلي الآن.",

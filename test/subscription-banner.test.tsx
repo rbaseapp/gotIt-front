@@ -10,10 +10,10 @@ vi.mock("../src/lib/billing", () => ({
   billing: { status: mocks.status },
 }));
 
-function renderBanner() {
+function renderBanner(isAdmin = false) {
   return render(
     <MemoryRouter>
-      <SubscriptionProvider enabled>
+      <SubscriptionProvider enabled isAdmin={isAdmin}>
         <SubscriptionBanner />
       </SubscriptionProvider>
     </MemoryRouter>,
@@ -21,7 +21,15 @@ function renderBanner() {
 }
 
 describe("SubscriptionBanner", () => {
-  beforeEach(() => mocks.status.mockReset());
+  beforeEach(() => { mocks.status.mockReset(); });
+
+  it("shows unlimited admin access while billing is unavailable and does not request an upgrade", async () => {
+    mocks.status.mockRejectedValue(new Error('Billing unavailable'));
+    renderBanner(true);
+    expect(await screen.findByText('גישת מנהל')).toBeInTheDocument();
+    expect(screen.getByText('כל יכולות PRO ללא הגבלת שימוש')).toBeInTheDocument();
+    expect(screen.queryByRole('link', {name: 'שדרוג ל־PRO'})).not.toBeInTheDocument();
+  });
 
   it("shows remaining trial days, PRO benefits and an upgrade action", async () => {
     mocks.status.mockResolvedValue({

@@ -44,6 +44,7 @@ export const billingStatusSchema = z.object({
 });
 const urlSchema = z.object({ url: z.string().url() });
 const minutesSchema = z.object({
+  unlimited: z.boolean().optional(),
   secondsTotal: z.number().int().nonnegative(),
   secondsUsed: z.number().int().nonnegative(),
   secondsRemaining: z.number().int().nonnegative(),

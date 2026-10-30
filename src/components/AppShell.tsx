@@ -483,7 +483,7 @@ export function AppShell({
                   {status && (
                     <p className="account-plan">
                       {t(
-                        status.tier === "paid"
+                        user?.role === 'admin' ? "billing.unlimitedAccess" : status.tier === "paid"
                           ? "subscription.proUser"
                           : status.tier === "trial"
                             ? "subscription.trialDays"

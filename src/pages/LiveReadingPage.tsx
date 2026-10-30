@@ -38,7 +38,7 @@ export function LiveReadingPage() {
     .max(20)
     .refine((items) => new Set(items).size === items.length)
     .safeParse(selectedIds);
-  const { hasEntitlement } = useSubscription();
+  const { hasEntitlement, isAdmin } = useSubscription();
   const canGenerate = hasEntitlement("reading.ai");
   const { confirm, toast } = useFeedback();
   const [topic, setTopic] = useState(profile.interests[0] || "");
@@ -257,7 +257,7 @@ export function LiveReadingPage() {
                 busy ||
                 !!pending ||
                 !canGenerate ||
-                quota.data?.quota?.remaining === 0
+                (!isAdmin && quota.data?.quota?.remaining === 0)
               }
               className="plain-fieldset form-stack"
             >
@@ -333,7 +333,7 @@ export function LiveReadingPage() {
               </button>
             </fieldset>
             <p className="muted-note">
-              {canGenerate && quota.data?.quota
+              {isAdmin ? t("billing.unlimitedAccess") : canGenerate && quota.data?.quota
                 ? t(
                     quota.data.quota.period === "trial"
                       ? "reading.trialQuota"

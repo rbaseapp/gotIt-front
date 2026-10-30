@@ -7,6 +7,7 @@ import { FeedbackProvider } from "../src/components/Feedback";
 import i18n from "../src/i18n";
 
 const mocks = vi.hoisted(() => ({
+  user: null as {role: 'admin'} | null,
   plans: vi.fn(),
   status: vi.fn(),
   checkout: vi.fn(),
@@ -15,7 +16,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../src/context/AppContext", () => ({
-  useApp: () => ({ profile: { email: "ori@example.com" } }),
+  useApp: () => ({ profile: { email: "ori@example.com" }, user: mocks.user }),
 }));
 vi.mock("../src/lib/billing", () => ({
   billing: {
@@ -65,6 +66,7 @@ function renderPage() {
 
 describe("BillingPage tutor offers", () => {
   beforeEach(async () => {
+    mocks.user = null;
     vi.clearAllMocks();
     await i18n.changeLanguage("en");
     mocks.plans.mockResolvedValue({ plans: catalog });
@@ -79,6 +81,14 @@ describe("BillingPage tutor offers", () => {
       data: { details: { lineItems: [{ price: { id: items[0]!.priceId },
         formattedTotals: { total: "$" + ((catalog.find((plan) => plan.providerPriceId === items[0]!.priceId)?.amountMinor ?? 0) / 100).toFixed(2) } }] } },
     }));
+  });
+
+  it("shows unlimited administrator access instead of a zero or finite minute allowance", async () => {
+    mocks.user = {role: 'admin'};
+    renderPage();
+    expect(await screen.findByRole('heading', {name: 'Administrator access'})).toBeInTheDocument();
+    expect(screen.getByText('All PRO features with unlimited usage')).toBeInTheDocument();
+    expect(document.querySelector('.billing-current')).not.toHaveTextContent('50 AI tutor minutes');
   });
 
   it("shows all three subscription tiers and the independently purchasable 60-minute pack", async () => {

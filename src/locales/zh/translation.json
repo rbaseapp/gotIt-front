@@ -704,6 +704,8 @@
     "back": "返回订阅"
   },
   "billing": {
+    "adminAccess": "管理员权限",
+    "unlimitedAccess": "所有 PRO 功能，无使用次数限制",
     "paymentComplete": "付款完成。您的方案和导师分钟数正在更新。",
     "noPaddlePrice": "未找到 Pro 计划的 Paddle 价格。",
     "priceLoadFailed": "目前无法加载本地价格。",

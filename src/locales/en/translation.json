@@ -760,6 +760,8 @@
     "back": "Back to subscription"
   },
   "billing": {
+    "adminAccess": "Administrator access",
+    "unlimitedAccess": "All PRO features with unlimited usage",
     "paymentComplete": "Payment completed. Your plan and tutor minutes are being updated.",
     "noPaddlePrice": "The subscription price could not be loaded. Try again later.",
     "priceLoadFailed": "The local price could not be loaded right now.",
