@@ -137,6 +137,12 @@ export function PrivateLessonPage() {
     ),
   );
   const packId = searchParams.get("pack");
+  const quickChat =
+    firstChat &&
+    !courseId &&
+    !packId &&
+    !curriculumLessonId &&
+    searchParams.get("practice") === "free";
   useLayoutEffect(() => {
     if (packId || curriculumLessonId)
       window.scrollTo({ top: 0, behavior: "instant" });
@@ -882,11 +888,7 @@ export function PrivateLessonPage() {
     try {
       const created = await createPrivateLessonSession({
         // The first chat from the level check opens at once: no planned tasks, the teacher just talks.
-        ...(firstChat &&
-        !courseId &&
-        !packId &&
-        !curriculumLessonId &&
-        searchParams.get("practice") === "free"
+        ...(quickChat
           ? { quickStart: true }
           : lessonSetup?.interactionCapabilities?.adaptiveLessons
             ? { interactionProtocol: "adaptive-v1" as const }
@@ -925,8 +927,11 @@ export function PrivateLessonPage() {
           plannedMinutes as PrivateLessonDurationMinutes,
         teacherVoice,
         speechRate,
-        ...(topic.trim() ? { topic: topic.trim() } : {}),
-        ...(grammarFocus.trim() ? { grammarFocus: grammarFocus.trim() } : {}),
+        // The first chat has no lesson topic: the roadmap's next grammar lesson would take over.
+        ...(topic.trim() && !quickChat ? { topic: topic.trim() } : {}),
+        ...(grammarFocus.trim() && !quickChat
+          ? { grammarFocus: grammarFocus.trim() }
+          : {}),
         focusAreas,
         customFocus: customFocus.trim() || null,
         correctionMode,
