@@ -709,7 +709,8 @@ type RealtimeHandlers = {
   onClose: () => void;
   onEvent: (event: Record<string, unknown>) => void;
   onAudioLevel?: (level: number) => void;
-  onMicrophoneUnavailable?: () => void;
+  /** The browser refused the microphone; the reason is the error name, e.g. NotAllowedError. */
+  onMicrophoneUnavailable?: (reason: string) => void;
 };
 
 export async function connectPrivateLesson(
@@ -737,7 +738,12 @@ export async function connectPrivateLesson(
   let sender: RTCRtpSender | undefined;
   const enableMicrophone = async () => {
     if (stream?.getAudioTracks()[0]?.readyState === "live") return true;
-    if (!navigator.mediaDevices?.getUserMedia) return false;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      handlers.onMicrophoneUnavailable?.(
+        window.isSecureContext ? "NoMediaDevices" : "InsecureContext",
+      );
+      return false;
+    }
     try {
       const captured = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -758,10 +764,12 @@ export async function connectPrivateLesson(
         });
       if (sender) await sender.replaceTrack(captured.getAudioTracks()[0]!);
       return true;
-    } catch {
+    } catch (error) {
       stream?.getTracks().forEach((track) => track.stop());
       stream = undefined;
-      handlers.onMicrophoneUnavailable?.();
+      handlers.onMicrophoneUnavailable?.(
+        error instanceof DOMException ? error.name : "Unknown",
+      );
       return false;
     }
   };

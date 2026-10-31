@@ -342,6 +342,7 @@ export function PrivateLessonPage() {
   const timers = useRef<number[]>([]);
   const activeResponse = useRef(false);
   const wrapPending = useRef(false);
+  const microphoneFailure = useRef("");
   const wrapSent = useRef(false);
   const closingPrepared = useRef(false);
   const wrapResponseStarted = useRef(false);
@@ -455,6 +456,14 @@ export function PrivateLessonPage() {
       setReportRequested(true);
       void finalizeLesson(activeSession);
     }
+  };
+  /** The learner pressed finish: end at once instead of waiting for a spoken goodbye. */
+  const stopNow = (activeSession: PrivateLessonSession) => {
+    if (phaseRef.current === "ended") return;
+    setReportRequested(true);
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+    finish(t("privateLesson.stopped"), false, "stopped", activeSession);
   };
   const requestWrapUp = (
     activeSession: PrivateLessonSession,
@@ -1010,7 +1019,8 @@ export function PrivateLessonPage() {
             flowRef.current?.audioLevel(level);
             setTutorAudioLevel(level);
           },
-          onMicrophoneUnavailable() {
+          onMicrophoneUnavailable(reason) {
+            microphoneFailure.current = reason;
             resumeVoiceRef.current = false;
             setInputMode("text");
             setMicrophoneMuted(true);
@@ -1296,12 +1306,18 @@ export function PrivateLessonPage() {
       toggleMicrophone();
       return;
     }
+    microphoneFailure.current = "";
     const available = connection.enableMicrophone
       ? await connection.enableMicrophone()
       : microphoneReady;
     if (!available) {
       setInputMode("text");
-      setActivityError(t("lessonUi.microphoneTextFallback"));
+      // A blocked site gets no new permission prompt, so say how to unblock it.
+      setActivityError(
+        microphoneFailure.current === "NotAllowedError"
+          ? t("lessonUi.microphoneBlocked")
+          : `${t("lessonUi.microphoneTextFallback")} (${microphoneFailure.current || "?"})`,
+      );
       return;
     }
     setInputMode("voice");
@@ -3151,10 +3167,7 @@ export function PrivateLessonPage() {
                   window.speechSynthesis?.cancel();
                 } else void audioRef.current?.play().catch(() => undefined);
               }}
-              onFinish={() => {
-                setReportRequested(true);
-                requestWrapUp(session, "stopped");
-              }}
+              onFinish={() => stopNow(session)}
             />
           ) : (
             <section
@@ -3177,9 +3190,7 @@ export function PrivateLessonPage() {
                       className="button secondary lesson-end"
                       type="button"
                       disabled={phase === "wrapping"}
-                      onClick={() =>
-                        session && requestWrapUp(session, "stopped")
-                      }
+                      onClick={() => session && stopNow(session)}
                     >
                       {phase === "wrapping" ? (
                         <LoaderCircle className="spin" size={17} />
