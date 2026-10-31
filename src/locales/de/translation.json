@@ -2094,6 +2094,7 @@
     "retrySameAnswer": "Sende zuerst deine vorherige Antwort erneut. Sie wurde möglicherweise schon gespeichert.",
     "audioReplyUnavailable": "Deine Antwort ist gespeichert. Du kannst die Antwort der Lehrkraft lesen, während die Audioverbindung wiederhergestellt wird.",
     "microphoneTextFallback": "Das Mikrofon ist nicht verfügbar. Du kannst schriftlich antworten.",
+    "microphoneBlocked": "Der Browser hat das Mikrofon für diese Seite blockiert. Klicke auf das Symbol neben der Adresse, erlaube das Mikrofon und lade die Seite neu.",
     "libraryPractice": "Wiederholung passend zu deinen Wörtern",
     "libraryPracticeHelp": "Eine kurze Übung, passend zu deinem Lernstand.",
     "searchAndFilter": "Suchen und filtern",
@@ -2217,7 +2218,16 @@
   "lessonSummary": {
     "title": "Ein guter Schritt heute",
     "independent": "Was hast du selbstständig gemacht?",
-    "assisted": "Was haben wir mit Hilfe geübt?"
+    "assisted": "Was haben wir mit Hilfe geübt?",
+    "eyebrow": "Lektionsübersicht",
+    "wentWell": "Das lief gut",
+    "oneFocus": "Eine Sache zum Üben",
+    "youSaid": "Du hast gesagt",
+    "tryInstead": "Besser so",
+    "noFocus": "Diesmal gibt es nichts zu korrigieren. Weiter so!",
+    "next": "Dein nächster Schritt",
+    "minutes_one": "{{count}} Minute",
+    "minutes_other": "{{count}} Minuten"
   },
   "authUi": {
     "moreOptions": "Weitere Anmeldeoptionen"

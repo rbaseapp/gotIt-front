@@ -2094,6 +2094,7 @@
     "retrySameAnswer": "Réessayez d’abord votre réponse précédente. Elle est peut-être déjà enregistrée.",
     "audioReplyUnavailable": "Votre réponse est enregistrée. Vous pouvez lire celle du professeur pendant la reconnexion audio.",
     "microphoneTextFallback": "Le microphone est indisponible. Vous pouvez répondre par écrit.",
+    "microphoneBlocked": "Le navigateur a bloqué le micro pour ce site. Cliquez sur l’icône à côté de l’adresse, autorisez le micro et rechargez la page.",
     "libraryPractice": "Une révision adaptée à vos mots",
     "libraryPracticeHelp": "Un exercice court, adapté à votre apprentissage.",
     "searchAndFilter": "Rechercher et filtrer",
@@ -2217,7 +2218,16 @@
   "lessonSummary": {
     "title": "Un beau progrès aujourd’hui",
     "independent": "Qu’avez-vous fait seul ?",
-    "assisted": "Qu’avons-nous pratiqué avec de l’aide ?"
+    "assisted": "Qu’avons-nous pratiqué avec de l’aide ?",
+    "eyebrow": "Résumé de la leçon",
+    "wentWell": "Ce qui s’est bien passé",
+    "oneFocus": "Un point à travailler",
+    "youSaid": "Vous avez dit",
+    "tryInstead": "Essayez plutôt",
+    "noFocus": "Rien à corriger cette fois. Continuez ainsi !",
+    "next": "Votre prochaine étape",
+    "minutes_one": "{{count}} minute",
+    "minutes_other": "{{count}} minutes"
   },
   "authUi": {
     "moreOptions": "Autres options de connexion"

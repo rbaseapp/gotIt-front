@@ -2093,6 +2093,7 @@
     "retrySameAnswer": "Retry your previous answer first. It may already have been saved.",
     "audioReplyUnavailable": "Your answer is saved. You can read the teacher’s response while audio reconnects.",
     "microphoneTextFallback": "The microphone is unavailable. You can answer by typing.",
+    "microphoneBlocked": "Your browser blocked the microphone for this site. Click the icon next to the address, choose Allow for the microphone, and reload the page.",
     "libraryPractice": "Review that fits your words",
     "libraryPracticeHelp": "Short practice, adapted to how you are learning.",
     "searchAndFilter": "Search and filter",
@@ -2216,7 +2217,16 @@
   "lessonSummary": {
     "title": "You took a good step today",
     "independent": "What did you do independently?",
-    "assisted": "What did we practice with help?"
+    "assisted": "What did we practice with help?",
+    "eyebrow": "Lesson summary",
+    "wentWell": "What went well",
+    "oneFocus": "One thing to work on",
+    "youSaid": "You said",
+    "tryInstead": "Try instead",
+    "noFocus": "Nothing to fix this time. Keep it up!",
+    "next": "Your next step",
+    "minutes_one": "{{count}} minute",
+    "minutes_other": "{{count}} minutes"
   },
   "authUi": {
     "moreOptions": "More sign-in options"

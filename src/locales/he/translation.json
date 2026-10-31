@@ -2093,6 +2093,7 @@
     "retrySameAnswer": "נסו שוב לשלוח את התשובה הקודמת. ייתכן שהיא כבר נשמרה.",
     "audioReplyUnavailable": "התשובה נשמרה. אפשר לקרוא את תגובת המורה בזמן שהשמע מתחבר.",
     "microphoneTextFallback": "המיקרופון אינו זמין. אפשר לענות בכתב.",
+    "microphoneBlocked": "הדפדפן חסם את המיקרופון לאתר הזה. לחצו על הסמל שליד הכתובת, בחרו ״אפשר״ למיקרופון ורעננו את הדף.",
     "libraryPractice": "חזרה שמתאימה למילים שלכם",
     "libraryPracticeHelp": "תרגול קצר, לפי מצב הלמידה שלכם.",
     "searchAndFilter": "חיפוש וסינון",
@@ -2216,7 +2217,17 @@
   "lessonSummary": {
     "title": "עשיתם צעד יפה היום",
     "independent": "מה עשיתם לבד?",
-    "assisted": "מה תרגלנו עם עזרה?"
+    "assisted": "מה תרגלנו עם עזרה?",
+    "eyebrow": "סיכום שיעור",
+    "wentWell": "מה הלך טוב",
+    "oneFocus": "דבר אחד לשפר",
+    "youSaid": "אמרתם",
+    "tryInstead": "אפשר גם",
+    "noFocus": "אין מה לתקן הפעם. ממשיכים ככה!",
+    "next": "הצעד הבא",
+    "minutes_one": "דקה אחת",
+    "minutes_two": "שתי דקות",
+    "minutes_other": "{{count}} דקות"
   },
   "authUi": {
     "moreOptions": "אפשרויות כניסה נוספות"

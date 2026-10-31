@@ -2094,6 +2094,7 @@
     "retrySameAnswer": "Reintenta primero tu respuesta anterior. Puede que ya se haya guardado.",
     "audioReplyUnavailable": "Tu respuesta está guardada. Puedes leer la respuesta del profesor mientras se reconecta el audio.",
     "microphoneTextFallback": "El micrófono no está disponible. Puedes responder por escrito.",
+    "microphoneBlocked": "El navegador bloqueó el micrófono para este sitio. Haz clic en el icono junto a la dirección, permite el micrófono y recarga la página.",
     "libraryPractice": "Repaso adaptado a tus palabras",
     "libraryPracticeHelp": "Práctica breve, adaptada a tu aprendizaje.",
     "searchAndFilter": "Buscar y filtrar",
@@ -2217,7 +2218,16 @@
   "lessonSummary": {
     "title": "Hoy diste un buen paso",
     "independent": "¿Qué hiciste por tu cuenta?",
-    "assisted": "¿Qué practicamos con ayuda?"
+    "assisted": "¿Qué practicamos con ayuda?",
+    "eyebrow": "Resumen de la lección",
+    "wentWell": "Lo que salió bien",
+    "oneFocus": "Una cosa para mejorar",
+    "youSaid": "Dijiste",
+    "tryInstead": "Prueba así",
+    "noFocus": "Esta vez no hay nada que corregir. ¡Sigue así!",
+    "next": "Tu siguiente paso",
+    "minutes_one": "{{count}} minuto",
+    "minutes_other": "{{count}} minutos"
   },
   "authUi": {
     "moreOptions": "Más opciones de acceso"

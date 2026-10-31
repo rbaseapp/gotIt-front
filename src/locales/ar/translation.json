@@ -2139,6 +2139,7 @@
     "retrySameAnswer": "أعد إرسال إجابتك السابقة أولًا. ربما تم حفظها بالفعل.",
     "audioReplyUnavailable": "تم حفظ إجابتك. يمكنك قراءة رد المعلم أثناء إعادة اتصال الصوت.",
     "microphoneTextFallback": "الميكروفون غير متاح. يمكنك الإجابة كتابةً.",
+    "microphoneBlocked": "حظر المتصفح الميكروفون لهذا الموقع. انقر على الرمز بجانب العنوان واختر السماح بالميكروفون ثم أعد تحميل الصفحة.",
     "libraryPractice": "مراجعة تناسب كلماتك",
     "libraryPracticeHelp": "تدريب قصير يناسب تقدمك في التعلم.",
     "searchAndFilter": "بحث وتصفية",
@@ -2262,7 +2263,20 @@
   "lessonSummary": {
     "title": "خطوة جيدة اليوم",
     "independent": "ما الذي فعلتموه بشكل مستقل؟",
-    "assisted": "ماذا تدربنا عليه بمساعدة؟"
+    "assisted": "ماذا تدربنا عليه بمساعدة؟",
+    "eyebrow": "ملخص الدرس",
+    "wentWell": "ما سار على ما يرام",
+    "oneFocus": "نقطة واحدة للتحسين",
+    "youSaid": "قلتَ",
+    "tryInstead": "جرّب بدلاً من ذلك",
+    "noFocus": "لا شيء لتصحيحه هذه المرة. واصل!",
+    "next": "خطوتك التالية",
+    "minutes_zero": "{{count}} دقيقة",
+    "minutes_one": "دقيقة واحدة",
+    "minutes_two": "دقيقتان",
+    "minutes_few": "{{count}} دقائق",
+    "minutes_many": "{{count}} دقيقة",
+    "minutes_other": "{{count}} دقيقة"
   },
   "authUi": {
     "moreOptions": "خيارات دخول أخرى"
