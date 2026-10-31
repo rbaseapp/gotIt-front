@@ -460,6 +460,8 @@ export function PrivateLessonPage() {
   /** The learner pressed finish: end at once instead of waiting for a spoken goodbye. */
   const stopNow = (activeSession: PrivateLessonSession) => {
     if (phaseRef.current === "ended") return;
+    // finish() reads the ref in this same call, before the state update renders.
+    reportRequestedRef.current = true;
     setReportRequested(true);
     audioRef.current?.pause();
     window.speechSynthesis?.cancel();

@@ -751,7 +751,7 @@ describe("private voice lesson", () => {
     );
   });
 
-  it("lets the learner request a translation and ends through the recap event", async () => {
+  it("lets the learner request a translation and ends the lesson at once on finish", async () => {
     mocks.create.mockResolvedValue(session);
     mocks.setup.mockResolvedValueOnce({
       ...setup,
@@ -811,13 +811,16 @@ describe("private voice lesson", () => {
       expect.objectContaining(session.realtime.translationEvent),
     );
 
+    // Finishing stops the call and saves the lesson; it does not wait for a spoken goodbye.
+    mocks.complete.mockReturnValue(new Promise(() => undefined));
     await user.click(screen.getByRole("button", { name: "לסיים" }));
     await user.click(screen.getByRole("button", { name: "סיום ושמירה" }));
-    expect(mocks.send).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "session.update" }),
+    expect(mocks.close).toHaveBeenCalled();
+    expect(mocks.complete).toHaveBeenCalledWith(
+      session.lesson.id,
+      expect.objectContaining({ completionReason: "stopped" }),
     );
-    onRealtimeEvent?.({ type: "response.done" });
-    expect(mocks.send).toHaveBeenCalledWith(session.realtime.wrapUpEvent);
+    expect(mocks.send).not.toHaveBeenCalledWith(session.realtime.wrapUpEvent);
   });
 
   it("rejects a server response that could send the ephemeral secret elsewhere", () => {
@@ -933,6 +936,7 @@ describe("private voice lesson", () => {
         await vi.advanceTimersByTimeAsync(30_000);
       });
       expect(mocks.send).toHaveBeenCalledTimes(3);
+      mocks.complete.mockReturnValue(new Promise(() => undefined));
       fireEvent.click(screen.getByRole("button", { name: "לסיים" }));
       fireEvent.click(screen.getByRole("button", { name: "סיום ושמירה" }));
       const sendsAtClosing = mocks.send.mock.calls.length;

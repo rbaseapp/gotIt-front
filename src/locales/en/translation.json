@@ -2226,6 +2226,7 @@
     "noFocus": "Nothing to fix this time. Keep it up!",
     "next": "Your next step",
     "minutes_one": "{{count}} minute",
+    "minutes_two": "{{count}} minutes",
     "minutes_other": "{{count}} minutes"
   },
   "authUi": {

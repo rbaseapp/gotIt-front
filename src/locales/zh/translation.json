@@ -2226,6 +2226,8 @@
     "tryInstead": "可以这样说",
     "noFocus": "这次没有需要纠正的地方，继续保持！",
     "next": "下一步",
+    "minutes_one": "{{count}} 分钟",
+    "minutes_two": "{{count}} 分钟",
     "minutes_other": "{{count}} 分钟"
   },
   "authUi": {

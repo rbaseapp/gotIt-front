@@ -2257,6 +2257,7 @@
     "noFocus": "В этот раз исправлять нечего. Так держать!",
     "next": "Следующий шаг",
     "minutes_one": "{{count}} минута",
+    "minutes_two": "{{count}} минуты",
     "minutes_few": "{{count}} минуты",
     "minutes_many": "{{count}} минут",
     "minutes_other": "{{count}} минуты"

@@ -2272,8 +2272,8 @@
     "noFocus": "لا شيء لتصحيحه هذه المرة. واصل!",
     "next": "خطوتك التالية",
     "minutes_zero": "{{count}} دقيقة",
-    "minutes_one": "دقيقة واحدة",
-    "minutes_two": "دقيقتان",
+    "minutes_one": "{{count}} دقيقة",
+    "minutes_two": "{{count}} دقيقة",
     "minutes_few": "{{count}} دقائق",
     "minutes_many": "{{count}} دقيقة",
     "minutes_other": "{{count}} دقيقة"

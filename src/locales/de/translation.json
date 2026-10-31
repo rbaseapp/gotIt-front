@@ -2227,6 +2227,7 @@
     "noFocus": "Diesmal gibt es nichts zu korrigieren. Weiter so!",
     "next": "Dein nächster Schritt",
     "minutes_one": "{{count}} Minute",
+    "minutes_two": "{{count}} Minuten",
     "minutes_other": "{{count}} Minuten"
   },
   "authUi": {
