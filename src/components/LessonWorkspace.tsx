@@ -80,7 +80,10 @@ export function LessonWorkspace(p: Props) {
   const conversation = p.activity.interactionMode === "conversation";
   const adaptive = p.activity.protocolVersion === "adaptive-v1";
   const stage = ["learn", "try", "chat"].indexOf(p.activity.stage) + 1;
-  const teacherName = t(`privateLesson.voiceOptions.${p.lesson.teacherVoice}`);
+  const moochi = p.lesson.teacherName === "Moochi";
+  const teacherName = moochi
+    ? t("start.tutorIntro.moochiName")
+    : t(`privateLesson.voiceOptions.${p.lesson.teacherVoice}`);
   const voiceActive = p.inputMode === "voice" && !p.microphoneMuted;
   const unavailable = p.busy || !p.ready || submitting || panel !== null;
   const activityEnded =
@@ -562,9 +565,13 @@ export function LessonWorkspace(p: Props) {
           </header>
           <div className="lesson-room-teacher-portrait">
             <TeacherAvatar
-              variant={p.lesson.teacherVoice}
+              variant={moochi ? "moochi" : p.lesson.teacherVoice}
               referencePortrait={
-                p.lesson.teacherVoice === "female" ? teacherFemale : teacherMale
+                moochi
+                  ? undefined
+                  : p.lesson.teacherVoice === "female"
+                    ? teacherFemale
+                    : teacherMale
               }
               activity={p.busy ? "thinking" : "listening"}
               active={connected}

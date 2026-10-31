@@ -196,7 +196,8 @@
       "end1": "A short summary: what went well and what to strengthen",
       "end2": "New words you can add to your pocket",
       "noScoreNote": "The chat is not scored. It helps us fit the plan to you.",
-      "waitHint": "This can take between half a minute and a minute and a half. Stay on this screen, the chat will open by itself."
+      "waitHint": "This can take between half a minute and a minute and a half. Stay on this screen, the chat will open by itself.",
+      "moochiName": "Moochi"
     },
     "mode": {
       "title": "How are you comfortable answering?",

@@ -12,13 +12,47 @@ import tutorMaleListening from "../assets/private-lesson/tutor-listening.png";
 import tutorMaleSpeaking from "../assets/private-lesson/tutor-speaking.png";
 import tutorMaleSpeakingWide from "../assets/private-lesson/tutor-speaking-wide.png";
 import tutorMaleThinking from "../assets/private-lesson/tutor-thinking.png";
+import moochiBlink from "../assets/moochi/moochi-blink.png";
+import moochiListening from "../assets/moochi/moochi-listening.png";
+import moochiRounded from "../assets/moochi/moochi-speaking-rounded.png";
+import moochiSpeaking from "../assets/moochi/moochi-speaking.png";
+import moochiSpeakingWide from "../assets/moochi/moochi-speaking-wide.png";
+import moochiThinking from "../assets/moochi/moochi-thinking.png";
+
+/** Every variant is a set of same-size frames that differ only in the face. */
+const frames = {
+  female: {
+    listening: tutorFemaleListening,
+    speaking: tutorFemaleSpeaking,
+    rounded: tutorFemaleRounded,
+    wide: tutorFemaleSpeakingWide,
+    blink: tutorFemaleBlink,
+    thinking: tutorFemaleThinking,
+  },
+  male: {
+    listening: tutorMaleListening,
+    speaking: tutorMaleSpeaking,
+    rounded: tutorMaleRounded,
+    wide: tutorMaleSpeakingWide,
+    blink: tutorMaleBlink,
+    thinking: tutorMaleThinking,
+  },
+  moochi: {
+    listening: moochiListening,
+    speaking: moochiSpeaking,
+    rounded: moochiRounded,
+    wide: moochiSpeakingWide,
+    blink: moochiBlink,
+    thinking: moochiThinking,
+  },
+} as const;
 
 type TeacherAvatarProps = {
   activity: "idle" | "listening" | "thinking";
   audioLevel: number;
   active: boolean;
   label: string;
-  variant: "female" | "male";
+  variant: "female" | "male" | "moochi";
   referencePortrait?: string;
 };
 
@@ -36,15 +70,7 @@ export function TeacherAvatar({
       : 0;
   const mouth = avatarMouth(level);
   const visualActivity = mouth.speaking ? "speaking" : activity;
-  const listeningImage =
-    variant === "female" ? tutorFemaleListening : tutorMaleListening;
-  const speakingImage =
-    variant === "female" ? tutorFemaleSpeaking : tutorMaleSpeaking;
-  const speakingWideImage =
-    variant === "female" ? tutorFemaleSpeakingWide : tutorMaleSpeakingWide;
-  const blinkImage = variant === "female" ? tutorFemaleBlink : tutorMaleBlink;
-  const thinkingImage =
-    variant === "female" ? tutorFemaleThinking : tutorMaleThinking;
+  const set = frames[variant];
 
   return (
     <div
@@ -67,24 +93,20 @@ export function TeacherAvatar({
     >
       <span className="teacher-avatar-ring" aria-hidden="true" />
       <span className="teacher-avatar-portrait" aria-hidden="true">
-        <img src={referencePortrait || listeningImage} alt="" />
+        <img src={referencePortrait || set.listening} alt="" />
         <img
           className="teacher-avatar-thinking-frame"
-          src={thinkingImage}
+          src={set.thinking}
           alt=""
         />
-        <img className="teacher-avatar-speaking" src={speakingImage} alt="" />
+        <img className="teacher-avatar-speaking" src={set.speaking} alt="" />
         <img
           className="teacher-avatar-speaking-rounded"
-          src={variant === "female" ? tutorFemaleRounded : tutorMaleRounded}
+          src={set.rounded}
           alt=""
         />
-        <img
-          className="teacher-avatar-speaking-wide"
-          src={speakingWideImage}
-          alt=""
-        />
-        <img className="teacher-avatar-blink" src={blinkImage} alt="" />
+        <img className="teacher-avatar-speaking-wide" src={set.wide} alt="" />
+        <img className="teacher-avatar-blink" src={set.blink} alt="" />
       </span>
       <span className="teacher-avatar-thinking" aria-hidden="true">
         <i /> <i /> <i />

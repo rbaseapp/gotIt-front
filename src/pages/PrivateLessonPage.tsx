@@ -3221,9 +3221,11 @@ export function PrivateLessonPage() {
                   <span>
                     <UserRound size={16} />
                     {session &&
-                      t(
-                        `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
-                      )}
+                      (session.lesson.teacherName === "Moochi"
+                        ? t("start.tutorIntro.moochiName")
+                        : t(
+                            `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
+                          ))}
                   </span>
                   <span>
                     <Gauge size={16} />
@@ -3308,16 +3310,22 @@ export function PrivateLessonPage() {
                         audioLevel={tutorAudioLevel}
                         active={phase === "active" || phase === "wrapping"}
                         label={status}
-                        variant={session?.lesson.teacherVoice ?? teacherVoice}
+                        variant={
+                          session?.lesson.teacherName === "Moochi"
+                            ? "moochi"
+                            : (session?.lesson.teacherVoice ?? teacherVoice)
+                        }
                       />
                       <div
                         className="private-lesson-tutor-caption"
                         aria-live="polite"
                       >
                         <strong>
-                          {t(
-                            `privateLesson.voiceOptions.${session?.lesson.teacherVoice ?? teacherVoice}`,
-                          )}
+                          {session?.lesson.teacherName === "Moochi"
+                            ? t("start.tutorIntro.moochiName")
+                            : t(
+                                `privateLesson.voiceOptions.${session?.lesson.teacherVoice ?? teacherVoice}`,
+                              )}
                         </strong>
                         <span>{status}</span>
                       </div>

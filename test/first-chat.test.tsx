@@ -3,6 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { expect, it, vi } from "vitest";
 import { TutorInvite } from "../src/components/onboarding/AccountFinish";
 import { FirstChatIntro } from "../src/components/FirstChatIntro";
+import { TeacherAvatar } from "../src/components/TeacherAvatar";
 
 vi.mock("../src/context/AppContext", () => ({
   useApp: () => ({ user: { id: "u1" } }),
@@ -112,4 +113,20 @@ it("says it is preparing while the chat is being set up", () => {
     screen.getByRole("button", { name: /מכינים את השיעור/ }),
   ).toBeDisabled();
   expect(screen.getByRole("status")).toHaveTextContent("דקה וחצי");
+});
+
+it("draws Moochi from his own set of frames", () => {
+  const { container } = render(
+    <TeacherAvatar
+      variant="moochi"
+      activity="listening"
+      audioLevel={0}
+      active
+      label="Moochi"
+    />,
+  );
+  expect(container.querySelector(".teacher-avatar.moochi")).not.toBeNull();
+  expect(
+    container.querySelectorAll(".teacher-avatar-portrait img"),
+  ).toHaveLength(6);
 });

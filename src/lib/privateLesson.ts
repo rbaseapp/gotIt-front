@@ -326,6 +326,8 @@ export const privateLessonSessionSchema = z.object({
     vocabularyMode: z.enum(privateLessonVocabularyModes),
     continuesFromLessonId: uuid.nullable(),
     teacherVoice: z.enum(["female", "male"]),
+    /** Set when a character such as Moochi hosts the lesson. */
+    teacherName: z.string().min(1).max(40).optional(),
     speechRate: z.enum(privateLessonSpeechRates),
     targetWords: z.array(
       z.object({

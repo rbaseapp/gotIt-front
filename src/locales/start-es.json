@@ -194,7 +194,8 @@
       "end1": "Un resumen breve: qué fue bien y qué reforzar",
       "end2": "Palabras nuevas que puedes añadir a tu bolsillo",
       "noScoreNote": "La charla no tiene nota. Nos ayuda a ajustar el plan a ti.",
-      "waitHint": "Puede tardar entre 30 segundos y minuto y medio. Quédate en esta pantalla, la charla se abrirá sola."
+      "waitHint": "Puede tardar entre 30 segundos y minuto y medio. Quédate en esta pantalla, la charla se abrirá sola.",
+      "moochiName": "Moochi"
     },
     "mode": {
       "title": "¿Cómo te resulta más cómodo responder?",
