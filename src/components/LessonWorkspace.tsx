@@ -369,7 +369,7 @@ export function LessonWorkspace(p: Props) {
                 <LoaderCircle className="spin" size={16} />
                 {t(`lessonRoom.${teacherState}`, {
                   teacher: teacherName,
-                  context: p.lesson.teacherVoice,
+                  context: moochi ? "male" : p.lesson.teacherVoice,
                 })}
               </p>
             )}
@@ -582,7 +582,7 @@ export function LessonWorkspace(p: Props) {
               <img src={micStatusIcon} alt="" />
               {t(`lessonRoom.${teacherState}`, {
                 teacher: teacherName,
-                context: p.lesson.teacherVoice,
+                context: moochi ? "male" : p.lesson.teacherVoice,
               })}
             </span>
           </div>
@@ -620,7 +620,7 @@ export function LessonWorkspace(p: Props) {
           <p className="lesson-room-mobile-status" role="status">
             {t(`lessonRoom.${teacherState}`, {
               teacher: teacherName,
-              context: p.lesson.teacherVoice,
+              context: moochi ? "male" : p.lesson.teacherVoice,
             })}
           </p>
         </aside>

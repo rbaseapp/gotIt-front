@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { avatarMouth } from "../lib/avatarMotion";
+import { MoochiLayers } from "./MoochiLayers";
 import tutorFemaleRounded from "../assets/private-lesson/tutor-female-speaking-rounded.png";
 import tutorMaleRounded from "../assets/private-lesson/tutor-speaking-rounded.png";
 import tutorFemaleBlink from "../assets/private-lesson/tutor-female-blink.png";
@@ -12,12 +13,6 @@ import tutorMaleListening from "../assets/private-lesson/tutor-listening.png";
 import tutorMaleSpeaking from "../assets/private-lesson/tutor-speaking.png";
 import tutorMaleSpeakingWide from "../assets/private-lesson/tutor-speaking-wide.png";
 import tutorMaleThinking from "../assets/private-lesson/tutor-thinking.png";
-import moochiBlink from "../assets/moochi/moochi-blink.png";
-import moochiListening from "../assets/moochi/moochi-listening.png";
-import moochiRounded from "../assets/moochi/moochi-speaking-rounded.png";
-import moochiSpeaking from "../assets/moochi/moochi-speaking.png";
-import moochiSpeakingWide from "../assets/moochi/moochi-speaking-wide.png";
-import moochiThinking from "../assets/moochi/moochi-thinking.png";
 
 /** Every variant is a set of same-size frames that differ only in the face. */
 const frames = {
@@ -36,14 +31,6 @@ const frames = {
     wide: tutorMaleSpeakingWide,
     blink: tutorMaleBlink,
     thinking: tutorMaleThinking,
-  },
-  moochi: {
-    listening: moochiListening,
-    speaking: moochiSpeaking,
-    rounded: moochiRounded,
-    wide: moochiSpeakingWide,
-    blink: moochiBlink,
-    thinking: moochiThinking,
   },
 } as const;
 
@@ -70,7 +57,7 @@ export function TeacherAvatar({
       : 0;
   const mouth = avatarMouth(level);
   const visualActivity = mouth.speaking ? "speaking" : activity;
-  const set = frames[variant];
+  const set = variant === "moochi" ? null : frames[variant];
 
   return (
     <div
@@ -92,22 +79,32 @@ export function TeacherAvatar({
       aria-label={label}
     >
       <span className="teacher-avatar-ring" aria-hidden="true" />
-      <span className="teacher-avatar-portrait" aria-hidden="true">
-        <img src={referencePortrait || set.listening} alt="" />
-        <img
-          className="teacher-avatar-thinking-frame"
-          src={set.thinking}
-          alt=""
-        />
-        <img className="teacher-avatar-speaking" src={set.speaking} alt="" />
-        <img
-          className="teacher-avatar-speaking-rounded"
-          src={set.rounded}
-          alt=""
-        />
-        <img className="teacher-avatar-speaking-wide" src={set.wide} alt="" />
-        <img className="teacher-avatar-blink" src={set.blink} alt="" />
-      </span>
+      {set === null ? (
+        <span className="teacher-avatar-portrait" aria-hidden="true">
+          <MoochiLayers
+            activity={activity}
+            audioLevel={audioLevel}
+            active={active}
+          />
+        </span>
+      ) : (
+        <span className="teacher-avatar-portrait" aria-hidden="true">
+          <img src={referencePortrait || set.listening} alt="" />
+          <img
+            className="teacher-avatar-thinking-frame"
+            src={set.thinking}
+            alt=""
+          />
+          <img className="teacher-avatar-speaking" src={set.speaking} alt="" />
+          <img
+            className="teacher-avatar-speaking-rounded"
+            src={set.rounded}
+            alt=""
+          />
+          <img className="teacher-avatar-speaking-wide" src={set.wide} alt="" />
+          <img className="teacher-avatar-blink" src={set.blink} alt="" />
+        </span>
+      )}
       <span className="teacher-avatar-thinking" aria-hidden="true">
         <i /> <i /> <i />
       </span>

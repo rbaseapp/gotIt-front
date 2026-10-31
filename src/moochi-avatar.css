@@ -1,0 +1,76 @@
+/* Moochi's layered avatar (see MoochiLayers). Masks are percent of the square frame. */
+.moochi-layers {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.moochi-layers img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0;
+}
+.moochi-pose {
+  transition: opacity 260ms ease-in-out;
+}
+.moochi-pose[data-on] {
+  opacity: 1;
+}
+/* the resting pose stays underneath, so a change of gesture never shows an empty frame */
+.moochi-pose:first-child {
+  opacity: 1;
+}
+.moochi-mouth {
+  transition: opacity 90ms linear;
+  -webkit-mask-image: radial-gradient(
+    ellipse 15% 11% at 53% 57%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 15% 11% at 53% 57%,
+    #000 70%,
+    transparent 100%
+  );
+}
+.moochi-look {
+  transition: opacity 140ms ease-out;
+  -webkit-mask-image: radial-gradient(
+    ellipse 33% 24% at 53% 50%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 33% 24% at 53% 50%,
+    #000 70%,
+    transparent 100%
+  );
+}
+.moochi-look[data-look="blink"] {
+  transition-duration: 50ms;
+  -webkit-mask-image: radial-gradient(
+    ellipse 33% 14% at 53% 45%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 33% 14% at 53% 45%,
+    #000 70%,
+    transparent 100%
+  );
+}
+.moochi-mouth[data-on],
+.moochi-look[data-on] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .moochi-pose,
+  .moochi-mouth,
+  .moochi-look {
+    transition: none;
+  }
+}

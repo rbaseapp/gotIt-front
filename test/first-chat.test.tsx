@@ -115,18 +115,20 @@ it("says it is preparing while the chat is being set up", () => {
   expect(screen.getByRole("status")).toHaveTextContent("דקה וחצי");
 });
 
-it("draws Moochi from his own set of frames", () => {
+it("draws Moochi as layered frames: poses, mouths and looks", () => {
   const { container } = render(
     <TeacherAvatar
       variant="moochi"
       activity="listening"
-      audioLevel={0}
+      audioLevel={0.5}
       active
       label="Moochi"
     />,
   );
   expect(container.querySelector(".teacher-avatar.moochi")).not.toBeNull();
-  expect(
-    container.querySelectorAll(".teacher-avatar-portrait img"),
-  ).toHaveLength(6);
+  expect(container.querySelectorAll(".moochi-pose")).toHaveLength(6);
+  expect(container.querySelectorAll(".moochi-mouth")).toHaveLength(5);
+  expect(container.querySelectorAll(".moochi-look")).toHaveLength(6);
+  // A loud voice opens exactly one mouth.
+  expect(container.querySelectorAll(".moochi-mouth[data-on]")).toHaveLength(1);
 });

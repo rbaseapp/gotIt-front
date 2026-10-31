@@ -708,48 +708,8 @@
 .teacher-avatar.female .teacher-avatar-blink {
   animation-delay: -2.9s;
 }
-/* Moochi: the same frame trick, with each mask placed on his own face (percent of the square frame). */
 .teacher-avatar.moochi .teacher-avatar-portrait {
   border-radius: 0;
-}
-.teacher-avatar.moochi .teacher-avatar-speaking,
-.teacher-avatar.moochi .teacher-avatar-speaking-rounded,
-.teacher-avatar.moochi .teacher-avatar-speaking-wide {
-  -webkit-mask-image: radial-gradient(
-    ellipse 12% 10% at 55% 53%,
-    #000 70%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 12% 10% at 55% 53%,
-    #000 70%,
-    transparent 100%
-  );
-}
-.teacher-avatar.moochi .teacher-avatar-blink {
-  animation-delay: -1.7s;
-  -webkit-mask-image: radial-gradient(
-    ellipse 36% 13% at 56.5% 41%,
-    #000 70%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 36% 13% at 56.5% 41%,
-    #000 70%,
-    transparent 100%
-  );
-}
-.teacher-avatar.moochi .teacher-avatar-thinking-frame {
-  -webkit-mask-image: radial-gradient(
-    ellipse 30% 18% at 57% 38%,
-    #000 70%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 30% 18% at 57% 38%,
-    #000 70%,
-    transparent 100%
-  );
 }
 .teacher-avatar-thinking {
   position: absolute;
