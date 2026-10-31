@@ -1,14 +1,15 @@
 # Moochi's frames
 
-Cut from two generated sheets (magenta background keyed out), aligned on his pupils, 512x512
-WebP with transparency. `MoochiLayers` stacks them and cross-fades:
+`canvas/*.png` are the 1024x1024 layers of the avatar (cut from a layered canvas prototype).
+`MoochiCanvasEngine` (`src/lib/moochiCanvasEngine.ts`) composes them
+on a canvas every frame:
 
-- `pose-*.webp`: the body with the calm face. rest, wave, explain, idea, thumbs, think.
-- `mouth-*.webp`: arms down, a mouth for the voice (soft, mid, wide, round, ee). Shown over any pose
-  through a mouth mask (`src/moochi-avatar.css`).
-- `look-*.webp`: arms down, a look for the eyes and brows (blink, happy, thinking, surprised,
-  encouraging, empathetic), shown through an eyes-and-face mask.
+- `body`: the body and head, cut at the neck so the upper body can nod and tilt.
+- `arms-N-back` / `arms-N-front`: arm sets, N = 0 rest, 1 wave, 2 explain, 3 and 4 gestures,
+  5 hand on the chin. Drawn behind and in front of the body.
+- `eyes-N`: 0 open, 1 thinking, 2 closed (the eyelid), 3 happy, 4 surprised. Blinks close an
+  aperture of the open patch over the closed one.
+- `brows-N`: 0 neutral, 1 raised, 2 empathetic, 3 thinking.
+- `mouth-*`: REST, MBP, EH, AH (blended by voice level), OO, EE.
 
-The overlays only work if the head sits in the same place in every file. To redo a set, keep the
-head, body and position identical and change only the face (overlays) or only the arms (poses).
-Motion rules (which mouth, when to gesture) are in `src/lib/moochiMotion.ts`.
+Every layer must keep the head in the same place; to redo a set, change only that part.
