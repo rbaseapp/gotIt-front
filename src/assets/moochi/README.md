@@ -1,8 +1,8 @@
 # Moochi frames for the lesson avatar
 
 `TeacherAvatar` (variant `moochi`) stacks six same-size frames and cross-fades them with the
-audio level. They are square 640x640 transparent PNGs of the SAME image (`moochi-base.png`),
-differing only in the face. Today all six are copies of the base; replace them one by one.
+audio level. They were cut from one generated sheet (3 columns x 2 rows, magenta background keyed out)
+and are square 640x640 transparent PNGs that differ only in the face. `moochi-base.png` is the calm frame.
 
 | File | What changes |
 | --- | --- |
@@ -13,6 +13,7 @@ differing only in the face. Today all six are copies of the base; replace them o
 | `moochi-blink.png` | eyes closed, mouth as in `moochi-listening.png` |
 | `moochi-thinking.png` | eyes up and to the side, eyebrow raised, small closed mouth |
 
-The CSS blends only these regions (percent of the 640x640 canvas): the mouth around
-x 58%, y 59% (about 70x50 px) and the eyes around y 48-53%, x 43-70%. Keep the body, card,
-marker, outline and position identical in every frame, and keep the face inside those regions.
+The CSS blends only the face, with one mask per frame kind in `src/production.css`
+(`.teacher-avatar.moochi ...`): the mouth around x 55%, y 53%, the eyes around x 56%, y 41%, and the
+eyebrows and eyes for the thinking frame. To redo the set, keep the body, card and position identical
+in every frame and the face inside those regions.
