@@ -762,17 +762,12 @@ describe("private voice lesson", () => {
       },
     });
     mocks.send.mockClear();
-    let onRealtimeEvent: ((event: Record<string, unknown>) => void) | undefined;
     mocks.connect.mockImplementation(
       async (
         _session: unknown,
         _audio: unknown,
-        handlers: {
-          onOpen: () => void;
-          onEvent: (event: Record<string, unknown>) => void;
-        },
+        handlers: { onOpen: () => void },
       ) => {
-        onRealtimeEvent = handlers.onEvent;
         handlers.onOpen();
         return {
           close: mocks.close,
