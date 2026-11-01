@@ -192,7 +192,7 @@ export function FocusListeningGame({
               {t(`focusGames.${message}`)}
             </span>
             <img
-              src={`/assets/focus-games/${revealed || wrong ? "ca7eb57e214f95982b1ec7c97db2ba06.png" : outcome && solved(outcome) ? "bde805db24f53a66deb4ebb27c828b6d.png" : "8e5757cae684c7eacfb7443c14cdd330.png"}`}
+              src={`/assets/focus-games/${revealed || wrong ? "ca7eb57e214f95982b1ec7c97db2ba06.webp" : outcome && solved(outcome) ? "bde805db24f53a66deb4ebb27c828b6d.webp" : "8e5757cae684c7eacfb7443c14cdd330.webp"}`}
               alt=""
             />
           </div>

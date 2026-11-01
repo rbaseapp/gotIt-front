@@ -7,14 +7,14 @@ import {
 } from "../lib/moochiCanvasEngine";
 import "../moochi-avatar.css";
 
-const FRAMES = import.meta.glob("../assets/moochi/canvas/*.png", {
+const FRAMES = import.meta.glob("../assets/moochi/canvas/*.webp", {
   eager: true,
   query: "?url",
   import: "default",
 }) as Record<string, string>;
 const ASSETS = Object.fromEntries(
   Object.entries(FRAMES).map(([path, url]) => [
-    path.slice(path.lastIndexOf("/") + 1, -".png".length),
+    path.slice(path.lastIndexOf("/") + 1, -".webp".length),
     url,
   ]),
 );

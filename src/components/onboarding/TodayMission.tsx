@@ -1,12 +1,10 @@
-import { useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import moochi from "../../assets/ux/dashboard-moohi.png";
+import moochi from "../../assets/ux/dashboard-moohi.webp";
 import { useApp } from "../../context/AppContext";
 import { useSubscription } from "../../context/SubscriptionContext";
 import { firstRunSkipped } from "../../lib/onboarding/firstRun";
-import { curriculumApi } from "../../lib/structuredEnglish";
-import { useResource } from "../../lib/useResource";
+import { useCurriculum } from "../../lib/useCurriculum";
 import "../../onboarding.css";
 
 const DAY = 86_400_000;
@@ -20,7 +18,7 @@ export function TodayMission({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const { status } = useSubscription();
   const { user } = useApp();
-  const curriculum = useResource(useCallback(() => curriculumApi.get(), []));
+  const curriculum = useCurriculum();
   const data = curriculum.data;
   const placed = data?.onboarding;
   // Someone who chose "not now" on their first visit gets a gentle way back to the check.

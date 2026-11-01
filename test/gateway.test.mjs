@@ -4,6 +4,7 @@ import http from "node:http";
 import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { brotliCompressSync } from "node:zlib";
 import {
   createGateway,
   configuration,
@@ -81,6 +82,12 @@ before(async () => {
     '<!doctype html><title>GotIt</title><meta property="og:image" content="/og-image.png" />',
   );
   await writeFile(join(directory, "assets", "app.js"), "export default 1");
+  // A large asset and the build's precompressed copy, which says so, to prove the copy is served.
+  await writeFile(join(directory, "assets", "big.js"), `export const a = "${"x".repeat(4000)}";`);
+  await writeFile(
+    join(directory, "assets", "big.js.br"),
+    brotliCompressSync(`export const a = "precompressed ${"y".repeat(4000)}";`),
+  );
   await writeFile(
     join(
       directory,
@@ -119,6 +126,11 @@ before(async () => {
         res.end("<!doctype html><title>Starting service</title>");
         return;
       }
+    }
+    if (req.url === "/api/v1/big") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ items: Array.from({ length: 300 }, (_, i) => ({ i })) }));
+      return;
     }
     if (req.url === "/api/v1/realtime/connect") {
       res.writeHead(200, { "Content-Type": "application/sdp" });
@@ -242,6 +254,24 @@ describe("production frontend gateway", () => {
     const asset = await fetch(`${gatewayOrigin}/assets/app.js`);
     assert.match(asset.headers.get("cache-control"), /immutable/);
     assert.equal(await asset.text(), "export default 1");
+  });
+  it("sends text compressed: the precompressed asset copy and API answers", async () => {
+    const asset = await fetch(`${gatewayOrigin}/assets/big.js`, {
+      headers: { "Accept-Encoding": "br" },
+    });
+    assert.equal(asset.headers.get("content-encoding"), "br");
+    assert.equal(asset.headers.get("vary"), "Accept-Encoding");
+    assert.match(await asset.text(), /^export const a = "precompressed y/);
+    const plain = await fetch(`${gatewayOrigin}/assets/big.js`, {
+      headers: { "Accept-Encoding": "identity" },
+    });
+    assert.equal(plain.headers.get("content-encoding"), null);
+    assert.match(await plain.text(), /^export const a = "xxx/);
+    const api = await fetch(`${gatewayOrigin}/gotit-api/api/v1/big`, {
+      headers: { "Accept-Encoding": "gzip" },
+    });
+    assert.equal(api.headers.get("content-encoding"), "gzip");
+    assert.equal((await api.json()).items.length, 300);
   });
   it("serves only the Apple Pay association file from .well-known", async () => {
     const association = await fetch(

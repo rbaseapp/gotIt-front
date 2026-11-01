@@ -10,8 +10,8 @@ import {
   type LessonActivity,
   type PrivateLessonSession,
 } from "../lib/privateLesson";
-import teacherFemale from "../assets/ux/lesson-teacher-female.png";
-import teacherMale from "../assets/ux/lesson-teacher-male.png";
+import teacherFemale from "../assets/ux/lesson-teacher-female.webp";
+import teacherMale from "../assets/ux/lesson-teacher-male.webp";
 import bookIcon from "../assets/lesson-v3/book.svg";
 import bookSmallIcon from "../assets/lesson-v3/book-small.svg";
 import micIcon from "../assets/lesson-v3/mic.svg";

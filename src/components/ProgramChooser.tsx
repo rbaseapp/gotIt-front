@@ -18,8 +18,8 @@ import { LanguageCombobox } from "./LanguageCombobox";
 import { LanguageFlag } from "./LanguageFlag";
 import { RemoteState } from "./RemoteState";
 import { getLanguageOptions } from "../lib/languages";
-import books from "../assets/program-chooser/books.png";
-import mohi from "../assets/program-chooser/mohi.png";
+import books from "../assets/program-chooser/books.webp";
+import mohi from "../assets/program-chooser/mohi.webp";
 import "../program-chooser.css";
 
 type Props = {

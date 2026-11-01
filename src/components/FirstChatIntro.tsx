@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import moochi from "../assets/ux/dashboard-moohi.png";
+import moochi from "../assets/ux/dashboard-moohi.webp";
 import "../first-chat.css";
 
 type Mode = "voice" | "text";

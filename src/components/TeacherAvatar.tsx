@@ -1,18 +1,18 @@
 import type { CSSProperties } from "react";
 import { avatarMouth } from "../lib/avatarMotion";
 import { MoochiLayers } from "./MoochiLayers";
-import tutorFemaleRounded from "../assets/private-lesson/tutor-female-speaking-rounded.png";
-import tutorMaleRounded from "../assets/private-lesson/tutor-speaking-rounded.png";
-import tutorFemaleBlink from "../assets/private-lesson/tutor-female-blink.png";
-import tutorFemaleListening from "../assets/private-lesson/tutor-female-listening.png";
-import tutorFemaleSpeaking from "../assets/private-lesson/tutor-female-speaking.png";
-import tutorFemaleSpeakingWide from "../assets/private-lesson/tutor-female-speaking-wide.png";
-import tutorFemaleThinking from "../assets/private-lesson/tutor-female-thinking.png";
-import tutorMaleBlink from "../assets/private-lesson/tutor-blink.png";
-import tutorMaleListening from "../assets/private-lesson/tutor-listening.png";
-import tutorMaleSpeaking from "../assets/private-lesson/tutor-speaking.png";
-import tutorMaleSpeakingWide from "../assets/private-lesson/tutor-speaking-wide.png";
-import tutorMaleThinking from "../assets/private-lesson/tutor-thinking.png";
+import tutorFemaleRounded from "../assets/private-lesson/tutor-female-speaking-rounded.webp";
+import tutorMaleRounded from "../assets/private-lesson/tutor-speaking-rounded.webp";
+import tutorFemaleBlink from "../assets/private-lesson/tutor-female-blink.webp";
+import tutorFemaleListening from "../assets/private-lesson/tutor-female-listening.webp";
+import tutorFemaleSpeaking from "../assets/private-lesson/tutor-female-speaking.webp";
+import tutorFemaleSpeakingWide from "../assets/private-lesson/tutor-female-speaking-wide.webp";
+import tutorFemaleThinking from "../assets/private-lesson/tutor-female-thinking.webp";
+import tutorMaleBlink from "../assets/private-lesson/tutor-blink.webp";
+import tutorMaleListening from "../assets/private-lesson/tutor-listening.webp";
+import tutorMaleSpeaking from "../assets/private-lesson/tutor-speaking.webp";
+import tutorMaleSpeakingWide from "../assets/private-lesson/tutor-speaking-wide.webp";
+import tutorMaleThinking from "../assets/private-lesson/tutor-thinking.webp";
 
 /** Every variant is a set of same-size frames that differ only in the face. */
 const frames = {

@@ -26,7 +26,7 @@ import { SettingsProfile } from "../components/settings/SettingsProfile";
 
 import { settingsSection, type SettingsSection } from "../lib/settingsDesign";
 import logo from "../assets/settings/logo-on-dark.svg";
-import mohi from "../assets/program-chooser/mohi.png";
+import mohi from "../assets/program-chooser/mohi.webp";
 import "./DevSettingsPage.css";
 
 const sections: { id: SettingsSection; icon: LucideIcon }[] = [

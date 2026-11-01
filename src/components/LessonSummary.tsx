@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight, Check, Clock, Compass, Target } from "lucide-react";
 import { lessonTopic, type SavedPrivateLesson } from "../lib/privateLesson";
 import { LessonHomeworkCard } from "../pages/HomeworkPage";
-import moochi from "../assets/ux/dashboard-moohi.png";
+import moochi from "../assets/ux/dashboard-moohi.webp";
 import "./LessonSummary.css";
 
 const MAX_WINS = 3;

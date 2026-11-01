@@ -1,11 +1,10 @@
-import { useCallback, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LoaderCircle } from "lucide-react";
-import moochi from "../../assets/ux/dashboard-moohi.png";
+import moochi from "../../assets/ux/dashboard-moohi.webp";
 import { useSubscription } from "../../context/SubscriptionContext";
-import { curriculumApi } from "../../lib/structuredEnglish";
-import { useResource } from "../../lib/useResource";
+import { useCurriculum } from "../../lib/useCurriculum";
 import "../../onboarding.css";
 
 /** What is behind the paywall, and what stays free. Never a dead end. */
@@ -98,7 +97,7 @@ export function TutorAccess({ children }: { children: ReactNode }) {
   const { status, loading, hasEntitlement } = useSubscription();
   const location = useLocation();
   const programLesson = /[?&](course|pack|curriculum)=/.test(location.search);
-  const curriculum = useResource(useCallback(() => curriculumApi.get(), []));
+  const curriculum = useCurriculum();
   if (programLesson) return <>{children}</>;
   if (loading || (curriculum.loading && !curriculum.data)) return <Loading />;
   if (status && !hasEntitlement("tutor.session"))

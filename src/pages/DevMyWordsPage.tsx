@@ -54,7 +54,7 @@ import {
   type WordCard,
 } from "../lib/myWords";
 import { speak } from "../lib/utils";
-import moohi from "../assets/mywords/moohi.png";
+import moohi from "../assets/mywords/moohi.webp";
 import wave from "../assets/mywords/card-wave.svg";
 import "../dashboard-design.css";
 import "../mywords-design.css";

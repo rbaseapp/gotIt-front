@@ -1,6 +1,6 @@
 # Moochi's frames
 
-`canvas/*.png` are the 1024x1024 layers of the avatar (cut from a layered canvas prototype).
+`canvas/*.webp` are the 1024x1024 layers of the avatar (cut from a layered canvas prototype).
 `MoochiCanvasEngine` (`src/lib/moochiCanvasEngine.ts`) composes them
 on a canvas every frame:
 

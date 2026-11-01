@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BookOpen, Headphones, Mic, Pause, Save, Volume2 } from "lucide-react";
 import { RemoteState } from "../components/RemoteState";
 import { CurriculumPicture } from "../components/CurriculumPicture";
-import { useResource } from "../lib/useResource";
+import { useCurriculum } from "../lib/useCurriculum";
 import {
   curriculumApi,
   type CurriculumAttempt,
@@ -35,7 +35,7 @@ type Operation = { key: string; id: string; revision?: number };
 export function StructuredEnglishPage() {
   const { t } = useTranslation(),
     { user } = useApp();
-  const resource = useResource(useCallback(() => curriculumApi.get(), []));
+  const resource = useCurriculum();
   const data = resource.data;
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();

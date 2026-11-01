@@ -11,7 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { useSubscription } from "../../context/SubscriptionContext";
 import { OnboardingFrame } from "./OnboardingFrame";
-import moochi from "../../assets/ux/dashboard-moohi.png";
+import moochi from "../../assets/ux/dashboard-moohi.webp";
 import { canMeetTutor } from "../../lib/onboarding/tutorIntro";
 import { claimOnboarding, saveFirstWords } from "../../lib/onboarding/claim";
 import { bandInfo, wordsPerMonth } from "../../lib/placement/plan";

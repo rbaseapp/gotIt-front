@@ -9,8 +9,8 @@ import {
   type PrivateLessonPreferences,
 } from "../../lib/privateLesson";
 import { SettingsSave, SettingsChoice } from "./SettingsControls";
-import female from "../../assets/ux/lesson-teacher-female.png";
-import male from "../../assets/ux/lesson-teacher-male.png";
+import female from "../../assets/ux/lesson-teacher-female.webp";
+import male from "../../assets/ux/lesson-teacher-male.webp";
 export function SettingsTeacher({
   focusOnly = false,
 }: {

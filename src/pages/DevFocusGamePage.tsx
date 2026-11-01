@@ -75,15 +75,15 @@ import "./focus-alignment.css";
 
 const illustration: Record<string, string> = {
   flashcards: "e28750e6768b5cd33105d9344bdbad43.webp",
-  matching: "a67fd6c3d45b63c8f34e39a5dea8f8ed.png",
-  drag_drop: "7ff4938f80f89b8a21791ae3d201a5f4.png",
-  listening: "8e5757cae684c7eacfb7443c14cdd330.png",
-  pronunciation: "703fa3e9006db9a761d4d5213c3bd2f0.png",
-  recall: "733b27676bf58853b6acebeed59264ef.png",
-  happy: "bde805db24f53a66deb4ebb27c828b6d.png",
-  cheer: "ac2043dc49a4f45c8fa8996719ca255e.png",
-  oops: "ca7eb57e214f95982b1ec7c97db2ba06.png",
-  goodbye: "afcd891e01809cf8a490a080aa9bb8f0.png",
+  matching: "a67fd6c3d45b63c8f34e39a5dea8f8ed.webp",
+  drag_drop: "7ff4938f80f89b8a21791ae3d201a5f4.webp",
+  listening: "8e5757cae684c7eacfb7443c14cdd330.webp",
+  pronunciation: "703fa3e9006db9a761d4d5213c3bd2f0.webp",
+  recall: "733b27676bf58853b6acebeed59264ef.webp",
+  happy: "bde805db24f53a66deb4ebb27c828b6d.webp",
+  cheer: "ac2043dc49a4f45c8fa8996719ca255e.webp",
+  oops: "ca7eb57e214f95982b1ec7c97db2ba06.webp",
+  goodbye: "afcd891e01809cf8a490a080aa9bb8f0.webp",
 };
 const art = (name: string) =>
   `/assets/focus-games/${illustration[name] ?? illustration.happy}`;

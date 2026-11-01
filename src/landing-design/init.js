@@ -115,10 +115,10 @@ $$('[data-game]').forEach(button => button.addEventListener('click', () => selec
 bindTabs($$('[data-game]'), selectGame, 'vertical');
 function feedback(text, isError = false) { $('.game-feedback', panel).textContent = text; $('.game-feedback', panel).classList.toggle('error', isError); }
 let matchResizeObserver = null;
-const gameShot = { flash:'game-flash-front.png',match:'game-match.png',fill:'game-fill.png',listen:'game-listen.png',speak:null };
+const gameShot = { flash:'game-flash-front.webp',match:'game-match.webp',fill:'game-fill.webp',listen:'game-listen.webp',speak:null };
 const screenDialog = $('#screen-dialog');
 $('#show-game-screen').addEventListener('click', () => {
- const file = game === 'flash' && $('.flashcard')?.classList.contains('flipped') ? 'game-flash-back.png' : gameShot[game];
+ const file = game === 'flash' && $('.flashcard')?.classList.contains('flipped') ? 'game-flash-back.webp' : gameShot[game];
  if (!file) return;
  $('#product-screenshot').src = '/landing/assets/' + file;
  $('#product-screenshot').alt = T('j181') + ' ' + ({flash:T('j182'),match:T('j183'),fill:T('j184'),listen:T('j185')}[game] || '');
@@ -132,7 +132,7 @@ function renderGame() {
  if ('speechSynthesis' in window) speechSynthesis.cancel();
  panel.dataset.mode = game;
  $('#show-game-screen').hidden = !gameShot[game];
- const mascotHead = text => `<div class="game-heading"><img src="/landing/assets/mochi-welcome-v3.png" alt="" width="45" height="45"><h3>${text}</h3></div>`;
+ const mascotHead = text => `<div class="game-heading"><img src="/landing/assets/mochi-welcome-v3.webp" alt="" width="45" height="45"><h3>${text}</h3></div>`;
  if (game === 'flash') {
   const words=[{en:'chair',he:T('j186'),example:'Please sit on the chair.',translation:T('j187')},{en:'curious',he:T('j188'),example:'I am curious to learn more.',translation:T('j189')}];
   let index=0,flipped=false;

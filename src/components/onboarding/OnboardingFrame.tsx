@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, X } from "lucide-react";
 import logoUrl from "../../assets/gotit-logo.svg";
-import moochi from "../../assets/ux/dashboard-moohi.png";
+import moochi from "../../assets/ux/dashboard-moohi.webp";
 import { useApp } from "../../context/AppContext";
 import { progressSteps, type Step } from "../../lib/onboarding/state";
 import { markFirstRunSkipped } from "../../lib/onboarding/firstRun";
