@@ -195,7 +195,18 @@
       "end2": "Palabras nuevas que puedes añadir a tu bolsillo",
       "noScoreNote": "La charla no tiene nota. Nos ayuda a ajustar el plan a ti.",
       "waitHint": "Puede tardar entre 30 segundos y minuto y medio. Quédate en esta pantalla, la charla se abrirá sola.",
-      "moochiName": "Moochi"
+      "moochiName": "Moochi",
+      "beginner": {
+        "title": "Hola, soy Moochi. ¿Aprendemos tus primeras palabras en inglés?",
+        "body": "Una charla corta en tu idioma: te enseño a saludar y a presentarte en inglés.",
+        "lessonBody": "Hasta 5 minutos en tu idioma: tus primeras palabras en inglés. Puedes parar cuando quieras.",
+        "learnTitle": "Yo enseño",
+        "learnBody": "Una palabra o frase en inglés cada vez, explicada en tu idioma.",
+        "repeatTitle": "Tú repites",
+        "repeatBody": "Dilo después de mí, en voz alta o por escrito. Equivocarse está bien.",
+        "useTitle": "Tú lo usas",
+        "useBody": "Dilo sobre ti: tu nombre, lo que te gusta."
+      }
     },
     "mode": {
       "title": "¿Cómo te resulta más cómodo responder?",

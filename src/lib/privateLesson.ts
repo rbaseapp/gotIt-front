@@ -360,6 +360,8 @@ export type PrivateLessonInput = {
   interactionProtocol?: "adaptive-v1";
   /** A free conversation that opens at once, with no planned tasks. */
   quickStart?: boolean;
+  /** With quickStart: a beginner learns first words in their own language. */
+  beginner?: boolean;
   interactionMode?: "guided" | "conversation";
   courseId?: string;
   courseLesson?: { version: number; unitKey: string; lessonIndex: number };
@@ -685,6 +687,19 @@ export function deletePrivateLesson(id: string) {
     `private-lessons/${id}`,
     "DELETE",
   );
+}
+
+/**
+ * The title to show for a lesson. A first chat hosted by Moochi has a fixed English topic for the
+ * voice model; the learner sees it in their own language.
+ */
+export function lessonTopic(
+  lesson: { topic: string; teacherName?: string },
+  t: (key: string) => string,
+) {
+  return lesson.teacherName === "Moochi"
+    ? t("start.tutorIntro.lessonTitle")
+    : lesson.topic;
 }
 
 export type PrivateLessonConnection = {

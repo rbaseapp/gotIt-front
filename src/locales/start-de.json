@@ -195,7 +195,18 @@
       "end2": "Neue Wörter für deine Tasche",
       "noScoreNote": "Das Gespräch wird nicht benotet. Es hilft uns, den Plan anzupassen.",
       "waitHint": "Das kann zwischen einer halben und anderthalb Minuten dauern. Bleib auf diesem Bildschirm, das Gespräch öffnet sich von selbst.",
-      "moochiName": "Moochi"
+      "moochiName": "Moochi",
+      "beginner": {
+        "title": "Hallo, ich bin Moochi. Lernen wir deine ersten englischen Wörter?",
+        "body": "Ein kurzes Gespräch in deiner Sprache: Ich zeige dir, wie du auf Englisch Hallo sagst und dich vorstellst.",
+        "lessonBody": "Bis zu 5 Minuten in deiner Sprache: deine ersten englischen Wörter. Du kannst jederzeit aufhören.",
+        "learnTitle": "Ich bringe es dir bei",
+        "learnBody": "Ein englisches Wort oder ein Satz nach dem anderen, in deiner Sprache erklärt.",
+        "repeatTitle": "Du sprichst nach",
+        "repeatBody": "Sag es mir nach, laut oder schriftlich. Fehler sind okay.",
+        "useTitle": "Du benutzt es",
+        "useBody": "Sag es über dich: deinen Namen, was du magst."
+      }
     },
     "mode": {
       "title": "Wie antwortest du am liebsten?",

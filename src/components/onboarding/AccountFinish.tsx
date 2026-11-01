@@ -44,12 +44,11 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
       // Kept on failure so the next visit retries the save instead of asking again.
       if (saved) clearOnboarding();
       if (user) markFirstRunSkipped(user.id);
-      // Someone who can already hold a short conversation meets the teacher now.
-      if (saved && canMeetTutor(state.result) && tutorOpen.current)
-        setPhase("tutor");
+      // Everyone meets Moochi now; a beginner's first chat teaches their first words.
+      if (saved && tutorOpen.current) setPhase("tutor");
       else navigate("/dashboard", { replace: true });
     },
-    [navigate, state.result, user],
+    [navigate, user],
   );
 
   const save = useCallback(
@@ -84,7 +83,13 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
       84,
       Math.max(1, (state.result?.theta ?? 1) + state.adjust),
     );
-    return <TutorInvite band={bandInfo(theta).band} minutes={state.minutes} />;
+    return (
+      <TutorInvite
+        band={bandInfo(theta).band}
+        minutes={state.minutes}
+        beginner={!canMeetTutor(state.result)}
+      />
+    );
   }
   if (phase === "choose" || phase === "failed")
     return (
@@ -117,27 +122,43 @@ export function AccountFinish({ state }: { state: OnboardingState }) {
   );
 }
 
-/** The invitation to a first short chat with Moochi, shown to learners who can hold one. */
+/**
+ * The invitation to a first short chat with Moochi. A learner who can already hold a short
+ * conversation chats about familiar things; a beginner learns their first English words in their
+ * own language.
+ */
 export function TutorInvite({
   band,
   minutes,
+  beginner = false,
 }: {
   band: string;
   minutes: number;
+  beginner?: boolean;
 }) {
   const { t } = useTranslation();
-  const steps = [
-    { icon: MessageCircle, key: "ask" },
-    { icon: Mic, key: "answer" },
-    { icon: PencilLine, key: "fix" },
-  ] as const;
+  const copy = beginner ? "start.tutorIntro.beginner" : "start.tutorIntro";
+  const steps = beginner
+    ? ([
+        { icon: MessageCircle, key: "learn" },
+        { icon: Mic, key: "repeat" },
+        { icon: PencilLine, key: "use" },
+      ] as const)
+    : ([
+        { icon: MessageCircle, key: "ask" },
+        { icon: Mic, key: "answer" },
+        { icon: PencilLine, key: "fix" },
+      ] as const);
   return (
     <OnboardingFrame
       step="save"
-      title={t("start.tutorIntro.title")}
-      body={t("start.tutorIntro.body")}
+      title={t(`${copy}.title`)}
+      body={t(`${copy}.body`)}
       primary={
-        <Link className="ob-btn" to="/private-lesson?practice=free&intro=1">
+        <Link
+          className="ob-btn"
+          to={`/private-lesson?practice=free&intro=1${beginner ? "&beginner=1" : ""}`}
+        >
           {t("start.tutorIntro.go")}
         </Link>
       }
@@ -168,8 +189,8 @@ export function TutorInvite({
             <span aria-hidden="true">
               <Icon size={22} />
             </span>
-            <b>{t(`start.tutorIntro.${key}Title`)}</b>
-            <small>{t(`start.tutorIntro.${key}Body`)}</small>
+            <b>{t(`${copy}.${key}Title`)}</b>
+            <small>{t(`${copy}.${key}Body`)}</small>
           </article>
         ))}
       </section>

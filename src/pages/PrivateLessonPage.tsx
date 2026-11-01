@@ -89,8 +89,7 @@ import {
   type PrivateLessonFocusArea,
   type SavedPrivateLesson,
   type PrivateLessonSession,
-  type PrivateLessonSetup,
-} from "../lib/privateLesson";
+  type PrivateLessonSetup, lessonTopic } from "../lib/privateLesson";
 
 type Phase =
   "setup" | "preparing" | "connecting" | "active" | "wrapping" | "ended";
@@ -127,6 +126,8 @@ export function PrivateLessonPage() {
   const curriculumLessonId = searchParams.get("curriculum");
   // Arriving from the level check: the first short chat with the teacher.
   const firstChat = searchParams.get("intro") === "1";
+  // A beginner's first chat teaches their first words in their own language.
+  const beginnerChat = firstChat && searchParams.get("beginner") === "1";
   const curriculumPreview = useResource(
     useCallback(
       () =>
@@ -900,7 +901,7 @@ export function PrivateLessonPage() {
       const created = await createPrivateLessonSession({
         // The first chat from the level check opens at once: no planned tasks, the teacher just talks.
         ...(quickChat
-          ? { quickStart: true }
+          ? { quickStart: true, ...(beginnerChat ? { beginner: true } : {}) }
           : lessonSetup?.interactionCapabilities?.adaptiveLessons
             ? { interactionProtocol: "adaptive-v1" as const }
             : {}),
@@ -1683,7 +1684,11 @@ export function PrivateLessonPage() {
                   )?.[1] ?? lessonTargetLanguage}
                 </>
               ) : firstChat ? (
-                t("start.tutorIntro.lessonBody")
+                t(
+                  beginnerChat
+                    ? "start.tutorIntro.beginner.lessonBody"
+                    : "start.tutorIntro.lessonBody",
+                )
               ) : (
                 t("privateLesson.description")
               )}
@@ -3000,7 +3005,7 @@ export function PrivateLessonPage() {
                               type="button"
                               onClick={() => setSelectedHistory(lesson)}
                             >
-                              <strong dir="auto">{lesson.topic}</strong>
+                              <strong dir="auto">{lessonTopic(lesson, t)}</strong>
                               <span>
                                 {new Date(
                                   lesson.startedAt,
@@ -3057,7 +3062,7 @@ export function PrivateLessonPage() {
             onClose={() => setSelectedHistory(undefined)}
             title={
               selectedHistory
-                ? `${t("privateLesson.report.title")} · ${selectedHistory.topic}`
+                ? `${t("privateLesson.report.title")} · ${lessonTopic(selectedHistory, t)}`
                 : t("privateLesson.report.title")
             }
             size="lg"
@@ -3181,7 +3186,9 @@ export function PrivateLessonPage() {
                 <Logo />
                 <div>
                   <p className="eyebrow">{t("privateLesson.active")}</p>
-                  <h2 dir="auto">{session?.lesson.topic}</h2>
+                  <h2 dir="auto">
+                    {session ? lessonTopic(session.lesson, t) : ""}
+                  </h2>
                   <span className={`private-lesson-status ${phase}`}>
                     <i aria-hidden="true" /> {status}
                   </span>

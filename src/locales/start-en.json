@@ -197,7 +197,18 @@
       "end2": "New words you can add to your pocket",
       "noScoreNote": "The chat is not scored. It helps us fit the plan to you.",
       "waitHint": "This can take between half a minute and a minute and a half. Stay on this screen, the chat will open by itself.",
-      "moochiName": "Moochi"
+      "moochiName": "Moochi",
+      "beginner": {
+        "title": "Hi, I'm Moochi. Shall we learn your first English words?",
+        "body": "A short chat in your language: I'll teach you to say hello and introduce yourself in English.",
+        "lessonBody": "Up to 5 minutes in your language: your first English words. Stop any time.",
+        "learnTitle": "I teach",
+        "learnBody": "One English word or phrase at a time, explained in your language.",
+        "repeatTitle": "You repeat",
+        "repeatBody": "Say it after me, out loud or in writing. Mistakes are fine.",
+        "useTitle": "You use it",
+        "useBody": "Say it about yourself: your name, what you like."
+      }
     },
     "mode": {
       "title": "How are you comfortable answering?",

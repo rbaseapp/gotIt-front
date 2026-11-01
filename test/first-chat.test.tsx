@@ -4,6 +4,7 @@ import { expect, it, vi } from "vitest";
 import { TutorInvite } from "../src/components/onboarding/AccountFinish";
 import { FirstChatIntro } from "../src/components/FirstChatIntro";
 import { TeacherAvatar } from "../src/components/TeacherAvatar";
+import { lessonTopic } from "../src/lib/privateLesson";
 
 vi.mock("../src/context/AppContext", () => ({
   useApp: () => ({ user: { id: "u1" } }),
@@ -26,6 +27,35 @@ it("invites to the first chat with Moochi and shows the saved plan", () => {
     "/private-lesson?practice=free&intro=1",
   );
   expect(screen.queryByText(/רייצ/)).not.toBeInTheDocument();
+});
+
+it("invites a beginner to learn first words with Moochi in their own language", () => {
+  render(
+    <MemoryRouter>
+      <TutorInvite band="Pre-A1" minutes={10} beginner />
+    </MemoryRouter>,
+  );
+  expect(
+    screen.getByText("היי, אני מוחי. נלמד את המילים הראשונות באנגלית?"),
+  ).toBeInTheDocument();
+  expect(screen.getByText("אני מלמד")).toBeInTheDocument();
+  expect(screen.getByText("אתם חוזרים")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "בואו נכיר" })).toHaveAttribute(
+    "href",
+    "/private-lesson?practice=free&intro=1&beginner=1",
+  );
+});
+
+it("shows a lesson Moochi hosted under its own title, not the English topic", () => {
+  const t = (key: string) =>
+    key === "start.tutorIntro.lessonTitle" ? "השיחה הראשונה עם מוחי" : key;
+  expect(
+    lessonTopic(
+      { topic: "Getting to know each other", teacherName: "Moochi" },
+      t,
+    ),
+  ).toBe("השיחה הראשונה עם מוחי");
+  expect(lessonTopic({ topic: "Travel plans" }, t)).toBe("Travel plans");
 });
 
 it("starts the first chat with a plain voice or writing choice", () => {

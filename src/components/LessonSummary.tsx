@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, Check, Clock, Compass, Target } from "lucide-react";
-import type { SavedPrivateLesson } from "../lib/privateLesson";
+import { lessonTopic, type SavedPrivateLesson } from "../lib/privateLesson";
 import { LessonHomeworkCard } from "../pages/HomeworkPage";
 import moochi from "../assets/ux/dashboard-moohi.png";
 import "./LessonSummary.css";
@@ -62,7 +62,7 @@ export function LessonSummary({
             <p className="ls-eyebrow">{t("lessonSummary.eyebrow")}</p>
             <h1>{t("lessonSummary.title")}</h1>
             <p className="ls-topic" dir="auto">
-              {lesson.topic}
+              {lessonTopic(lesson, t)}
             </p>
             <ul className="ls-chips">
               <li>

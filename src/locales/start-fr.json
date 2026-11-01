@@ -195,7 +195,18 @@
       "end2": "De nouveaux mots à ajouter à votre poche",
       "noScoreNote": "La discussion n'est pas notée. Elle nous aide à adapter le plan.",
       "waitHint": "Cela peut prendre de 30 secondes à une minute et demie. Restez sur cet écran, la discussion s'ouvrira seule.",
-      "moochiName": "Moochi"
+      "moochiName": "Moochi",
+      "beginner": {
+        "title": "Salut, je suis Moochi. On apprend vos premiers mots d’anglais ?",
+        "body": "Une courte discussion dans votre langue : je vous apprends à dire bonjour et à vous présenter en anglais.",
+        "lessonBody": "Jusqu’à 5 minutes dans votre langue : vos premiers mots d’anglais. Vous pouvez arrêter à tout moment.",
+        "learnTitle": "J’enseigne",
+        "learnBody": "Un mot ou une phrase en anglais à la fois, expliqués dans votre langue.",
+        "repeatTitle": "Vous répétez",
+        "repeatBody": "Répétez après moi, à voix haute ou par écrit. Les erreurs, c’est normal.",
+        "useTitle": "Vous l’utilisez",
+        "useBody": "Dites-le pour vous : votre prénom, ce que vous aimez."
+      }
     },
     "mode": {
       "title": "Comment préférez-vous répondre ?",

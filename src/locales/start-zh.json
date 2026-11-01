@@ -194,7 +194,18 @@
       "end2": "可加入口袋的新单词",
       "noScoreNote": "对话不打分，只用来调整你的计划。",
       "waitHint": "这可能需要半分钟到一分半钟。请留在此页面，对话会自动打开。",
-      "moochiName": "Moochi"
+      "moochiName": "Moochi",
+      "beginner": {
+        "title": "你好，我是 Moochi。一起学你的第一批英语单词吧？",
+        "body": "用你的语言简短聊一聊：我教你用英语打招呼和介绍自己。",
+        "lessonBody": "最多 5 分钟，用你的语言学第一批英语单词。随时可以停下。",
+        "learnTitle": "我来教",
+        "learnBody": "每次一个英语单词或短语，用你的语言讲解。",
+        "repeatTitle": "你来跟读",
+        "repeatBody": "跟着我说，出声或打字都可以。说错没关系。",
+        "useTitle": "你来用",
+        "useBody": "用它说说你自己：你的名字、你喜欢什么。"
+      }
     },
     "mode": {
       "title": "你更习惯怎样回答？",

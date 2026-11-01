@@ -5,9 +5,10 @@ import { Logo } from "./Logo";
 import { Modal } from "./Modal";
 import { TeacherAvatar } from "./TeacherAvatar";
 import { textDirection } from "../lib/textDirection";
-import type {
-  LessonActivity,
-  PrivateLessonSession,
+import {
+  lessonTopic,
+  type LessonActivity,
+  type PrivateLessonSession,
 } from "../lib/privateLesson";
 import teacherFemale from "../assets/ux/lesson-teacher-female.png";
 import teacherMale from "../assets/ux/lesson-teacher-male.png";
@@ -179,7 +180,7 @@ export function LessonWorkspace(p: Props) {
           </button>
         </div>
         <div className="lesson-room-topic">
-          <h1 dir="auto">{p.lesson.topic}</h1>
+          <h1 dir="auto">{lessonTopic(p.lesson, t)}</h1>
           <p>
             {t("privateLesson.title")}
             {p.lesson.wordPack
@@ -599,7 +600,7 @@ export function LessonWorkspace(p: Props) {
             <p dir="auto">
               {p.lesson.roadmap?.communicationObjective ||
                 p.lesson.grammarFocus ||
-                p.lesson.topic}
+                lessonTopic(p.lesson, t)}
             </p>
             {p.lesson.targetWords.length > 0 && (
               <div className="lesson-room-words">
