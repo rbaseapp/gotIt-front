@@ -28,9 +28,17 @@ const compressible = (contentType) =>
   /^(text\/|application\/json|image\/svg\+xml)/u.test(contentType ?? "");
 /** The best encoding the client accepts: Brotli, then gzip. */
 function pickEncoding(req) {
-  const accepted = String(req.headers["accept-encoding"] ?? "");
-  if (/\bbr\b/u.test(accepted)) return "br";
-  if (/\bgzip\b/u.test(accepted)) return "gzip";
+  // "br;q=0" refuses an encoding; any other q (or none) accepts it.
+  const accepts = (name) =>
+    String(req.headers["accept-encoding"] ?? "")
+      .split(",")
+      .some((part) => {
+        const [coding, ...params] = part.trim().toLowerCase().split(";");
+        const q = params.map((p) => p.trim()).find((p) => p.startsWith("q="));
+        return coding === name && !(q && Number(q.slice(2)) === 0);
+      });
+  if (accepts("br")) return "br";
+  if (accepts("gzip")) return "gzip";
   return null;
 }
 /** Compress a body built on the fly, at a level fast enough to do per request. */
@@ -539,6 +547,8 @@ export function createGateway(config) {
             ),
         );
       const encoding = compressible(contentType) ? pickEncoding(req) : null;
+      // The same URL answers differently by Accept-Encoding, compressed or not.
+      if (compressible(contentType)) res.setHeader("Vary", "Accept-Encoding");
       if (encoding && body.length >= 1024) {
         // The build writes .br and .gz next to each asset (scripts/precompress.mjs); index.html
         // is rewritten above, so it is compressed here.

@@ -125,7 +125,7 @@ function Screen({ id }: { id: string }) {
     case "plan":
       return <PlanStep {...common} back={noop} />;
     case "tutor":
-      return <TutorInvite />;
+      return <TutorInvite band="A1" minutes={10} />;
     case "locked-courses":
       return <LockedFeature kind="courses" />;
     case "locked-tutor":

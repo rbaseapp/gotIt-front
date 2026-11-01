@@ -18,7 +18,7 @@ export function FirstRunGate({ children }: { children: ReactNode }) {
   const { mode, user } = useApp();
   const { pathname } = useLocation();
   const live = mode === "live" && Boolean(user);
-  // Shares the curriculum request with the home screen behind this gate (useCurriculum).
+  // Shares the curriculum request with the home mission and the path (useCurriculum).
   const curriculum = useCachedResource(
     useCallback(
       () => (live ? curriculumApi.get() : Promise.resolve(null)),

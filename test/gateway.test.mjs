@@ -83,7 +83,10 @@ before(async () => {
   );
   await writeFile(join(directory, "assets", "app.js"), "export default 1");
   // A large asset and the build's precompressed copy, which says so, to prove the copy is served.
-  await writeFile(join(directory, "assets", "big.js"), `export const a = "${"x".repeat(4000)}";`);
+  await writeFile(
+    join(directory, "assets", "big.js"),
+    `export const a = "${"x".repeat(4000)}";`,
+  );
   await writeFile(
     join(directory, "assets", "big.js.br"),
     brotliCompressSync(`export const a = "precompressed ${"y".repeat(4000)}";`),
@@ -129,7 +132,11 @@ before(async () => {
     }
     if (req.url === "/api/v1/big") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ items: Array.from({ length: 300 }, (_, i) => ({ i })) }));
+      res.end(
+        JSON.stringify({
+          items: Array.from({ length: 300 }, (_, i) => ({ i })),
+        }),
+      );
       return;
     }
     if (req.url === "/api/v1/realtime/connect") {
@@ -193,10 +200,19 @@ after(async () => {
 });
 describe("production frontend gateway", () => {
   it("serves lesson deep links with encoded return destinations while still rejecting encoded path separators", async () => {
-    const page = await fetch(`${gatewayOrigin}/private-lesson?curriculum=P01-L1&return=%2Fenglish-learning%3Funit%3DP01`);
+    const page = await fetch(
+      `${gatewayOrigin}/private-lesson?curriculum=P01-L1&return=%2Fenglish-learning%3Funit%3DP01`,
+    );
     assert.equal(page.status, 200);
     assert.match(await page.text(), /GotIt/);
-    assert.equal((await fetch(`${gatewayOrigin}/gotit-api/api/v1%2fprofile?return=%2Fenglish-learning`)).status, 400);
+    assert.equal(
+      (
+        await fetch(
+          `${gatewayOrigin}/gotit-api/api/v1%2fprofile?return=%2Fenglish-learning`,
+        )
+      ).status,
+      400,
+    );
   });
   it("forwards only the named email verification and recovery routes", async () => {
     for (const path of [
@@ -267,6 +283,13 @@ describe("production frontend gateway", () => {
     });
     assert.equal(plain.headers.get("content-encoding"), null);
     assert.match(await plain.text(), /^export const a = "xxx/);
+    // A client that refuses an encoding is not sent it, and the answer varies either way.
+    const refused = await fetch(`${gatewayOrigin}/assets/big.js`, {
+      headers: { "Accept-Encoding": "br;q=0, gzip;q=0" },
+    });
+    assert.equal(refused.headers.get("content-encoding"), null);
+    assert.equal(refused.headers.get("vary"), "Accept-Encoding");
+    assert.match(await refused.text(), /^export const a = "xxx/);
     const api = await fetch(`${gatewayOrigin}/gotit-api/api/v1/big`, {
       headers: { "Accept-Encoding": "gzip" },
     });

@@ -86,14 +86,17 @@ export class MoochiCanvasEngine {
     await Promise.all(
       Object.entries(assets).map(
         ([key, src]) =>
-          new Promise<void>((resolve, reject) => {
+          new Promise<void>((resolve) => {
             const img = new Image();
             img.decoding = "async";
-            img.onload = () => resolve();
-            img.onerror = () =>
-              reject(new Error(`Moochi frame failed: ${key}`));
+            // A frame that fails is skipped (drawLayer ignores a missing one): Moochi is drawn
+            // without it instead of not at all.
+            img.onload = () => {
+              this.images[key] = img;
+              resolve();
+            };
+            img.onerror = () => resolve();
             img.src = src;
-            this.images[key] = img;
           }),
       ),
     );
@@ -144,6 +147,14 @@ export class MoochiCanvasEngine {
       if (this.ready) this.loop();
     } else {
       cancelAnimationFrame(this.frame);
+      // Settle on a calm frame: no open mouth or raised hand frozen on the last tick.
+      this.mouthAmount = 0;
+      this.speaking = false;
+      this.activity = 0;
+      this.beat = 0;
+      this.gestureTarget = this.displayGesture =
+        this.holdGesture ?? GESTURE_REST;
+      if (this.ready) this.render((performance.now() - this.start) / 1000, 0);
     }
   }
 

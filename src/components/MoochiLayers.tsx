@@ -40,6 +40,8 @@ export function MoochiLayers({
   const canvas = useRef<HTMLCanvasElement>(null);
   const engine = useRef<MoochiCanvasEngine | null>(null);
   const greeted = useRef(false);
+  const waveUntil = useRef(0);
+  const waveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     const element = canvas.current;
@@ -81,14 +83,13 @@ export function MoochiLayers({
     }
     if (!greeted.current) {
       greeted.current = true;
-      current.holdArms(GESTURE_WAVE);
-      const done = setTimeout(() => current.holdArms(null), 2400);
-      return () => clearTimeout(done);
+      waveUntil.current = Date.now() + 2400;
+      waveTimer.current = setTimeout(() => current.holdArms(null), 2400);
     }
-    current.holdArms(null);
+    // The wave is not cut short when this effect runs again within its first moments.
+    current.holdArms(Date.now() < waveUntil.current ? GESTURE_WAVE : null);
   }, [active, activity]);
+  useEffect(() => () => clearTimeout(waveTimer.current), []);
 
-  return (
-    <canvas className="moochi-canvas" ref={canvas} aria-hidden="true" />
-  );
+  return <canvas className="moochi-canvas" ref={canvas} aria-hidden="true" />;
 }
