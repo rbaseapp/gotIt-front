@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Backpack, Check, LoaderCircle, Undo2, Volume2 } from "lucide-react";
+import { Backpack, Check, LoaderCircle, Undo2 } from "lucide-react";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { PlacementSession, seededRandom } from "../../lib/placement/engine";
-import { canSpeak, speak } from "../../lib/placement/speech";
 import type {
   Card,
   Literacy,
@@ -254,15 +253,6 @@ export function PocketTest({ bank, state, update, onDone, onBack }: Props) {
       >
         {card && (
           <>
-            {canSpeak() && (
-              <button
-                className="pocket-hear"
-                aria-label={t("start.pocket.hear")}
-                onClick={() => speak(card.text)}
-              >
-                <Volume2 size={20} />
-              </button>
-            )}
             <p className="pocket-word" lang="en" dir="ltr" key={card.text}>
               {card.text}
             </p>

@@ -6,6 +6,8 @@ import {
   InterestsStep,
   LevelStep,
   PlanStep,
+  ResultStep,
+  TalkStep,
 } from "../src/components/onboarding/steps";
 import { claimPayload } from "../src/lib/onboarding/claim";
 import {
@@ -140,6 +142,53 @@ it("offers only levels above the start for the plan, and saves the pick", () => 
   expect(screen.getByRole("button", { name: /^A2/ })).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: /^B2/ }));
   expect(latest!.targetBand).toBe("B2");
+});
+
+it("plans with one daily-time meter that shows when the target is reached", () => {
+  let latest: OnboardingState | null = null;
+  render(
+    <Harness
+      start={{ step: "plan", result: RESULT, goal: "other", minutes: 10 }}
+      onState={(state) => (latest = state)}
+    >
+      {(props) => <PlanStep {...props} next={vi.fn()} back={vi.fn()} />}
+    </Harness>,
+  );
+  // The old deadline question is gone; time a day is the only knob.
+  expect(screen.queryByText("עד מתי בערך?")).not.toBeInTheDocument();
+  const meter = screen.getByRole("slider");
+  const before = screen.getByText(/תגיעו ל-/).textContent;
+  fireEvent.change(meter, { target: { value: "30" } });
+  expect(latest!.minutes).toBe(30);
+  expect(latest!.deadline).toBe(0);
+  expect(screen.getByText(/תגיעו ל-/).textContent).not.toBe(before);
+});
+
+it("asks the sentence questions in writing only, with no intro screen", () => {
+  render(
+    <Harness start={{ step: "talk", result: RESULT }}>
+      {(props) => <TalkStep {...props} next={vi.fn()} />}
+    </Harness>,
+  );
+  expect(screen.getByText(/הבנת משפטים · שאלה 1 מתוך/)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "לא יודע/ת" })).toBeInTheDocument();
+  expect(screen.queryByRole("img")).not.toBeInTheDocument();
+});
+
+it("explains a gap between the learner's own rating and the check, and gives words as a range", () => {
+  render(
+    <Harness start={{ step: "result", result: RESULT, selfLevel: 0 }}>
+      {(props) => <ResultStep {...props} next={vi.fn()} back={vi.fn()} />}
+    </Harness>,
+  );
+  expect(
+    screen.getByText("דירגתם את עצמכם: אפס · הבדיקה מצאה: A2 · בסיסי"),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/הבדיקה קובעת, אז מתחילים מ-A2/)).toBeInTheDocument();
+  // The range is isolated left-to-right so it never flips inside Hebrew text.
+  expect(
+    screen.getByText(/בערך \u2066850\u2060–\u20601,450\u2069 מילים/),
+  ).toBeInTheDocument();
 });
 
 it("sends interests, priorities and the target level with the placement", () => {

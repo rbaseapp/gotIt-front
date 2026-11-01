@@ -34,7 +34,6 @@
       "introBody": "Kennst du das Wort? Tippe auf „Kenne ich“. Noch nicht? „Noch nicht“. Ohne Note, ohne Fehler. Bis zu {{count}} Fragen.",
       "know": "Kenne ich",
       "unknown": "Noch nicht",
-      "hear": "Wort anhören",
       "undo": "Letzte Antwort rückgängig machen",
       "inPocket": "In deiner Tasche",
       "slowDown": "Moment, lass uns etwas langsamer machen.",
@@ -48,8 +47,6 @@
       "title": "Das haben wir gefunden",
       "level": "Dein Niveau",
       "between": "Zwischen {{low}} und {{high}}",
-      "inPocket": "In deiner Tasche: etwa {{count}} Wörter",
-      "outOf": "von den {{total}} Kernwörtern, die GotIt lehrt. Das ist eine Schätzung.",
       "skills": "Fähigkeiten",
       "skill": {
         "vocabulary": "Wortschatz",
@@ -92,40 +89,28 @@
         "C1": "Du bist auf hohem Niveau; jetzt konzentrieren wir uns auf Genauigkeit und Stil."
       },
       "gap": {
-        "more": "Du kannst mehr, als du dachtest. Wir starten höher und überspringen, was du schon hast.",
-        "less": "Dein Niveau liegt unter deiner Erwartung, und das ist in Ordnung. Wir starten an der richtigen Stelle und kommen schnell voran.",
-        "same": "Du hast dich genau eingeschätzt."
-      }
+        "more": "Du kannst mehr, als du dachtest. Der Test entscheidet, also startest du bei {{band}} und überspringst, was du schon kannst.",
+        "less": "Der Test ergab ein niedrigeres Niveau als erwartet, und das ist in Ordnung. Der Test entscheidet, also startest du bei {{band}} und kommst schnell voran.",
+        "same": "Deine Einschätzung und der Test stimmen überein."
+      },
+      "gapCompare": "Deine Einschätzung: {{self}} · Der Test ergab: {{found}}",
+      "inPocketRange": "In deiner Tasche: etwa {{range}} Wörter",
+      "wordsHow": "Wie wird das berechnet?",
+      "wordsExplain": "Aus den {{cards}} geprüften Wörtern, nach Häufigkeit geordnet, schätzen wir, wie viele der {{total}} Kernwörter von GotIt du schon kennst. Es ist eine Schätzung, die beim Üben genauer wird."
     },
     "plan": {
       "title": "Bauen wir deinen Plan",
       "body": "Ein paar kurze Entscheidungen, und der Plan aktualisiert sich vor deinen Augen.",
-      "deadlineQuestion": "Bis wann ungefähr?",
-      "minutesQuestion": "Wie viel Zeit pro Tag?",
-      "deadline": {
-        "1": "Ein Monat",
-        "3": "3 Monate",
-        "6": "Ein halbes Jahr",
-        "0": "Kein Datum"
-      },
-      "minutes": "{{count}} Min.",
+      "minutesQuestion": "Wie viel Zeit pro Tag passt dir?",
       "recommended": "Empfohlen",
-      "cardTitle": "Dein Englischplan",
       "cardTarget": "Ziel: {{band}}",
       "cardRange": "Von Einheit {{from}} bis Einheit {{to}} ({{units}} Einheiten)",
-      "sim": "{{minutes}} Min. pro Tag ← du erreichst das Ziel in {{low}}–{{high}} Monaten",
-      "simShort": "{{minutes}} Min. pro Tag ← etwa {{months}} Monate",
-      "needed": "Für {{deadline}} brauchst du etwa {{minutes}} Min. pro Tag.",
-      "useNeeded": "{{minutes}} Min. einstellen",
-      "feasible": "Das passt zu deinem Ziel.",
       "dailyNote": "Wörter, die du mit der Erweiterung speicherst, zählen nicht zum Tagesziel.",
       "next": "Weiter",
-      "deadlineName": {
-        "1": "einen Monat",
-        "3": "drei Monate",
-        "6": "ein halbes Jahr"
-      },
-      "targetQuestion": "Welches Niveau möchtest du erreichen?"
+      "targetQuestion": "Welches Niveau möchtest du erreichen?",
+      "perDay": "{{count}} Min. pro Tag",
+      "reach": "Du erreichst {{band}} in {{range}} Monaten",
+      "around": "Etwa im {{date}}, bei 5 Übungstagen pro Woche"
     },
     "save": {
       "title": "Wir speichern, was du aufgebaut hast",
@@ -240,17 +225,9 @@
         }
       }
     },
-    "avatar": {
-      "replay": "Nochmal hören",
-      "mute": "Ohne Ton",
-      "unmute": "Mit Ton"
-    },
     "talk": {
-      "title": "Jetzt sprechen wir ein bisschen Englisch",
-      "body": "Ich stelle dir 3 kurze Fragen. Wähle die beste Antwort. Es gibt keine falschen Antworten, und du kannst überspringen.",
-      "begin": "Los geht's",
       "skip": "Diesen Teil überspringen",
-      "pick": "Frage {{current}} von {{total}} · wähle die beste Antwort",
+      "pick": "Sätze verstehen · Frage {{current}} von {{total}} · wähle die beste Antwort",
       "dontKnow": "Ich weiß es nicht"
     },
     "interests": {
@@ -277,6 +254,20 @@
         "listening": "Aussprache und Hörverstehen",
         "writing": "Lesen und Schreiben",
         "teacher": "Die Lehrkraft entscheidet"
+      }
+    },
+    "finish": {
+      "choose": {
+        "title": "Du hast schon einen Plan",
+        "body": "Der neue Test schlägt einen anderen Startpunkt vor. Wechseln? Abgeschlossene Lektionen und gespeicherte Wörter bleiben erhalten.",
+        "primary": "Zum neuen Plan wechseln",
+        "secondary": "Aktuellen Plan behalten"
+      },
+      "failed": {
+        "title": "Dein Plan ist noch nicht gespeichert",
+        "body": "Der Server war nicht erreichbar. Das Ergebnis bleibt in diesem Browser und wird beim nächsten Besuch gespeichert.",
+        "primary": "Erneut versuchen",
+        "secondary": "Vorerst weiter"
       }
     }
   }

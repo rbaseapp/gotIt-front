@@ -18,7 +18,9 @@
     "loadingPayment": "טוענים את התשלום…",
     "checkingSession": "בודקים את הכניסה שלך…",
     "loadingScreen": "טוענים את המסך…",
-    "checkingAccess": "בודקים את הרשאות הלמידה…"
+    "checkingAccess": "בודקים את הרשאות הלמידה…",
+    "serverAsleep": "השרת מתעורר וזה לוקח קצת זמן. אתם עדיין מחוברים.",
+    "retry": "לנסות שוב"
   },
   "nav": {
     "dashboard": "היום שלי",

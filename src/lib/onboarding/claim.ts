@@ -81,10 +81,15 @@ export function claimPayload(
   };
 }
 
-export async function claimOnboarding(state: OnboardingState) {
+export async function claimOnboarding(
+  state: OnboardingState,
+  options: { replace?: boolean } = {},
+) {
   const payload = claimPayload(state, crypto.randomUUID());
   if (!payload) return null;
-  return curriculumApi.place(payload);
+  return curriculumApi.place(
+    options.replace ? { ...payload, replace: true } : payload,
+  );
 }
 
 /** The first words the learner tapped become real saved words, so "My words" is never empty. */

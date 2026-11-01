@@ -18,7 +18,9 @@
     "loadingPayment": "جاري تحميل الدفع…",
     "checkingSession": "جاري التحقق من الجلسة…",
     "loadingScreen": "جاري التحميل…",
-    "checkingAccess": "جاري التحقق من وصول التعلم…"
+    "checkingAccess": "جاري التحقق من وصول التعلم…",
+    "serverAsleep": "الخادم يستيقظ ويستغرق لحظة. ما زلت مسجّل الدخول.",
+    "retry": "حاول مرة أخرى"
   },
   "nav": {
     "dashboard": "يومي",

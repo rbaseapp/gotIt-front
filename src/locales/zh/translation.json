@@ -18,7 +18,9 @@
     "loadingPayment": "正在加载付款...",
     "checkingSession": "正在检查您的会话...",
     "loadingScreen": "加载中...",
-    "checkingAccess": "检查学习访问权限..."
+    "checkingAccess": "检查学习访问权限...",
+    "serverAsleep": "服务器正在唤醒，需要一点时间。您仍处于登录状态。",
+    "retry": "重试"
   },
   "nav": {
     "dashboard": "我的一天",

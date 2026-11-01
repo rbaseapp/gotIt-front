@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Backpack,
@@ -20,7 +20,6 @@ import {
   talkDelta,
   topicForGoal,
 } from "../../lib/placement/conversationCheck";
-import rachel from "../../assets/private-lesson/tutor-female-speaking-wide.png";
 import { OnboardingFrame } from "./OnboardingFrame";
 import { EmailAuthForm } from "../EmailAuthForm";
 import { GoogleSignIn } from "../GoogleSignIn";
@@ -28,12 +27,10 @@ import { useApp } from "../../context/AppContext";
 import { LANGUAGE_CODES } from "../../lib/languages";
 import {
   BAND_END,
-  DEADLINES,
   bandInfo,
   buildPlan,
   suggestedTarget,
   targetChoices,
-  type Deadline,
   type Goal,
 } from "../../lib/placement/plan";
 import type { Band, PlacementResult, Skill } from "../../lib/placement/types";
@@ -303,37 +300,29 @@ export function InterestsStep({
   );
 }
 
-/** Rachel asks four short English questions; the learner taps the best reply. */
+/**
+ * Short written sentences: the learner reads an English question and taps the best reply.
+ * Everything is on screen in writing, with no voice and no separate intro screen.
+ */
 export function TalkStep({
   state,
   update,
   next,
-  startAtQuestion = false,
 }: {
   state: OnboardingState;
   update: Update;
   next: () => void;
-  /** Skips the intro screen (the flow preview uses it). */
-  startAtQuestion?: boolean;
 }) {
   const { t } = useTranslation();
   const theta = Math.min(84, Math.max(1, state.result!.theta + state.adjust));
-  const check = useRef<TalkCheck | null>(
-    startAtQuestion ? new TalkCheck(theta, topicForGoal(state.goal)) : null,
+  const [check] = useState(
+    () => new TalkCheck(theta, topicForGoal(state.goal)),
   );
-  const [started, setStarted] = useState(startAtQuestion);
   const [unknown, setUnknown] = useState(0);
-  const [question, setQuestion] = useState<ReturnType<TalkCheck["next"]>>(() =>
-    startAtQuestion ? (check.current?.next() ?? null) : null,
-  );
-  const begin = () => {
-    check.current = new TalkCheck(theta, topicForGoal(state.goal));
-    setQuestion(check.current.next());
-    setStarted(true);
-  };
+  const [question, setQuestion] = useState(() => check.next());
   const reply = (index: number | null) => {
-    const session = check.current;
-    if (!session || !question) return;
+    const session = check;
+    if (!question) return;
     session.answer(index === question.answer);
     if (index === null) setUnknown((n) => n + 1);
     if (session.done) {
@@ -350,29 +339,8 @@ export function TalkStep({
     }
     setQuestion(session.next());
   };
-  if (!started || !question)
-    return (
-      <OnboardingFrame
-        step="talk"
-        title={t("start.talk.title")}
-        body={t("start.talk.body")}
-        primary={
-          <button className="ob-btn" onClick={begin}>
-            {t("start.talk.begin")}
-          </button>
-        }
-        secondary={
-          <button className="ob-link" onClick={next}>
-            {t("start.talk.skip")}
-          </button>
-        }
-      >
-        <div className="ob-talk-intro">
-          <img src={rachel} alt="" draggable={false} />
-        </div>
-      </OnboardingFrame>
-    );
-  const done = check.current?.answers.length ?? 0;
+  if (!question) return null;
+  const done = check.answers.length;
   return (
     <OnboardingFrame
       step="talk"
@@ -382,8 +350,11 @@ export function TalkStep({
         </span>
       }
       body={t("start.talk.pick", { current: done + 1, total: TALK_QUESTIONS })}
-      voiceText={question.item.prompt}
-      voiceLang="en"
+      secondary={
+        <button className="ob-link" onClick={next}>
+          {t("start.talk.skip")}
+        </button>
+      }
     >
       <div className="ob-replies" role="group">
         {question.replies.map((text, index) => (
@@ -404,6 +375,14 @@ export function TalkStep({
     </OnboardingFrame>
   );
 }
+
+/** A number range kept left-to-right inside any sentence, so "6–9" never flips in Hebrew or Arabic. */
+const LRI = String.fromCharCode(0x2066);
+const PDI = String.fromCharCode(0x2069);
+/** Word joiner: the range never wraps at its dash. */
+const WJ = String.fromCharCode(0x2060);
+const span = (low: number | string, high: number | string) =>
+  `${LRI}${low === high ? low : `${low}${WJ}–${WJ}${high}`}${PDI}`;
 
 /* ---------------------------------------------------------------- 4 */
 const BANDS: Band[] = ["Pre-A1", "A1", "A2", "B1", "B2", "C1"];
@@ -437,6 +416,13 @@ export function ResultStep({
   const fake = state.log.filter(
     (o) => o.t === "card" && !o.real && o.yes,
   ).length;
+  // Ten answers support a range, not an exact count.
+  const words = (n: number) => n.toLocaleString(i18n.resolvedLanguage);
+  const roundTo50 = (n: number) => Math.max(0, Math.round(n / 50) * 50);
+  const knownLow = roundTo50(result.knownEstimate * 0.75);
+  const knownHigh = roundTo50(
+    Math.min(result.total, result.knownEstimate * 1.25),
+  );
   const skills: Array<
     [Skill | "vocabulary", PlacementResult["skills"][Skill | "vocabulary"]]
   > = [
@@ -483,24 +469,40 @@ export function ResultStep({
         {(range || result.uncertain) && (
           <small>{range ?? t("start.result.uncertain")}</small>
         )}
-        {gap && <p className="ob-note">{t(`start.result.gap.${gap}`)}</p>}
-        <div>
-          <p className="ob-big" style={{ margin: 0 }}>
-            <Backpack
-              size={20}
-              aria-hidden="true"
-              style={{ verticalAlign: "-3px" }}
-            />{" "}
-            {t("start.result.inPocket", {
-              count: result.knownEstimate.toLocaleString(i18n.resolvedLanguage),
-            })}
-          </p>
-          <small>
-            {t("start.result.outOf", {
-              total: result.total.toLocaleString(i18n.resolvedLanguage),
-            })}
-          </small>
-        </div>
+        {gap && state.selfLevel !== null && (
+          <div className="ob-gap">
+            <p>
+              {t("start.result.gapCompare", {
+                self: t(`start.self.level.${state.selfLevel}.title`),
+                found: `${band} · ${t(`start.result.band.${band}`)}`,
+              })}
+            </p>
+            <small>{t(`start.result.gap.${gap}`, { band })}</small>
+          </div>
+        )}
+        {result.cards > 0 && (
+          <div>
+            <p className="ob-big" style={{ margin: 0 }}>
+              <Backpack
+                size={20}
+                aria-hidden="true"
+                style={{ verticalAlign: "-3px" }}
+              />{" "}
+              {t("start.result.inPocketRange", {
+                range: span(words(knownLow), words(knownHigh)),
+              })}
+            </p>
+            <details className="ob-why">
+              <summary>{t("start.result.wordsHow")}</summary>
+              <small>
+                {t("start.result.wordsExplain", {
+                  cards: result.cards,
+                  total: words(result.total),
+                })}
+              </small>
+            </details>
+          </div>
+        )}
         {result.cards > 0 && (
           <div className="ob-section">
             <small>{t("start.result.skills")}</small>
@@ -546,7 +548,9 @@ export function ResultStep({
 }
 
 /* ---------------------------------------------------------------- 5 */
-const MINUTES = [5, 10, 15, 20];
+/** The daily-time meter: five minutes to an hour, in steps of five. */
+const MINUTES_MIN = 5;
+const MINUTES_MAX = 60;
 
 export function PlanStep({
   state,
@@ -559,7 +563,7 @@ export function PlanStep({
   next: () => void;
   back: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theta = Math.min(84, Math.max(1, state.result!.theta + state.adjust));
   const startUnit = Math.min(84, Math.max(1, Math.round(theta - 2)));
   const goal: Goal = state.goal ?? "other";
@@ -575,18 +579,15 @@ export function PlanStep({
         goal,
         targetBand: target,
         minutesPerDay: state.minutes,
-        deadlineMonths: state.deadline,
+        deadlineMonths: 0,
       }),
-    [startUnit, goal, target, state.minutes, state.deadline],
-  );
-  // Daily time that reaches the deadline, rounded up to a clean number of minutes.
-  const suggested = Math.min(
-    60,
-    Math.ceil((plan.minutesForDeadline ?? 0) / 5) * 5,
+    [startUnit, goal, target, state.minutes],
   );
   const months = (n: number) => Math.max(1, Math.round(n));
   const low = months(plan.monthsLow);
   const high = Math.max(low, months(plan.monthsHigh));
+  const arrival = new Date();
+  arrival.setMonth(arrival.getMonth() + Math.round(plan.months));
   return (
     <OnboardingFrame
       step="plan"
@@ -622,75 +623,49 @@ export function PlanStep({
           ))}
         </div>
       </div>
-      <div className="ob-section">
-        <h3>{t("start.plan.deadlineQuestion")}</h3>
-        <div className="ob-chips">
-          {DEADLINES.map((d) => (
-            <button
-              key={d}
-              className="ob-chip"
-              aria-pressed={state.deadline === d}
-              onClick={() => update({ deadline: d as Deadline })}
-            >
-              {t(`start.plan.deadline.${d}`)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="ob-section">
-        <h3>{t("start.plan.minutesQuestion")}</h3>
-        <div className="ob-chips">
-          {(MINUTES.includes(state.minutes)
-            ? MINUTES
-            : [...MINUTES, state.minutes].sort((a, b) => a - b)
-          ).map((m) => (
-            <button
-              key={m}
-              className="ob-chip"
-              aria-pressed={state.minutes === m}
-              onClick={() => update({ minutes: m })}
-            >
-              {t("start.plan.minutes", { count: m })}
-              {m === 10 && ` · ${t("start.plan.recommended")}`}
-            </button>
-          ))}
-        </div>
-      </div>
       <section className="ob-plan-card" aria-live="polite">
-        <h3>{t("start.plan.cardTitle")}</h3>
-        <span className="ob-tag">
-          {t("start.plan.cardTarget", {
+        <h3>{t("start.plan.minutesQuestion")}</h3>
+        <label className="ob-meter-input">
+          <span className="ob-meter-value">
+            {t("start.plan.perDay", { count: state.minutes })}
+          </span>
+          <input
+            type="range"
+            min={MINUTES_MIN}
+            max={MINUTES_MAX}
+            step={5}
+            value={state.minutes}
+            aria-valuetext={t("start.plan.perDay", { count: state.minutes })}
+            onChange={(event) =>
+              update({ minutes: Number(event.target.value), deadline: 0 })
+            }
+          />
+          <span className="ob-meter-ends" aria-hidden="true">
+            <small>{t("start.plan.perDay", { count: MINUTES_MIN })}</small>
+            <small>{t("start.plan.perDay", { count: MINUTES_MAX })}</small>
+          </span>
+        </label>
+        <p className="ob-sim">
+          {t("start.plan.reach", {
             band: `${plan.targetBand} · ${t(`start.result.band.${plan.targetBand}`)}`,
+            range: span(low, high),
           })}
-        </span>
-        <p className="ob-note" style={{ textAlign: "start" }}>
+          <small>
+            {t("start.plan.around", {
+              date: arrival.toLocaleDateString(i18n.resolvedLanguage, {
+                month: "long",
+                year: "numeric",
+              }),
+            })}
+          </small>
+        </p>
+        <p className="ob-note" style={{ textAlign: "start", margin: 0 }}>
           {t("start.plan.cardRange", {
             from: plan.startUnit,
             to: Math.min(plan.targetUnit, BAND_END[plan.targetBand]),
             units: plan.units,
           })}
         </p>
-        <div className="ob-sim">
-          {t("start.plan.sim", { minutes: state.minutes, low, high })}
-          {plan.minutesForDeadline !== null && state.deadline > 0 && (
-            <p style={{ margin: "6px 0 0" }}>
-              {plan.feasibility === "ok"
-                ? t("start.plan.feasible")
-                : t("start.plan.needed", {
-                    deadline: t(`start.plan.deadlineName.${state.deadline}`),
-                    minutes: plan.minutesForDeadline,
-                  })}
-              {plan.feasibility !== "ok" && (
-                <button
-                  className="ob-link"
-                  onClick={() => update({ minutes: suggested })}
-                >
-                  {t("start.plan.useNeeded", { minutes: suggested })}
-                </button>
-              )}
-            </p>
-          )}
-        </div>
         <small className="ob-note" style={{ textAlign: "start" }}>
           {t("start.plan.dailyNote")}
         </small>

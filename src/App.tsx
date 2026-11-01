@@ -163,7 +163,8 @@ const HistoryPage = lazy(() =>
 
 export default function App() {
   const { t } = useTranslation();
-  const { mode, user, logout, notice } = useApp();
+  const { mode, user, logout, notice, connectionError, retrySession } =
+    useApp();
   const { toast } = useFeedback();
   const location = useLocation();
   useEffect(() => {
@@ -194,7 +195,14 @@ export default function App() {
       </Suspense>
     );
   if (mode === "loading")
-    return (
+    return connectionError ? (
+      <div className="empty-session" role="alert">
+        <p>{t("app.serverAsleep")}</p>
+        <button className="button primary" onClick={retrySession}>
+          {t("app.retry")}
+        </button>
+      </div>
+    ) : (
       <div className="empty-session" role="status">
         <LoaderCircle className="spin" size={30} />
         <p>{t("app.checkingSession")}</p>

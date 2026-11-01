@@ -18,7 +18,9 @@
     "loadingPayment": "Cargando pago…",
     "checkingSession": "Verificando tu sesión…",
     "loadingScreen": "Cargando…",
-    "checkingAccess": "Verificando acceso al aprendizaje…"
+    "checkingAccess": "Verificando acceso al aprendizaje…",
+    "serverAsleep": "El servidor se está activando y tarda un momento. Sigues con la sesión iniciada.",
+    "retry": "Reintentar"
   },
   "nav": {
     "dashboard": "Mi día",

@@ -34,7 +34,6 @@
       "introBody": "Know the word? Tap \"I know it\". Not yet? \"Not yet\". No score, no mistakes. Up to {{count}} questions.",
       "know": "I know it",
       "unknown": "Not yet",
-      "hear": "Hear the word",
       "undo": "Undo the last answer",
       "inPocket": "In your pocket",
       "slowDown": "Hold on, let's slow down a little.",
@@ -50,8 +49,6 @@
       "title": "Here's what we found",
       "level": "Your level",
       "between": "Between {{low}} and {{high}}",
-      "inPocket": "In your pocket: about {{count}} words",
-      "outOf": "out of the {{total}} core words GotIt teaches. This is an estimate.",
       "skills": "Skills",
       "skill": {
         "vocabulary": "Vocabulary",
@@ -94,40 +91,28 @@
         "C1": "You're at a high level; now we focus on accuracy and style."
       },
       "gap": {
-        "more": "You know more than you thought. We'll start higher and skip what you already have.",
-        "less": "Your level is below what you expected, and that's fine. We start in the right place and move fast.",
-        "same": "You judged yourself accurately."
-      }
+        "more": "You know more than you thought. The check decides, so you start at {{band}} and skip what you already have.",
+        "less": "The check found a lower level than you expected, and that is fine. The check decides, so you start at {{band}} and move fast.",
+        "same": "Your own rating and the check agree."
+      },
+      "gapCompare": "You rated yourself: {{self}} · The check found: {{found}}",
+      "inPocketRange": "In your pocket: about {{range}} words",
+      "wordsHow": "How is this worked out?",
+      "wordsExplain": "From the {{cards}} words we checked, ordered by how common they are, we estimate how many of GotIt's {{total}} core words you already know. It is an estimate and gets sharper as you practise."
     },
     "plan": {
       "title": "Let's build your plan",
       "body": "A few short choices, and the plan updates in front of you.",
-      "deadlineQuestion": "By when, roughly?",
-      "minutesQuestion": "How much time a day?",
-      "deadline": {
-        "1": "A month",
-        "3": "3 months",
-        "6": "Half a year",
-        "0": "No date"
-      },
-      "minutes": "{{count}} min",
+      "minutesQuestion": "How much time a day suits you?",
       "recommended": "Recommended",
-      "cardTitle": "Your English plan",
       "cardTarget": "Goal: {{band}}",
       "cardRange": "From unit {{from}} to unit {{to}} ({{units}} units)",
-      "sim": "{{minutes}} min a day ← you reach the goal in {{low}}–{{high}} months",
-      "simShort": "{{minutes}} min a day ← about {{months}} months",
-      "needed": "For {{deadline}} you need about {{minutes}} min a day.",
-      "useNeeded": "Set {{minutes}} min",
-      "feasible": "That fits your goal.",
       "dailyNote": "Words you save with the extension do not add to the daily goal.",
       "next": "Continue",
-      "deadlineName": {
-        "1": "a month",
-        "3": "three months",
-        "6": "half a year"
-      },
-      "targetQuestion": "Which level do you want to reach?"
+      "targetQuestion": "Which level do you want to reach?",
+      "perDay": "{{count}} min a day",
+      "reach": "You reach {{band}} in {{range}} months",
+      "around": "Around {{date}}, practising 5 days a week"
     },
     "save": {
       "title": "Saving what you built",
@@ -242,17 +227,9 @@
         }
       }
     },
-    "avatar": {
-      "replay": "Hear again",
-      "mute": "Mute",
-      "unmute": "Unmute"
-    },
     "talk": {
-      "title": "Now let's talk a little in English",
-      "body": "I'll ask you 3 short questions. Pick the best reply. There are no wrong answers, and you can skip.",
-      "begin": "Let's talk",
       "skip": "Skip this part",
-      "pick": "Question {{current}} of {{total}} · pick the best reply",
+      "pick": "Understanding sentences · question {{current}} of {{total}} · pick the best reply",
       "dontKnow": "I don't know"
     },
     "interests": {
@@ -279,6 +256,20 @@
         "listening": "Pronunciation and listening",
         "writing": "Reading and writing",
         "teacher": "Let the teacher decide"
+      }
+    },
+    "finish": {
+      "choose": {
+        "title": "You already have a plan",
+        "body": "The new check suggests a different starting point. Switch to it? Lessons you finished and words you saved stay.",
+        "primary": "Switch to the new plan",
+        "secondary": "Keep my current plan"
+      },
+      "failed": {
+        "title": "Your plan is not saved yet",
+        "body": "We could not reach the server. The result is kept in this browser, and we will save it next time you come in.",
+        "primary": "Try again",
+        "secondary": "Continue for now"
       }
     }
   }
