@@ -1786,7 +1786,6 @@
     "teacher": "ИИ-преподаватель",
     "startLiveInterview": "Начать живое интервью",
     "stopLiveInterview": "Завершить разговор",
-    "typeInstead": "Предпочитаете ответить текстом?",
     "liveDisconnected": "Связь прервалась. Подключитесь снова или продолжите письменно.",
     "liveBusy": "Преподаватель обрабатывает предыдущий ответ.",
     "liveStatus": {
@@ -2003,7 +2002,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Личная программа с преподавателем",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2125,6 +2124,7 @@
     "retrySameAnswer": "Сначала повторно отправьте предыдущий ответ. Возможно, он уже сохранён.",
     "audioReplyUnavailable": "Ответ сохранён. Можно читать ответ преподавателя, пока звук подключается снова.",
     "microphoneTextFallback": "Микрофон недоступен. Можно ответить письменно.",
+    "microphoneBlocked": "Браузер заблокировал микрофон для этого сайта. Нажмите значок рядом с адресом, разрешите микрофон и обновите страницу.",
     "libraryPractice": "Повторение ваших слов",
     "libraryPracticeHelp": "Короткая практика с учётом вашего прогресса.",
     "searchAndFilter": "Поиск и фильтры",
@@ -2248,7 +2248,19 @@
   "lessonSummary": {
     "title": "Хороший шаг сегодня",
     "independent": "Что получилось самостоятельно?",
-    "assisted": "Что мы практиковали с помощью?"
+    "assisted": "Что мы практиковали с помощью?",
+    "eyebrow": "Итоги урока",
+    "wentWell": "Что получилось хорошо",
+    "oneFocus": "Над чем поработать",
+    "youSaid": "Вы сказали",
+    "tryInstead": "Лучше так",
+    "noFocus": "В этот раз исправлять нечего. Так держать!",
+    "next": "Следующий шаг",
+    "minutes_one": "{{count}} минута",
+    "minutes_two": "{{count}} минуты",
+    "minutes_few": "{{count}} минуты",
+    "minutes_many": "{{count}} минут",
+    "minutes_other": "{{count}} минуты"
   },
   "authUi": {
     "moreOptions": "Другие способы входа"
@@ -2956,7 +2968,10 @@
     "artLoading": "Готовим иллюстрацию…",
     "artUnavailable": "Иллюстрация пока недоступна",
     "mascotAlt": "Мохи с флагом и приветствиями на языке {{language}}",
-    "programAlt": "Иллюстрация для {{title}}"
+    "programAlt": "Иллюстрация для {{title}}",
+    "intakeStep": "Знакомство · вопрос {{current}} из {{total}}",
+    "intakeReview": "Данные готовы · осталось подтвердить",
+    "recheck": "Пройти проверку уровня заново"
   },
   "programChooser": {
     "title": "Как будем учиться в этот раз?",
@@ -2965,7 +2980,7 @@
     "target": "Язык, который я хочу изучать",
     "support": "Язык объяснений и интерфейса",
     "personalTitle": "Создайте личную программу с ИИ-преподавателем",
-    "personalDescription": "Мохи спросит о ваших целях, уровне и интересах и составит структурированный план обучения для вас.",
+    "personalDescription": "Преподаватель задаст несколько коротких вопросов о целях и интересах и составит план для вас.",
     "foundationTitle": "Начните с основ",
     "foundationDescription": "Готовая программа с последовательными уроками: шаг за шагом от основ до уверенного общения на языке {{language}}.",
     "recommended": "Рекомендуется начинающим",
@@ -2982,7 +2997,9 @@
     "personalAction": "Создать мою программу",
     "foundationAction": "Начать изучать основы",
     "help": "Не уверены? Начните с основ и создайте личную программу позже.",
-    "languageNameLocale": "ru"
+    "languageNameLocale": "ru",
+    "checkFirst": "Короткая проверка, до 10 вопросов, определяет, с чего начать",
+    "checkAction": "Проверить уровень и составить план"
   },
   "programMap": {
     "unit": "Раздел {{count}}",

@@ -537,6 +537,12 @@ button.ob-card:hover {
   justify-content: space-between;
   color: var(--ob-muted, #6b7a72);
 }
+.ob-plan-card .ob-words {
+  margin: 0;
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--ob-accent, #2a7a5f);
+}
 .ob-plan-card .ob-sim {
   margin: 0;
   font-weight: 800;
@@ -1254,5 +1260,102 @@ button.ob-card:hover {
     width: 36px;
     height: 36px;
     border-radius: 11px;
+  }
+}
+
+/* the invitation to the first chat: what is saved, how the chat goes, what to expect */
+.ob-saved {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--ob-brand, #286f5c);
+  color: #fff;
+  border-radius: 18px;
+  padding: 14px 20px;
+}
+.ob-saved b {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.ob-saved-ok {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f5c542;
+  color: #22322c;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ob-saved-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}
+.ob-saved-chips span {
+  background: rgb(255 255 255 / 0.14);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.ob-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.ob-steps article {
+  background: #fff;
+  border: 1.5px solid #e3e8e2;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ob-steps article > span {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: #e5f0eb;
+  color: #1c5244;
+  display: grid;
+  place-items: center;
+}
+.ob-steps b {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.ob-steps small {
+  color: var(--ob-muted, #5d6b65);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.ob-promise {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ob-promise li {
+  background: #fdf2d3;
+  border: 1px solid #e9cf83;
+  color: #7a5a00;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.92rem;
+}
+@media (max-width: 720px) {
+  .ob-steps {
+    grid-template-columns: 1fr;
+  }
+  .ob-saved-chips {
+    margin-inline-start: 0;
   }
 }

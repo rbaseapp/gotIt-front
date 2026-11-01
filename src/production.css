@@ -708,6 +708,9 @@
 .teacher-avatar.female .teacher-avatar-blink {
   animation-delay: -2.9s;
 }
+.teacher-avatar.moochi .teacher-avatar-portrait {
+  border-radius: 0;
+}
 .teacher-avatar-thinking {
   position: absolute;
   inset-inline-start: 6%;

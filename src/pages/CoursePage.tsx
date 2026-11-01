@@ -504,18 +504,6 @@ export function CoursePage() {
                 <span>{t("courses.teacher")}</span>
                 <small>{t("courses.saved")}</small>
               </div>
-              {(!course.ready || voiceActive) && editAnswerIndex === null && (
-                <CourseLiveInterview
-                  course={course}
-                  onAnswer={sendLiveAnswer}
-                  onActiveChange={setVoiceActive}
-                  onTranscript={setMessage}
-                  onFinish={() => {
-                    setVoiceActive(false);
-                    setShowReview(true);
-                  }}
-                />
-              )}
               <button
                 type="button"
                 className="button ghost"
@@ -578,8 +566,7 @@ export function CoursePage() {
                 )}
               </div>
               {!voiceActive && (
-                <details className="course-text-fallback" open>
-                  <summary>{t("courses.typeInstead")}</summary>
+                <div className="course-text-fallback">
                   <div className="course-suggestions">
                     {course.suggestions.map((suggestion) => (
                       <button
@@ -610,7 +597,20 @@ export function CoursePage() {
                     }
                     replaceVoice={editAnswerIndex !== null}
                   />
-                </details>
+                </div>
+              )}
+              {/* Writing comes first; talking to the teacher is there for whoever prefers it. */}
+              {(!course.ready || voiceActive) && editAnswerIndex === null && (
+                <CourseLiveInterview
+                  course={course}
+                  onAnswer={sendLiveAnswer}
+                  onActiveChange={setVoiceActive}
+                  onTranscript={setMessage}
+                  onFinish={() => {
+                    setVoiceActive(false);
+                    setShowReview(true);
+                  }}
+                />
               )}
               {editAnswerIndex !== null && (
                 <button
@@ -626,7 +626,8 @@ export function CoursePage() {
               )}
               {course.messages.length > 1 &&
                 (!course.intakeProgress ||
-                  course.intakeProgress.answered >= 6) && (
+                  course.intakeProgress.answered >=
+                    course.intakeProgress.total) && (
                   <button
                     className="course-text-link"
                     disabled={busy}

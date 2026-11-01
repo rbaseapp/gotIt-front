@@ -114,7 +114,8 @@ export function ProgramsPage() {
           defaultTranslationLanguage: support,
         });
       if (structuredPair) {
-        open("/english-learning", "english-zero-c1", target);
+        // The English program starts where a short level check places the learner.
+        open("/start?fresh", "english-zero-c1", target);
         return;
       }
       const catalog = await product(wordPacksSchema, "word-packs");
@@ -185,6 +186,7 @@ export function ProgramsPage() {
         loading={prepared.loading}
         error={prepared.error}
         available={pairAvailable}
+        checkFirst={structuredPair}
         onRetry={() => void prepared.reload()}
         onPrepared={() => void openPrepared()}
         onBack={() => setNewOpen(false)}

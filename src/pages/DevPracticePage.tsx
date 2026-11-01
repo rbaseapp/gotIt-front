@@ -9,6 +9,8 @@ import { Modal } from "../components/Modal";
 import { RemoteState } from "../components/RemoteState";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
 import { useResource } from "../lib/useResource";
+import { useCachedResource } from "../lib/useCachedResource";
+import { resourceKey } from "../lib/resourceCache";
 import { getLanguageOptions } from "../lib/languages";
 import { learningReturn, practiceLink } from "../lib/learningNavigation";
 import {
@@ -185,7 +187,7 @@ function RecentPractice({
 
 export function DevPracticePage() {
   const { t, i18n } = useTranslation();
-  const { profile } = useApp();
+  const { profile, user: profileUser } = useApp();
   const subscription = useSubscription();
   const language = useLearningLanguage();
   const [params] = useSearchParams();
@@ -194,14 +196,18 @@ export function DevPracticePage() {
     null,
   );
   const scoped = ["items", "pack", "reading"].some((key) => params.has(key));
-  const packs = useResource(
+  // Packs and capabilities rarely change, so they are shared through the resource cache. The
+  // queue and progress change with every practice, so those are always fetched fresh.
+  const packs = useCachedResource(
     useCallback(() => product(wordPacksSchema, "word-packs"), []),
+    resourceKey(profileUser, "word-packs"),
   );
   const pack = packs.data?.packs.find((p) => p.id === params.get("pack"));
   const code =
     pack?.track.sourceLanguageCode ?? params.get("language") ?? language.code;
-  const capabilities = useResource(
+  const capabilities = useCachedResource(
     useCallback(() => product(capabilitiesSchema, "capabilities"), []),
+    resourceKey(profileUser, "capabilities"),
   );
   const queue = useResource(
     useCallback(

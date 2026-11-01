@@ -18,8 +18,8 @@ import { LanguageCombobox } from "./LanguageCombobox";
 import { LanguageFlag } from "./LanguageFlag";
 import { RemoteState } from "./RemoteState";
 import { getLanguageOptions } from "../lib/languages";
-import books from "../assets/program-chooser/books.png";
-import mohi from "../assets/program-chooser/mohi.png";
+import books from "../assets/program-chooser/books.webp";
+import mohi from "../assets/program-chooser/mohi.webp";
 import "../program-chooser.css";
 
 type Props = {
@@ -31,6 +31,8 @@ type Props = {
   loading: boolean;
   error: string;
   available: boolean;
+  /** The program starts from a level check instead of opening right away. */
+  checkFirst?: boolean;
   onRetry: () => void;
   onPrepared: () => void;
   onBack: () => void;
@@ -193,7 +195,13 @@ export function ProgramChooser(props: Props) {
             })}
           </p>
           <ul className="pc-features">
-            <Feature icon={<Clock3 />}>{t("programChooser.instant")}</Feature>
+            <Feature icon={<Clock3 />}>
+              {t(
+                props.checkFirst
+                  ? "programChooser.checkFirst"
+                  : "programChooser.instant",
+              )}
+            </Feature>
             <Feature icon={<ChartNoAxesColumnIncreasing />}>
               {t("programChooser.progress")}
             </Feature>
@@ -219,7 +227,9 @@ export function ProgramChooser(props: Props) {
             {t(
               busy
                 ? "common.loadingFromServer"
-                : "programChooser.foundationAction",
+                : props.checkFirst
+                  ? "programChooser.checkAction"
+                  : "programChooser.foundationAction",
             )}
             <ChevronRight aria-hidden="true" />
           </button>

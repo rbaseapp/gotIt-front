@@ -34,6 +34,8 @@ const BAND_ORDER: Band[] = ["Pre-A1", "A1", "A2", "B1", "B2", "C1"];
  */
 export const MINUTES_PER_UNIT = 70;
 export const DAYS_PER_WEEK = 5;
+/** The lexicon holds 3,424 words over 84 units: about 41 new words per unit. */
+export const WORDS_PER_UNIT = 41;
 const WEEKS_PER_MONTH = 4.345;
 
 export const GOAL_TARGET_BAND: Record<Goal, Band> = {
@@ -71,6 +73,12 @@ export function targetUnitFor(
   while (BAND_END[band] <= startUnit + 3 && band !== "C1")
     band = BAND_ORDER[BAND_ORDER.indexOf(band) + 1]!;
   return BAND_END[band];
+}
+
+/** New words a month at a daily time; rounded to tens because it is a rough pace. */
+export function wordsPerMonth(minutesPerDay: number, days = DAYS_PER_WEEK) {
+  const units = (minutesPerDay * days * WEEKS_PER_MONTH) / MINUTES_PER_UNIT;
+  return Math.max(10, Math.round((units * WORDS_PER_UNIT) / 10) * 10);
 }
 
 export type Plan = {

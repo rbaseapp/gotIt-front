@@ -1,23 +1,5 @@
-import i18n from "i18next";
+import i18n, { type BackendModule, type ResourceKey } from "i18next";
 import { initReactI18next } from "react-i18next";
-import ar from "./locales/ar/translation.json";
-import de from "./locales/de/translation.json";
-import en from "./locales/en/translation.json";
-import es from "./locales/es/translation.json";
-import fr from "./locales/fr/translation.json";
-import he from "./locales/he/translation.json";
-import ru from "./locales/ru/translation.json";
-import zh from "./locales/zh/translation.json";
-import pricingEn from "./locales/pricing-en.json";
-import pricingHe from "./locales/pricing-he.json";
-import startAr from "./locales/start-ar.json";
-import startDe from "./locales/start-de.json";
-import startEn from "./locales/start-en.json";
-import startEs from "./locales/start-es.json";
-import startFr from "./locales/start-fr.json";
-import startHe from "./locales/start-he.json";
-import startRu from "./locales/start-ru.json";
-import startZh from "./locales/start-zh.json";
 
 export const UI_LOCALE_STORAGE_KEY = "gotit.uiLocale.v1";
 export const SUPPORTED_UI_LOCALES = [
@@ -70,27 +52,113 @@ function applyDocumentLocale(locale: UiLocale): void {
     ?.setAttribute("content", i18n.t("meta.description"));
 }
 
-void i18n.use(initReactI18next).init({
-  resources: {
-    ar: { translation: { ...ar, ...startAr } },
-    de: { translation: { ...de, ...startDe } },
-    en: { translation: { ...en, pricing: pricingEn, ...startEn } },
-    es: { translation: { ...es, ...startEs } },
-    fr: { translation: { ...fr, ...startFr } },
-    he: { translation: { ...he, pricing: pricingHe, ...startHe } },
-    ru: { translation: { ...ru, ...startRu } },
-    zh: { translation: { ...zh, ...startZh } },
+/**
+ * Each language's strings are a separate download: a learner loads only their own language
+ * (and English, the fallback), not all eight.
+ */
+const locales: Record<UiLocale, () => Promise<ResourceKey>> = {
+  en: () =>
+    Promise.all([
+      import("./locales/en/translation.json"),
+      import("./locales/start-en.json"),
+      import("./locales/pricing-en.json"),
+    ]).then(([base, start, pricing]) => ({
+      ...base.default,
+      pricing: pricing.default,
+      ...start.default,
+    })),
+  he: () =>
+    Promise.all([
+      import("./locales/he/translation.json"),
+      import("./locales/start-he.json"),
+      import("./locales/pricing-he.json"),
+    ]).then(([base, start, pricing]) => ({
+      ...base.default,
+      pricing: pricing.default,
+      ...start.default,
+    })),
+  ar: () =>
+    Promise.all([
+      import("./locales/ar/translation.json"),
+      import("./locales/start-ar.json"),
+    ]).then(([base, start]) => ({
+      ...base.default,
+      ...start.default,
+    })),
+  de: () =>
+    Promise.all([
+      import("./locales/de/translation.json"),
+      import("./locales/start-de.json"),
+    ]).then(([base, start]) => ({
+      ...base.default,
+      ...start.default,
+    })),
+  es: () =>
+    Promise.all([
+      import("./locales/es/translation.json"),
+      import("./locales/start-es.json"),
+    ]).then(([base, start]) => ({
+      ...base.default,
+      ...start.default,
+    })),
+  fr: () =>
+    Promise.all([
+      import("./locales/fr/translation.json"),
+      import("./locales/start-fr.json"),
+    ]).then(([base, start]) => ({
+      ...base.default,
+      ...start.default,
+    })),
+  ru: () =>
+    Promise.all([
+      import("./locales/ru/translation.json"),
+      import("./locales/start-ru.json"),
+    ]).then(([base, start]) => ({
+      ...base.default,
+      ...start.default,
+    })),
+  zh: () =>
+    Promise.all([
+      import("./locales/zh/translation.json"),
+      import("./locales/start-zh.json"),
+    ]).then(([base, start]) => ({
+      ...base.default,
+      ...start.default,
+    })),
+};
+const lazyLocales: BackendModule = {
+  type: "backend",
+  init() {},
+  read(language, _namespace, callback) {
+    const load = locales[language as UiLocale];
+    if (!load) {
+      callback(null, {});
+      return;
+    }
+    load().then(
+      (strings) => callback(null, strings),
+      (error: unknown) => callback(error as Error, false),
+    );
   },
-  lng: detectUiLocale(),
-  fallbackLng: "en",
-  supportedLngs: [...SUPPORTED_UI_LOCALES],
-  interpolation: { escapeValue: false },
-  initAsync: false,
-});
+};
 
-applyDocumentLocale(normalizeUiLocale(i18n.resolvedLanguage) ?? "en");
+/** Resolves once the learner's language is loaded; render the app after it. */
+export const i18nReady = i18n
+  .use(lazyLocales)
+  .use(initReactI18next)
+  .init({
+    lng: detectUiLocale(),
+    fallbackLng: "en",
+    supportedLngs: [...SUPPORTED_UI_LOCALES],
+    load: "languageOnly",
+    interpolation: { escapeValue: false },
+  })
+  .then(() => {
+    applyDocumentLocale(normalizeUiLocale(i18n.resolvedLanguage) ?? "en");
+  });
 i18n.on("languageChanged", (language) => {
-  applyDocumentLocale(normalizeUiLocale(language) ?? "en");
+  if (i18n.isInitialized)
+    applyDocumentLocale(normalizeUiLocale(language) ?? "en");
 });
 
 export async function setUiLocale(locale: UiLocale): Promise<void> {

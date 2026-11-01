@@ -5,7 +5,10 @@ import { LastLessonCard } from "../src/components/LastLessonCard";
 import type { SavedPrivateLesson } from "../src/lib/privateLesson";
 
 const mocks = vi.hoisted(() => ({ list: vi.fn() }));
-vi.mock("../src/lib/privateLesson", () => ({ listPrivateLessons: mocks.list }));
+vi.mock(import("../src/lib/privateLesson"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  listPrivateLessons: mocks.list,
+}));
 
 const itemId = "11111111-1111-4111-8111-111111111111";
 const lesson = {

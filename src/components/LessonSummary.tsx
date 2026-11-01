@@ -1,10 +1,18 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { SavedPrivateLesson } from "../lib/privateLesson";
+import { ArrowRight, Check, Clock, Compass, Target } from "lucide-react";
+import { lessonTopic, type SavedPrivateLesson } from "../lib/privateLesson";
 import { LessonHomeworkCard } from "../pages/HomeworkPage";
+import moochi from "../assets/ux/dashboard-moohi.webp";
 import "./LessonSummary.css";
 
+const MAX_WINS = 3;
+
+/**
+ * The page after a lesson. It reads top to bottom as: you did it (hero), what went well,
+ * the one thing to work on, what to do next, and the full report folded away for later.
+ */
 export function LessonSummary({
   lesson,
   returnTo,
@@ -17,6 +25,7 @@ export function LessonSummary({
   const { t } = useTranslation();
   const report = lesson.report;
   if (!report) return null;
+
   const evidence = [
     ...new Map(
       Object.values(report.assessment.skills)
@@ -27,77 +36,147 @@ export function LessonSummary({
         ]),
     ).values(),
   ];
-  const independent = evidence.filter((entry) => entry.independent);
-  const assisted = evidence.filter((entry) => !entry.independent);
+  const wins = [
+    ...new Set([
+      ...report.strengths,
+      ...evidence.filter((e) => e.independent).map((e) => e.observation),
+    ]),
+  ].slice(0, MAX_WINS);
+  const correction = report.corrections[0];
+  const assisted = evidence.find((entry) => !entry.independent)?.observation;
+  const minutes = Math.ceil(
+    (lesson.actualDurationSeconds ?? lesson.plannedDurationSeconds) / 60,
+  );
+  const hasReview = report.recommendedReviewItemIds.length > 0;
+  const reviewLink = `/learn/smart?${new URLSearchParams({
+    items: report.recommendedReviewItemIds.join(","),
+    language: lesson.targetLanguageCode,
+    return: returnTo,
+  })}`;
+
   return (
-    <section className="lesson-summary-workspace">
-      <div
-        className="canonical-page lesson-summary"
-        data-figma-desktop="43:6641"
-        data-figma-mobile="44:8688"
-      >
-        <header>
-          <h1>{t("lessonSummary.title")}</h1>
-          <p>
-            {t("privateLesson.durationMinutes", {
-              count: Math.ceil(
-                (lesson.actualDurationSeconds ??
-                  lesson.plannedDurationSeconds) / 60,
-              ),
-            })}{" "}
-            · {t("privateLesson.history.status.completed")}
-          </p>
-        </header>
-        <section className="ux-card mint">
-          <h2>{t("lessonSummary.independent")}</h2>
-          {independent.length ? (
-            independent.slice(0, 2).map((entry, index) => (
-              <p dir="auto" key={index}>
-                {entry.observation}
-              </p>
-            ))
-          ) : (
-            <p>{t("privateLesson.report.noEvidence")}</p>
-          )}
-        </section>
-        <section className="ux-card">
-          <h2>{t("lessonSummary.assisted")}</h2>
-          {assisted.length ? (
-            assisted.slice(0, 2).map((entry, index) => (
-              <p dir="auto" key={index}>
-                {entry.observation}
-              </p>
-            ))
-          ) : (
-            <p dir="auto">
-              {report.corrections[0]?.explanation ?? report.nextLessonPlan}
+    <section className="lesson-summary-workspace ls-workspace">
+      <div className="ls-page">
+        <header className="ls-hero">
+          <div className="ls-hero-text">
+            <p className="ls-eyebrow">{t("lessonSummary.eyebrow")}</p>
+            <h1>{t("lessonSummary.title")}</h1>
+            <p className="ls-topic" dir="auto">
+              {lessonTopic(lesson, t)}
             </p>
-          )}
-          <details>
-            <summary>{t("courses.reportDetails")}</summary>
-            {children}
-          </details>
-        </section>
-        {lesson.curriculum ? (
-          <section className="ux-card">
-            <h2>{t("c1.postlesson")}</h2>
-            <p>{t("unitMap.followUpHelp")}</p>
-            <Link className="button primary" to={returnTo}>
-              {t("pathUi.continueUnit")}
-            </Link>
+            <ul className="ls-chips">
+              <li>
+                <Clock size={16} aria-hidden="true" />
+                {t("lessonSummary.minutes", { count: minutes })}
+              </li>
+              <li>{lesson.level}</li>
+              <li className="ls-chip-done">
+                <Check size={16} aria-hidden="true" />
+                {t("privateLesson.history.status.completed")}
+              </li>
+            </ul>
+          </div>
+          <img className="ls-mascot" src={moochi} alt="" draggable={false} />
+        </header>
+
+        <div className="ls-pair">
+          <section className="ls-card ls-wins" aria-labelledby="ls-wins-title">
+            <h2 id="ls-wins-title">
+              <span className="ls-icon" aria-hidden="true">
+                <Check size={20} />
+              </span>
+              {t("lessonSummary.wentWell")}
+            </h2>
+            {wins.length ? (
+              <ul className="ls-list">
+                {wins.map((win) => (
+                  <li key={win} dir="auto">
+                    {win}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="ls-quiet">{t("privateLesson.report.noEvidence")}</p>
+            )}
           </section>
-        ) : (
-          <LessonHomeworkCard lessonId={lesson.id} />
-        )}
-        {report.recommendedReviewItemIds.length > 0 && (
-          <Link
-            className="button primary"
-            to={`/learn/smart?${new URLSearchParams({ items: report.recommendedReviewItemIds.join(","), language: lesson.targetLanguageCode, return: returnTo })}`}
+
+          <section
+            className="ls-card ls-focus"
+            aria-labelledby="ls-focus-title"
           >
-            {t("dashboard.smartPractice")}
-          </Link>
-        )}
-        <Link className="button secondary" to={returnTo}>
+            <h2 id="ls-focus-title">
+              <span className="ls-icon" aria-hidden="true">
+                <Target size={20} />
+              </span>
+              {t("lessonSummary.oneFocus")}
+            </h2>
+            {correction ? (
+              <>
+                <div
+                  className="ls-fix"
+                  dir="auto"
+                  lang={lesson.targetLanguageCode}
+                >
+                  <p className="ls-fix-before">
+                    <small>{t("lessonSummary.youSaid")}</small>
+                    <del>{correction.original}</del>
+                  </p>
+                  <p className="ls-fix-after">
+                    <small>{t("lessonSummary.tryInstead")}</small>
+                    <strong>{correction.corrected}</strong>
+                  </p>
+                </div>
+                <p dir="auto">{correction.explanation}</p>
+              </>
+            ) : assisted ? (
+              <p dir="auto">{assisted}</p>
+            ) : (
+              <p className="ls-quiet">{t("lessonSummary.noFocus")}</p>
+            )}
+          </section>
+        </div>
+
+        <section className="ls-card ls-next" aria-labelledby="ls-next-title">
+          <h2 id="ls-next-title">
+            <span className="ls-icon" aria-hidden="true">
+              <Compass size={20} />
+            </span>
+            {t("lessonSummary.next")}
+          </h2>
+          {report.nextLessonPlan && <p dir="auto">{report.nextLessonPlan}</p>}
+          {lesson.curriculum ? (
+            <Link className="ls-button primary" to={returnTo}>
+              {t("pathUi.continueUnit")}
+              <ArrowRight
+                className="directional-arrow"
+                size={18}
+                aria-hidden="true"
+              />
+            </Link>
+          ) : (
+            <LessonHomeworkCard lessonId={lesson.id} />
+          )}
+          {hasReview && (
+            <Link className="ls-button primary" to={reviewLink}>
+              {t("dashboard.smartPractice")}
+              <ArrowRight
+                className="directional-arrow"
+                size={18}
+                aria-hidden="true"
+              />
+            </Link>
+          )}
+        </section>
+
+        <details className="ls-details">
+          <summary>{t("courses.reportDetails")}</summary>
+          <div className="ls-details-body">{children}</div>
+        </details>
+
+        <Link
+          className={`ls-button ${hasReview || lesson.curriculum ? "ghost" : "primary"}`}
+          to={returnTo}
+        >
           {t("courses.backToCourse")}
         </Link>
       </div>

@@ -149,8 +149,11 @@ it("opens hash-linked settings with only the selected category and accessible cu
   );
 });
 
-it("has readable new content in every supported locale", () => {
-  for (const locale of ["ar", "de", "en", "es", "fr", "he", "ru", "zh"]) {
+it("has readable new content in every supported locale", async () => {
+  const locales = ["ar", "de", "en", "es", "fr", "he", "ru", "zh"];
+  // Languages load on demand; load them all to check each one.
+  await i18n.loadLanguages(locales);
+  for (const locale of locales) {
     const copy = i18n.getResource(
       locale,
       "translation",

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "../subscription-pricing.css";
-import mochiUrl from "../assets/mywords/moohi.png";
+import mochiUrl from "../assets/mywords/moohi.webp";
 import {
   formatPrice,
   periodMonths,

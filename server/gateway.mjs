@@ -4,6 +4,8 @@ import { resolve, sep, extname } from "node:path";
 import { isIP } from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+import { brotliCompress, constants as zlib, gzip } from "node:zlib";
 
 export const DEFAULT_CORE = "https://rbase-core-api.onrender.com";
 export const DEFAULT_GOTIT = "https://gotit-backend.onrender.com";
@@ -17,7 +19,34 @@ const mime = {
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
   ".webp": "image/webp",
+  ".mp4": "video/mp4",
 };
+const brotli = promisify(brotliCompress);
+const gzipAsync = promisify(gzip);
+/** Text bodies shrink several times when compressed; images and video are already compressed. */
+const compressible = (contentType) =>
+  /^(text\/|application\/json|image\/svg\+xml)/u.test(contentType ?? "");
+/** The best encoding the client accepts: Brotli, then gzip. */
+function pickEncoding(req) {
+  // "br;q=0" refuses an encoding; any other q (or none) accepts it.
+  const accepts = (name) =>
+    String(req.headers["accept-encoding"] ?? "")
+      .split(",")
+      .some((part) => {
+        const [coding, ...params] = part.trim().toLowerCase().split(";");
+        const q = params.map((p) => p.trim()).find((p) => p.startsWith("q="));
+        return coding === name && !(q && Number(q.slice(2)) === 0);
+      });
+  if (accepts("br")) return "br";
+  if (accepts("gzip")) return "gzip";
+  return null;
+}
+/** Compress a body built on the fly, at a level fast enough to do per request. */
+function compressNow(encoding, body) {
+  return encoding === "br"
+    ? brotli(body, { params: { [zlib.BROTLI_PARAM_QUALITY]: 5 } })
+    : gzipAsync(body, { level: 6 });
+}
 const applePayAssociationPath =
   "/.well-known/apple-developer-merchantid-domain-association";
 const defaultUpstreamRetryDelays = [250, 750, 1500];
@@ -451,6 +480,16 @@ export function createGateway(config) {
             const value = response.headers.get(header);
             if (value) res.setHeader(header, value);
           }
+          const encoding = pickEncoding(req);
+          if (
+            encoding &&
+            content.length >= 1024 &&
+            compressible(response.headers.get("content-type"))
+          ) {
+            content = await compressNow(encoding, content);
+            res.setHeader("Content-Encoding", encoding);
+            res.setHeader("Vary", "Accept-Encoding");
+          }
           res.writeHead(response.status);
           res.end(content);
         } finally {
@@ -507,6 +546,21 @@ export function createGateway(config) {
               `content="${config.origin}/og-image.png"`,
             ),
         );
+      const encoding = compressible(contentType) ? pickEncoding(req) : null;
+      // The same URL answers differently by Accept-Encoding, compressed or not.
+      if (compressible(contentType)) res.setHeader("Vary", "Accept-Encoding");
+      if (encoding && body.length >= 1024) {
+        // The build writes .br and .gz next to each asset (scripts/precompress.mjs); index.html
+        // is rewritten above, so it is compressed here.
+        const precompressed = target.endsWith(`${sep}index.html`)
+          ? null
+          : await readFile(`${target}.${encoding === "br" ? "br" : "gz"}`).catch(
+              () => null,
+            );
+        body = precompressed ?? (await compressNow(encoding, body));
+        res.setHeader("Content-Encoding", encoding);
+        res.setHeader("Vary", "Accept-Encoding");
+      }
       res.writeHead(200, {
         "Content-Type": contentType,
         "Content-Length": body.length,

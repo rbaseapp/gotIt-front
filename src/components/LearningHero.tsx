@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import original from "../assets/ux/learning-hero.png";
-import textless from "../assets/ux/learning-hero-textless.png";
+import original from "../assets/ux/learning-hero.webp";
+import textless from "../assets/ux/learning-hero-textless.webp";
 import "./LearningHero.css";
 
 const captions = [

@@ -17,7 +17,6 @@ import { DashboardDetails } from "../components/DashboardDetails";
 import { DashboardArticle } from "../components/DashboardArticle";
 import { DashboardQuickReview } from "../components/DashboardQuickReview";
 import { RemoteState } from "../components/RemoteState";
-import { useResource } from "../lib/useResource";
 import { useCachedResource } from "../lib/useCachedResource";
 import { resourceKey } from "../lib/resourceCache";
 import { useLearningLanguage } from "../lib/useLearningLanguage";
@@ -93,7 +92,8 @@ export function DevDashboardPage() {
   const [chosen, setChosen] = useState(() => homeLanguage(user));
   const code = chosen || language.code;
   const selected = selectedProgram(user, code);
-  const structured = useResource(
+  // Home data is kept per query (resourceCache): coming back shows it at once and refreshes.
+  const structured = useCachedResource(
     useCallback(async () => {
       if (
         code !== "en" ||
@@ -103,13 +103,14 @@ export function DevDashboardPage() {
       const catalog = await curriculumApi.catalog();
       return catalog.programs.length ? curriculumApi.get() : null;
     }, [code, selected]),
+    resourceKey(user, `home:structured:${code}:${selected ?? ""}`),
   );
   const [recentPage, setRecentPage] = useState(1);
   const courses = useCachedResource(
     useCallback(() => courseApi.list(), []),
     resourceKey(user, "courses"),
   );
-  const dashboard = useResource(
+  const dashboard = useCachedResource(
     useCallback(
       async () => ({
         ...(await product(
@@ -120,8 +121,9 @@ export function DevDashboardPage() {
       }),
       [code, recentPage],
     ),
+    resourceKey(user, `home:dashboard:${code}:${recentPage}`),
   );
-  const words = useResource(
+  const words = useCachedResource(
     useCallback(
       async () => ({
         ...(code
@@ -134,8 +136,9 @@ export function DevDashboardPage() {
       }),
       [code],
     ),
+    resourceKey(user, `home:words:${code}`),
   );
-  const latest = useResource(
+  const latest = useCachedResource(
     useCallback(
       async () => ({
         ...(code
@@ -148,8 +151,9 @@ export function DevDashboardPage() {
       }),
       [code],
     ),
+    resourceKey(user, `home:latest:${code}`),
   );
-  const sessions = useResource(
+  const sessions = useCachedResource(
     useCallback(
       async () => ({
         ...(code
@@ -162,8 +166,9 @@ export function DevDashboardPage() {
       }),
       [code],
     ),
+    resourceKey(user, `home:sessions:${code}`),
   );
-  const packs = useResource(
+  const packs = useCachedResource(
     useCallback(
       () =>
         selected === "english-path" && code === "en"
@@ -173,6 +178,10 @@ export function DevDashboardPage() {
             )
           : Promise.resolve({ packs: [] }),
       [selected, code, profile.defaultTranslationLanguage],
+    ),
+    resourceKey(
+      user,
+      `home:packs:${selected ?? ""}:${code}:${profile.defaultTranslationLanguage}`,
     ),
   );
   const d = dashboard.data?.language === code ? dashboard.data : undefined;

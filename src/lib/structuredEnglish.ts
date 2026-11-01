@@ -487,9 +487,12 @@ export const curriculumApi = {
     product(articleSchema, `${root}/articles`, "POST", { eventId, revision }),
 };
 export function structuredProgram(data: Curriculum): Program {
-  const completed = data.units.filter(
+  const done = data.units.filter(
     (unit) => unit.waived || data.completed[`gate:${unit.id}`],
   ).length;
+  // A learner placed at unit 30 has already passed the units before it.
+  const here = data.units.findIndex((unit) => unit.id === data.currentUnit);
+  const completed = Math.max(done, here);
   return {
     id: data.program.id,
     title: data.program.title,

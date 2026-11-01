@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   listPrivateLessons,
   type SavedPrivateLesson,
+  lessonTopic,
 } from "../lib/privateLesson";
 
 function brief(text: string) {
@@ -54,7 +55,7 @@ export function LastLessonCard() {
         </span>
         <div>
           <p className="eyebrow">{t("dashboard.lastLessonTitle")}</p>
-          <h2 dir="auto">{lesson.topic}</h2>
+          <h2 dir="auto">{lessonTopic(lesson, t)}</h2>
           {lesson.endedAt && (
             <time dateTime={lesson.endedAt}>
               {new Date(lesson.endedAt).toLocaleDateString(

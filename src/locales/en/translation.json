@@ -1802,7 +1802,6 @@
     "teacher": "AI teacher",
     "startLiveInterview": "Start live interview",
     "stopLiveInterview": "End conversation",
-    "typeInstead": "Prefer to type an answer?",
     "liveDisconnected": "The conversation disconnected. Reconnect or continue by typing.",
     "liveBusy": "The teacher is processing your previous answer.",
     "liveStatus": {
@@ -1972,7 +1971,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Personal program with the teacher",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2094,6 +2093,7 @@
     "retrySameAnswer": "Retry your previous answer first. It may already have been saved.",
     "audioReplyUnavailable": "Your answer is saved. You can read the teacher’s response while audio reconnects.",
     "microphoneTextFallback": "The microphone is unavailable. You can answer by typing.",
+    "microphoneBlocked": "Your browser blocked the microphone for this site. Click the icon next to the address, choose Allow for the microphone, and reload the page.",
     "libraryPractice": "Review that fits your words",
     "libraryPracticeHelp": "Short practice, adapted to how you are learning.",
     "searchAndFilter": "Search and filter",
@@ -2217,7 +2217,17 @@
   "lessonSummary": {
     "title": "You took a good step today",
     "independent": "What did you do independently?",
-    "assisted": "What did we practice with help?"
+    "assisted": "What did we practice with help?",
+    "eyebrow": "Lesson summary",
+    "wentWell": "What went well",
+    "oneFocus": "One thing to work on",
+    "youSaid": "You said",
+    "tryInstead": "Try instead",
+    "noFocus": "Nothing to fix this time. Keep it up!",
+    "next": "Your next step",
+    "minutes_one": "{{count}} minute",
+    "minutes_two": "{{count}} minutes",
+    "minutes_other": "{{count}} minutes"
   },
   "authUi": {
     "moreOptions": "More sign-in options"
@@ -2925,7 +2935,10 @@
     "artLoading": "Preparing your illustration…",
     "artUnavailable": "Illustration currently unavailable",
     "mascotAlt": "Mohi with a flag and greetings in {{language}}",
-    "programAlt": "Illustration for {{title}}"
+    "programAlt": "Illustration for {{title}}",
+    "intakeStep": "Intro conversation · question {{current}} of {{total}}",
+    "intakeReview": "Details ready · approve to build",
+    "recheck": "Retake the level check"
   },
   "programChooser": {
     "title": "How shall we learn today?",
@@ -2934,7 +2947,7 @@
     "target": "The language I want to learn",
     "support": "Explanation and interface language",
     "personalTitle": "Build a personal program with an AI teacher",
-    "personalDescription": "Mohi will ask about your goals, level and interests, then build a structured learning path tailored to you.",
+    "personalDescription": "The teacher asks a few short questions about your goals and interests, then builds a path tailored to you.",
     "foundationTitle": "Start with the basics",
     "foundationDescription": "A ready-made program with organized lessons, step by step, from the foundations to confident conversation in {{language}}.",
     "recommended": "Recommended for beginners",
@@ -2951,7 +2964,9 @@
     "personalAction": "Let’s build my program",
     "foundationAction": "Start learning the basics",
     "help": "Not sure? Start with the basics and create a personal program later.",
-    "languageNameLocale": "en"
+    "languageNameLocale": "en",
+    "checkFirst": "A short check, up to 10 questions, sets where you start",
+    "checkAction": "Check my level and build the plan"
   },
   "programMap": {
     "unit": "Unit {{count}}",

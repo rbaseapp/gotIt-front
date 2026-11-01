@@ -1,0 +1,246 @@
+/* The first chat's start screen (see FirstChatIntro). Colours follow the approved design. */
+.fci {
+  --fci-ink: #14372e;
+  --fci-muted: #5c7169;
+  --fci-line: #e6e9df;
+  --fci-edge: #22322c;
+  --fci-brand: #0f5c47;
+  --fci-soft: #e1f2ea;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--fci-ink);
+}
+.fci-hero {
+  background: #fff;
+  border: 1.5px solid var(--fci-edge);
+  border-radius: 24px;
+  box-shadow: 0 5px 0 var(--fci-edge);
+  padding: 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 26px;
+  align-items: center;
+}
+.fci-ctl {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.fci-level {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--fci-soft);
+  color: var(--fci-brand);
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 9px 16px;
+}
+.fci-level small {
+  font-weight: 700;
+  color: #3f6a5c;
+}
+.fci-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.fci-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  border-radius: 14px;
+  background: #eaf3ee;
+  font-weight: 800;
+  color: #0f4a3a;
+  padding: 0 16px;
+}
+.fci-how {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fci-how small {
+  color: var(--fci-muted);
+  font-weight: 600;
+}
+.fci-seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--fci-line);
+  border-radius: 14px;
+  padding: 3px;
+  gap: 3px;
+}
+.fci-seg button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  color: #23423a;
+  cursor: pointer;
+}
+.fci-seg button[aria-pressed="true"] {
+  background: var(--fci-brand);
+  color: #fff;
+}
+.fci-go {
+  min-height: 62px;
+  border: 1.5px solid var(--fci-edge);
+  border-radius: 16px;
+  background: var(--fci-brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 1.25rem;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 0 var(--fci-edge);
+  cursor: pointer;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+.fci-go:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 var(--fci-edge);
+}
+.fci-go:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--fci-edge);
+}
+.fci-go:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.fci-wait {
+  margin: 0;
+  color: var(--fci-muted);
+  font-weight: 600;
+}
+.fci-error {
+  margin: 0;
+  background: #fbe9e4;
+  border: 1px solid #b4412b;
+  color: #8f2f1c;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+}
+.fci-warm {
+  text-align: start;
+  background: #fffefa;
+  border: 1.5px solid var(--fci-line);
+  border-radius: 16px;
+  padding: 12px 16px;
+  min-height: 60px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.fci-warm:hover:not(:disabled) {
+  border-color: var(--fci-edge);
+}
+.fci-warm b {
+  display: block;
+  font-weight: 800;
+}
+.fci-warm small {
+  color: var(--fci-muted);
+  font-weight: 600;
+}
+.fci-teacher {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.fci-pic {
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  border: 1.5px solid var(--fci-edge);
+  box-shadow: 0 5px 0 var(--fci-edge);
+  background: var(--fci-soft);
+  overflow: hidden;
+  display: grid;
+  place-items: end center;
+}
+.fci-pic img {
+  width: 82%;
+  height: auto;
+  display: block;
+}
+.fci-teacher b {
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+.fci-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fci-brand);
+  font-weight: 800;
+  background: var(--fci-soft);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.92rem;
+}
+.fci-ready i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #1d9a6c;
+}
+.fci-end {
+  background: #fff;
+  border: 1.5px solid var(--fci-line);
+  border-radius: 20px;
+  padding: 20px 22px;
+}
+.fci-end h2 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.fci-end ul {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 700;
+}
+.fci-note {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--fci-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+@media (max-width: 860px) {
+  .fci-hero {
+    grid-template-columns: 1fr;
+  }
+  .fci-teacher {
+    order: -1;
+  }
+  .fci-pic {
+    width: 140px;
+    height: 140px;
+  }
+}
