@@ -5,9 +5,10 @@ import { Logo } from "./Logo";
 import { Modal } from "./Modal";
 import { TeacherAvatar } from "./TeacherAvatar";
 import { textDirection } from "../lib/textDirection";
-import type {
-  LessonActivity,
-  PrivateLessonSession,
+import {
+  lessonTopic,
+  type LessonActivity,
+  type PrivateLessonSession,
 } from "../lib/privateLesson";
 import teacherFemale from "../assets/ux/lesson-teacher-female.png";
 import teacherMale from "../assets/ux/lesson-teacher-male.png";
@@ -80,7 +81,10 @@ export function LessonWorkspace(p: Props) {
   const conversation = p.activity.interactionMode === "conversation";
   const adaptive = p.activity.protocolVersion === "adaptive-v1";
   const stage = ["learn", "try", "chat"].indexOf(p.activity.stage) + 1;
-  const teacherName = t(`privateLesson.voiceOptions.${p.lesson.teacherVoice}`);
+  const moochi = p.lesson.teacherName === "Moochi";
+  const teacherName = moochi
+    ? t("start.tutorIntro.moochiName")
+    : t(`privateLesson.voiceOptions.${p.lesson.teacherVoice}`);
   const voiceActive = p.inputMode === "voice" && !p.microphoneMuted;
   const unavailable = p.busy || !p.ready || submitting || panel !== null;
   const activityEnded =
@@ -176,7 +180,7 @@ export function LessonWorkspace(p: Props) {
           </button>
         </div>
         <div className="lesson-room-topic">
-          <h1 dir="auto">{p.lesson.topic}</h1>
+          <h1 dir="auto">{lessonTopic(p.lesson, t)}</h1>
           <p>
             {t("privateLesson.title")}
             {p.lesson.wordPack
@@ -366,7 +370,7 @@ export function LessonWorkspace(p: Props) {
                 <LoaderCircle className="spin" size={16} />
                 {t(`lessonRoom.${teacherState}`, {
                   teacher: teacherName,
-                  context: p.lesson.teacherVoice,
+                  context: moochi ? "male" : p.lesson.teacherVoice,
                 })}
               </p>
             )}
@@ -562,9 +566,13 @@ export function LessonWorkspace(p: Props) {
           </header>
           <div className="lesson-room-teacher-portrait">
             <TeacherAvatar
-              variant={p.lesson.teacherVoice}
+              variant={moochi ? "moochi" : p.lesson.teacherVoice}
               referencePortrait={
-                p.lesson.teacherVoice === "female" ? teacherFemale : teacherMale
+                moochi
+                  ? undefined
+                  : p.lesson.teacherVoice === "female"
+                    ? teacherFemale
+                    : teacherMale
               }
               activity={p.busy ? "thinking" : "listening"}
               active={connected}
@@ -575,7 +583,7 @@ export function LessonWorkspace(p: Props) {
               <img src={micStatusIcon} alt="" />
               {t(`lessonRoom.${teacherState}`, {
                 teacher: teacherName,
-                context: p.lesson.teacherVoice,
+                context: moochi ? "male" : p.lesson.teacherVoice,
               })}
             </span>
           </div>
@@ -592,7 +600,7 @@ export function LessonWorkspace(p: Props) {
             <p dir="auto">
               {p.lesson.roadmap?.communicationObjective ||
                 p.lesson.grammarFocus ||
-                p.lesson.topic}
+                lessonTopic(p.lesson, t)}
             </p>
             {p.lesson.targetWords.length > 0 && (
               <div className="lesson-room-words">
@@ -613,7 +621,7 @@ export function LessonWorkspace(p: Props) {
           <p className="lesson-room-mobile-status" role="status">
             {t(`lessonRoom.${teacherState}`, {
               teacher: teacherName,
-              context: p.lesson.teacherVoice,
+              context: moochi ? "male" : p.lesson.teacherVoice,
             })}
           </p>
         </aside>

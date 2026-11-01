@@ -1756,7 +1756,6 @@
     "teacher": "Profesor de IA",
     "startLiveInterview": "Iniciar entrevista en vivo",
     "stopLiveInterview": "Terminar conversación",
-    "typeInstead": "¿Prefieres responder por escrito?",
     "liveDisconnected": "Se interrumpió la conversación. Vuelve a conectarte o continúa escribiendo.",
     "liveBusy": "El profesor está procesando tu respuesta anterior.",
     "liveStatus": {
@@ -1973,7 +1972,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "Programa personal con el profesor",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2095,6 +2094,7 @@
     "retrySameAnswer": "Reintenta primero tu respuesta anterior. Puede que ya se haya guardado.",
     "audioReplyUnavailable": "Tu respuesta está guardada. Puedes leer la respuesta del profesor mientras se reconecta el audio.",
     "microphoneTextFallback": "El micrófono no está disponible. Puedes responder por escrito.",
+    "microphoneBlocked": "El navegador bloqueó el micrófono para este sitio. Haz clic en el icono junto a la dirección, permite el micrófono y recarga la página.",
     "libraryPractice": "Repaso adaptado a tus palabras",
     "libraryPracticeHelp": "Práctica breve, adaptada a tu aprendizaje.",
     "searchAndFilter": "Buscar y filtrar",
@@ -2218,7 +2218,17 @@
   "lessonSummary": {
     "title": "Hoy diste un buen paso",
     "independent": "¿Qué hiciste por tu cuenta?",
-    "assisted": "¿Qué practicamos con ayuda?"
+    "assisted": "¿Qué practicamos con ayuda?",
+    "eyebrow": "Resumen de la lección",
+    "wentWell": "Lo que salió bien",
+    "oneFocus": "Una cosa para mejorar",
+    "youSaid": "Dijiste",
+    "tryInstead": "Prueba así",
+    "noFocus": "Esta vez no hay nada que corregir. ¡Sigue así!",
+    "next": "Tu siguiente paso",
+    "minutes_one": "{{count}} minuto",
+    "minutes_two": "{{count}} minutos",
+    "minutes_other": "{{count}} minutos"
   },
   "authUi": {
     "moreOptions": "Más opciones de acceso"
@@ -2926,7 +2936,10 @@
     "artLoading": "Preparando tu ilustración…",
     "artUnavailable": "Ilustración no disponible",
     "mascotAlt": "Mohi con bandera y saludos en {{language}}",
-    "programAlt": "Ilustración de {{title}}"
+    "programAlt": "Ilustración de {{title}}",
+    "intakeStep": "Conversación inicial · pregunta {{current}} de {{total}}",
+    "intakeReview": "Datos listos · falta aprobar",
+    "recheck": "Repetir la prueba de nivel"
   },
   "programChooser": {
     "title": "¿Cómo aprendemos esta vez?",
@@ -2935,7 +2948,7 @@
     "target": "El idioma que quiero aprender",
     "support": "Idioma de las explicaciones y la interfaz",
     "personalTitle": "Crea un programa personal con un profesor de IA",
-    "personalDescription": "Mohi te preguntará por tus objetivos, nivel e intereses y creará un itinerario de aprendizaje estructurado a tu medida.",
+    "personalDescription": "El profesor te hace unas preguntas breves sobre tus objetivos e intereses y crea un itinerario a tu medida.",
     "foundationTitle": "Empieza por lo básico",
     "foundationDescription": "Un programa listo con lecciones organizadas, paso a paso, desde los fundamentos hasta conversar con confianza en {{language}}.",
     "recommended": "Recomendado para principiantes",
@@ -2952,7 +2965,9 @@
     "personalAction": "Vamos a crear mi programa",
     "foundationAction": "Aprender desde lo básico",
     "help": "¿No te decides? Empieza por lo básico y crea un programa personal más adelante.",
-    "languageNameLocale": "es"
+    "languageNameLocale": "es",
+    "checkFirst": "Una prueba corta, hasta 10 preguntas, decide dónde empiezas",
+    "checkAction": "Comprobar mi nivel y crear el plan"
   },
   "programMap": {
     "unit": "Unidad {{count}}",

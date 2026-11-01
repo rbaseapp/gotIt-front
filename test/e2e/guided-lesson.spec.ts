@@ -266,7 +266,18 @@ async function fixture(
         },
       };
     else if (path.endsWith("/activity") && route.request().method() === "GET")
-      payload = { activity: { ...activity, protocolVersion: "adaptive-v1", activityId: "task-0", status: "active", reason: "opening", remainingSeconds: 280, completedActivities: 0 }, tutorEvent: guidedSession.realtime.openingEvent };
+      payload = {
+        activity: {
+          ...activity,
+          protocolVersion: "adaptive-v1",
+          activityId: "task-0",
+          status: "active",
+          reason: "opening",
+          remainingSeconds: 280,
+          completedActivities: 0,
+        },
+        tutorEvent: guidedSession.realtime.openingEvent,
+      };
     else if (
       path.endsWith("/activity") &&
       route.request().method() === "POST"
@@ -417,14 +428,12 @@ for (const { width, height, locale } of [
         exact: true,
       })
       .click();
-    await expect(page.locator(".lesson-summary > header")).toBeVisible();
-    await page.locator(".lesson-summary > .ux-card > details > summary").click();
-    await expect(
-      page.locator(".lesson-summary > .ux-card > details"),
-    ).toHaveAttribute("open", "");
+    await expect(page.locator(".ls-hero")).toBeVisible();
+    await page.locator(".ls-details > summary").click();
+    await expect(page.locator(".ls-details")).toHaveAttribute("open", "");
     await page.mouse.move(width / 2, height / 2);
     await page.mouse.wheel(0, 10000);
-    const returnLink = page.locator(".lesson-summary > a.secondary");
+    const returnLink = page.locator(".ls-page > a.ls-button:last-child");
     await expect(returnLink).toBeInViewport({ ratio: 1 });
     await expect(page.locator("body")).not.toHaveCSS("overflow-y", "hidden");
     expect(
@@ -509,17 +518,15 @@ for (const width of [320, 390, 1487])
     await page
       .getByRole("button", { name: he.lessonUi.finishAndSave, exact: true })
       .click();
-    await expect(page.locator(".lesson-summary")).toBeVisible();
+    await expect(page.locator(".ls-page")).toBeVisible();
     await expect(
       page.getByText("בקשת תה במשפט עצמאי.", { exact: true }),
     ).toHaveCount(1);
     await expect(
       page.getByText("בקשת קפה בעזרת דוגמה.", { exact: true }),
     ).toHaveCount(1);
-    await expect(page.locator(".lesson-summary > header p")).toContainText(
-      "3 דקות",
-    );
-    const homework = page.locator(".lesson-summary .lesson-homework-card");
+    await expect(page.locator(".ls-chips")).toContainText("3 דקות");
+    const homework = page.locator(".ls-page .lesson-homework-card");
     await expect(homework).toBeVisible();
     const contrast = await homework.evaluate((card) => {
       const luminance = (color: string) => {
@@ -674,7 +681,7 @@ test("deployed legacy session accepts a written answer without microphone and sa
   await page
     .getByRole("button", { name: he.lessonUi.finishAndSave, exact: true })
     .click();
-  await expect(page.locator(".lesson-summary")).toBeVisible({ timeout: 15000 });
+  await expect(page.locator(".ls-page")).toBeVisible({ timeout: 15000 });
   expect(commands).toHaveLength(1);
   expect(commands[0].turns).toContainEqual({
     role: "learner",

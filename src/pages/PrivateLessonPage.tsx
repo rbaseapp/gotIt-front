@@ -35,6 +35,7 @@ import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { FirstChatIntro } from "../components/FirstChatIntro";
 import { Logo } from "../components/Logo";
 import { TeacherAvatar } from "../components/TeacherAvatar";
 import { TeacherVoicePreview } from "../components/TeacherVoicePreview";
@@ -88,8 +89,7 @@ import {
   type PrivateLessonFocusArea,
   type SavedPrivateLesson,
   type PrivateLessonSession,
-  type PrivateLessonSetup,
-} from "../lib/privateLesson";
+  type PrivateLessonSetup, lessonTopic } from "../lib/privateLesson";
 
 type Phase =
   "setup" | "preparing" | "connecting" | "active" | "wrapping" | "ended";
@@ -124,6 +124,10 @@ export function PrivateLessonPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("course");
   const curriculumLessonId = searchParams.get("curriculum");
+  // Arriving from the level check: the first short chat with the teacher.
+  const firstChat = searchParams.get("intro") === "1";
+  // A beginner's first chat teaches their first words in their own language.
+  const beginnerChat = firstChat && searchParams.get("beginner") === "1";
   const curriculumPreview = useResource(
     useCallback(
       () =>
@@ -134,6 +138,12 @@ export function PrivateLessonPage() {
     ),
   );
   const packId = searchParams.get("pack");
+  const quickChat =
+    firstChat &&
+    !courseId &&
+    !packId &&
+    !curriculumLessonId &&
+    searchParams.get("practice") === "free";
   useLayoutEffect(() => {
     if (packId || curriculumLessonId)
       window.scrollTo({ top: 0, behavior: "instant" });
@@ -333,6 +343,7 @@ export function PrivateLessonPage() {
   const timers = useRef<number[]>([]);
   const activeResponse = useRef(false);
   const wrapPending = useRef(false);
+  const microphoneFailure = useRef("");
   const wrapSent = useRef(false);
   const closingPrepared = useRef(false);
   const wrapResponseStarted = useRef(false);
@@ -446,6 +457,16 @@ export function PrivateLessonPage() {
       setReportRequested(true);
       void finalizeLesson(activeSession);
     }
+  };
+  /** The learner pressed finish: end at once instead of waiting for a spoken goodbye. */
+  const stopNow = (activeSession: PrivateLessonSession) => {
+    if (phaseRef.current === "ended") return;
+    // finish() reads the ref in this same call, before the state update renders.
+    reportRequestedRef.current = true;
+    setReportRequested(true);
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+    finish(t("privateLesson.stopped"), false, "stopped", activeSession);
   };
   const requestWrapUp = (
     activeSession: PrivateLessonSession,
@@ -878,9 +899,12 @@ export function PrivateLessonPage() {
     abortRef.current = controller;
     try {
       const created = await createPrivateLessonSession({
-        ...(lessonSetup?.interactionCapabilities?.adaptiveLessons
-          ? { interactionProtocol: "adaptive-v1" as const }
-          : {}),
+        // The first chat from the level check opens at once: no planned tasks, the teacher just talks.
+        ...(quickChat
+          ? { quickStart: true, ...(beginnerChat ? { beginner: true } : {}) }
+          : lessonSetup?.interactionCapabilities?.adaptiveLessons
+            ? { interactionProtocol: "adaptive-v1" as const }
+            : {}),
         interactionMode:
           !courseId && !packId && searchParams.get("practice") === "free"
             ? "conversation"
@@ -915,8 +939,11 @@ export function PrivateLessonPage() {
           plannedMinutes as PrivateLessonDurationMinutes,
         teacherVoice,
         speechRate,
-        ...(topic.trim() ? { topic: topic.trim() } : {}),
-        ...(grammarFocus.trim() ? { grammarFocus: grammarFocus.trim() } : {}),
+        // The first chat has no lesson topic: the roadmap's next grammar lesson would take over.
+        ...(topic.trim() && !quickChat ? { topic: topic.trim() } : {}),
+        ...(grammarFocus.trim() && !quickChat
+          ? { grammarFocus: grammarFocus.trim() }
+          : {}),
         focusAreas,
         customFocus: customFocus.trim() || null,
         correctionMode,
@@ -995,7 +1022,8 @@ export function PrivateLessonPage() {
             flowRef.current?.audioLevel(level);
             setTutorAudioLevel(level);
           },
-          onMicrophoneUnavailable() {
+          onMicrophoneUnavailable(reason) {
+            microphoneFailure.current = reason;
             resumeVoiceRef.current = false;
             setInputMode("text");
             setMicrophoneMuted(true);
@@ -1281,12 +1309,18 @@ export function PrivateLessonPage() {
       toggleMicrophone();
       return;
     }
+    microphoneFailure.current = "";
     const available = connection.enableMicrophone
       ? await connection.enableMicrophone()
       : microphoneReady;
     if (!available) {
       setInputMode("text");
-      setActivityError(t("lessonUi.microphoneTextFallback"));
+      // A blocked site gets no new permission prompt, so say how to unblock it.
+      setActivityError(
+        microphoneFailure.current === "NotAllowedError"
+          ? t("lessonUi.microphoneBlocked")
+          : `${t("lessonUi.microphoneTextFallback")} (${microphoneFailure.current || "?"})`,
+      );
       return;
     }
     setInputMode("voice");
@@ -1635,7 +1669,9 @@ export function PrivateLessonPage() {
                 ? curriculumPreview.data.title
                 : courseId && displayedCourseLesson
                   ? displayedCourseLesson.title
-                  : t("ux.readyForLesson")}
+                  : firstChat
+                    ? t("start.tutorIntro.lessonTitle")
+                    : t("ux.readyForLesson")}
             </h1>
             <p>
               {curriculumLessonId ? (
@@ -1647,6 +1683,12 @@ export function PrivateLessonPage() {
                     ([code]) => code === lessonTargetLanguage,
                   )?.[1] ?? lessonTargetLanguage}
                 </>
+              ) : firstChat ? (
+                t(
+                  beginnerChat
+                    ? "start.tutorIntro.beginner.lessonBody"
+                    : "start.tutorIntro.lessonBody",
+                )
               ) : (
                 t("privateLesson.description")
               )}
@@ -1988,6 +2030,18 @@ export function PrivateLessonPage() {
                 </p>
               )}
             </form>
+          ) : firstChat ? (
+            <FirstChatIntro
+              level={level}
+              minutes={plannedMinutes}
+              mode={inputMode}
+              onMode={setInputMode}
+              busy={phase === "preparing"}
+              disabled={setupLoading || !targetLanguage.trim()}
+              error={error}
+              onStart={(event) => void startLesson(event)}
+              onWarmup={warmup}
+            />
           ) : (
             <section className="private-lesson-setup live-panel">
               <div className="private-lesson-intro">
@@ -2951,7 +3005,7 @@ export function PrivateLessonPage() {
                               type="button"
                               onClick={() => setSelectedHistory(lesson)}
                             >
-                              <strong dir="auto">{lesson.topic}</strong>
+                              <strong dir="auto">{lessonTopic(lesson, t)}</strong>
                               <span>
                                 {new Date(
                                   lesson.startedAt,
@@ -3008,7 +3062,7 @@ export function PrivateLessonPage() {
             onClose={() => setSelectedHistory(undefined)}
             title={
               selectedHistory
-                ? `${t("privateLesson.report.title")} · ${selectedHistory.topic}`
+                ? `${t("privateLesson.report.title")} · ${lessonTopic(selectedHistory, t)}`
                 : t("privateLesson.report.title")
             }
             size="lg"
@@ -3120,10 +3174,7 @@ export function PrivateLessonPage() {
                   window.speechSynthesis?.cancel();
                 } else void audioRef.current?.play().catch(() => undefined);
               }}
-              onFinish={() => {
-                setReportRequested(true);
-                requestWrapUp(session, "stopped");
-              }}
+              onFinish={() => stopNow(session)}
             />
           ) : (
             <section
@@ -3135,7 +3186,9 @@ export function PrivateLessonPage() {
                 <Logo />
                 <div>
                   <p className="eyebrow">{t("privateLesson.active")}</p>
-                  <h2 dir="auto">{session?.lesson.topic}</h2>
+                  <h2 dir="auto">
+                    {session ? lessonTopic(session.lesson, t) : ""}
+                  </h2>
                   <span className={`private-lesson-status ${phase}`}>
                     <i aria-hidden="true" /> {status}
                   </span>
@@ -3146,9 +3199,7 @@ export function PrivateLessonPage() {
                       className="button secondary lesson-end"
                       type="button"
                       disabled={phase === "wrapping"}
-                      onClick={() =>
-                        session && requestWrapUp(session, "stopped")
-                      }
+                      onClick={() => session && stopNow(session)}
                     >
                       {phase === "wrapping" ? (
                         <LoaderCircle className="spin" size={17} />
@@ -3190,9 +3241,11 @@ export function PrivateLessonPage() {
                   <span>
                     <UserRound size={16} />
                     {session &&
-                      t(
-                        `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
-                      )}
+                      (session.lesson.teacherName === "Moochi"
+                        ? t("start.tutorIntro.moochiName")
+                        : t(
+                            `privateLesson.voiceOptions.${session.lesson.teacherVoice}`,
+                          ))}
                   </span>
                   <span>
                     <Gauge size={16} />
@@ -3277,16 +3330,22 @@ export function PrivateLessonPage() {
                         audioLevel={tutorAudioLevel}
                         active={phase === "active" || phase === "wrapping"}
                         label={status}
-                        variant={session?.lesson.teacherVoice ?? teacherVoice}
+                        variant={
+                          session?.lesson.teacherName === "Moochi"
+                            ? "moochi"
+                            : (session?.lesson.teacherVoice ?? teacherVoice)
+                        }
                       />
                       <div
                         className="private-lesson-tutor-caption"
                         aria-live="polite"
                       >
                         <strong>
-                          {t(
-                            `privateLesson.voiceOptions.${session?.lesson.teacherVoice ?? teacherVoice}`,
-                          )}
+                          {session?.lesson.teacherName === "Moochi"
+                            ? t("start.tutorIntro.moochiName")
+                            : t(
+                                `privateLesson.voiceOptions.${session?.lesson.teacherVoice ?? teacherVoice}`,
+                              )}
                         </strong>
                         <span>{status}</span>
                       </div>

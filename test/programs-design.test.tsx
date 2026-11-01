@@ -103,6 +103,21 @@ it("drafts remain drafts with no made-up lesson count or completion", () => {
   expect(program.continueTo).toBe(`/courses/${item.id}`);
   expect(programPercent({ total: 0, completed: 10 })).toBe(0);
 });
+it("shows a draft as an intake in progress, not as an empty program at 0%", () => {
+  const draft = courseWithPlan(false);
+  draft.preferences.goal = "—";
+  draft.intakeProgress = { current: 2, answered: 1, total: 6 };
+  const program = courseProgram(draft, "Fallback");
+  expect(program.description).not.toBe("—");
+  expect(courseProgram({ ...draft, versions: [] }, "x").description).toBe("");
+  expect(program.intake).toEqual({ current: 2, answered: 1, total: 6 });
+  // Mid-conversation there is no plan version yet.
+  view([{ ...draft, versions: [], draftVersion: null }]);
+  expect(screen.getByText("שיחת היכרות · שאלה 2 מתוך 6")).toBeInTheDocument();
+  expect(screen.queryByText("0%")).not.toBeInTheDocument();
+  expect(screen.queryByText("—")).not.toBeInTheDocument();
+  expect(screen.queryByText(/0 מתוך 0/)).not.toBeInTheDocument();
+});
 it("selects icons from multilingual subject matter", () => {
   expect(programKind("ספרדית לטיול")).toBe("travel");
   expect(programKind("אנגלית לעבודה")).toBe("work");
@@ -113,7 +128,9 @@ it("changes active content, mascot language, and persistent selection together",
   expect(
     screen.getByRole("heading", { name: "שיחת חולין בספרדית" }),
   ).toBeInTheDocument();
-  fireEvent.click(screen.getAllByRole("button", { name: "להפוך לתוכנית הפעילה" })[0]);
+  fireEvent.click(
+    screen.getAllByRole("button", { name: "להפוך לתוכנית הפעילה" })[0],
+  );
   await waitFor(() =>
     expect(
       screen.getByRole("heading", { name: "אנגלית לעבודה" }),

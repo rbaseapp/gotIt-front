@@ -1802,7 +1802,6 @@
     "teacher": "המורה AI",
     "startLiveInterview": "מתחילים ראיון חי",
     "stopLiveInterview": "סיום השיחה",
-    "typeInstead": "מעדיפים לכתוב תשובה?",
     "liveDisconnected": "השיחה נותקה. אפשר להתחבר מחדש או להמשיך בכתיבה.",
     "liveBusy": "המורה מעבדת את התשובה הקודמת.",
     "liveStatus": {
@@ -1972,7 +1971,7 @@
     "allCompleted": "סיימתם את החזרות להיום",
     "selectedProgram": "התוכנית שבחרתם",
     "openMap": "למפת הלימוד",
-    "personalProgram": "תוכנית אישית",
+    "personalProgram": "תוכנית אישית עם המורה",
     "openProgram": "פתיחת התוכנית",
     "noPrograms": "התוכנית הראשונה שלכם",
     "noProgramsHelp": "בחרו תוכנית, או המשיכו ללמוד את המילים שלכם",
@@ -2094,6 +2093,7 @@
     "retrySameAnswer": "נסו שוב לשלוח את התשובה הקודמת. ייתכן שהיא כבר נשמרה.",
     "audioReplyUnavailable": "התשובה נשמרה. אפשר לקרוא את תגובת המורה בזמן שהשמע מתחבר.",
     "microphoneTextFallback": "המיקרופון אינו זמין. אפשר לענות בכתב.",
+    "microphoneBlocked": "הדפדפן חסם את המיקרופון לאתר הזה. לחצו על הסמל שליד הכתובת, בחרו ״אפשר״ למיקרופון ורעננו את הדף.",
     "libraryPractice": "חזרה שמתאימה למילים שלכם",
     "libraryPracticeHelp": "תרגול קצר, לפי מצב הלמידה שלכם.",
     "searchAndFilter": "חיפוש וסינון",
@@ -2217,7 +2217,17 @@
   "lessonSummary": {
     "title": "עשיתם צעד יפה היום",
     "independent": "מה עשיתם לבד?",
-    "assisted": "מה תרגלנו עם עזרה?"
+    "assisted": "מה תרגלנו עם עזרה?",
+    "eyebrow": "סיכום שיעור",
+    "wentWell": "מה הלך טוב",
+    "oneFocus": "דבר אחד לשפר",
+    "youSaid": "אמרתם",
+    "tryInstead": "אפשר גם",
+    "noFocus": "אין מה לתקן הפעם. ממשיכים ככה!",
+    "next": "הצעד הבא",
+    "minutes_one": "דקה אחת",
+    "minutes_two": "שתי דקות",
+    "minutes_other": "{{count}} דקות"
   },
   "authUi": {
     "moreOptions": "אפשרויות כניסה נוספות"
@@ -2925,7 +2935,10 @@
     "artLoading": "מכינים את האיור שלך…",
     "artUnavailable": "האיור אינו זמין כרגע",
     "mascotAlt": "מוחי עם דגל וברכות ב{{language}}",
-    "programAlt": "איור לתוכנית {{title}}"
+    "programAlt": "איור לתוכנית {{title}}",
+    "intakeStep": "שיחת היכרות · שאלה {{current}} מתוך {{total}}",
+    "intakeReview": "הפרטים מוכנים · נשאר לאשר ולבנות",
+    "recheck": "בדיקת רמה מחדש"
   },
   "programChooser": {
     "title": "איך נלמד הפעם?",
@@ -2934,7 +2947,7 @@
     "target": "השפה שארצה ללמוד",
     "support": "שפת ההסברים והממשק",
     "personalTitle": "בונים תוכנית אישית עם מורה AI",
-    "personalDescription": "מוחי ישאל אותך כמה שאלות על המטרות, הרמה ותחומי העניין שלך, ויבנה עבורך מסלול למידה מובנה מותאם אישית.",
+    "personalDescription": "המורה ישאל אותך כמה שאלות קצרות על המטרות ותחומי העניין שלך, ויבנה מסלול מותאם אישית.",
     "foundationTitle": "מתחילים מהבסיס",
     "foundationDescription": "תוכנית מוכנה עם שיעורים מסודרים, צעד אחר צעד, מהיסודות ועד לשיחה בטוחה ב{{language}}.",
     "recommended": "מומלץ למתחילים",
@@ -2951,7 +2964,9 @@
     "personalAction": "בואו נבנה את התוכנית שלי",
     "foundationAction": "התחילו ללמוד מהבסיס",
     "help": "לא בטוחים? אפשר להתחיל מהבסיס וליצור תוכנית אישית בהמשך.",
-    "languageNameLocale": "he"
+    "languageNameLocale": "he",
+    "checkFirst": "בדיקה קצרה, עד 10 שאלות, קובעת מאיפה מתחילים",
+    "checkAction": "לבדיקת רמה ולתוכנית"
   },
   "programMap": {
     "unit": "יחידה {{count}}",

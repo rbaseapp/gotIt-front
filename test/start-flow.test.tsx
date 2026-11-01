@@ -16,7 +16,7 @@ import {
   initialOnboarding,
   type OnboardingState,
 } from "../src/lib/onboarding/state";
-import { targetChoices } from "../src/lib/placement/plan";
+import { targetChoices, wordsPerMonth } from "../src/lib/placement/plan";
 import type { PlacementResult } from "../src/lib/placement/types";
 
 vi.mock("../src/context/AppContext", () => ({
@@ -162,6 +162,21 @@ it("plans with one daily-time meter that shows when the target is reached", () =
   expect(latest!.minutes).toBe(30);
   expect(latest!.deadline).toBe(0);
   expect(screen.getByText(/תגיעו ל-/).textContent).not.toBe(before);
+});
+
+it("shows the pace as new words a month, rising with the daily time", () => {
+  render(
+    <Harness
+      start={{ step: "plan", result: RESULT, goal: "other", minutes: 10 }}
+    >
+      {(props) => <PlanStep {...props} next={vi.fn()} back={vi.fn()} />}
+    </Harness>,
+  );
+  // 10 min x 5 days x 4.345 weeks / 70 min per unit x 41 words per unit
+  expect(wordsPerMonth(10)).toBe(130);
+  expect(screen.getByText("כ-130 מילים חדשות בחודש")).toBeInTheDocument();
+  fireEvent.change(screen.getByRole("slider"), { target: { value: "20" } });
+  expect(screen.getByText("כ-250 מילים חדשות בחודש")).toBeInTheDocument();
 });
 
 it("asks the sentence questions in writing only, with no intro screen", () => {

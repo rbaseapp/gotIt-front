@@ -3564,8 +3564,7 @@ html body.private-lesson-session-open .private-lesson-mute span {
   line-height: 1.45;
 }
 .course-intake .course-message > strong,
-.course-intake .course-teacher-heading,
-.course-intake .course-text-fallback > summary {
+.course-intake .course-teacher-heading {
   display: none;
 }
 .course-intake .course-composer textarea {

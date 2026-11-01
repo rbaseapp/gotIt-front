@@ -1801,7 +1801,6 @@
     "teacher": "المعلّم الذكي",
     "startLiveInterview": "بدء مقابلة مباشرة",
     "stopLiveInterview": "إنهاء المحادثة",
-    "typeInstead": "تفضّل كتابة الإجابة؟",
     "liveDisconnected": "انقطع الاتصال. أعد الاتصال أو تابع بالكتابة.",
     "liveBusy": "يعمل المعلّم على إجابتك السابقة.",
     "liveStatus": {
@@ -2018,7 +2017,7 @@
     "allCompleted": "You are up to date",
     "selectedProgram": "Selected program",
     "openMap": "Learning map",
-    "personalProgram": "Personal program",
+    "personalProgram": "برنامج شخصي مع المعلم",
     "openProgram": "Open program",
     "noPrograms": "Your first program",
     "noProgramsHelp": "Choose a program, or keep learning your words",
@@ -2140,6 +2139,7 @@
     "retrySameAnswer": "أعد إرسال إجابتك السابقة أولًا. ربما تم حفظها بالفعل.",
     "audioReplyUnavailable": "تم حفظ إجابتك. يمكنك قراءة رد المعلم أثناء إعادة اتصال الصوت.",
     "microphoneTextFallback": "الميكروفون غير متاح. يمكنك الإجابة كتابةً.",
+    "microphoneBlocked": "حظر المتصفح الميكروفون لهذا الموقع. انقر على الرمز بجانب العنوان واختر السماح بالميكروفون ثم أعد تحميل الصفحة.",
     "libraryPractice": "مراجعة تناسب كلماتك",
     "libraryPracticeHelp": "تدريب قصير يناسب تقدمك في التعلم.",
     "searchAndFilter": "بحث وتصفية",
@@ -2263,7 +2263,20 @@
   "lessonSummary": {
     "title": "خطوة جيدة اليوم",
     "independent": "ما الذي فعلتموه بشكل مستقل؟",
-    "assisted": "ماذا تدربنا عليه بمساعدة؟"
+    "assisted": "ماذا تدربنا عليه بمساعدة؟",
+    "eyebrow": "ملخص الدرس",
+    "wentWell": "ما سار على ما يرام",
+    "oneFocus": "نقطة واحدة للتحسين",
+    "youSaid": "قلتَ",
+    "tryInstead": "جرّب بدلاً من ذلك",
+    "noFocus": "لا شيء لتصحيحه هذه المرة. واصل!",
+    "next": "خطوتك التالية",
+    "minutes_zero": "{{count}} دقيقة",
+    "minutes_one": "{{count}} دقيقة",
+    "minutes_two": "{{count}} دقيقة",
+    "minutes_few": "{{count}} دقائق",
+    "minutes_many": "{{count}} دقيقة",
+    "minutes_other": "{{count}} دقيقة"
   },
   "authUi": {
     "moreOptions": "خيارات دخول أخرى"
@@ -2971,7 +2984,10 @@
     "artLoading": "نجهز رسمك…",
     "artUnavailable": "الرسم غير متاح حاليًا",
     "mascotAlt": "موهي مع علم وتحيات باللغة {{language}}",
-    "programAlt": "رسم لبرنامج {{title}}"
+    "programAlt": "رسم لبرنامج {{title}}",
+    "intakeStep": "محادثة تعارف · السؤال {{current}} من {{total}}",
+    "intakeReview": "التفاصيل جاهزة · بقي التأكيد والبناء",
+    "recheck": "إعادة اختبار المستوى"
   },
   "programChooser": {
     "title": "كيف سنتعلم هذه المرة؟",
@@ -2980,7 +2996,7 @@
     "target": "اللغة التي أريد تعلمها",
     "support": "لغة الشرح والواجهة",
     "personalTitle": "أنشئ برنامجًا شخصيًا مع معلم ذكي",
-    "personalDescription": "سيسألك موحي عن أهدافك ومستواك واهتماماتك، ثم يبني لك مسارًا تعليميًا منظمًا يناسبك.",
+    "personalDescription": "يطرح المعلم بعض الأسئلة القصيرة عن أهدافك واهتماماتك، ثم يبني لك مسارًا مناسبًا.",
     "foundationTitle": "ابدأ من الأساسيات",
     "foundationDescription": "برنامج جاهز بدروس منظمة، خطوة بخطوة، من الأساسيات إلى محادثة واثقة باللغة {{language}}.",
     "recommended": "موصى به للمبتدئين",
@@ -2997,7 +3013,9 @@
     "personalAction": "لننشئ برنامجي",
     "foundationAction": "ابدأ تعلم الأساسيات",
     "help": "غير متأكد؟ ابدأ بالأساسيات وأنشئ برنامجًا شخصيًا لاحقًا.",
-    "languageNameLocale": "ar"
+    "languageNameLocale": "ar",
+    "checkFirst": "اختبار قصير، حتى 10 أسئلة، يحدد من أين تبدأ",
+    "checkAction": "اختبار المستوى وبناء الخطة"
   },
   "programMap": {
     "unit": "الوحدة {{count}}",

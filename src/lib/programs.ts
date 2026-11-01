@@ -27,6 +27,8 @@ export type Program = {
   lessonNumber: number | null;
   kind: "books" | "conversation" | "travel" | "work";
   checkpoints: { title: string; completed: boolean }[];
+  /** A personal program still in its intake conversation: which question it is on. */
+  intake?: { current: number; answered: number; total: number } | null;
   course?: Course;
 };
 export function programKind(text: string, path?: string): Program["kind"] {
@@ -58,6 +60,8 @@ export function courseProgram(course: Course, fallbackTitle: string): Program {
     ? Math.min(total, Math.max(0, course.progress.covered))
     : 0;
   const title = version?.plan.title || fallbackTitle;
+  // "—" is the server's placeholder until the intake conversation names a goal.
+  const goal = prefs.goal.trim() === "—" ? "" : prefs.goal;
   const status = !active
     ? "draft"
     : course.nextLesson
@@ -77,7 +81,7 @@ export function courseProgram(course: Course, fallbackTitle: string): Program {
   return {
     id: course.id,
     title,
-    description: version?.plan.outcome || prefs.goal,
+    description: version?.plan.outcome || goal,
     language: prefs.targetLanguageCode,
     supportLanguage: prefs.supportLanguageCode,
     level: prefs.startingLevel,
@@ -93,7 +97,7 @@ export function courseProgram(course: Course, fallbackTitle: string): Program {
         : `/courses/${course.id}`,
     next: course.nextLesson?.title ?? null,
     lessonNumber,
-    kind: programKind(`${title} ${prefs.goal}`, prefs.path),
+    kind: programKind(`${title} ${goal}`, prefs.path),
     checkpoints: units
       .slice(Math.max(0, nextUnit - 2), Math.max(0, nextUnit - 2) + 3)
       .map((unit) => ({
@@ -110,6 +114,14 @@ export function courseProgram(course: Course, fallbackTitle: string): Program {
             ),
           ),
       })),
+    intake:
+      status === "draft" && course.intakeProgress
+        ? {
+            current: course.intakeProgress.current,
+            answered: course.intakeProgress.answered,
+            total: course.intakeProgress.total,
+          }
+        : null,
     course,
   };
 }

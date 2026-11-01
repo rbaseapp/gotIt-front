@@ -7,12 +7,6 @@
   padding: 32px 20px 48px;
   background: var(--canvas);
 }
-.lesson-summary-workspace .lesson-summary {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0;
-}
 .lesson-summary-workspace .lesson-report-status {
   max-width: 620px;
   padding-block: clamp(16px, 6vh, 64px);
@@ -65,5 +59,302 @@
 @media (prefers-reduced-motion: reduce) {
   .lesson-report-status .spin {
     animation: none;
+  }
+}
+
+/* The summary after a lesson: colours and shapes follow the approved first-chat design. */
+.ls-workspace {
+  --ls-ink: #14372e;
+  --ls-muted: #5c7169;
+  --ls-line: #e6e9df;
+  --ls-edge: #22322c;
+  --ls-brand: #0f5c47;
+  --ls-soft: #e1f2ea;
+  --ls-gold: #f5c542;
+  font-family: "Assistant", "Rubik", system-ui, sans-serif;
+  color: var(--ls-ink);
+  background: #faf9f5;
+}
+.ls-page {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-size: calc(17px * var(--text-scale, 1));
+  line-height: 1.65;
+}
+.ls-page :is(h1, h2, p, ul) {
+  margin: 0;
+}
+.ls-page :is(h1, h2) {
+  font-family: "Rubik", "Assistant", system-ui, sans-serif;
+  line-height: 1.25;
+}
+.ls-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  align-items: center;
+  gap: 24px;
+  padding: 32px 36px;
+  border: 1.5px solid var(--ls-edge);
+  border-radius: 28px;
+  background: var(--ls-brand);
+  box-shadow: 0 6px 0 var(--ls-edge);
+  color: #fff;
+}
+.ls-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.ls-eyebrow {
+  font-size: calc(15px * var(--text-scale, 1));
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #bfe6d6;
+}
+.ls-hero h1 {
+  font-size: calc(clamp(30px, 4.4vw, 44px) * var(--text-scale, 1));
+  font-weight: 800;
+}
+.ls-topic {
+  font-size: calc(19px * var(--text-scale, 1));
+  color: #e4f4ec;
+  overflow-wrap: anywhere;
+}
+.ls-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin-block-start: 4px;
+  list-style: none;
+}
+.ls-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #ffffff24;
+  font-size: calc(15px * var(--text-scale, 1));
+  font-weight: 700;
+}
+.ls-chips .ls-chip-done {
+  background: var(--ls-gold);
+  color: var(--ls-edge);
+}
+.ls-mascot {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  justify-self: center;
+  user-select: none;
+}
+.ls-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.ls-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 26px 28px;
+  border: 1.5px solid var(--ls-edge);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 5px 0 var(--ls-edge);
+}
+.ls-wins {
+  background: var(--ls-soft);
+}
+.ls-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: calc(22px * var(--text-scale, 1));
+  font-weight: 800;
+}
+.ls-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ls-brand);
+  color: #fff;
+}
+.ls-focus .ls-icon {
+  background: var(--ls-gold);
+  color: var(--ls-edge);
+}
+.ls-next .ls-icon {
+  background: var(--ls-edge);
+}
+.ls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+.ls-list li {
+  position: relative;
+  padding-inline-start: 26px;
+  overflow-wrap: anywhere;
+}
+.ls-list li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.6em;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ls-brand);
+}
+.ls-quiet {
+  color: var(--ls-muted);
+}
+.ls-card p {
+  overflow-wrap: anywhere;
+}
+.ls-fix {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #faf9f5;
+  border: 1px solid var(--ls-line);
+}
+.ls-fix p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ls-fix small {
+  font-size: calc(14px * var(--text-scale, 1));
+  font-weight: 700;
+  color: var(--ls-muted);
+}
+.ls-fix del {
+  color: #9a4a3a;
+  text-decoration-thickness: 2px;
+}
+.ls-fix strong {
+  color: var(--ls-brand);
+  font-size: calc(19px * var(--text-scale, 1));
+}
+.ls-next {
+  gap: 16px;
+}
+.ls-next > p {
+  color: var(--ls-muted);
+}
+.ls-next .lesson-homework-card {
+  border-radius: 16px;
+  min-height: 72px;
+}
+.ls-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 14px 24px;
+  border: 1.5px solid var(--ls-edge);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--ls-ink);
+  font: inherit;
+  font-size: calc(18px * var(--text-scale, 1));
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 4px 0 var(--ls-edge);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.ls-button.primary {
+  background: var(--ls-brand);
+  color: #fff;
+}
+.ls-button.ghost {
+  box-shadow: none;
+  border-color: var(--ls-line);
+  color: var(--ls-brand);
+}
+.ls-button:hover {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--ls-edge);
+}
+.ls-button.ghost:hover {
+  transform: none;
+  background: var(--ls-soft);
+}
+.ls-button:focus-visible,
+.ls-details summary:focus-visible {
+  outline: 3px solid var(--ls-gold);
+  outline-offset: 3px;
+}
+.ls-details {
+  border: 1.5px solid var(--ls-line);
+  border-radius: 20px;
+  background: #fff;
+}
+.ls-details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
+  padding: 12px 24px;
+  color: var(--ls-brand);
+  font-size: calc(18px * var(--text-scale, 1));
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+.ls-details > summary::-webkit-details-marker {
+  display: none;
+}
+.ls-details > summary::after {
+  content: "+";
+  font-size: 26px;
+  line-height: 1;
+}
+.ls-details[open] > summary::after {
+  content: "\2212";
+}
+.ls-details-body {
+  padding: 4px 24px 24px;
+}
+@media (max-width: 760px) {
+  .ls-hero {
+    grid-template-columns: minmax(0, 1fr) 96px;
+    padding: 22px 20px;
+    gap: 14px;
+    border-radius: 24px;
+  }
+  .ls-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ls-card {
+    padding: 22px 20px;
+  }
+  .ls-button {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ls-button {
+    transition: none;
   }
 }
