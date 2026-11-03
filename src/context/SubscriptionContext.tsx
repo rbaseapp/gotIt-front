@@ -11,6 +11,7 @@ import { billing, type BillingStatus } from "../lib/billing";
 import i18n from "../i18n";
 
 type SubscriptionContextValue = {
+  isAdmin: boolean;
   status?: BillingStatus;
   loading: boolean;
   error: string;
@@ -63,6 +64,7 @@ export function SubscriptionProvider({
 
   const value = useMemo<SubscriptionContextValue>(
     () => ({
+      isAdmin,
       status,
       loading,
       error,

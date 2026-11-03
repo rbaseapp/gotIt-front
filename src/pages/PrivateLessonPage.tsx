@@ -1777,7 +1777,7 @@ export function PrivateLessonPage() {
                     <>
                       {" "}
                       ·{" "}
-                      {t("lessonPrep.availableMinutes", {
+                      {user?.role === 'admin' || minuteBalance.data.unlimited ? t("billing.unlimitedAccess") : t("lessonPrep.availableMinutes", {
                         count: Math.floor(
                           minuteBalance.data.secondsRemaining / 60,
                         ),

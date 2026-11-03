@@ -39,7 +39,8 @@ const groups = ["pro", "tutor-195", "tutor-60"] as const;
 
 export function BillingPage() {
   const { t, i18n } = useTranslation();
-  const { profile } = useApp();
+  const { profile, user } = useApp();
+  const isAdmin = user?.role === "admin";
   const { toast } = useFeedback();
   const plans = useResource(useCallback(() => billing.plans(), []));
   const status = useResource(useCallback(() => billing.status(), []));
@@ -256,7 +257,9 @@ export function BillingPage() {
           <div className="billing-current pricing-current">
             <span>
               {t("billing.currentPlan")}:{" "}
-              <strong>{status.data.plan.name}</strong>
+              <strong>
+                {isAdmin ? t("billing.adminAccess") : status.data.plan.name}
+              </strong>
             </span>
             {status.data.subscription && (
               <button
@@ -575,7 +578,9 @@ export function BillingPage() {
             ) : minutes.data ? (
               <>
                 <strong>
-                  {Math.floor(minutes.data.secondsRemaining / 60)}
+                  {isAdmin || minutes.data.unlimited
+                    ? t("billing.unlimitedAccess")
+                    : Math.floor(minutes.data.secondsRemaining / 60)}
                 </strong>
                 <small>{t("pricing.balance")}</small>
               </>
