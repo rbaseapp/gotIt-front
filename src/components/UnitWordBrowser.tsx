@@ -17,6 +17,7 @@ export function UnitWordBrowser({
   supportLanguage,
   busy,
   onKnown,
+  onAlreadyKnown,
   packId,
   suppliedContent,
 }: {
@@ -26,7 +27,14 @@ export function UnitWordBrowser({
   supportLanguage: string;
   busy: boolean;
   onKnown: (entry: WordPackEntry) => void;
-  suppliedContent?: { knownLabel: string; knownHelp: string };
+  /** "I already know this word": the caller swaps it for the next word. */
+  onAlreadyKnown?: (entry: WordPackEntry) => void;
+  suppliedContent?: {
+    knownLabel: string;
+    knownHelp: string;
+    alreadyKnownLabel?: string;
+    alreadyKnownHelp?: string;
+  };
 }) {
   const { t } = useTranslation();
   const [selectedId, setSelectedId] = useState<string>();
@@ -203,6 +211,22 @@ export function UnitWordBrowser({
           <p id="unit-known-help" className="unit-known-help">
             {suppliedContent?.knownHelp ?? t("unitStudy.knownHelp")}
           </p>
+          {onAlreadyKnown && !selected.known && (
+            <div className="unit-already-known">
+              <button
+                type="button"
+                className="button secondary"
+                disabled={busy}
+                aria-describedby="unit-already-known-help"
+                onClick={() => onAlreadyKnown(selected)}
+              >
+                {suppliedContent?.alreadyKnownLabel}
+              </button>
+              <p id="unit-already-known-help" className="unit-known-help">
+                {suppliedContent?.alreadyKnownHelp}
+              </p>
+            </div>
+          )}
         </aside>
       )}
     </div>

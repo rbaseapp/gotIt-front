@@ -126,7 +126,12 @@ export const curriculumSchema = z.object({
 });
 export type Curriculum = z.infer<typeof curriculumSchema>;
 const wordEvidence = z
-  .object({ status: z.string(), dueAt: z.string() })
+  .object({
+    status: z.string(),
+    dueAt: z.string(),
+    /** "self_reported" when the learner marked the word as already known. */
+    source: z.string().optional(),
+  })
   .nullable();
 export const curriculumUnitSchema = z.object({
   pathSteps: z
@@ -369,6 +374,18 @@ export const curriculumApi = {
     eventId: string = crypto.randomUUID(),
   ) =>
     product(ack, `${root}/exposures`, "POST", { eventId, revision, targetIds }),
+  markKnown: (
+    revision: number,
+    targetId: string,
+    known: boolean,
+    eventId: string = crypto.randomUUID(),
+  ) =>
+    product(ack, `${root}/known-words`, "POST", {
+      eventId,
+      revision,
+      targetId,
+      known,
+    }),
   save: (
     revision: number,
     activityId: string,

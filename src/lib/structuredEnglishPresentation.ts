@@ -74,6 +74,27 @@ export function curriculumDisplayEntries(
   }));
 }
 
+/** The learner marked the word as already known; one review checks it later. */
+export const claimedKnown = (word: CurriculumUnit["words"][number]) =>
+  word.evidence?.source === "self_reported";
+
+/**
+ * The unit's words in groups of six. A word the learner already knows leaves the
+ * groups, so the next word takes its place instead of wasting a slot.
+ */
+export function curriculumWordGroups(unit: CurriculumUnit) {
+  const known = new Set(unit.words.filter(claimedKnown).map((word) => word.id));
+  const entries = curriculumDisplayEntries(unit).filter(
+    (entry) => !known.has(entry.id),
+  );
+  return {
+    entries,
+    count: Math.max(1, Math.ceil(entries.length / 6)),
+    group: (index: number) => entries.slice(index * 6, index * 6 + 6),
+    known: unit.words.filter(claimedKnown),
+  };
+}
+
 export function curriculumRoadmap(
   data: Curriculum,
   unit: CurriculumUnit,
