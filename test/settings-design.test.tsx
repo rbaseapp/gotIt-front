@@ -41,12 +41,10 @@ beforeEach(() => {
   state.profileError = "";
 });
 
-it("keeps the rollout strictly on DEV or explicit loopback previews", () => {
-  expect(settingsDesignEnabled("gotit-dev.rbaseapp.com", false)).toBe(true);
-  expect(settingsDesignEnabled("gotit.rbaseapp.com", true)).toBe(false);
-  expect(settingsDesignEnabled("example.com", true)).toBe(false);
-  expect(settingsDesignEnabled("localhost", false)).toBe(false);
-  expect(settingsDesignEnabled("localhost", true)).toBe(true);
+it("is on unless the build turns it off, and resolves sections and timezones", () => {
+  expect(settingsDesignEnabled("")).toBe(true);
+  expect(settingsDesignEnabled("true")).toBe(true);
+  expect(settingsDesignEnabled("false")).toBe(false);
   expect(settingsSection("#reminders")).toBe("notifications");
   expect(settingsSection("#unknown")).toBe("profile");
   expect(profileTimezones("Asia/Jerusalem")).toEqual(

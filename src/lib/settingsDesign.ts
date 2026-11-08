@@ -1,11 +1,9 @@
+import { designEnabled } from "./designRollout";
+/** The redesigned settings (see designRollout). */
 export function settingsDesignEnabled(
-  hostname = window.location.hostname,
-  preview = import.meta.env.VITE_SETTINGS_DESIGN === "true",
+  setting: string | undefined = import.meta.env.VITE_SETTINGS_DESIGN,
 ) {
-  return (
-    hostname === "gotit-dev.rbaseapp.com" ||
-    (preview && ["localhost", "127.0.0.1", "[::1]"].includes(hostname))
-  );
+  return designEnabled(setting);
 }
 
 export const settingsSections = [

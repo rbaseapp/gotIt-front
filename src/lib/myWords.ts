@@ -1,14 +1,12 @@
 import { z } from "zod";
+import { designEnabled } from "./designRollout";
 import { itemSchema, tagSchema } from "./product";
 
+/** The redesigned my-words page (see designRollout). */
 export function myWordsDesignEnabled(
-  hostname = window.location.hostname,
-  preview = import.meta.env.VITE_MYWORDS_DESIGN === "true",
+  setting: string | undefined = import.meta.env.VITE_MYWORDS_DESIGN,
 ) {
-  return (
-    hostname === "gotit-dev.rbaseapp.com" ||
-    (preview && ["localhost", "127.0.0.1", "[::1]"].includes(hostname))
-  );
+  return designEnabled(setting);
 }
 export const wordCardSchema = itemSchema.extend({
   program: z
