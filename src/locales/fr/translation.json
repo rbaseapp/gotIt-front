@@ -2678,6 +2678,8 @@
     "dragHelp": "Glissez un mot dans le blanc ou touchez-le",
     "dragPrompt": "Complétez la phrase",
     "dragQuestion": "Quel mot convient ici ?",
+    "dragMeaningPrompt": "Quel mot veut dire cela ?",
+    "dragMeaningQuestion": "Quel est le mot ?",
     "earned": "XP gagnés",
     "endDescription": "Chaque manche est un pas en avant.",
     "exit": "Enregistrer et quitter",

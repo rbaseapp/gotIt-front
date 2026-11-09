@@ -723,6 +723,23 @@ function Celebration() {
     </div>
   );
 }
+/** Punctuation touching the gap (no space between) stays on the gap's line. */
+function glued(parts: string[], gapIndex: number) {
+  const items = parts.map((text) => ({ text, before: "", after: "" }));
+  const previous = items[gapIndex - 1];
+  const next = items[gapIndex + 1];
+  const head = previous?.text.match(/\S+$/u)?.[0] ?? "";
+  const tail = next?.text.match(/^\S+/u)?.[0] ?? "";
+  if (previous && head) {
+    previous.text = previous.text.slice(0, -head.length);
+    items[gapIndex]!.before = head;
+  }
+  if (next && tail) {
+    next.text = next.text.slice(tail.length);
+    items[gapIndex]!.after = tail;
+  }
+  return items;
+}
 function useExampleTranslation(
   card: StudyCard | undefined,
   revealed: boolean,
@@ -1278,7 +1295,27 @@ function ClozeGame({
     { id: string; startX: number; startY: number; moved: boolean } | undefined
   >(undefined);
   const suppress = useRef(false);
-  const [ghost, setGhost] = useState<{ text: string; x: number; y: number }>();
+  const [ghost, setGhost] = useState<{
+    text: string;
+    x: number;
+    y: number;
+    snap?: boolean;
+    landing?: boolean;
+  }>();
+  const landTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(landTimer.current), []);
+  // A word dragged close to the gap is pulled into it (magnet zone around the gap).
+  const snapPoint = (x: number, y: number) => {
+    const rect = target.current?.getBoundingClientRect();
+    if (!rect || (!rect.width && !rect.height)) return undefined;
+    const margin = 56;
+    return x >= rect.left - margin &&
+      x <= rect.right + margin &&
+      y >= rect.top - margin &&
+      y <= rect.bottom + margin
+      ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      : undefined;
+  };
   const choose = async (choiceId: string) => {
     if (
       !busy &&
@@ -1302,18 +1339,25 @@ function ClozeGame({
   const pointerUp = (event: React.PointerEvent) => {
     const value = drag.current;
     drag.current = undefined;
-    setGhost(undefined);
-    if (!value?.moved) return;
+    if (!value?.moved) {
+      setGhost(undefined);
+      return;
+    }
     suppress.current = true;
-    const rect = target.current?.getBoundingClientRect();
-    if (
-      rect &&
-      event.clientX >= rect.left &&
-      event.clientX <= rect.right &&
-      event.clientY >= rect.top &&
-      event.clientY <= rect.bottom
-    )
-      choose(value.id);
+    const point = snapPoint(event.clientX, event.clientY);
+    if (!point) {
+      setGhost(undefined);
+      return;
+    }
+    // The word flies into the gap, then the answer is checked.
+    setGhost((current) =>
+      current && { ...current, ...point, snap: true, landing: true },
+    );
+    clearTimeout(landTimer.current);
+    landTimer.current = setTimeout(() => {
+      setGhost(undefined);
+      void choose(value.id);
+    }, 160);
   };
   const gap = (
     <span
@@ -1334,7 +1378,13 @@ function ClozeGame({
     <main className="fplay">
       <div className="stage">
         <div className="head">
-          <h1>{t("focusGames.dragPrompt")}</h1>
+          <h1>
+            {t(
+              gapIndex >= 0
+                ? "focusGames.dragPrompt"
+                : "focusGames.dragMeaningPrompt",
+            )}
+          </h1>
           <span className="cat">
             {t("focusGames.sentence", {
               current: state!.stageItems.indexOf(exercise.learningItemId) + 1,
@@ -1360,11 +1410,13 @@ function ClozeGame({
                 ? "focusGames.tryWordOther"
                 : outcome && solved(outcome)
                   ? "focusGames.dragSuccess"
-                  : "focusGames.dragQuestion",
+                  : gapIndex >= 0
+                    ? "focusGames.dragQuestion"
+                    : "focusGames.dragMeaningQuestion",
             )}
           </span>
           <div
-            className={`card ${shaking ? "bad fg-shake" : outcome && solved(outcome) ? "solved" : ""}`}
+            className={`card ${shaking ? "bad fg-shake" : outcome && solved(outcome) ? "solved" : ghost?.snap ? "over" : ""}`}
           >
             <button
               className="say"
@@ -1376,18 +1428,31 @@ function ClozeGame({
             </button>
             <p className="sen" dir="auto" lang={card?.sourceLanguageCode}>
               {gapIndex >= 0 ? (
-                parts!.map((part, index) =>
+                glued(parts!, gapIndex).map((part, index) =>
                   index === gapIndex ? (
-                    <span key={index}>{gap}</span>
-                  ) : /^_{2,}$|^\[(?:…|\.\.\.)\]$/u.test(part) ? (
+                    <span key={index} className="gap-word">
+                      {part.before}
+                      {gap}
+                      {part.after}
+                    </span>
+                  ) : /^_{2,}$|^\[(?:…|\.\.\.)\]$/u.test(part.text) ? (
                     <span key={index}>…</span>
                   ) : (
-                    <span key={index}>{part}</span>
+                    <span key={index}>{part.text}</span>
                   ),
                 )
               ) : (
+                // No sentence with the word: ask for the word that means this,
+                // instead of presenting the translation as a sentence.
                 <>
-                  <span dir="auto">{exercise.prompt.text}</span>
+                  <span
+                    className="meaning"
+                    dir="auto"
+                    lang={card?.translationLanguageCode}
+                  >
+                    {exercise.prompt.text}
+                  </span>
+                  <span aria-hidden="true"> = </span>
                   {gap}
                 </>
               )}
@@ -1447,12 +1512,15 @@ function ClozeGame({
                     ) > 6
                   )
                     value.moved = true;
-                  if (value.moved)
+                  if (value.moved) {
+                    const point = snapPoint(event.clientX, event.clientY);
                     setGhost({
                       text: choice.text,
-                      x: event.clientX,
-                      y: event.clientY,
+                      x: point?.x ?? event.clientX,
+                      y: point?.y ?? event.clientY,
+                      snap: Boolean(point),
                     });
+                  }
                 }}
                 onPointerUp={pointerUp}
                 onPointerCancel={() => {
@@ -1460,6 +1528,8 @@ function ClozeGame({
                   setGhost(undefined);
                 }}
                 onLostPointerCapture={() => {
+                  // After a drop the landing animation still owns the ghost.
+                  if (!drag.current) return;
                   drag.current = undefined;
                   setGhost(undefined);
                 }}
@@ -1495,7 +1565,7 @@ function ClozeGame({
       {ghost &&
         createPortal(
           <div
-            className="fg-drag-ghost"
+            className={`fg-drag-ghost ${ghost.snap ? "snap" : ""} ${ghost.landing ? "landing" : ""}`}
             style={{ left: ghost.x, top: ghost.y }}
           >
             {ghost.text}

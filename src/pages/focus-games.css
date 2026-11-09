@@ -260,9 +260,44 @@
     system-ui;
   color: #16213a;
 }
+.fg-drag-ghost.snap {
+  border-color: var(--green, #1a9670);
+  transform: translate(-50%, -50%) scale(1.06);
+  transition:
+    left 0.12s ease-out,
+    top 0.12s ease-out,
+    transform 0.12s ease-out;
+}
+.fg-drag-ghost.landing {
+  transform: translate(-50%, -50%) scale(0.9);
+  opacity: 0.85;
+  transition:
+    left 0.15s cubic-bezier(0.3, 1.4, 0.5, 1),
+    top 0.15s cubic-bezier(0.3, 1.4, 0.5, 1),
+    transform 0.15s,
+    opacity 0.15s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fg-drag-ghost.snap,
+  .fg-drag-ghost.landing {
+    transition: none;
+  }
+}
+/* Normal text flow with balanced lines: the gap sits inside the sentence like a
+   word, so no line is left with a single stranded word. */
 .fg.drag_drop .sen {
-  margin: 1em 0;
-  overflow-wrap: anywhere;
+  display: block;
+  margin: 1em auto;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.fg.drag_drop .sen .gap-word {
+  white-space: nowrap;
+}
+.fg.drag_drop .sen .gap {
+  vertical-align: middle;
+  margin: 4px 6px;
+  white-space: normal;
 }
 .fg.drag_drop .gap {
   max-width: 100%;
@@ -275,6 +310,11 @@
 }
 .fg.drag_drop .sen > span {
   max-width: 100%;
+}
+.fg.drag_drop .sen .meaning {
+  font-size: 0.72em;
+  font-weight: 700;
+  color: #4b5b55;
 }
 .fg.drag_drop .tile {
   padding-inline: 26px;

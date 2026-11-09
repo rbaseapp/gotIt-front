@@ -2726,6 +2726,8 @@
     "dragHelp": "اسحب كلمة إلى الفراغ أو اضغط عليها",
     "dragPrompt": "أكمل الجملة",
     "dragQuestion": "أي كلمة تناسب هنا؟",
+    "dragMeaningPrompt": "أي كلمة تعني هذا؟",
+    "dragMeaningQuestion": "ما الكلمة المناسبة؟",
     "earned": "النقاط المكتسبة",
     "endDescription": "كل جولة خطوة أخرى إلى الأمام.",
     "exit": "حفظ وخروج",

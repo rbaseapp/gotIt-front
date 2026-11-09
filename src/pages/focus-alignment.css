@@ -131,7 +131,7 @@
 }
 .fg.drag_drop .sen {
   font-size: clamp(1.4rem, 3.5vw, 2rem);
-  line-height: 1.25;
+  line-height: 1.5;
 }
 .fg.drag_drop .gap {
   height: 52px;

@@ -119,6 +119,15 @@ describe("DEV focus game engine", () => {
     expect(document.querySelector(".sen")).not.toHaveTextContent(
       "Hello my name",
     );
+    // Without a sentence it asks for the word with this meaning, not a missing word.
+    expect(
+      screen.getByRole("heading", {
+        name: i18n.t("focusGames.dragMeaningPrompt"),
+      }),
+    ).toBeInTheDocument();
+    expect(document.querySelector(".sen .meaning")).toHaveTextContent(
+      focusCards[0].translationText,
+    );
     view.unmount();
     await mount("drag_drop", options, true);
     await screen.findByRole("button", { name: "chair", exact: true });
@@ -369,6 +378,45 @@ describe("DEV focus game engine", () => {
     expect(document.querySelector(".pill.xpp")).toHaveTextContent(
       `${fixture.session.xpEarned} XP`,
     );
+  });
+  it("pulls a dragged word into the gap when it is dropped close to it", async () => {
+    const { fixture } = await mount("drag_drop");
+    const tile = await screen.findByRole("button", {
+      name: "chair",
+      exact: true,
+    });
+    await waitFor(() => expect(tile).toBeEnabled());
+    const gap = document.querySelector(".fg.drag_drop .gap") as HTMLElement;
+    vi.spyOn(gap, "getBoundingClientRect").mockReturnValue({
+      left: 100,
+      right: 260,
+      top: 100,
+      bottom: 160,
+      width: 160,
+      height: 60,
+      x: 100,
+      y: 100,
+      toJSON: () => ({}),
+    });
+    fireEvent.pointerDown(tile, { clientX: 400, clientY: 500, pointerId: 1 });
+    // Outside the gap but inside its magnet zone: the word locks onto the gap.
+    fireEvent.pointerMove(tile, { clientX: 290, clientY: 180, pointerId: 1 });
+    const ghost = document.querySelector(".fg-drag-ghost") as HTMLElement;
+    expect(ghost).toHaveClass("snap");
+    expect(ghost.style.left).toBe("180px");
+    expect(ghost.style.top).toBe("130px");
+    expect(document.querySelector(".fg.drag_drop .card")).toHaveClass("over");
+    fireEvent.pointerUp(tile, { clientX: 290, clientY: 180, pointerId: 1 });
+    expect(document.querySelector(".fg-drag-ghost")).toHaveClass("landing");
+    await waitFor(() => expect(fixture.attempts).toHaveLength(1));
+    expect(document.querySelector(".fg-drag-ghost")).toBeNull();
+  });
+  it("keeps punctuation that touches the gap on the gap's line", async () => {
+    await mount("drag_drop", { clozeContext: "I read a _____." });
+    await screen.findByRole("button", { name: "chair", exact: true });
+    const glued = document.querySelector(".sen .gap-word") as HTMLElement;
+    expect(glued.textContent).toMatch(/\.$/u);
+    expect(glued.querySelector(".gap")).not.toBeNull();
   });
   it("recovers a lost wrong-answer receipt without locking cloze or losing its rejected tile", async () => {
     const { fixture } = await mount("drag_drop", { failAttemptOnce: true });

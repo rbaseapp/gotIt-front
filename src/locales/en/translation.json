@@ -2677,6 +2677,8 @@
     "dragHelp": "Drag a word into the gap, or tap it",
     "dragPrompt": "Complete the sentence",
     "dragQuestion": "Which word fits here?",
+    "dragMeaningPrompt": "Which word means this?",
+    "dragMeaningQuestion": "What's the word for it?",
     "earned": "XP earned",
     "endDescription": "Every round is another step forward.",
     "exit": "Save and leave",

@@ -2678,6 +2678,8 @@
     "dragHelp": "Arrastra una palabra al hueco o tócala",
     "dragPrompt": "Completa la frase",
     "dragQuestion": "¿Qué palabra encaja aquí?",
+    "dragMeaningPrompt": "¿Qué palabra significa esto?",
+    "dragMeaningQuestion": "¿Cuál es la palabra?",
     "earned": "XP ganados",
     "endDescription": "Cada ronda es un paso adelante.",
     "exit": "Guardar y salir",

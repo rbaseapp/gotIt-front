@@ -2678,6 +2678,8 @@
     "dragHelp": "Ziehe ein Wort in die Lücke oder tippe darauf",
     "dragPrompt": "Ergänze den Satz",
     "dragQuestion": "Welches Wort passt hier?",
+    "dragMeaningPrompt": "Welches Wort bedeutet das?",
+    "dragMeaningQuestion": "Wie heißt das Wort?",
     "earned": "Verdiente XP",
     "endDescription": "Jede Runde bringt dich weiter.",
     "exit": "Speichern und beenden",

@@ -2677,6 +2677,8 @@
     "dragHelp": "גררו מילה אל החור, או פשוט לחצו עליה",
     "dragPrompt": "איזו מילה חסרה במשפט?",
     "dragQuestion": "איזו מילה חסרה כאן?",
+    "dragMeaningPrompt": "איזו מילה מתאימה לפירוש?",
+    "dragMeaningQuestion": "מה המילה?",
     "earned": "נקודות שצברת",
     "endDescription": "כל סבב הוא עוד צעד קדימה.",
     "exit": "שמירה ויציאה",
