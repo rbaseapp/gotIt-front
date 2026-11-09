@@ -254,7 +254,8 @@ function FocusGame({ type }: { type: string }) {
     await animation;
     if (!mounted.current) return;
     if (receipt) {
-      if (rating === "again") {
+      // "Almost" counts as recalled for scoring, but the word still comes back this session.
+      if (rating !== "good") {
         engine.markDifficult(active.learningItemId);
         setToast(t("focusGames.savedReview"));
       }

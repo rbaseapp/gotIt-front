@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   answer: vi.fn(),
   heartbeat: vi.fn(),
   expose: vi.fn(),
+  markKnown: vi.fn(),
   navigate: vi.fn(),
   pathChoice: vi.fn(),
 }));
@@ -310,6 +311,64 @@ describe("structured English live learner flow", () => {
     expect(
       container.querySelector(".c1-nav, .c1-stats, .c1-unit-grid"),
     ).toBeNull();
+  });
+  it("swaps a word the learner already knows for the next one and lets them undo it", async () => {
+    const user = userEvent.setup();
+    const { unit } = await mocks.unit();
+    const fresh = unit.words.map((word: object) => ({
+      ...word,
+      evidence: null,
+    }));
+    mocks.unit.mockResolvedValue({ unit: { ...unit, words: fresh } });
+    mocks.markKnown.mockResolvedValue({ known: true });
+    open("/english-zero-c1?view=words&unit=P01");
+    await screen.findByRole("heading", { name: "word1" });
+    expect(screen.queryByText("word7")).not.toBeInTheDocument();
+    mocks.unit.mockResolvedValue({
+      unit: {
+        ...unit,
+        words: fresh.map((word: { id: string }) =>
+          word.id === "P01-T1"
+            ? {
+                ...word,
+                evidence: {
+                  status: "introduced",
+                  dueAt: "2026-11-07",
+                  source: "self_reported",
+                },
+              }
+            : word,
+        ),
+      },
+    });
+    // The saved command moves the revision, which reloads the unit.
+    mocks.get.mockResolvedValue({ ...data, revision: 2 });
+    await user.click(
+      screen.getByRole("button", { name: i18n.t("c1.alreadyKnown") }),
+    );
+    expect(mocks.markKnown).toHaveBeenCalledWith(
+      2,
+      "P01-T1",
+      true,
+      expect.any(String),
+    );
+    // The next word fills the free place in the group of six.
+    await screen.findByText("word7");
+    const claimed = screen.getByRole("region", {
+      name: i18n.t("c1.alreadyKnownList"),
+    });
+    expect(within(claimed).getByText("word1")).toBeVisible();
+    await user.click(
+      within(claimed).getByRole("button", {
+        name: i18n.t("c1.undoKnownWord", { word: "word1" }),
+      }),
+    );
+    expect(mocks.markKnown).toHaveBeenLastCalledWith(
+      2,
+      "P01-T1",
+      false,
+      expect.any(String),
+    );
   });
   it("shows six words at a time, gates later games, and reveals feedback only after submission", async () => {
     const user = userEvent.setup();

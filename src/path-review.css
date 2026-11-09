@@ -278,6 +278,31 @@
   color: var(--muted);
   margin: 8px 0 0;
 }
+.unit-already-known {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.unit-claimed-known {
+  margin-top: 18px;
+}
+.unit-claimed-known p {
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+.unit-claimed-known ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.unit-claimed-known li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .path-word-tools {
   display: flex;
   gap: 16px;

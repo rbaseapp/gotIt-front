@@ -23,7 +23,8 @@ import { UnitWordBrowser } from "../components/UnitWordBrowser";
 import { PathArtwork } from "../components/PathArtwork";
 import {
   curriculumDisplayPacks,
-  curriculumDisplayEntries,
+  claimedKnown,
+  curriculumWordGroups,
   curriculumRoadmap,
 } from "../lib/structuredEnglishPresentation";
 import "../courses.css";
@@ -393,14 +394,27 @@ export function StructuredEnglishPage() {
   );
   const displayPacks = data ? curriculumDisplayPacks(data) : [];
   const displayPack = displayPacks.find((pack) => pack.id === unitId);
-  const displayEntries = unit ? curriculumDisplayEntries(unit) : [];
+  const wordGroups = unit ? curriculumWordGroups(unit) : null;
+  // A claimed word shrinks the list, so the open group may no longer exist.
+  const group = Math.min(wordBatch, (wordGroups?.count ?? 1) - 1);
+  const groupEntries = wordGroups?.group(group) ?? [];
   const suppliedContent = useMemo(
     () => ({
       knownLabel: t("c1.introduceWord"),
       knownHelp: t("c1.wordInstructions"),
+      alreadyKnownLabel: t("c1.alreadyKnown"),
+      alreadyKnownHelp: t("c1.alreadyKnownHelp"),
     }),
     [t],
   );
+  const markKnown = (targetId: string, known: boolean) =>
+    void run(async () => {
+      const { revision, eventId } = await commandFor(
+        `known:${targetId}:${known}`,
+      );
+      await curriculumApi.markKnown(revision, targetId, known, eventId);
+      await fresh();
+    });
   const openActivity = (id: string, batch?: number) => {
     const [kind, target, game] = id.split(":");
     if (kind === "words" && !game) {
@@ -442,7 +456,7 @@ export function StructuredEnglishPage() {
     const query = new URLSearchParams({
       language: "en",
       curriculumUnit: unitId,
-      count: String(unit.words.length),
+      count: String(wordGroups?.entries.length || unit.words.length),
       return: `/english-learning?view=words&unit=${unitId}`,
     });
     if (type === "smart" && data.practiceSessions?.[unitId])
@@ -784,9 +798,9 @@ export function StructuredEnglishPage() {
           {view === "words" && unit?.id === unitId && (
             <>
               <UnitWordBrowser
-                key={`${unit.id}:${wordBatch}`}
+                key={`${unit.id}:${group}`}
                 packId={unit.id}
-                entries={displayEntries.slice(wordBatch * 6, wordBatch * 6 + 6)}
+                entries={groupEntries}
                 language="en"
                 supportLanguage="he"
                 busy={busy}
@@ -800,22 +814,57 @@ export function StructuredEnglishPage() {
                     await fresh();
                   })
                 }
+                onAlreadyKnown={(entry) => markKnown(entry.id, true)}
               />
+              {wordGroups && wordGroups.known.length > 0 && (
+                <section
+                  className="unit-claimed-known ux-card"
+                  aria-label={t("c1.alreadyKnownList")}
+                >
+                  <p>
+                    {t("c1.alreadyKnownSummary", {
+                      count: wordGroups.known.length,
+                    })}
+                  </p>
+                  <ul>
+                    {wordGroups.known.map((word) => (
+                      <li key={word.id}>
+                        <b dir="auto" lang="en">
+                          {word.en}
+                        </b>
+                        {word.evidence?.status === "introduced" && (
+                          <button
+                            type="button"
+                            className="button ghost"
+                            disabled={busy}
+                            aria-label={t("c1.undoKnownWord", {
+                              word: word.en,
+                            })}
+                            onClick={() => markKnown(word.id, false)}
+                          >
+                            {t("c1.undoKnown")}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
               <div className="path-word-tools">
                 <button
                   className="button ghost"
-                  disabled={wordBatch === 0}
-                  onClick={() => setWordBatch((value) => value - 1)}
+                  disabled={group === 0}
+                  onClick={() => setWordBatch(group - 1)}
                 >
                   {t("c1.previousGroup")}
                 </button>
                 <span>
-                  {wordBatch + 1} / {Math.ceil(unit.words.length / 6)}
+                  {group + 1} / {wordGroups?.count ?? 1}
                 </span>
                 <button
                   className="button ghost"
-                  disabled={(wordBatch + 1) * 6 >= unit.words.length}
-                  onClick={() => setWordBatch((value) => value + 1)}
+                  disabled={group + 1 >= (wordGroups?.count ?? 1)}
+                  onClick={() => setWordBatch(group + 1)}
                 >
                   {t("c1.nextGroup")}
                 </button>
@@ -824,9 +873,7 @@ export function StructuredEnglishPage() {
                   disabled={busy}
                   onClick={() =>
                     void run(async () => {
-                      const ids = unit.words
-                        .slice(wordBatch * 6, wordBatch * 6 + 6)
-                        .map((word) => word.id);
+                      const ids = groupEntries.map((word) => word.id);
                       const { revision, eventId } = await commandFor(
                         `expose:${ids.join(",")}`,
                       );
@@ -864,7 +911,12 @@ export function StructuredEnglishPage() {
                     <span>
                       {unit.games.find((item) => item.mode === game)
                         ?.practised ?? 0}{" "}
-                      / {unit.words.filter((word) => word.evidence).length}
+                      /{" "}
+                      {
+                        unit.words.filter(
+                          (word) => word.evidence && !claimedKnown(word),
+                        ).length
+                      }
                     </span>
                   </button>
                 ))}
