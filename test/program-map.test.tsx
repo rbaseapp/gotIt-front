@@ -240,10 +240,9 @@ describe("dynamic DEV program map", () => {
     expect(model.active).toBeUndefined();
     expect(programMapModel(mapPack, { ...path, stations: [] }).percent).toBe(0);
   });
-  it("keeps the shared design boundary on DEV and explicit loopback previews", () => {
-    expect(programsDesignEnabled("gotit-dev.rbaseapp.com", false)).toBe(true);
-    expect(programsDesignEnabled("localhost", true)).toBe(true);
-    expect(programsDesignEnabled("gotit.rbaseapp.com", true)).toBe(false);
-    expect(programsDesignEnabled("unknown.example", true)).toBe(false);
+  it("keeps the programs design on unless the build turns it off", () => {
+    expect(programsDesignEnabled("")).toBe(true);
+    expect(programsDesignEnabled("true")).toBe(true);
+    expect(programsDesignEnabled("false")).toBe(false);
   });
 });

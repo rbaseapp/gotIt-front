@@ -1,13 +1,12 @@
 import type { Course } from "./courses";
+import { designEnabled } from "./designRollout";
 import type { WordPack } from "./product";
 import { completedEnglishUnit, englishPathLevels } from "./englishPath";
 
+/** The redesigned programs and learning map (see designRollout). */
 export const programsDesignEnabled = (
-  hostname = window.location.hostname,
-  preview = import.meta.env.VITE_PROGRAMS_DESIGN === "true",
-) =>
-  hostname === "gotit-dev.rbaseapp.com" ||
-  (preview && ["localhost", "127.0.0.1", "[::1]"].includes(hostname));
+  setting: string | undefined = import.meta.env.VITE_PROGRAMS_DESIGN,
+) => designEnabled(setting);
 
 export type Program = {
   id: string;

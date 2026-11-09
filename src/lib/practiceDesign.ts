@@ -1,12 +1,9 @@
-/** Approved practice hub rollout: DEV host or an explicit loopback preview. */
+import { designEnabled } from "./designRollout";
+/** The redesigned practice hub (see designRollout). */
 export function practiceDesignEnabled(
-  hostname = window.location.hostname,
-  localPreview = import.meta.env.VITE_PRACTICE_DESIGN === "true",
+  setting: string | undefined = import.meta.env.VITE_PRACTICE_DESIGN,
 ) {
-  return (
-    hostname === "gotit-dev.rbaseapp.com" ||
-    (localPreview && ["localhost", "127.0.0.1", "[::1]"].includes(hostname))
-  );
+  return designEnabled(setting);
 }
 
 export const practiceCards = [

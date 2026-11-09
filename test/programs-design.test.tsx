@@ -78,11 +78,10 @@ function view(items: Course[] = [spanish(), english(), completed()]) {
   return { onNew };
 }
 beforeEach(() => localStorage.clear());
-it("keeps the new screen limited to exact DEV and explicit loopback previews", () => {
-  expect(programsDesignEnabled("gotit-dev.rbaseapp.com", false)).toBe(true);
-  expect(programsDesignEnabled("gotit.rbaseapp.com", true)).toBe(false);
-  expect(programsDesignEnabled("localhost", false)).toBe(false);
-  expect(programsDesignEnabled("localhost", true)).toBe(true);
+it("shows the new screen everywhere unless the build turns it off", () => {
+  expect(programsDesignEnabled("")).toBe(true);
+  expect(programsDesignEnabled("true")).toBe(true);
+  expect(programsDesignEnabled("false")).toBe(false);
 });
 it("derives progress and lesson from server facts, never marks an unfinished unit complete", () => {
   const item = spanish();

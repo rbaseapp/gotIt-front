@@ -7,6 +7,16 @@ import { invalidateResourceCache } from "../src/lib/resourceCache";
 beforeEach(async () => {
   invalidateResourceCache(true);
   vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "");
+  // The redesign is the product default. Tests of the previous screens keep running
+  // against them; a test of a redesigned screen turns its switch on with stubEnv.
+  for (const screen of [
+    "DASHBOARD",
+    "PRACTICE",
+    "MYWORDS",
+    "PROGRAMS",
+    "SETTINGS",
+  ])
+    vi.stubEnv(`VITE_${screen}_DESIGN`, "false");
   localStorage.setItem("gotit.uiLocale.v1", "he");
   await i18n.changeLanguage("he");
 });

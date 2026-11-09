@@ -102,15 +102,10 @@ describe("DEV my words", () => {
       ),
     ).toBe(true);
   });
-  it("restricts rollout and uses calendar review dates in the profile timezone", () => {
-    expect(myWordsDesignEnabled("gotit-dev.rbaseapp.com", false)).toBe(true);
-    expect(myWordsDesignEnabled("127.0.0.1", true)).toBe(true);
-    for (const host of [
-      "gotit.rbaseapp.com",
-      "gotit-dev.rbaseapp.com.example.com",
-      "example.com",
-    ])
-      expect(myWordsDesignEnabled(host, true)).toBe(false);
+  it("is on unless turned off and uses calendar review dates in the profile timezone", () => {
+    expect(myWordsDesignEnabled("")).toBe(true);
+    expect(myWordsDesignEnabled("true")).toBe(true);
+    expect(myWordsDesignEnabled("false")).toBe(false);
     expect(
       reviewDay(
         "2026-10-12T21:30:00Z",

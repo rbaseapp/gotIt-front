@@ -18,7 +18,16 @@ export default defineConfig({
   },
   webServer: {
     command: `npm run dev -- --host 127.0.0.1 --port ${port}`,
-    env: { VITE_DEMO_MODE: "true" },
+    // These layout tests were written for the previous screens, which is what a loopback
+    // host showed before the redesign became the default; they keep running against them.
+    env: {
+      VITE_DEMO_MODE: "true",
+      VITE_DASHBOARD_DESIGN: "false",
+      VITE_PRACTICE_DESIGN: "false",
+      VITE_MYWORDS_DESIGN: "false",
+      VITE_PROGRAMS_DESIGN: "false",
+      VITE_SETTINGS_DESIGN: "false",
+    },
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

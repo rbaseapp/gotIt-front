@@ -5,17 +5,10 @@ import {
 } from "../src/lib/practiceDesign";
 
 describe("practice design rollout", () => {
-  it("restricts the design to DEV and explicitly enabled local previews", () => {
-    expect(practiceDesignEnabled("gotit-dev.rbaseapp.com", false)).toBe(true);
-    expect(practiceDesignEnabled("localhost", false)).toBe(false);
-    expect(practiceDesignEnabled("localhost", true)).toBe(true);
-    for (const host of [
-      "gotit.rbaseapp.com",
-      "gotit-dev.rbaseapp.com.evil.test",
-      "preview.example.test",
-    ]) {
-      expect(practiceDesignEnabled(host, true)).toBe(false);
-    }
+  it("is on everywhere unless the build turns it off", () => {
+    expect(practiceDesignEnabled("")).toBe(true);
+    expect(practiceDesignEnabled("true")).toBe(true);
+    expect(practiceDesignEnabled("false")).toBe(false);
   });
   it("resumes the actual active session with its language and pack", () => {
     const link = recentPracticeLink(

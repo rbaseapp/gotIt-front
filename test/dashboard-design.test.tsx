@@ -102,16 +102,10 @@ const mount = (child: React.ReactNode) =>
   render(<MemoryRouter>{child}</MemoryRouter>);
 
 describe("DEV dashboard rollout", () => {
-  it("never enables on production or other hosts, even with local preview enabled", () => {
-    expect(dashboardDesignEnabled("gotit-dev.rbaseapp.com", false)).toBe(true);
-    expect(dashboardDesignEnabled("localhost", true)).toBe(true);
-    expect(dashboardDesignEnabled("localhost", false)).toBe(false);
-    for (const host of [
-      "gotit.rbaseapp.com",
-      "gotit-dev.rbaseapp.com.example.com",
-      "example.com",
-    ])
-      expect(dashboardDesignEnabled(host, true)).toBe(false);
+  it("is on everywhere unless the build turns it off", () => {
+    expect(dashboardDesignEnabled("")).toBe(true);
+    expect(dashboardDesignEnabled("true")).toBe(true);
+    expect(dashboardDesignEnabled("false")).toBe(false);
   });
   it("only shows the capture reminder after 72 hours of known inactivity", () => {
     const now = Date.parse(date);
